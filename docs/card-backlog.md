@@ -4,7 +4,7 @@ Master checklist of cards to hand-curate into `data/cards/`, following [curation
 
 **This file is the tracking source of truth:** every file in `data/cards/` must appear here (the validator warns if one doesn't), and no card counts as done until a human has verified it against issuer terms — AI-drafted files are a starting point, not data.
 
-**Status markers** (edit by hand, or use the slider UI in `tools/backlog-checklist.html` and paste the result back):
+**Status markers**:
 
 - `[ ]` not added — no file in `data/cards/` yet
 - `[~]` AI-drafted — file exists but `confidence: low`; numbers are plausible, not verified
