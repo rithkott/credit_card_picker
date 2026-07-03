@@ -8,7 +8,9 @@ Current state of what's actually built (dataset layer + validation pipeline only
 flowchart TB
 
 subgraph SOURCE["📁 Source of truth — hand-curated YAML, one file per card"]
+    FORM["<b>tools/card-entry-form.html</b><br/><i>browser form (no build/server) that emits schema-valid YAML —<br/>mirrors the validator's checks live, embeds registry keys<br/>(must be kept in sync when registries change)</i>"]
     CARD["data/cards/&lt;issuer&gt;/&lt;card-id&gt;.yaml<br/><i>one file per card: small reviewable PRs,<br/>per-card git history, YAML comments carry 'why' notes</i>"]
+    FORM -->|"copy/download YAML into"| CARD
 end
 
 subgraph SCHEMA["📐 data/schema/card.schema.json — every card decomposes into blocks needing different math"]
@@ -35,7 +37,7 @@ end
 
 subgraph PIPE["✅ Validation pipeline — errors block, warnings nag"]
     VALIDATE["<b>scripts/validate_cards.py</b><br/><i>schema conformance · id=filename · issuer=directory ·<br/>duplicate ids · registry membership · cash⇒program:cash ·<br/>no future verification dates</i>"]
-    WARNINGS["<b>Warnings (exit 0)</b><br/><i>stale: last_verified_date &gt; 6 months ·<br/>confidence: low · signup bonus past expires ·<br/>UNSOURCED: populated block no source supports —<br/>data-freshness nags that shouldn't block unrelated PRs</i>"]
+    WARNINGS["<b>Warnings (exit 0)</b><br/><i>stale: last_verified_date &gt; 6 months ·<br/>confidence: low · signup bonus past expires ·<br/>UNSOURCED: populated block no source supports ·<br/>card file missing from docs/card-backlog.md —<br/>data-freshness nags that shouldn't block unrelated PRs</i>"]
     CI["<b>.github/workflows/validate-data.yml</b><br/><i>runs on PRs/pushes touching data, AND weekly on cron —<br/>so staleness and expired promos surface<br/>even when nobody is editing</i>"]
 end
 

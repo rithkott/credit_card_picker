@@ -2,6 +2,22 @@
 
 Master checklist of cards to hand-curate into `data/cards/`, following [curation-guide.md](curation-guide.md). Each entry shows the suggested file path slug. Check a card off only when its YAML reaches `confidence: high`.
 
+**This file is the tracking source of truth:** every file in `data/cards/` must appear here (the validator warns if one doesn't), and no card counts as done until a human has verified it against issuer terms — AI-drafted files are a starting point, not data.
+
+---
+
+## ⚠️ Drafted but NOT human-verified — do these first
+
+These files already exist in `data/cards/` with real-looking numbers, drafted by AI from model knowledge with **no sources actually checked**. Until verified, they are plausible, not true. Verify each against the issuer's own pages, fix the `sources` entries, and bump `confidence` to `high`:
+
+- [ ] Chase Freedom Flex — `data/cards/chase/freedom-flex.yaml`
+- [ ] Chase Sapphire Preferred — `data/cards/chase/sapphire-preferred.yaml`
+- [ ] Amex Blue Cash Preferred — `data/cards/amex/blue-cash-preferred.yaml`
+- [ ] Amex Gold — `data/cards/amex/gold.yaml`
+- [ ] Citi Double Cash — `data/cards/citi/double-cash.yaml`
+- [ ] Capital One Venture X — `data/cards/capital-one/venture-x.yaml`
+- [ ] Wells Fargo Active Cash — `data/cards/wells-fargo/active-cash.yaml`
+
 Scope notes:
 - **US consumer cards** in the main list, including **closed-loop store cards** (Target, Amazon Store Card, etc. — curated with the schema's `closed_loop` block) since they're worth recommending in combination with open-loop cards when a big share of someone's spend is at that merchant, and **credit-builder/secured cards** (curated with `approval.credit_tier: building`) so users with thin or damaged credit still get recommendations they can actually be approved for.
 - Cards no longer open to new applicants (e.g. Amex EveryDay, US Bank Altitude Reserve) are excluded; the optimizer recommends cards people can actually get. If one is re-opened, add it.

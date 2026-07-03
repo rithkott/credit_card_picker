@@ -14,6 +14,7 @@ data/schema/              JSON Schema every card file must conform to
 data/cards/<issuer>/      one hand-curated YAML file per card (source of truth)
 data/meta/                canonical registries: categories, merchants, point valuations
 scripts/validate_cards.py schema + registry + staleness validation (runs in CI)
+tools/card-entry-form.html browser form that generates schema-valid card YAML (open directly, no build)
 ```
 
 ## Data philosophy

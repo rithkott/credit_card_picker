@@ -8,6 +8,8 @@ Checks, per card file:
      the data/meta/ registries.
   4. `verification.last_verified_date` is not in the future and not stale
      (> STALE_DAYS old → warning; CI stays green so staleness nags, not blocks).
+  5. The card is listed in docs/card-backlog.md — the backlog is the tracking
+     source of truth for human verification, so no card file may exist off-list.
 
 Exit code 0 on success (warnings allowed), 1 on any error.
 Usage: python3 scripts/validate_cards.py
@@ -25,6 +27,7 @@ ROOT = Path(__file__).resolve().parent.parent
 CARDS_DIR = ROOT / "data" / "cards"
 SCHEMA_PATH = ROOT / "data" / "schema" / "card.schema.json"
 META_DIR = ROOT / "data" / "meta"
+BACKLOG_PATH = ROOT / "docs" / "card-backlog.md"
 STALE_DAYS = 183  # ~6 months
 
 
@@ -40,6 +43,8 @@ def main() -> int:
     categories = set(load_yaml(META_DIR / "categories.yaml")["categories"])
     merchants = set(load_yaml(META_DIR / "merchants.yaml")["merchants"])
     programs = set(load_yaml(META_DIR / "point-valuations.yaml")["programs"])
+
+    backlog = BACKLOG_PATH.read_text() if BACKLOG_PATH.exists() else ""
 
     card_files = sorted(CARDS_DIR.glob("*/*.yaml"))
     if not card_files:
@@ -91,6 +96,11 @@ def main() -> int:
             cat = credit.get("category")
             if cat is not None and cat not in categories:
                 errors.append(f"{rel}: credits[{i}]: unknown category '{cat}'")
+
+        if path.stem not in backlog:
+            warnings.append(
+                f"{rel}: not listed in docs/card-backlog.md — add it; the backlog tracks human verification"
+            )
 
         supported = {block for src in card["sources"] for block in src["supports"]}
         populated = {"identity", "currency", "base_rate", "fees", "approval"}

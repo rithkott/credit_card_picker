@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Card Entry — credit_card_picker</title>
+</head>
+<body>
+<!--
+  Human data-entry form for data/cards/<issuer>/<card-id>.yaml.
+  Open this file directly in a browser; no build or server needed.
+  NOTE: the category/merchant/program lists below are embedded copies of
+  data/meta/*.yaml — keep them in sync when the registries change (see CLAUDE.md).
+-->
+<style>
+:root{
+  --bg:#F4F6F3; --panel:#FFFFFF; --ink:#1E2422; --muted:#66706B; --line:#DCE2DD;
+  --accent:#0E6E5C; --accent-soft:#E3EFEA; --warn:#A66A00; --err:#B3382C; --ok:#0E6E5C;
+  --code-bg:#1F241E; --code-ink:#D9E2D4; --code-dim:#7E8A7E; --code-key:#8CC7B3; --code-str:#D8C892;
+  --radius:6px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#131614; --panel:#1B201C; --ink:#E4E9E4; --muted:#8B958D; --line:#2C332D;
+    --accent:#45B893; --accent-soft:#20302A; --warn:#D69A2D; --err:#E06052; --ok:#45B893;
+    --code-bg:#171B17; --code-ink:#CBD6C8; --code-dim:#6E7A6E; --code-key:#7FBFA6; --code-str:#CBB878;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#F4F6F3; --panel:#FFFFFF; --ink:#1E2422; --muted:#66706B; --line:#DCE2DD;
+  --accent:#0E6E5C; --accent-soft:#E3EFEA; --warn:#A66A00; --err:#B3382C; --ok:#0E6E5C;
+  --code-bg:#1F241E; --code-ink:#D9E2D4; --code-dim:#7E8A7E; --code-key:#8CC7B3; --code-str:#D8C892;
+}
+:root[data-theme="dark"]{
+  --bg:#131614; --panel:#1B201C; --ink:#E4E9E4; --muted:#8B958D; --line:#2C332D;
+  --accent:#45B893; --accent-soft:#20302A; --warn:#D69A2D; --err:#E06052; --ok:#45B893;
+  --code-bg:#171B17; --code-ink:#CBD6C8; --code-dim:#6E7A6E; --code-key:#7FBFA6; --code-str:#CBB878;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:14px/1.5 "Avenir Next",Avenir,"Segoe UI",Frutiger,system-ui,sans-serif;
+}
+code,pre,.mono,input.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.wrap{max-width:1240px;margin:0 auto;padding:28px 24px 80px}
+header.page{margin-bottom:24px}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:600}
+h1{font-size:22px;margin:4px 0 6px;font-weight:600;text-wrap:balance}
+.lede{color:var(--muted);max-width:62ch;margin:0}
+.lede a{color:var(--accent)}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,460px);gap:24px;align-items:start}
+@media (max-width:960px){.cols{grid-template-columns:1fr}.rail{position:static!important}}
+
+/* ---------- form ---------- */
+section.block{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin-bottom:14px}
+section.block h2{font-size:15px;margin:0;font-weight:600}
+section.block h2 code{font-size:13px;color:var(--accent)}
+.why{font-size:12.5px;color:var(--muted);margin:3px 0 14px;max-width:70ch}
+.grid{display:grid;gap:12px 14px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+@media (max-width:640px){.g2,.g3{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.field label .req{color:var(--err)}
+.hint{font-size:11.5px;color:var(--muted);letter-spacing:0;text-transform:none;font-weight:400}
+input[type=text],input[type=url],input[type=number],input[type=date],select,textarea{
+  background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:4px;
+  padding:7px 9px;font:inherit;width:100%;
+}
+textarea{resize:vertical;min-height:56px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.check{display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer;user-select:none}
+.check input{accent-color:var(--accent);width:15px;height:15px;margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:999px;
+  padding:3px 10px;font-size:12px;cursor:pointer;user-select:none;background:var(--bg)}
+.chip input{position:absolute;opacity:0;pointer-events:none}
+.chip:has(input:checked){background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+.chip:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:1px}
+.item{border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:10px;position:relative;background:var(--bg)}
+.item .grid{margin-top:10px}
+.item .grid:first-child{margin-top:0}
+.item-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.item-title{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.sub{border-top:1px dashed var(--line);margin-top:12px;padding-top:12px}
+button{font:inherit;cursor:pointer;border-radius:4px}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn-add{background:none;border:1px dashed var(--accent);color:var(--accent);padding:7px 14px;font-size:13px;font-weight:600;width:100%}
+.btn-add:hover{background:var(--accent-soft)}
+.btn-x{background:none;border:1px solid var(--line);color:var(--muted);padding:2px 9px;font-size:12px}
+.btn-x:hover{border-color:var(--err);color:var(--err)}
+.toggle-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px}
+.radio{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer}
+.radio input{accent-color:var(--accent);margin:0}
+.none-note{font-size:13px;color:var(--muted);font-style:italic}
+
+/* ---------- rail ---------- */
+.rail{position:sticky;top:16px;display:flex;flex-direction:column;gap:12px}
+.filecard{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px}
+.filecard .lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:4px}
+.filecard code{font-size:13px;color:var(--accent);word-break:break-all}
+.checkscard{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;max-height:220px;overflow-y:auto}
+.checkscard ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.checkscard li{font-size:12.5px;display:flex;gap:8px;align-items:baseline}
+.dot{flex:none;width:8px;height:8px;border-radius:50%;position:relative;top:1px}
+.dot.err{background:var(--err)} .dot.warn{background:var(--warn)} .dot.ok{background:var(--ok)}
+.yamlcard{background:var(--code-bg);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.yamlbar{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.08)}
+.yamlbar .lbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--code-dim);font-weight:600}
+.yamlbar div{display:flex;gap:8px}
+.btn-copy{background:var(--accent);border:none;color:#fff;padding:5px 14px;font-size:12.5px;font-weight:600}
+:root[data-theme="dark"] .btn-copy, .btn-copy{color:#fff}
+.btn-dl{background:none;border:1px solid var(--code-dim);color:var(--code-ink);padding:5px 12px;font-size:12.5px}
+pre#yaml{margin:0;padding:14px;font-size:12px;line-height:1.55;color:var(--code-ink);overflow-x:auto;max-height:56vh;tab-size:2}
+pre#yaml .k{color:var(--code-key)} pre#yaml .s{color:var(--code-str)} pre#yaml .c{color:var(--code-dim);font-style:italic}
+@media (prefers-reduced-motion: no-preference){
+  .chip,.btn-add,.btn-x{transition:background .12s,border-color .12s,color .12s}
+}
+</style>
+
+<div class="wrap">
+<header class="page">
+  <div class="eyebrow">credit_card_picker · data curation</div>
+  <h1>Card entry form</h1>
+  <p class="lede">Fill this out to generate a schema-valid card file for <code>data/cards/</code>.
+  Paste each source link <em>at the moment you enter the fact</em>, not after — the checks panel
+  mirrors <code>scripts/validate_cards.py</code>. Full guidance: <code>docs/curation-guide.md</code>.</p>
+</header>
+
+<div class="cols">
+<form id="f" autocomplete="off">
+
+<section class="block">
+  <h2>Identity</h2>
+  <p class="why">The id becomes the filename and the issuer becomes the directory — the validator enforces both, so files can't drift from their paths.</p>
+  <div class="grid g2">
+    <div class="field"><label for="id">card id <span class="req">*</span> <span class="hint">kebab-case slug</span></label>
+      <input type="text" id="id" class="mono" placeholder="blue-cash-preferred"></div>
+    <div class="field"><label for="name">official name <span class="req">*</span></label>
+      <input type="text" id="name" placeholder="American Express Blue Cash Preferred"></div>
+    <div class="field"><label for="issuer">issuer slug <span class="req">*</span> <span class="hint">directory name</span></label>
+      <input type="text" id="issuer" class="mono" placeholder="amex"></div>
+    <div class="field"><label for="network">network <span class="req">*</span></label>
+      <select id="network"><option value="visa">visa</option><option value="mastercard">mastercard</option><option value="amex">amex</option><option value="discover">discover</option></select></div>
+  </div>
+</section>
+
+<section class="block">
+  <h2>Earning &amp; <code>base_rate</code></h2>
+  <p class="why">Cash cards: rate = percent. Points cards: rate = points per dollar, priced via the shared valuation table — cards never embed their own point values. The base rate is the catch-all every reward is an exception to.</p>
+  <div class="grid g3">
+    <div class="field"><label for="curtype">currency type</label>
+      <select id="curtype"><option value="cash">cash</option><option value="points">points</option></select></div>
+    <div class="field"><label for="program">program <span class="hint">point-valuations.yaml</span></label>
+      <select id="program"></select></div>
+    <div class="field"><label for="base">base_rate <span class="req">*</span></label>
+      <input type="number" id="base" class="mono" min="0" step="any" placeholder="1"></div>
+  </div>
+</section>
+
+<section class="block">
+  <h2><code>category_rewards</code></h2>
+  <p class="why">Spend-proportional elevated rates. Caps are on <strong>spend</strong>, not reward ("$300 back at 6%" = cap $5,000). Use the <code>rotating</code> pseudo-category for quarterly cards; never hardcode this quarter's categories.</p>
+  <div id="cats"></div>
+  <button type="button" class="btn-add" data-add="cat">+ Add category reward</button>
+</section>
+
+<section class="block">
+  <h2><code>merchant_rewards</code></h2>
+  <p class="why">Only when the issuer names a merchant ("5% at Amazon") — merchant beats category when both match.</p>
+  <div id="mers"></div>
+  <button type="button" class="btn-add" data-add="mer">+ Add merchant reward</button>
+</section>
+
+<section class="block">
+  <h2><code>credits</code></h2>
+  <p class="why">Fixed-value, use-it-or-lose-it, never scaled by spend. The capture-rate note is required: issuers price annual fees against sticker credit value most users never capture — say honestly who gets it and who doesn't.</p>
+  <div id="creds"></div>
+  <button type="button" class="btn-add" data-add="cred">+ Add credit</button>
+</section>
+
+<section class="block">
+  <h2><code>signup_bonus</code></h2>
+  <p class="why">One-time, year-one only, current public offer only. Mark limited-time elevated promos and their end date — the validator nags once an offer expires so it can't silently inflate recommendations.</p>
+  <div class="toggle-row">
+    <label class="radio"><input type="radio" name="sub" value="none" checked> no public bonus</label>
+    <label class="radio"><input type="radio" name="sub" value="usd"> cash bonus</label>
+    <label class="radio"><input type="radio" name="sub" value="points"> points bonus</label>
+  </div>
+  <div id="subfields" hidden>
+    <div class="grid g3">
+      <div class="field"><label for="subval">bonus value <span class="req">*</span> <span class="hint" id="subunit">USD</span></label>
+        <input type="number" id="subval" class="mono" min="0" step="any"></div>
+      <div class="field"><label for="subspend">spend requirement (USD) <span class="req">*</span></label>
+        <input type="number" id="subspend" class="mono" min="0" step="any"></div>
+      <div class="field"><label for="subwin">window (months) <span class="req">*</span></label>
+        <input type="number" id="subwin" class="mono" min="0" step="any"></div>
+    </div>
+    <div class="grid g2" style="margin-top:12px">
+      <label class="check"><input type="checkbox" id="sublimited"> limited-time elevated offer</label>
+      <div class="field"><label for="subexp">offer expires <span class="hint">omit if evergreen</span></label>
+        <input type="date" id="subexp"></div>
+    </div>
+    <div class="field" style="margin-top:12px"><label for="subnotes">notes <span class="hint">e.g. "standard offer is 60k"</span></label>
+      <input type="text" id="subnotes"></div>
+  </div>
+</section>
+
+<section class="block">
+  <h2><code>fees</code></h2>
+  <p class="why">The costs every reward is netted against.</p>
+  <div class="grid g3">
+    <div class="field"><label for="af">annual fee (USD) <span class="req">*</span></label>
+      <input type="number" id="af" class="mono" min="0" step="any" placeholder="0"></div>
+    <div class="field"><label for="ftf">foreign transaction % <span class="req">*</span></label>
+      <input type="number" id="ftf" class="mono" min="0" step="any" placeholder="0"></div>
+    <div class="field" style="justify-content:end"><label class="check" style="margin-top:18px"><input type="checkbox" id="fyw"> first year waived</label></div>
+  </div>
+</section>
+
+<section class="block">
+  <h2><code>approval</code></h2>
+  <p class="why">So no card is ever recommended that the user can't get. Cutoffs aren't published — estimate from the issuer's own "recommended credit" language and say why in notes.</p>
+  <div class="grid g2">
+    <div class="field"><label for="tier">credit tier <span class="req">*</span></label>
+      <select id="tier"><option value="building">building (secured / thin file OK)</option><option value="fair">fair (~580+)</option><option value="good" selected>good (~670+)</option><option value="very_good">very_good (~740+)</option><option value="excellent">excellent (~800+ / premium)</option></select></div>
+    <div class="field"><label for="minscore">estimated min FICO <span class="hint">optional, 300–850</span></label>
+      <input type="number" id="minscore" class="mono" min="300" max="850"></div>
+  </div>
+  <div class="field" style="margin-top:12px"><label for="apnotes">approval notes <span class="hint">Chase 5/24, Amex lifetime bonus, deposit…</span></label>
+    <input type="text" id="apnotes"></div>
+</section>
+
+<section class="block">
+  <h2><code>closed_loop</code> <span class="hint" style="font-weight:400">store cards only</span></h2>
+  <p class="why">Marks cards usable only at specific merchants. Expresses the restriction — the reward still lives in base_rate / merchant_rewards.</p>
+  <label class="check" style="margin-bottom:10px"><input type="checkbox" id="clon"> this is a closed-loop store card</label>
+  <div id="clfields" hidden>
+    <div class="field"><label>usable only at <span class="req">*</span></label>
+      <div class="chips" id="clchips"></div></div>
+    <div class="field" style="margin-top:12px"><label for="clnote">note</label>
+      <input type="text" id="clnote" placeholder="RedCard works only at Target / Target.com"></div>
+  </div>
+</section>
+
+<section class="block">
+  <h2><code>benefit_flags</code></h2>
+  <p class="why">Binary perks, recorded but unscored in v1. Reuse existing spellings (grep other cards) before inventing new ones.</p>
+  <div class="field"><label for="flags">flags <span class="hint">comma-separated, snake_case</span></label>
+    <input type="text" id="flags" class="mono" placeholder="primary_rental_insurance, cell_phone_protection"></div>
+</section>
+
+<section class="block">
+  <h2><code>sources</code></h2>
+  <p class="why">The paper trail. Paste the exact page you read — issuer pages are primary, blogs are corroboration only. Mark honestly which blocks each link backs: a source showing only the annual fee supports <code>fees</code>, not everything.</p>
+  <div id="srcs"></div>
+  <button type="button" class="btn-add" data-add="src">+ Add source</button>
+</section>
+
+<section class="block">
+  <h2><code>verification</code></h2>
+  <p class="why">Sources say where facts came from; verification says when a human last confirmed the whole file still matches them. Drafting without checking sources = confidence low.</p>
+  <div class="grid g3">
+    <div class="field"><label for="vdate">last verified <span class="req">*</span></label>
+      <input type="date" id="vdate"></div>
+    <div class="field"><label for="vby">verified by <span class="req">*</span></label>
+      <input type="text" id="vby" placeholder="your-name"></div>
+    <div class="field"><label for="vconf">confidence <span class="req">*</span></label>
+      <select id="vconf"><option value="low" selected>low — drafted, unchecked</option><option value="medium">medium — secondary source</option><option value="high">high — issuer terms checked</option></select></div>
+  </div>
+</section>
+
+</form>
+
+<aside class="rail">
+  <div class="filecard">
+    <div class="lbl">Save as</div>
+    <code id="fname">data/cards/&lt;issuer&gt;/&lt;card-id&gt;.yaml</code>
+  </div>
+  <div class="checkscard">
+    <ul id="checks"></ul>
+  </div>
+  <div class="yamlcard">
+    <div class="yamlbar">
+      <span class="lbl">Generated YAML</span>
+      <div>
+        <button type="button" class="btn-dl" id="dl">Download</button>
+        <button type="button" class="btn-copy" id="copy">Copy YAML</button>
+      </div>
+    </div>
+    <pre id="yaml"></pre>
+  </div>
+</aside>
+</div>
+</div>
+
+<script>
+"use strict";
+/* Embedded copies of data/meta/*.yaml — keep in sync with the registries. */
+const CATS = ["groceries","dining","travel_flights","travel_hotels","travel_other","gas","transit","streaming","drugstores","online_shopping","entertainment","utilities","other","rotating"];
+const MERCHANTS = ["amazon","whole_foods","walmart","target","costco","uber","lyft","dunkin"];
+const PROGRAMS = ["cash","chase_ur","amex_mr","citi_typ","capital_one_miles","discover_cashback"];
+const SUPPORTS = ["identity","currency","base_rate","category_rewards","merchant_rewards","credits","signup_bonus","fees","approval","closed_loop","benefit_flags"];
+const PERIODS = ["monthly","quarterly","semiannual","annual","every_4_years"];
+const CAP_PERIODS = ["monthly","quarterly","annual"];
+
+const $ = (s,el=document)=>el.querySelector(s);
+const $$ = (s,el=document)=>[...el.querySelectorAll(s)];
+const esc = s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const opts = (arr,sel)=>arr.map(v=>`<option value="${v}"${v===sel?" selected":""}>${v}</option>`).join("");
+const today = new Date().toISOString().slice(0,10);
+
+/* ---------- repeatable rows ---------- */
+let uid = 0;
+function capFields(){ return `
+  <label class="check cap-on"><input type="checkbox" data-role="capon"> capped</label>
+  <div class="sub" data-role="capfields" hidden>
+    <div class="grid g3">
+      <div class="field"><label>cap period</label><select data-role="capperiod">${opts(CAP_PERIODS,"annual")}</select></div>
+      <div class="field"><label>max spend (USD) <span class="hint">spend, not reward</span></label><input type="number" data-role="capmax" class="mono" min="0" step="any"></div>
+      <div class="field"><label>fallback rate</label><input type="number" data-role="capfall" class="mono" min="0" step="any"></div>
+    </div>
+  </div>`;}
+
+function addCat(){
+  $("#cats").insertAdjacentHTML("beforeend",`
+  <div class="item" data-kind="cat" data-uid="${++uid}">
+    <div class="item-head"><span class="item-title">Category reward</span><button type="button" class="btn-x" data-remove>Remove</button></div>
+    <div class="grid g2">
+      <div class="field"><label>category</label><select data-role="cat">${opts(CATS,"dining")}</select></div>
+      <div class="field"><label>rate <span class="req">*</span></label><input type="number" data-role="rate" class="mono" min="0" step="any"></div>
+    </div>
+    <div class="grid g3" style="margin-top:10px">
+      ${capFields()}
+      <label class="check"><input type="checkbox" data-role="portal"> portal only</label>
+      <label class="check"><input type="checkbox" data-role="roton"> rotating quarterly</label>
+    </div>
+    <div class="sub" data-role="rotfields" hidden>
+      <div class="grid g2">
+        <label class="check"><input type="checkbox" data-role="rotact" checked> requires activation</label>
+        <div class="field"><label>rotation note <span class="req">*</span></label><input type="text" data-role="rotnote" placeholder="Categories change each quarter…"></div>
+      </div>
+    </div>
+    <div class="field" style="margin-top:10px"><label>notes <span class="hint">issuer fine print</span></label><input type="text" data-role="notes"></div>
+  </div>`);
+}
+function addMer(){
+  $("#mers").insertAdjacentHTML("beforeend",`
+  <div class="item" data-kind="mer" data-uid="${++uid}">
+    <div class="item-head"><span class="item-title">Merchant reward</span><button type="button" class="btn-x" data-remove>Remove</button></div>
+    <div class="grid g2">
+      <div class="field"><label>merchant</label><select data-role="mer">${opts(MERCHANTS,"amazon")}</select></div>
+      <div class="field"><label>rate <span class="req">*</span></label><input type="number" data-role="rate" class="mono" min="0" step="any"></div>
+    </div>
+    <div class="grid g3" style="margin-top:10px">${capFields()}</div>
+    <div class="field" style="margin-top:10px"><label>notes</label><input type="text" data-role="notes"></div>
+  </div>`);
+}
+function addCred(){
+  $("#creds").insertAdjacentHTML("beforeend",`
+  <div class="item" data-kind="cred" data-uid="${++uid}">
+    <div class="item-head"><span class="item-title">Credit</span><button type="button" class="btn-x" data-remove>Remove</button></div>
+    <div class="grid g3">
+      <div class="field"><label>name <span class="req">*</span></label><input type="text" data-role="name" placeholder="Uber Cash"></div>
+      <div class="field"><label>amount (USD, per period) <span class="req">*</span></label><input type="number" data-role="amount" class="mono" min="0" step="any"></div>
+      <div class="field"><label>period</label><select data-role="period">${opts(PERIODS,"monthly")}</select></div>
+    </div>
+    <div class="grid g2" style="margin-top:10px">
+      <div class="field"><label>offsets category <span class="hint">optional</span></label>
+        <select data-role="cat"><option value="">—</option>${opts(CATS.filter(c=>c!=="rotating"))}</select></div>
+      <div class="field"><label>notes</label><input type="text" data-role="notes"></div>
+    </div>
+    <div class="field" style="margin-top:10px"><label>realistic capture-rate note <span class="req">*</span></label>
+      <textarea data-role="capture" placeholder="Who actually captures this and who doesn't — enrollment, partner list, monthly forfeit…"></textarea></div>
+  </div>`);
+}
+function addSrc(){
+  $("#srcs").insertAdjacentHTML("beforeend",`
+  <div class="item" data-kind="src" data-uid="${++uid}">
+    <div class="item-head"><span class="item-title">Source</span><button type="button" class="btn-x" data-remove>Remove</button></div>
+    <div class="field"><label>url <span class="req">*</span> <span class="hint">exact page you read, https only</span></label>
+      <input type="url" data-role="url" class="mono" placeholder="https://issuer.com/card-terms"></div>
+    <div class="field" style="margin-top:10px"><label>supports <span class="req">*</span> <span class="hint">only what this link actually shows</span></label>
+      <div class="chips">${SUPPORTS.map(s=>`<label class="chip"><input type="checkbox" data-role="sup" value="${s}">${s}</label>`).join("")}</div></div>
+    <div class="grid g2" style="margin-top:10px">
+      <div class="field"><label>accessed <span class="req">*</span></label><input type="date" data-role="accessed" value="${today}"></div>
+      <div class="field"><label>added by <span class="req">*</span></label><input type="text" data-role="addedby" placeholder="your-name"></div>
+    </div>
+    <div class="field" style="margin-top:10px"><label>note <span class="hint">pinpoint: "rates table, footnote 3"</span></label>
+      <input type="text" data-role="note"></div>
+  </div>`);
+}
+
+/* ---------- YAML emission ---------- */
+const PLAIN = /^[A-Za-z0-9][A-Za-z0-9 _.,()/&'+%;-]*$/;
+function ystr(s){
+  s = s.trim();
+  if (PLAIN.test(s) && !/^(true|false|null|yes|no|on|off)$/i.test(s) && !/^[-+.\d]+$/.test(s) && !/[:#]/.test(s)) return s;
+  return JSON.stringify(s);
+}
+function fold(s, indent){
+  s = s.trim().replace(/\s+/g," ");
+  if (s.length <= 68) return ystr(s);
+  const pad = " ".repeat(indent), words = s.split(" "), lines = [];
+  let cur = "";
+  for (const w of words){
+    if ((cur+" "+w).trim().length > 76){ lines.push(cur.trim()); cur = w; } else cur += " "+w;
+  }
+  if (cur.trim()) lines.push(cur.trim());
+  return ">-\n" + lines.map(l=>pad+l).join("\n");
+}
+const num = v => v==="" || v===null || isNaN(+v) ? null : +v;
+
+function readCap(it){
+  if (!$('[data-role=capon]',it).checked) return null;
+  return { period: $('[data-role=capperiod]',it).value,
+           max: num($('[data-role=capmax]',it).value),
+           fall: num($('[data-role=capfall]',it).value) };
+}
+function capLines(cap, ind){
+  const p = " ".repeat(ind);
+  return [`${p}cap:`, `${p}  period: ${cap.period}`, `${p}  max_spend_usd: ${cap.max ?? "?"}`, `${p}  fallback_rate: ${cap.fall ?? "?"}`];
+}
+
+function build(){
+  const L = [], errs = [], warns = [];
+  const val = id => $("#"+id).value.trim();
+  const id = val("id"), issuer = val("issuer"), name = val("name");
+  const slug = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+  if (!id) errs.push("card id is required"); else if (!slug.test(id)) errs.push("card id must be kebab-case (a-z, 0-9, hyphens)");
+  if (!name) errs.push("official name is required");
+  if (!issuer) errs.push("issuer slug is required"); else if (!slug.test(issuer)) errs.push("issuer must be kebab-case");
+
+  const curtype = val("curtype"), program = val("program");
+  if (curtype==="cash" && program!=="cash") errs.push("cash cards must use program: cash");
+  const base = num(val("base"));
+  if (base===null) errs.push("base_rate is required");
+
+  L.push(`id: ${id||"?"}`);
+  L.push(`name: ${name?ystr(name):"?"}`);
+  L.push(`issuer: ${issuer||"?"}`);
+  L.push(`network: ${val("network")}`);
+  L.push(`currency:`);
+  L.push(`  type: ${curtype}`);
+  L.push(`  program: ${program}`);
+  L.push(`base_rate: ${base ?? "?"}`);
+
+  /* category rewards */
+  const cats = $$('#cats .item');
+  if (!cats.length) L.push("category_rewards: []");
+  else {
+    L.push("category_rewards:");
+    cats.forEach((it,i)=>{
+      const rate = num($('[data-role=rate]',it).value);
+      if (rate===null) errs.push(`category reward #${i+1}: rate is required`);
+      const cat = $('[data-role=cat]',it).value;
+      L.push(`  - category: ${cat}`);
+      L.push(`    rate: ${rate ?? "?"}`);
+      const cap = readCap(it);
+      if (cap){ if(cap.max===null||cap.fall===null) errs.push(`category reward #${i+1}: cap needs max spend and fallback rate`); L.push(...capLines(cap,4)); }
+      if ($('[data-role=roton]',it).checked){
+        const rn = $('[data-role=rotnote]',it).value.trim();
+        if (cat!=="rotating") warns.push(`category reward #${i+1}: rotating rewards should use the 'rotating' pseudo-category`);
+        if (!rn) errs.push(`category reward #${i+1}: rotation note is required`);
+        L.push(`    rotation:`);
+        L.push(`      frequency: quarterly`);
+        L.push(`      requires_activation: ${$('[data-role=rotact]',it).checked}`);
+        L.push(`      note: ${rn?fold(rn,8):"?"}`);
+      } else if (cat==="rotating") warns.push(`category reward #${i+1}: 'rotating' category without a rotation block`);
+      if ($('[data-role=portal]',it).checked) L.push(`    portal_only: true`);
+      const n = $('[data-role=notes]',it).value.trim();
+      if (n) L.push(`    notes: ${fold(n,6)}`);
+    });
+  }
+
+  /* merchant rewards */
+  const mers = $$('#mers .item');
+  if (!mers.length) L.push("merchant_rewards: []");
+  else {
+    L.push("merchant_rewards:");
+    mers.forEach((it,i)=>{
+      const rate = num($('[data-role=rate]',it).value);
+      if (rate===null) errs.push(`merchant reward #${i+1}: rate is required`);
+      L.push(`  - merchant: ${$('[data-role=mer]',it).value}`);
+      L.push(`    rate: ${rate ?? "?"}`);
+      const cap = readCap(it);
+      if (cap){ if(cap.max===null||cap.fall===null) errs.push(`merchant reward #${i+1}: cap needs max spend and fallback rate`); L.push(...capLines(cap,4)); }
+      const n = $('[data-role=notes]',it).value.trim();
+      if (n) L.push(`    notes: ${fold(n,6)}`);
+    });
+  }
+
+  /* credits */
+  const creds = $$('#creds .item');
+  if (!creds.length) L.push("credits: []");
+  else {
+    L.push("credits:");
+    creds.forEach((it,i)=>{
+      const nm = $('[data-role=name]',it).value.trim();
+      const amt = num($('[data-role=amount]',it).value);
+      const capn = $('[data-role=capture]',it).value.trim();
+      if (!nm) errs.push(`credit #${i+1}: name is required`);
+      if (amt===null || amt<=0) errs.push(`credit #${i+1}: amount must be > 0`);
+      if (!capn) errs.push(`credit #${i+1}: capture-rate note is required`);
+      L.push(`  - name: ${nm?ystr(nm):"?"}`);
+      L.push(`    amount_usd: ${amt ?? "?"}`);
+      L.push(`    period: ${$('[data-role=period]',it).value}`);
+      const c = $('[data-role=cat]',it).value;
+      if (c) L.push(`    category: ${c}`);
+      L.push(`    realistic_capture_rate_note: ${capn?fold(capn,6):"?"}`);
+      const n = $('[data-role=notes]',it).value.trim();
+      if (n) L.push(`    notes: ${fold(n,6)}`);
+    });
+  }
+
+  /* signup bonus */
+  const subMode = $('input[name=sub]:checked').value;
+  if (subMode==="none") L.push("signup_bonus: null");
+  else {
+    const v = num(val("subval")), sp = num(val("subspend")), w = num(val("subwin"));
+    if (v===null||v<=0) errs.push("signup bonus: value is required");
+    if (sp===null) errs.push("signup bonus: spend requirement is required");
+    if (w===null||w<=0) errs.push("signup bonus: window (months) is required");
+    L.push("signup_bonus:");
+    L.push("  value:");
+    L.push(`    ${subMode}: ${v ?? "?"}`);
+    L.push(`  spend_requirement_usd: ${sp ?? "?"}`);
+    L.push(`  window_months: ${w ?? "?"}`);
+    if ($("#sublimited").checked) L.push("  limited_time: true");
+    const exp = val("subexp");
+    if (exp){ L.push(`  expires: "${exp}"`); if (exp < today) warns.push("signup bonus offer is already expired"); }
+    if ($("#sublimited").checked && !exp) warns.push("limited-time offer without an expiry date — add one if the issuer states it");
+    const sn = val("subnotes");
+    if (sn) L.push(`  notes: ${fold(sn,4)}`);
+  }
+
+  /* fees */
+  const af = num(val("af")), ftf = num(val("ftf"));
+  if (af===null) errs.push("annual fee is required (0 if none)");
+  if (ftf===null) errs.push("foreign transaction % is required (0 if none)");
+  L.push("fees:");
+  L.push(`  annual_fee_usd: ${af ?? "?"}`);
+  if ($("#fyw").checked) L.push("  first_year_waived: true");
+  L.push(`  foreign_transaction_pct: ${ftf ?? "?"}`);
+
+  /* approval */
+  L.push("approval:");
+  L.push(`  credit_tier: ${val("tier")}`);
+  const ms = num(val("minscore"));
+  if (val("minscore") && (ms<300||ms>850)) errs.push("estimated min FICO must be 300–850");
+  if (ms!==null && ms>=300 && ms<=850) L.push(`  estimated_min_score: ${ms}`);
+  const an = val("apnotes");
+  if (an) L.push(`  notes: ${fold(an,4)}`);
+
+  /* closed loop */
+  const clOn = $("#clon").checked;
+  let clMerch = [];
+  if (clOn){
+    clMerch = $$('#clchips input:checked').map(c=>c.value);
+    if (!clMerch.length) errs.push("closed-loop card needs at least one merchant");
+    L.push("closed_loop:");
+    L.push(`  merchants: [${clMerch.join(", ")}]`);
+    const cn = val("clnote");
+    if (cn) L.push(`  note: ${fold(cn,4)}`);
+  }
+
+  /* flags */
+  const flags = val("flags").split(",").map(s=>s.trim().toLowerCase().replace(/[\s-]+/g,"_").replace(/[^a-z0-9_]/g,"")).filter(Boolean);
+  L.push(flags.length ? `benefit_flags:` : "benefit_flags: []");
+  flags.forEach(f=>L.push(`  - ${f}`));
+
+  /* sources */
+  const srcs = $$('#srcs .item');
+  const supported = new Set();
+  if (!srcs.length){ errs.push("at least one source is required"); L.push("sources: []"); }
+  else {
+    L.push("sources:");
+    srcs.forEach((it,i)=>{
+      const url = $('[data-role=url]',it).value.trim();
+      const sups = $$('[data-role=sup]:checked',it).map(c=>c.value);
+      const acc = $('[data-role=accessed]',it).value;
+      const by = $('[data-role=addedby]',it).value.trim();
+      if (!/^https:\/\/.+/.test(url)) errs.push(`source #${i+1}: needs an https:// url`);
+      if (!sups.length) errs.push(`source #${i+1}: pick at least one block it supports`);
+      if (!acc) errs.push(`source #${i+1}: accessed date is required`);
+      if (!by) errs.push(`source #${i+1}: added_by is required`);
+      sups.forEach(s=>supported.add(s));
+      L.push(`  - url: ${url||"?"}`);
+      L.push(`    supports: [${sups.join(", ")}]`);
+      L.push(`    accessed: "${acc||"?"}"`);
+      L.push(`    added_by: ${by?ystr(by):"?"}`);
+      const n = $('[data-role=note]',it).value.trim();
+      if (n) L.push(`    note: ${fold(n,6)}`);
+    });
+  }
+
+  /* unsourced-block check (mirrors validate_cards.py) */
+  const populated = new Set(["identity","currency","base_rate","fees","approval"]);
+  if (cats.length) populated.add("category_rewards");
+  if (mers.length) populated.add("merchant_rewards");
+  if (creds.length) populated.add("credits");
+  if (flags.length) populated.add("benefit_flags");
+  if (subMode!=="none") populated.add("signup_bonus");
+  if (clOn) populated.add("closed_loop");
+  [...populated].filter(b=>!supported.has(b)).sort().forEach(b=>warns.push(`UNSOURCED — no source supports the '${b}' block`));
+
+  /* verification */
+  const vd = val("vdate"), vb = val("vby");
+  if (!vd) errs.push("verification date is required");
+  else if (vd > today) errs.push("verification date can't be in the future");
+  if (!vb) errs.push("verified_by is required");
+  L.push("verification:");
+  L.push(`  last_verified_date: "${vd||"?"}"`);
+  L.push(`  verified_by: ${vb?ystr(vb):"?"}`);
+  L.push(`  confidence: ${val("vconf")}`);
+  if (val("vconf")==="low") warns.push("confidence is low — fine for a draft; verify against issuer terms to finish");
+
+  return { yaml: L.join("\n")+"\n", errs, warns, id, issuer };
+}
+
+/* ---------- render ---------- */
+function highlight(y){
+  return esc(y).split("\n").map(line=>{
+    const m = line.match(/^(\s*(?:- )?)([A-Za-z_][A-Za-z0-9_]*)(:)(.*)$/);
+    if (m){
+      let rest = m[4];
+      if (/^\s*&quot;.*&quot;\s*$/.test(rest) || /^\s*&gt;-\s*$/.test(rest)) rest = `<span class="s">${rest}</span>`;
+      return `${m[1]}<span class="k">${m[2]}</span>${m[3]}${rest}`;
+    }
+    return line;
+  }).join("\n");
+}
+function render(){
+  const {yaml, errs, warns, id, issuer} = build();
+  $("#yaml").innerHTML = highlight(yaml);
+  $("#fname").textContent = `data/cards/${issuer||"<issuer>"}/${id||"<card-id>"}.yaml`;
+  const ul = $("#checks");
+  if (!errs.length && !warns.length){
+    ul.innerHTML = `<li><span class="dot ok"></span>All checks pass — ready to save and run scripts/validate_cards.py</li>`;
+  } else {
+    ul.innerHTML =
+      errs.map(e=>`<li><span class="dot err"></span>${esc(e)}</li>`).join("") +
+      warns.map(w=>`<li><span class="dot warn"></span>${esc(w)}</li>`).join("");
+  }
+  window.__yaml = yaml; window.__fname = `${id||"card"}.yaml`;
+}
+
+/* ---------- wiring ---------- */
+$("#program").innerHTML = opts(PROGRAMS,"cash");
+$("#clchips").innerHTML = MERCHANTS.map(m=>`<label class="chip"><input type="checkbox" value="${m}">${m}</label>`).join("");
+$("#vdate").value = today;
+
+document.addEventListener("click", e=>{
+  const add = e.target.closest("[data-add]");
+  if (add){ ({cat:addCat, mer:addMer, cred:addCred, src:addSrc})[add.dataset.add](); render(); return; }
+  if (e.target.closest("[data-remove]")){ e.target.closest(".item").remove(); render(); }
+});
+document.addEventListener("input", e=>{
+  const it = e.target.closest(".item");
+  if (it && e.target.matches("[data-role=capon]")) $('[data-role=capfields]',it).hidden = !e.target.checked;
+  if (it && e.target.matches("[data-role=roton]")) $('[data-role=rotfields]',it).hidden = !e.target.checked;
+  if (e.target.id==="curtype"){
+    if (e.target.value==="cash") $("#program").value = "cash";
+    else if ($("#program").value==="cash") $("#program").value = PROGRAMS[1];
+  }
+  if (e.target.name==="sub"){
+    $("#subfields").hidden = e.target.value==="none";
+    $("#subunit").textContent = e.target.value==="points" ? "points" : "USD";
+  }
+  if (e.target.id==="clon") $("#clfields").hidden = !e.target.checked;
+  render();
+});
+$("#copy").addEventListener("click", async ()=>{
+  try{ await navigator.clipboard.writeText(window.__yaml); $("#copy").textContent="Copied ✓"; }
+  catch{ $("#copy").textContent="Copy failed"; }
+  setTimeout(()=>$("#copy").textContent="Copy YAML",1400);
+});
+$("#dl").addEventListener("click", ()=>{
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([window.__yaml],{type:"text/yaml"}));
+  a.download = window.__fname; a.click(); URL.revokeObjectURL(a.href);
+});
+
+addSrc();   /* every card needs at least one source — start with the row open */
+render();
+</script>
+</body>
+</html>

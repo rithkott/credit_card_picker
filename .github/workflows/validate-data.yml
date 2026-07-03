@@ -3,9 +3,9 @@ name: Validate card data
 on:
   push:
     branches: [main]
-    paths: ["data/**", "scripts/validate_cards.py", ".github/workflows/validate-data.yml"]
+    paths: ["data/**", "docs/card-backlog.md", "scripts/validate_cards.py", ".github/workflows/validate-data.yml"]
   pull_request:
-    paths: ["data/**", "scripts/validate_cards.py", ".github/workflows/validate-data.yml"]
+    paths: ["data/**", "docs/card-backlog.md", "scripts/validate_cards.py", ".github/workflows/validate-data.yml"]
   schedule:
     # Weekly run so staleness warnings surface even when no one is editing data
     - cron: "0 14 * * 1"
