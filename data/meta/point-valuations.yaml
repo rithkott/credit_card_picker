@@ -1,0 +1,36 @@
+# Shared cents-per-point valuation table.
+# Every points card references one program key here (currency.program) instead of
+# embedding its own valuation, so "how much is a point worth" is a single global,
+# user-visible assumption with two modes:
+#   floor_cpp      — conservative: what you can always get (cash-out / statement credit)
+#   optimistic_cpp — realistic upside via transfer partners / portal boosts
+# All values in US cents per point. `cash` is the identity program for cash-back cards.
+#
+# NOTE: optimistic values are inherently judgment calls; sources and reasoning belong
+# in the comments next to each program. Verify alongside card data (confidence applies).
+
+programs:
+  cash:
+    label: Cash back
+    floor_cpp: 1.0
+    optimistic_cpp: 1.0
+  chase_ur:
+    label: Chase Ultimate Rewards
+    floor_cpp: 1.0          # cash out / statement credit
+    optimistic_cpp: 2.0     # transfer partners (Hyatt etc.), r/churning consensus range 1.8–2.2
+  amex_mr:
+    label: American Express Membership Rewards
+    floor_cpp: 0.6          # statement credit rate is poor; 1.0 only via Schwab/portal paths
+    optimistic_cpp: 1.9     # airline transfer partners
+  citi_typ:
+    label: Citi ThankYou Points
+    floor_cpp: 1.0          # cash back at 1cpp
+    optimistic_cpp: 1.7     # transfer partners (requires a premium TY card)
+  capital_one_miles:
+    label: Capital One Miles
+    floor_cpp: 0.5          # cash-out rate is 0.5; 1.0 as travel eraser
+    optimistic_cpp: 1.7     # transfer partners
+  discover_cashback:
+    label: Discover Cashback Bonus
+    floor_cpp: 1.0
+    optimistic_cpp: 1.0

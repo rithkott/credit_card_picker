@@ -1,0 +1,81 @@
+# High-annual-fee, credit-heavy points card — the stress test for honest credit
+# valuation: sticker rewards look huge, but the $325 fee is only justified if the
+# monthly credits actually get used.
+id: gold
+name: American Express Gold
+issuer: amex
+network: amex
+currency:
+  type: points
+  program: amex_mr
+base_rate: 1
+category_rewards:
+  - category: dining
+    rate: 4
+    cap:
+      period: annual
+      max_spend_usd: 50000
+      fallback_rate: 1
+    notes: Restaurants worldwide
+  - category: groceries
+    rate: 4
+    cap:
+      period: annual
+      max_spend_usd: 25000
+      fallback_rate: 1
+    notes: US supermarkets only
+  - category: travel_flights
+    rate: 3
+    notes: Booked directly with airlines or via Amex Travel
+merchant_rewards: []
+credits:
+  - name: Dining credit (Grubhub, Cheesecake Factory, etc.)
+    amount_usd: 10
+    period: monthly
+    category: dining
+    realistic_capture_rate_note: >-
+      Restricted to specific partners and requires enrollment; users who don't
+      order from the partner list monthly capture little of it.
+  - name: Uber Cash
+    amount_usd: 10
+    period: monthly
+    category: transit
+    realistic_capture_rate_note: >-
+      Deposited monthly into the linked Uber account, use-it-or-lose-it each month;
+      easy for regular Uber/Uber Eats users, worthless otherwise.
+  - name: Resy dining credit
+    amount_usd: 50
+    period: semiannual
+    category: dining
+    realistic_capture_rate_note: >-
+      Requires dining at Resy-bookable restaurants twice a year; capture depends on
+      living near participating restaurants.
+  - name: Dunkin' credit
+    amount_usd: 7
+    period: monthly
+    category: dining
+    realistic_capture_rate_note: Only valuable for regular Dunkin' customers; requires enrollment.
+signup_bonus:
+  value:
+    points: 60000
+  spend_requirement_usd: 6000
+  window_months: 6
+fees:
+  annual_fee_usd: 325
+  foreign_transaction_pct: 0
+approval:
+  credit_tier: good
+  estimated_min_score: 690
+  notes: Amex signup bonuses are once per lifetime per card product
+benefit_flags:
+  - purchase_protection
+sources:
+  - url: https://www.americanexpress.com/us/credit-cards/card/gold-card/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-03"
+    added_by: claude-draft
+    note: URL not actually fetched — numbers drafted from model knowledge; re-source during human verification
+verification:
+  last_verified_date: "2026-07-03"
+  verified_by: claude-draft (NEEDS human verification against issuer terms)
+  confidence: low

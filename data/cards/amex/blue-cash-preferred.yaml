@@ -1,0 +1,59 @@
+# Archetype: capped category + monthly credit + signup bonus card.
+id: blue-cash-preferred
+name: American Express Blue Cash Preferred
+issuer: amex
+network: amex
+currency:
+  type: cash
+  program: cash
+base_rate: 1
+category_rewards:
+  - category: groceries
+    rate: 6
+    cap:
+      period: annual
+      max_spend_usd: 6000  # per issuer terms; drops to 1% above
+      fallback_rate: 1
+    notes: US supermarkets only — excludes superstores (Walmart, Target) and warehouse clubs
+  - category: streaming
+    rate: 6
+    notes: Select US streaming subscriptions
+  - category: transit
+    rate: 3
+  - category: gas
+    rate: 3
+    notes: US gas stations
+merchant_rewards: []
+credits:
+  - name: Disney Bundle credit
+    amount_usd: 7
+    period: monthly
+    category: streaming
+    realistic_capture_rate_note: >-
+      Only worth face value if you already pay for the Disney Bundle (>= $9.99/mo)
+      and remember to enroll; worthless otherwise.
+signup_bonus:
+  value:
+    usd: 250
+  spend_requirement_usd: 3000
+  window_months: 6
+fees:
+  annual_fee_usd: 95
+  first_year_waived: true
+  foreign_transaction_pct: 2.7
+approval:
+  credit_tier: good
+  estimated_min_score: 670
+  notes: Amex signup bonuses are once per lifetime per card product
+benefit_flags:
+  - return_protection
+sources:
+  - url: https://www.americanexpress.com/us/credit-cards/card/blue-cash-preferred/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-03"
+    added_by: claude-draft
+    note: URL not actually fetched — numbers drafted from model knowledge; re-source during human verification
+verification:
+  last_verified_date: "2026-07-03"
+  verified_by: claude-draft (NEEDS human verification against issuer terms)
+  confidence: low

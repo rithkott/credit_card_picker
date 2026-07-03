@@ -1,0 +1,35 @@
+# Archetype: flat-rate card. Technically earns ThankYou points (1x on buy + 1x on pay),
+# modeled here as its effective 2 TYP/dollar on all spend.
+id: double-cash
+name: Citi Double Cash
+issuer: citi
+network: mastercard
+currency:
+  type: points
+  program: citi_typ
+base_rate: 2
+category_rewards: []
+merchant_rewards: []
+credits: []
+signup_bonus:
+  value:
+    usd: 200
+  spend_requirement_usd: 1500
+  window_months: 6
+fees:
+  annual_fee_usd: 0
+  foreign_transaction_pct: 3
+approval:
+  credit_tier: good
+  estimated_min_score: 670
+benefit_flags: []
+sources:
+  - url: https://www.citi.com/credit-cards/citi-double-cash-credit-card
+    supports: [identity, currency, base_rate, signup_bonus, fees, approval]
+    accessed: "2026-07-03"
+    added_by: claude-draft
+    note: URL not actually fetched — numbers drafted from model knowledge; re-source during human verification
+verification:
+  last_verified_date: "2026-07-03"
+  verified_by: claude-draft (NEEDS human verification against issuer terms)
+  confidence: low

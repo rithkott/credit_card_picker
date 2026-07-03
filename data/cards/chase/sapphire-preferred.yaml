@@ -1,0 +1,65 @@
+# Mid-tier travel points card: portal multipliers, hotel credit, transfer-partner value.
+id: sapphire-preferred
+name: Chase Sapphire Preferred
+issuer: chase
+network: visa
+currency:
+  type: points
+  program: chase_ur
+base_rate: 1
+category_rewards:
+  - category: travel_other
+    rate: 5
+    portal_only: true
+    notes: 5x on travel purchased through Chase Travel
+  - category: travel_flights
+    rate: 2
+    notes: 2x on travel booked directly (outside the Chase portal)
+  - category: travel_hotels
+    rate: 2
+    notes: 2x on travel booked directly (outside the Chase portal)
+  - category: dining
+    rate: 3
+  - category: streaming
+    rate: 3
+    notes: Select streaming services
+  - category: groceries
+    rate: 3
+    notes: Online grocery purchases only (excludes Walmart, Target, wholesale clubs)
+merchant_rewards: []
+credits:
+  - name: Annual hotel credit (Chase Travel)
+    amount_usd: 50
+    period: annual
+    category: travel_hotels
+    realistic_capture_rate_note: >-
+      Requires booking a hotel through Chase Travel, where prices can exceed direct
+      booking; easy to capture if you book at least one hotel stay a year, else wasted.
+signup_bonus:
+  value:
+    points: 60000
+  spend_requirement_usd: 4000
+  window_months: 3
+fees:
+  annual_fee_usd: 95
+  foreign_transaction_pct: 0
+approval:
+  credit_tier: good
+  estimated_min_score: 690
+  notes: >-
+    Subject to Chase 5/24 rule; also ineligible for the bonus if you hold any
+    Sapphire card or earned a Sapphire bonus in the past 48 months.
+benefit_flags:
+  - primary_rental_insurance
+  - trip_delay_insurance
+  - anniversary_points_boost  # 10% of prior-year purchases as bonus points
+sources:
+  - url: https://creditcards.chase.com/rewards-credit-cards/sapphire/preferred
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-03"
+    added_by: claude-draft
+    note: URL not actually fetched — numbers drafted from model knowledge; re-source during human verification
+verification:
+  last_verified_date: "2026-07-03"
+  verified_by: claude-draft (NEEDS human verification against issuer terms)
+  confidence: low

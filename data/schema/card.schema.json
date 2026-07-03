@@ -1,0 +1,242 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "card.schema.json",
+  "title": "Credit Card",
+  "description": "One hand-curated credit card. Rates are in earn-units per dollar: for cash-back cards a rate of 2 means 2% cash back; for points cards a rate of 3 means 3 points per dollar, converted to USD via data/meta/point-valuations.yaml. Membership of category/merchant/program strings in the meta registries is enforced by scripts/validate_cards.py, not by this schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "issuer", "network", "currency", "base_rate", "category_rewards", "merchant_rewards", "credits", "signup_bonus", "fees", "approval", "benefit_flags", "sources", "verification"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Stable slug, must match the filename (without .yaml)"
+    },
+    "name": { "type": "string", "minLength": 1 },
+    "issuer": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Issuer slug, must match the parent directory name"
+    },
+    "network": { "enum": ["visa", "mastercard", "amex", "discover"] },
+    "currency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "program"],
+      "properties": {
+        "type": { "enum": ["cash", "points"] },
+        "program": {
+          "type": "string",
+          "description": "Key into data/meta/point-valuations.yaml (use 'cash' for cash-back cards)"
+        }
+      }
+    },
+    "base_rate": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Catch-all earn rate applied to spend not matched by any category or merchant reward"
+    },
+    "category_rewards": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/categoryReward" }
+    },
+    "merchant_rewards": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/merchantReward" }
+    },
+    "credits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "amount_usd", "period", "realistic_capture_rate_note"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "amount_usd": { "type": "number", "exclusiveMinimum": 0, "description": "Face value per period" },
+          "period": { "enum": ["monthly", "quarterly", "semiannual", "annual", "every_4_years"] },
+          "category": { "type": "string", "description": "Optional canonical category this credit offsets" },
+          "realistic_capture_rate_note": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Honest note on how much of this credit a typical user actually captures"
+          },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "signup_bonus": {
+      "description": "null when the card has no current public signup bonus",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value", "spend_requirement_usd", "window_months"],
+          "properties": {
+            "value": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Exactly one of points or usd",
+              "oneOf": [
+                { "required": ["points"], "not": { "required": ["usd"] } },
+                { "required": ["usd"], "not": { "required": ["points"] } }
+              ],
+              "properties": {
+                "points": { "type": "number", "exclusiveMinimum": 0 },
+                "usd": { "type": "number", "exclusiveMinimum": 0 }
+              }
+            },
+            "spend_requirement_usd": { "type": "number", "minimum": 0 },
+            "window_months": { "type": "number", "exclusiveMinimum": 0 },
+            "limited_time": {
+              "type": "boolean",
+              "description": "true when this is a limited-time elevated offer above the card's standard bonus (note the standard bonus in `notes` for comparison)"
+            },
+            "expires": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "description": "Last day the offer is available, when the issuer announces one. Omit for evergreen offers with no stated end date. The validator flags offers past this date so they get re-checked."
+            },
+            "notes": { "type": "string" }
+          }
+        }
+      ]
+    },
+    "fees": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["annual_fee_usd", "foreign_transaction_pct"],
+      "properties": {
+        "annual_fee_usd": { "type": "number", "minimum": 0 },
+        "first_year_waived": { "type": "boolean", "default": false },
+        "foreign_transaction_pct": { "type": "number", "minimum": 0 }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["credit_tier"],
+      "description": "Estimated credit profile needed for likely approval. Issuers don't publish cutoffs — these are curator estimates; cite reasoning/sources in notes. The optimizer filters recommendations by the user's stated credit standing.",
+      "properties": {
+        "credit_tier": {
+          "enum": ["building", "fair", "good", "very_good", "excellent"],
+          "description": "building = secured/credit-builder, approves thin or damaged files; fair ~580+; good ~670+; very_good ~740+; excellent ~800+ or premium-card underwriting"
+        },
+        "estimated_min_score": {
+          "type": "number",
+          "minimum": 300,
+          "maximum": 850,
+          "description": "Optional finer-grained FICO estimate for likely approval"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Issuer-specific approval rules worth knowing (e.g. Chase 5/24, Amex once-per-lifetime bonus, deposit required)"
+        }
+      }
+    },
+    "closed_loop": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["merchants"],
+      "description": "Present only for closed-loop store cards. The card is usable ONLY at the listed merchants; the optimizer may assign only those merchants' spend to it, and base_rate applies within that restriction.",
+      "properties": {
+        "merchants": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "description": "Key from data/meta/merchants.yaml" }
+        },
+        "note": { "type": "string" }
+      }
+    },
+    "benefit_flags": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z0-9]+(_[a-z0-9]+)*$" },
+      "description": "Binary attributes (e.g. primary_rental_insurance) — not scored in v1"
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Exact links every fact in this file came from — pasted by whoever (human or AI) put the fact in, at the moment they put it in. Each entry declares which blocks it supports so a validator or reviewer can trace any number back to a URL.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["url", "supports", "accessed", "added_by"],
+        "properties": {
+          "url": { "type": "string", "pattern": "^https://" },
+          "supports": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "enum": ["identity", "currency", "base_rate", "category_rewards", "merchant_rewards", "credits", "signup_bonus", "fees", "approval", "closed_loop", "benefit_flags"]
+            },
+            "description": "Which schema blocks this link backs"
+          },
+          "accessed": { "type": "string", "format": "date", "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "description": "When the link was actually read" },
+          "added_by": { "type": "string", "minLength": 1, "description": "Human name/handle, or the AI model that pasted it" },
+          "note": { "type": "string", "description": "Pinpoint within the source, e.g. 'rates table, footnote 3' or 'terms PDF p.2'" }
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["last_verified_date", "verified_by", "confidence"],
+      "properties": {
+        "last_verified_date": { "type": "string", "format": "date", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "verified_by": { "type": "string", "minLength": 1 },
+        "confidence": {
+          "enum": ["high", "medium", "low"],
+          "description": "high = checked against issuer terms; medium = checked against a reputable secondary source; low = drafted from memory, needs human verification"
+        }
+      }
+    },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "cap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["period", "max_spend_usd", "fallback_rate"],
+      "properties": {
+        "period": { "enum": ["monthly", "quarterly", "annual"] },
+        "max_spend_usd": { "type": "number", "exclusiveMinimum": 0 },
+        "fallback_rate": { "type": "number", "minimum": 0, "description": "Earn rate on spend above the cap" }
+      }
+    },
+    "rotation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frequency", "requires_activation", "note"],
+      "properties": {
+        "frequency": { "enum": ["quarterly"] },
+        "requires_activation": { "type": "boolean" },
+        "note": { "type": "string", "minLength": 1 }
+      }
+    },
+    "categoryReward": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["category", "rate"],
+      "properties": {
+        "category": { "type": "string", "description": "Key from data/meta/categories.yaml" },
+        "rate": { "type": "number", "minimum": 0 },
+        "cap": { "$ref": "#/$defs/cap" },
+        "rotation": { "$ref": "#/$defs/rotation" },
+        "portal_only": { "type": "boolean", "description": "true if the rate only applies when booked through the issuer's portal" },
+        "notes": { "type": "string" }
+      }
+    },
+    "merchantReward": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["merchant", "rate"],
+      "properties": {
+        "merchant": { "type": "string", "description": "Key from data/meta/merchants.yaml" },
+        "rate": { "type": "number", "minimum": 0 },
+        "cap": { "$ref": "#/$defs/cap" },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

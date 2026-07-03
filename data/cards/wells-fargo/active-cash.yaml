@@ -1,0 +1,36 @@
+# Simplest possible card: flat 2% cash, no categories, no credits. Useful as the
+# baseline every other card has to beat in the optimizer.
+id: active-cash
+name: Wells Fargo Active Cash
+issuer: wells-fargo
+network: visa
+currency:
+  type: cash
+  program: cash
+base_rate: 2
+category_rewards: []
+merchant_rewards: []
+credits: []
+signup_bonus:
+  value:
+    usd: 200
+  spend_requirement_usd: 500
+  window_months: 3
+fees:
+  annual_fee_usd: 0
+  foreign_transaction_pct: 3
+approval:
+  credit_tier: good
+  estimated_min_score: 670
+benefit_flags:
+  - cell_phone_protection
+sources:
+  - url: https://creditcards.wellsfargo.com/active-cash-credit-card
+    supports: [identity, currency, base_rate, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-03"
+    added_by: claude-draft
+    note: URL not actually fetched — numbers drafted from model knowledge; re-source during human verification
+verification:
+  last_verified_date: "2026-07-03"
+  verified_by: claude-draft (NEEDS human verification against issuer terms)
+  confidence: low
