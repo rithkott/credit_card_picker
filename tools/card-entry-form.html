@@ -162,7 +162,7 @@ pre#yaml .k{color:var(--code-key)} pre#yaml .s{color:var(--code-str)} pre#yaml .
 
 <section class="block">
   <h2><code>category_rewards</code></h2>
-  <p class="why">Spend-proportional elevated rates. Caps are on <strong>spend</strong>, not reward ("$300 back at 6%" = cap $5,000). Use the <code>rotating</code> pseudo-category for quarterly cards; never hardcode this quarter's categories.</p>
+  <p class="why">Spend-proportional elevated rates. Caps are on <strong>spend</strong>, not reward ("$300 back at 6%" = cap $5,000). Use the <code>rotating</code> pseudo-category for quarterly cards (never hardcode this quarter's categories) and the <code>choice</code> pseudo-category for choose-your-own-category cards (list the selectable options; the optimizer picks the best one per portfolio).</p>
   <div id="cats"></div>
   <button type="button" class="btn-add" data-add="cat">+ Add category reward</button>
 </section>
@@ -299,7 +299,8 @@ pre#yaml .k{color:var(--code-key)} pre#yaml .s{color:var(--code-str)} pre#yaml .
 <script>
 "use strict";
 /* Embedded copies of data/meta/*.yaml — keep in sync with the registries. */
-const CATS = ["groceries","dining","travel_flights","travel_hotels","travel_other","gas","transit","streaming","drugstores","online_shopping","entertainment","utilities","other","rotating"];
+const CATS = ["groceries","dining","travel_flights","travel_hotels","travel_other","gas","transit","streaming","drugstores","online_shopping","entertainment","utilities","other","rotating","choice"];
+const PSEUDO_CATS = ["rotating","choice"];
 const MERCHANTS = ["amazon","whole_foods","walmart","target","costco","uber","lyft","dunkin"];
 const PROGRAMS = ["cash","chase_ur","amex_mr","citi_typ","capital_one_miles","discover_cashback"];
 const SUPPORTS = ["identity","currency","base_rate","category_rewards","merchant_rewards","credits","signup_bonus","fees","approval","closed_loop","benefit_flags"];
@@ -336,12 +337,18 @@ function addCat(){
       ${capFields()}
       <label class="check"><input type="checkbox" data-role="portal"> portal only</label>
       <label class="check"><input type="checkbox" data-role="roton"> rotating quarterly</label>
+      <label class="check"><input type="checkbox" data-role="chon"> choose-your-own category</label>
     </div>
     <div class="sub" data-role="rotfields" hidden>
       <div class="grid g2">
         <label class="check"><input type="checkbox" data-role="rotact" checked> requires activation</label>
         <div class="field"><label>rotation note <span class="req">*</span></label><input type="text" data-role="rotnote" placeholder="Categories change each quarter…"></div>
       </div>
+    </div>
+    <div class="sub" data-role="chfields" hidden>
+      <div class="field"><label>selectable options <span class="req">*</span> <span class="hint">pick ≥ 2 real categories</span></label>
+        <div class="chips">${CATS.filter(c=>!PSEUDO_CATS.includes(c)).map(c=>`<label class="chip"><input type="checkbox" data-role="chopt" value="${c}">${c}</label>`).join("")}</div></div>
+      <div class="field" style="margin-top:10px"><label>choice note <span class="req">*</span></label><input type="text" data-role="chnote" placeholder="How selection works — user-picked vs automatic top category, change cadence…"></div>
     </div>
     <div class="field" style="margin-top:10px"><label>notes <span class="hint">issuer fine print</span></label><input type="text" data-role="notes"></div>
   </div>`);
@@ -369,7 +376,7 @@ function addCred(){
     </div>
     <div class="grid g2" style="margin-top:10px">
       <div class="field"><label>offsets category <span class="hint">optional</span></label>
-        <select data-role="cat"><option value="">—</option>${opts(CATS.filter(c=>c!=="rotating"))}</select></div>
+        <select data-role="cat"><option value="">—</option>${opts(CATS.filter(c=>!PSEUDO_CATS.includes(c)))}</select></div>
       <div class="field"><label>notes</label><input type="text" data-role="notes"></div>
     </div>
     <div class="field" style="margin-top:10px"><label>realistic capture-rate note <span class="req">*</span></label>
@@ -470,6 +477,16 @@ function build(){
         L.push(`      requires_activation: ${$('[data-role=rotact]',it).checked}`);
         L.push(`      note: ${rn?fold(rn,8):"?"}`);
       } else if (cat==="rotating") warns.push(`category reward #${i+1}: 'rotating' category without a rotation block`);
+      if ($('[data-role=chon]',it).checked){
+        const copts = $$('[data-role=chopt]:checked',it).map(c=>c.value);
+        const cn = $('[data-role=chnote]',it).value.trim();
+        if (cat!=="choice") warns.push(`category reward #${i+1}: choose-your-own rewards should use the 'choice' pseudo-category`);
+        if (copts.length<2) errs.push(`category reward #${i+1}: choice needs at least two options`);
+        if (!cn) errs.push(`category reward #${i+1}: choice note is required`);
+        L.push(`    choice:`);
+        L.push(`      options: [${copts.join(", ")}]`);
+        L.push(`      note: ${cn?fold(cn,8):"?"}`);
+      } else if (cat==="choice") errs.push(`category reward #${i+1}: 'choice' category requires a choice block (tick "choose-your-own category")`);
       if ($('[data-role=portal]',it).checked) L.push(`    portal_only: true`);
       const n = $('[data-role=notes]',it).value.trim();
       if (n) L.push(`    notes: ${fold(n,6)}`);
@@ -662,6 +679,7 @@ document.addEventListener("input", e=>{
   const it = e.target.closest(".item");
   if (it && e.target.matches("[data-role=capon]")) $('[data-role=capfields]',it).hidden = !e.target.checked;
   if (it && e.target.matches("[data-role=roton]")) $('[data-role=rotfields]',it).hidden = !e.target.checked;
+  if (it && e.target.matches("[data-role=chon]")) $('[data-role=chfields]',it).hidden = !e.target.checked;
   if (e.target.id==="curtype"){
     if (e.target.value==="cash") $("#program").value = "cash";
     else if ($("#program").value==="cash") $("#program").value = PROGRAMS[1];

@@ -214,6 +214,21 @@
         "note": { "type": "string", "minLength": 1 }
       }
     },
+    "choice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["options", "note"],
+      "description": "Only for choose-your-own-category rewards (Citi Custom Cash, BofA Customized Cash), used with the 'choice' pseudo-category. The optimizer expands the card into one variant per option and lets the portfolio search pick the best configuration per combination.",
+      "properties": {
+        "options": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string", "description": "Key from data/meta/categories.yaml (non-pseudo)" },
+          "description": "Categories the cardholder may select for this reward"
+        },
+        "note": { "type": "string", "minLength": 1, "description": "How selection works (user-picked vs automatic top category, change cadence)" }
+      }
+    },
     "categoryReward": {
       "type": "object",
       "additionalProperties": false,
@@ -223,9 +238,12 @@
         "rate": { "type": "number", "minimum": 0 },
         "cap": { "$ref": "#/$defs/cap" },
         "rotation": { "$ref": "#/$defs/rotation" },
+        "choice": { "$ref": "#/$defs/choice" },
         "portal_only": { "type": "boolean", "description": "true if the rate only applies when booked through the issuer's portal" },
         "notes": { "type": "string" }
-      }
+      },
+      "if": { "properties": { "category": { "const": "choice" } }, "required": ["category"] },
+      "then": { "required": ["choice"] }
     },
     "merchantReward": {
       "type": "object",

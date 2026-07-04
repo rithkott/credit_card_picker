@@ -2,9 +2,12 @@
 # Shared by card data (category_rewards[].category) and the manual spend-entry UI,
 # so the two can never drift. Keys are stable slugs; label is what the UI shows.
 #
-# `rotating` is a pseudo-category: it never appears in a user's spend profile.
-# It marks a reward whose eligible categories change each quarter (Freedom Flex,
-# Discover it); the optimizer decides how to value it (see docs/plans/02-optimizer.md).
+# `rotating` and `choice` are pseudo-categories: they never appear in a user's
+# spend profile. `rotating` marks a reward whose eligible categories change each
+# quarter (Freedom Flex, Discover it). `choice` marks a reward whose category the
+# cardholder picks from a fixed options list (Citi Custom Cash, BofA Customized
+# Cash); the optimizer expands such cards into one variant per option and lets the
+# portfolio search pick the best configuration (see docs/plans/02-optimizer.md).
 
 categories:
   groceries:
@@ -35,4 +38,7 @@ categories:
     label: Everything else
   rotating:
     label: Rotating quarterly categories (pseudo-category, data-only)
+    pseudo: true
+  choice:
+    label: Choose-your-own category (pseudo-category, data-only)
     pseudo: true

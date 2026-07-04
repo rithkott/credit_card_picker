@@ -286,21 +286,92 @@ class TestPortfolio(unittest.TestCase):
         self.assertAlmostEqual(gold_groceries[0]["usd_assigned"], 10000.0)
 
 
+class TestChooseYourOwnCategory(unittest.TestCase):
+    """Choice cards expand into per-option variants; the search configures the
+    card optimally per combination (docs/plans/02-optimizer.md §10)."""
+
+    def test_expansion_only_for_options_with_spend(self):
+        prof = make_profile(P30K)  # groceries, dining, other — 'other' not an option
+        variants = opt.expand_choice_variants([seed_card("custom-cash")], prof)
+        self.assertEqual([v["id"] for v in variants],
+                         ["custom-cash[dining]", "custom-cash[groceries]"])
+        self.assertTrue(all(v["base_id"] == "custom-cash" for v in variants))
+
+    def test_expansion_no_matching_spend_drops_choice_line(self):
+        prof = make_profile({"utilities": 5000})
+        variants = opt.expand_choice_variants([seed_card("custom-cash")], prof)
+        self.assertEqual(len(variants), 1)
+        self.assertEqual(variants[0]["id"], "custom-cash")
+        r = score(variants, prof, "floor")
+        # Everything at base 1x (citi_typ floor 1.0cpp): 5000*1% = 50.
+        self.assertAlmostEqual(r["earnings"], 50.0)
+
+    def test_variant_golden_values(self):
+        # groceries variant, floor: 6000@5% (monthly $500 cap → $6,000/yr room)
+        # + 2000@1% fallback + dining 5000@1% + other 17000@1% = 540; no fee.
+        # year1: +$200 bonus (30000*.5=15000 ≥ 1500) → 740.
+        # dining variant: 5000@5% + groceries 8000@1% + other 170 = 500.
+        prof = make_profile(P30K)
+        variants = {v["id"]: v for v in
+                    opt.expand_choice_variants([seed_card("custom-cash")], prof)}
+        groceries = score([variants["custom-cash[groceries]"]], prof, "floor")
+        self.assertAlmostEqual(groceries["ongoing_net"], 540.0)
+        self.assertAlmostEqual(groceries["year1_net"], 740.0)
+        dining = score([variants["custom-cash[dining]"]], prof, "floor")
+        self.assertAlmostEqual(dining["ongoing_net"], 500.0)
+
+    def test_best_configuration_flips_inside_a_combination(self):
+        # Solo, groceries is custom-cash's best category; paired with Blue Cash
+        # Preferred (6% groceries takes that bucket), the dining configuration
+        # wins instead — the search re-configures the card per combination.
+        prof = make_profile({"groceries": 6000, "dining": 5000, "other": 9000})
+        variants = {v["id"]: v for v in
+                    opt.expand_choice_variants([seed_card("custom-cash")], prof)}
+        with_dining = score([seed_card("blue-cash-preferred"),
+                             variants["custom-cash[dining]"]], prof, "floor")
+        with_groceries = score([seed_card("blue-cash-preferred"),
+                                variants["custom-cash[groceries]"]], prof, "floor")
+        self.assertAlmostEqual(with_dining["earnings"], 700.0)
+        self.assertAlmostEqual(with_groceries["earnings"], 500.0)
+        self.assertGreater(with_dining["ongoing_net"], with_groceries["ongoing_net"])
+
+    def test_search_never_pairs_two_variants_of_one_card(self):
+        prof = make_profile(P30K, max_cards=2)
+        variants = opt.expand_choice_variants([seed_card("custom-cash")], prof)
+        results = opt.search(variants, prof, "floor", DATASET["programs"],
+                             DATASET["merchants"], AS_OF)
+        # Only one physical card exists → only single-card portfolios.
+        self.assertTrue(all(len(r["cards"]) == 1 for r in results))
+        self.assertEqual(results[0]["cards"], ["custom-cash[groceries]"])
+
+    def test_unexpanded_choice_reward_is_a_data_error(self):
+        prof = make_profile(P30K)
+        with self.assertRaises(opt.DataError):
+            score([seed_card("custom-cash")], prof)
+
+
 class TestFiltersAndSearch(unittest.TestCase):
     def test_tier_filter_excludes_venture_x(self):
         prof = make_profile(P30K, credit_tier="good")
         eligible, excluded = opt.filter_cards(DATASET["cards"], prof)
         self.assertEqual([e["id"] for e in excluded], ["venture-x"])
-        self.assertEqual(len(eligible), 6)
+        self.assertEqual(len(eligible), 7)
 
     def test_search_is_exhaustive_and_ranked(self):
+        # 7 eligible cards; custom-cash expands to 2 variants (dining, groceries)
+        # → 8 variants, minus combos pairing both custom-cash variants:
+        # C(8,1) + C(8,2)-1 + C(8,3)-6 = 8 + 27 + 50 = 85.
         prof = make_profile(P30K, credit_tier="good")
         eligible, _ = opt.filter_cards(DATASET["cards"], prof)
-        results = opt.search(eligible, prof, "floor", DATASET["programs"],
+        variants = opt.expand_choice_variants(eligible, prof)
+        results = opt.search(variants, prof, "floor", DATASET["programs"],
                              DATASET["merchants"], AS_OF)
-        self.assertEqual(len(results), 6 + 15 + 20)  # C(6,1)+C(6,2)+C(6,3)
+        self.assertEqual(len(results), 85)
         nets = [r["ongoing_net"] for r in results]
         self.assertEqual(nets, sorted(nets, reverse=True))
+        for r in results:  # never two configurations of the same physical card
+            bases = [c.split("[")[0] for c in r["cards"]]
+            self.assertEqual(len(bases), len(set(bases)), r["cards"])
 
     def test_low_confidence_warning_on_seed_cards(self):
         warnings = opt.card_warnings(seed_card("double-cash"), AS_OF)

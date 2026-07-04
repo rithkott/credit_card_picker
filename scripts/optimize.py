@@ -3,7 +3,10 @@
 
 Implements docs/plans/02-optimizer.md: builds every subset of eligible cards
 (sizes 1..max_cards), scores each jointly against a user-authored spend profile,
-and ranks portfolios by net annual value. The optimizer is a pure function:
+and ranks portfolios by net annual value. Choose-your-own-category cards expand
+into one variant per option (mutually exclusive in a portfolio), so the search
+also picks each such card's best configuration per combination (spec §10).
+The optimizer is a pure function:
 
     recommendations = f(dataset, spend_profile, policy_constants, as_of_date)
 
@@ -19,6 +22,7 @@ Flags override the profile's `user:` fields. Exit codes: 0 ok, 1 input
 """
 
 import argparse
+import copy
 import itertools
 import json
 import sys
@@ -267,6 +271,9 @@ def build_lines(card: dict, profile: dict, mode: str, programs: dict, buckets: d
 
     for cr in card["category_rewards"]:
         cat = cr["category"]
+        if cat == "choice":
+            raise DataError(f"{card['id']}: unexpanded 'choice' reward reached "
+                            "build_lines — expand_choice_variants must run first")
         if cat == "rotating":
             cap = cr.get("cap")
             if cap is None:
@@ -285,12 +292,13 @@ def build_lines(card: dict, profile: dict, mode: str, programs: dict, buckets: d
             continue
 
         rate = cr["rate"]
-        note = ""
+        notes = ["chosen category"] if cr.get("_chosen") else []
         if cr.get("portal_only"):
             if not user["uses_travel_portal"]:
                 continue  # dropped entirely; spend falls through to the next line
             rate = rate * PORTAL_RATE_MULT
-            note = f"portal ×{PORTAL_RATE_MULT}"
+            notes.append(f"portal ×{PORTAL_RATE_MULT}")
+        note = "; ".join(notes)
         eligible = [cat] if cat in buckets else []
         eligible += [b for b, bk in buckets.items()
                      if bk["kind"] == "merchant" and bk["category"] == cat
@@ -452,6 +460,53 @@ def compute_annual_value(card: dict, profile: dict, mode: str, programs: dict,
 
 
 # ---------------------------------------------------------------------------
+# Choose-your-own-category expansion (spec §10 addendum)
+# ---------------------------------------------------------------------------
+
+def expand_choice_variants(cards: list, profile: dict) -> list:
+    """Expand each choose-your-own-category card into one virtual card per
+    choice option the profile actually spends in; the subset search then picks
+    the best configuration per combination. Variants carry `base_id` so the
+    search can keep two configurations of the same physical card out of one
+    portfolio. A card whose options match no profile spend keeps its id, with
+    the choice line dropped (it would earn nothing anyway)."""
+    variants = []
+    for card in cards:
+        choice_rewards = [cr for cr in card["category_rewards"] if cr["category"] == "choice"]
+        if not choice_rewards:
+            variants.append(card)
+            continue
+        if len(choice_rewards) > 1:
+            raise DataError(f"{card['id']}: {len(choice_rewards)} 'choice' rewards — "
+                            "the optimizer supports at most one per card")
+        reward = choice_rewards[0]
+        options = (reward.get("choice") or {}).get("options") or []
+        if not options:
+            raise DataError(f"{card['id']}: 'choice' reward has no choice.options list")
+        index = card["category_rewards"].index(reward)
+        spend_cats = {c for c, v in profile["spend"].items() if v > EPS}
+        live = sorted(set(options) & spend_cats)
+        if not live:
+            variant = copy.deepcopy(card)
+            del variant["category_rewards"][index]
+            variant["base_id"] = card["id"]
+            variants.append(variant)
+            continue
+        for option in live:
+            variant = copy.deepcopy(card)
+            concrete = {k: v for k, v in variant["category_rewards"][index].items()
+                        if k != "choice"}
+            concrete["category"] = option
+            concrete["_chosen"] = True
+            variant["category_rewards"][index] = concrete
+            variant["base_id"] = card["id"]
+            variant["id"] = f"{card['id']}[{option}]"
+            variant["choice_category"] = option
+            variants.append(variant)
+    return variants
+
+
+# ---------------------------------------------------------------------------
 # Filters and search (spec §6–7)
 # ---------------------------------------------------------------------------
 
@@ -482,22 +537,27 @@ def card_warnings(card: dict, as_of: date) -> list:
     return warnings
 
 
-def search(eligible: list, profile: dict, mode: str, programs: dict,
+def search(variants: list, profile: dict, mode: str, programs: dict,
            merchants: dict, as_of: date) -> list:
-    """Exhaustive over all subsets of eligible cards, sizes 1..max_cards.
+    """Exhaustive over all subsets of eligible card variants, sizes
+    1..max_cards. Two variants of the same physical card (same base_id) are
+    mutually exclusive — you can only configure a choose-your-own card one way.
     Returns (cards, ongoing_net, year1_net) tuples, ranked."""
-    if len(eligible) > MAX_ELIGIBLE_CARDS:
+    if len(variants) > MAX_ELIGIBLE_CARDS:
         raise DataError(
-            f"{len(eligible)} eligible cards exceeds the exhaustive-search limit of "
-            f"{MAX_ELIGIBLE_CARDS}; the documented path forward is dominance pruning "
-            "+ beam search (docs/plans/02-optimizer.md §6)")
+            f"{len(variants)} eligible card variants exceeds the exhaustive-search "
+            f"limit of {MAX_ELIGIBLE_CARDS}; the documented path forward is dominance "
+            "pruning + beam search (docs/plans/02-optimizer.md §6)")
     buckets = build_buckets(profile, merchants)
-    by_id = {c["id"]: c for c in eligible}
+    by_id = {c["id"]: c for c in variants}
+    base_of = {cid: by_id[cid].get("base_id", cid) for cid in by_id}
     ids = sorted(by_id)
     results = []
-    max_cards = min(profile["user"]["max_cards"], len(ids))
+    max_cards = min(profile["user"]["max_cards"], len(set(base_of.values())))
     for k in range(1, max_cards + 1):
         for combo in itertools.combinations(ids, k):
+            if len({base_of[c] for c in combo}) < k:
+                continue  # two configurations of the same physical card
             scored = score_portfolio([by_id[i] for i in combo], profile, mode,
                                      programs, buckets, as_of)
             results.append({"cards": list(combo),
@@ -522,9 +582,10 @@ def run(dataset: dict, profile: dict, as_of: date, top: int) -> dict:
     programs = dataset["programs"]
     merchants = dataset["merchants"]
     eligible, excluded = filter_cards(dataset["cards"], profile)
-    ranked = search(eligible, profile, mode, programs, merchants, as_of)
+    variants = expand_choice_variants(eligible, profile)
+    ranked = search(variants, profile, mode, programs, merchants, as_of)
 
-    by_id = {c["id"]: c for c in eligible}
+    by_id = {c["id"]: c for c in variants}
     buckets = build_buckets(profile, merchants)
     portfolios = []
     for entry in ranked[:top]:
@@ -549,6 +610,8 @@ def run(dataset: dict, profile: dict, as_of: date, top: int) -> dict:
                          "first_year_waived": bool(card["fees"].get("first_year_waived"))},
                 "warnings": card_warnings(card, as_of),
             }
+            if "choice_category" in card:
+                per_card[cid]["choice_category"] = card["choice_category"]
         portfolios.append({
             "cards": entry["cards"],
             "ongoing_net": _round2(scored["ongoing_net"]),
@@ -568,6 +631,7 @@ def run(dataset: dict, profile: dict, as_of: date, top: int) -> dict:
         "policy_constants": policy_constants(),
         "cards_total": len(dataset["cards"]),
         "cards_eligible": len(eligible),
+        "card_variants": len(variants),
         "excluded": excluded,
         "portfolios": portfolios,
     }
@@ -588,7 +652,8 @@ def render_text(bundle: dict) -> str:
     out.append("Policy constants: " + json.dumps(bundle["policy_constants"], sort_keys=True))
     excluded = "; ".join(f"{e['id']}: {e['reason']}" for e in bundle["excluded"]) or "none"
     out.append(f"Cards: {bundle['cards_total']} in dataset, {bundle['cards_eligible']} "
-               f"eligible, {len(bundle['excluded'])} excluded ({excluded})")
+               f"eligible ({bundle['card_variants']} variants after choose-your-own-"
+               f"category expansion), {len(bundle['excluded'])} excluded ({excluded})")
     out.append("")
 
     for rank, p in enumerate(bundle["portfolios"], 1):
@@ -597,7 +662,9 @@ def render_text(bundle: dict) -> str:
                    f"year-1 net: ${p['year1_net']:,.2f}")
         for cid in p["cards"]:
             d = p["per_card"][cid]
-            out.append(f"    {cid} — {d['name']}")
+            chosen = (f" — choice category set to: {d['choice_category']}"
+                      if "choice_category" in d else "")
+            out.append(f"    {cid} — {d['name']}{chosen}")
             for a in d["assignments"]:
                 note = f"   [{a['note']}]" if a["note"] else ""
                 out.append(f"      earn: {a['bucket']:<16} ${a['usd_assigned']:>10,.2f} "

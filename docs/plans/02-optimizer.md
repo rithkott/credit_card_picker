@@ -327,3 +327,34 @@ inputs ⇒ identical bytes.
   extending `docs/architecture.md` (the diagram documents only what is built) and
   CI (test run in `validate-data.yml` or a new workflow); any example-profile file
   added under `data/` also triggers the diagram rule per CLAUDE.md.
+
+## 10. Addendum: choose-your-own-category cards (shipped after v1)
+
+Cards whose 5% category is cardholder-selected — or automatic-top-category, which
+is equivalent for optimization — (Citi Custom Cash, BofA Customized Cash) are
+modeled with a second pseudo-category, `choice`, carrying a `choice` block:
+
+```yaml
+- category: choice
+  rate: 5
+  cap: {period: monthly, max_spend_usd: 500, fallback_rate: 1}
+  choice:
+    options: [dining, gas, groceries, ...]   # non-pseudo registry keys, >= 2
+    note: How selection works (user-picked vs automatic, change cadence)
+```
+
+**Valuation by variant expansion.** Before search, `expand_choice_variants`
+replaces each choice card with one virtual card per option **the profile actually
+spends in** (id `custom-cash[groceries]`, carrying `base_id`), where the choice
+line becomes an ordinary category line with the same rate/cap. If no option
+matches any spend, a single variant keeps the card's id with the choice line
+dropped. The subset search treats variants of the same `base_id` as **mutually
+exclusive** (a physical card is configured exactly one way), and otherwise scores
+them like any card — so the search picks the best configuration *per combination*:
+solo, Custom Cash might be set to groceries; next to Blue Cash Preferred's 6%
+groceries it flips to dining, with no special-casing beyond expansion.
+
+Constraints: at most one `choice` reward per card (validator + optimizer both
+enforce); the `MAX_ELIGIBLE_CARDS = 80` exhaustive-search cap now counts
+*variants*; `choice` is banned from spend profiles and credit categories like any
+pseudo-category.

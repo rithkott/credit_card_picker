@@ -4,8 +4,10 @@
 Checks, per card file:
   1. Valid YAML and conforms to data/schema/card.schema.json.
   2. `id` matches the filename and `issuer` matches the parent directory.
-  3. Every category / merchant / currency.program / credit category key exists in
-     the data/meta/ registries.
+  3. Every category / merchant / currency.program / credit category / choice-option
+     key exists in the data/meta/ registries; pseudo-categories may not be used as
+     credit categories or choice options; a `choice` block appears only on the
+     'choice' pseudo-category, at most once per card.
   4. `verification.last_verified_date` is not in the future and not stale
      (> STALE_DAYS old → warning; CI stays green so staleness nags, not blocks).
   5. The card is listed in docs/card-backlog.md — the backlog is the tracking
@@ -40,7 +42,9 @@ def main() -> int:
     schema = json.loads(SCHEMA_PATH.read_text())
     validator = Draft202012Validator(schema)
 
-    categories = set(load_yaml(META_DIR / "categories.yaml")["categories"])
+    categories_registry = load_yaml(META_DIR / "categories.yaml")["categories"]
+    categories = set(categories_registry)
+    pseudo_categories = {k for k, v in categories_registry.items() if (v or {}).get("pseudo")}
     merchants = set(load_yaml(META_DIR / "merchants.yaml")["merchants"])
     programs = set(load_yaml(META_DIR / "point-valuations.yaml")["programs"])
 
@@ -83,9 +87,21 @@ def main() -> int:
         if card["currency"]["type"] == "cash" and card["currency"]["program"] != "cash":
             errors.append(f"{rel}: cash card must use program 'cash', got '{card['currency']['program']}'")
 
+        choice_rewards = 0
         for i, cr in enumerate(card["category_rewards"]):
             if cr["category"] not in categories:
                 errors.append(f"{rel}: category_rewards[{i}]: unknown category '{cr['category']}'")
+            if cr["category"] == "choice":
+                choice_rewards += 1
+                for j, opt in enumerate(cr.get("choice", {}).get("options", [])):
+                    if opt not in categories:
+                        errors.append(f"{rel}: category_rewards[{i}]: choice.options[{j}]: unknown category '{opt}'")
+                    elif opt in pseudo_categories:
+                        errors.append(f"{rel}: category_rewards[{i}]: choice.options[{j}]: '{opt}' is a pseudo-category and may not be a choice option")
+            elif "choice" in cr:
+                errors.append(f"{rel}: category_rewards[{i}]: a choice block is only allowed on the 'choice' pseudo-category")
+        if choice_rewards > 1:
+            errors.append(f"{rel}: {choice_rewards} 'choice' category rewards — the optimizer supports at most one per card")
         for i, mr in enumerate(card["merchant_rewards"]):
             if mr["merchant"] not in merchants:
                 errors.append(f"{rel}: merchant_rewards[{i}]: unknown merchant '{mr['merchant']}'")
@@ -96,6 +112,8 @@ def main() -> int:
             cat = credit.get("category")
             if cat is not None and cat not in categories:
                 errors.append(f"{rel}: credits[{i}]: unknown category '{cat}'")
+            elif cat in pseudo_categories:
+                errors.append(f"{rel}: credits[{i}]: '{cat}' is a pseudo-category and may not be a credit category")
 
         if path.stem not in backlog:
             warnings.append(

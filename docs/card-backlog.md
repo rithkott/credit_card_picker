@@ -82,7 +82,7 @@ Suggested priority: **Tier 1** (the flat-rate + everyday-category cards most Ame
 ## Citi — `data/cards/citi/`
 
 - [~] Double Cash — `double-cash` *(drafted, confidence: low — needs verification)*
-- [ ] Custom Cash — `custom-cash`
+- [~] Custom Cash — `custom-cash` *(drafted, confidence: low — needs verification)*
 - [ ] Strata Premier — `strata-premier`
 - [ ] Strata Elite — `strata-elite`
 - [ ] Rewards+ — `rewards-plus`
