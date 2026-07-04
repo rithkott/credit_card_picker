@@ -1,0 +1,18 @@
+{
+  "skillOverrides": {
+    "color": "off"
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'msg=$(jq -r \".message\" 2>/dev/null); if [[ $msg =~ ^/color\\ ([a-zA-Z]+)$ ]]; then profile=\"${BASH_REMATCH[1]}\"; case \"$profile\" in Blossom|Cherry|Coffee|Forest|Ocean|Space) osascript -e \"tell application \\\\\\\"Terminal\\\\\\\" to set current settings of window 1 to settings set \\\\\\\"$profile\\\\\\\"\" 2>/dev/null && echo \"{\\\\\\\"continue\\\\\\\": false, \\\\\\\"systemMessage\\\\\\\": \\\\\\\"✓ Switched to $profile profile\\\\\\\"}\" || echo \"{\\\\\\\"continue\\\\\\\": false, \\\\\\\"systemMessage\\\\\\\": \\\\\\\"✗ Failed to switch to $profile profile\\\\\\\"}\" ;; *) echo \"{\\\\\\\"continue\\\\\\\": true}\" ;; esac; else echo \"{\\\\\\\"continue\\\\\\\": true}\"; fi'",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

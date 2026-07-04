@@ -9,20 +9,9 @@ Master checklist of cards to hand-curate into `data/cards/`, following [curation
 - `[ ]` not added — no file in `data/cards/` yet
 - `[~]` AI-drafted — file exists but `confidence: low`; numbers are plausible, not verified
 - `[x]` human-verified — a person checked every number against issuer terms; `confidence: high`
+- `[/]` Up-To-Date terms sheet present in data/offer_files for AI parsing
 
 ---
-
-## ⚠️ Drafted but NOT human-verified — do these first
-
-These files already exist in `data/cards/` with real-looking numbers, drafted by AI from model knowledge with **no sources actually checked**. Until verified, they are plausible, not true. Verify each against the issuer's own pages, fix the `sources` entries, and bump `confidence` to `high`:
-
-- [~] Chase Freedom Flex — `data/cards/chase/freedom-flex.yaml`
-- [~] Chase Sapphire Preferred — `data/cards/chase/sapphire-preferred.yaml`
-- [~] Amex Blue Cash Preferred — `data/cards/amex/blue-cash-preferred.yaml`
-- [~] Amex Gold — `data/cards/amex/gold.yaml`
-- [~] Citi Double Cash — `data/cards/citi/double-cash.yaml`
-- [~] Capital One Venture X — `data/cards/capital-one/venture-x.yaml`
-- [~] Wells Fargo Active Cash — `data/cards/wells-fargo/active-cash.yaml`
 
 Scope notes:
 - **US consumer cards** in the main list, including **closed-loop store cards** (Target, Amazon Store Card, etc. — curated with the schema's `closed_loop` block) since they're worth recommending in combination with open-loop cards when a big share of someone's spend is at that merchant, and **credit-builder/secured cards** (curated with `approval.credit_tier: building`) so users with thin or damaged credit still get recommendations they can actually be approved for.
@@ -35,32 +24,36 @@ Suggested priority: **Tier 1** (the flat-rate + everyday-category cards most Ame
 
 ## Chase — `data/cards/chase/`
 
-- [~] Freedom Flex — `freedom-flex` *(drafted, confidence: low — needs verification)*
-- [ ] Freedom Unlimited — `freedom-unlimited`
-- [ ] Freedom Rise — `freedom-rise`
-- [~] Sapphire Preferred — `sapphire-preferred` *(drafted, confidence: low — needs verification)*
-- [ ] Sapphire Reserve — `sapphire-reserve`
-- [ ] Slate Edge — `slate-edge`
-- [ ] Prime Visa (Amazon) — `prime-visa`
-- [ ] Instacart Mastercard — `instacart-mastercard`
-- [ ] DoorDash Rewards Mastercard — `doordash-rewards`
-- [ ] United Gateway — `united-gateway`
-- [ ] United Explorer — `united-explorer`
-- [ ] United Quest — `united-quest`
-- [ ] United Club — `united-club`
-- [ ] Southwest Rapid Rewards Plus — `southwest-plus`
-- [ ] Southwest Rapid Rewards Premier — `southwest-premier`
-- [ ] Southwest Rapid Rewards Priority — `southwest-priority`
-- [ ] World of Hyatt — `world-of-hyatt`
-- [ ] Marriott Bonvoy Boundless — `marriott-boundless`
-- [ ] Marriott Bonvoy Bold — `marriott-bold`
-- [ ] IHG One Rewards Premier — `ihg-premier`
-- [ ] IHG One Rewards Traveler — `ihg-traveler`
-- [ ] Aeroplan Card — `aeroplan`
-- [ ] British Airways Visa Signature — `british-airways`
-- [ ] Aer Lingus Visa Signature — `aer-lingus`
-- [ ] Iberia Visa Signature — `iberia`
-- [ ] Disney Premier Visa — `disney-premier`
+- [/] Freedom Flex — `freedom-flex`
+- [/] Freedom Unlimited — `freedom-unlimited`
+- [/] Freedom Rise — `freedom-rise`
+- [/] Sapphire Preferred — `sapphire-preferred` *(drafted, confidence: low — needs verification)*
+- [/] Sapphire Reserve — `sapphire-reserve`
+- [/] Slate Edge — `slate-edge`
+- [/] Prime Visa (Amazon) — `prime-visa`
+- [/] Amazon Visa (Amazon) — `amazon-visa`
+- [/] Instacart Mastercard — `instacart-mastercard`
+- [/] DoorDash Rewards Mastercard — `doordash-rewards`
+- [/] United Gateway — `united-gateway`
+- [/] United Explorer — `united-explorer`
+- [/] United Quest — `united-quest`
+- [/] United Club — `united-club`
+- [/] Southwest Rapid Rewards Plus — `southwest-plus`
+- [/] Southwest Rapid Rewards Premier — `southwest-premier`
+- [/] Southwest Rapid Rewards Priority — `southwest-priority`
+- [/] World of Hyatt — `world-of-hyatt`
+- [/] Marriott Bonvoy Boundless — `marriott-boundless`
+- [/] Marriott Bonvoy Bold — `marriott-bold`
+- [/] Marriott Bonvoy Bountiful - `mariott-bountiful`
+- [/] IHG One Rewards Premier — `ihg-premier`
+- [/] IHG One Rewards Traveler — `ihg-traveler`
+- [/] Aeroplan Card — `aeroplan`
+- [/] British Airways Visa Signature — `british-airways`
+- [/] Aer Lingus Visa Signature — `aer-lingus`
+- [/] Iberia Visa Signature — `iberia`
+- [/] Disney Visa — `disney-visa`
+- [/] Disney Premier Visa — `disney-premier`
+- [/] Disney Inspire Visa — `disney-inspire`
 
 ## American Express — `data/cards/amex/`
 
