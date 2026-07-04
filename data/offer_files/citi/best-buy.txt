@@ -1,0 +1,74 @@
+My Best Buy Card (Citi / Citibank, N.A.)
+
+Note: Best Buy/Citi issue two distinct "My Best Buy"-branded cards. This file covers ONLY the STORE-ONLY "My Best Buy Credit Card" (closed-loop, usable only at Best Buy and BestBuy.com). A separate open-loop "My Best Buy Visa® Card" (Platinum, no annual fee, and Gold, $59 annual fee) is issued on the Visa network, usable almost anywhere Visa is accepted, and carries different/additional earn categories (gas, restaurants/grocery, everyday spend) and a lower APR. The Visa version is NOT covered here. Per Citi/Best Buy, applicants are generally first considered for the Visa Platinum card; if not approved for that, they may be considered for the store-only card, and finally the Visa Gold card, based on creditworthiness.
+
+Issuer / Product Naming
+- Per Citi's own product page: "The My Best Buy® Credit Card offered by Best Buy® and Citibank."
+- Card Agreement on file with CFPB identifies the issuer as "Citibank, N.A.," located in Sioux Falls, SD.
+
+Annual Fee
+- No annual fee ($0) on the store-only My Best Buy Credit Card. (Aggregator sources note the wider "$0–$59" figure applies across the My Best Buy card family, but the $59 fee is specific to the Visa Gold variant, not this card.)
+
+Closed-Loop (where usable)
+- Store-only card. "The My Best Buy® Credit Card can only be used for purchases at Best Buy®" (citi.com) — not accepted anywhere else, including gas stations, restaurants, or general retail (that requires the separate Visa version).
+- Cannot be used for cash advances or balance transfers (aggregator-reported; consistent with the official Card Agreement, which contains no cash-advance or balance-transfer fee/APR provisions for this product — unlike typical open-loop cards).
+
+Reward Rates (Best Buy purchases only — this card cannot earn anywhere else)
+- 5% back in rewards on all qualifying Best Buy purchases, described by Citi as "2.5 points for every $1 spent" and elsewhere as "a $5 reward certificate for every $100 spent at Best Buy® with your Card."
+- Caution: some third-party aggregator reviews (e.g., WalletHub) list additional earn categories such as gas (3% back), restaurants/grocery (2% back), and "1 point per $2" on outside purchases. Those rates belong to the open-loop My Best Buy Visa Card, not this store-only card, and appear to be aggregator conflation between the two products — excluded here as out of scope/incorrect for this card.
+
+My Best Buy Membership Tiers (loyalty program layered on top of card rewards; program relaunched with reward points June 4, 2026 per Best Buy corporate newsroom)
+- My Best Buy (free tier): no purchase rewards earned on its own.
+- My Best Buy Plus ($29.99/year): earns 1% back in rewards on every eligible purchase; when paired with the My Best Buy Credit Card, the two rates combine for 6% back in rewards (1% membership + 5% card) on qualifying Best Buy purchases.
+- My Best Buy Total ($199.99/year): includes all Plus benefits (including the 1% reward rate, combining to 6% back with this card) plus additional protection/service perks (see Perks below).
+- Reward-points hub: members can track/view rewards in a digital hub on BestBuy.com and the Best Buy app, and see them reflected in cart/at checkout.
+- Rewards under this program exclude Marketplace Products and do not include tax.
+- (Older aggregator material references a legacy "Elite/Elite Plus" My Best Buy status-tier structure; the current, officially-announced structure as of mid-2026 is the free / Plus / Total tiers described above.)
+
+Signup / New-Account Offer
+- New cardholders approved for the My Best Buy Credit Card get an additional 2.5 bonus points on purchases made using Standard Credit on their first day of purchases within 14 days of account opening — i.e., an extra 5% back, for a combined 10% back in rewards that first day.
+- Citi's own card page also references "limited-time welcome offers with discounts, bonus rewards and more" that may run in addition to/instead of the standard first-day offer; exact current limited-time terms not independently confirmed (see gaps).
+
+Financing / Deferred-Interest & Reduced-Rate Offers
+- General storewide financing: available on qualifying purchases when using the card, with multiple financing plans able to be open on an account simultaneously; interest is charged retroactively from the purchase date if the promotional balance is not paid in full by the end of the promotional period ("Same As Cash" / deferred interest, per the official Card Agreement).
+- The official CFPB-filed Card Agreement (2021 vintage, still the base contract on file) documents a "reduced rate credit plan" mechanism, distinct from deferred-interest plans, with the following fixed promotional APRs available for select purchases (store associate or store website designates which purchases qualify for which plan):
+  - 24-month plan at 0% APR
+  - 24-month plan at 7.99% APR
+  - 24-month plan at 11.99% APR
+  - 36-month plan at 8.99% APR
+  - 36-month plan at 12.99% APR
+  - 48-month plan at 11.90% APR
+  - For reduced-rate plans, the required minimum payment per cycle is the plan's "Repayment Percentage" (ranging ~2.63%–4.72% depending on plan) times the plan's highest balance, or the remaining plan balance if smaller.
+- Deferred-interest ("no interest if paid in full") promotional thresholds/durations are advertised on a rotating, product-category and often limited-time basis. Multiple aggregator sources (WalletHub, Forbes-linked/UpgradedPoints-style reviews) report figures such as: storewide financing on purchases of $299+ (12 months); appliances/grills $599+ or $499+ (18 months, some listed as limited-time); unlocked phones/certain Geek Squad purchases $649+ (24 months); home theatre or select exercise equipment $799–$999+ (24 months). These figures were NOT consistent across sources (thresholds and durations varied source to source) and could not be confirmed against a live official Best Buy financing page (bestbuy.com financing pages repeatedly timed out on fetch). Treat all specific current thresholds/durations as unverified and subject to change — see GAPS section.
+- Deferred-interest mechanics per the official Card Agreement: no interest charges on the deferred balance if paid in full by the end of the promotional period; if not paid in full, interest is imposed retroactively from the date of purchase at the regular purchase APR. Deferred-interest offers may also be marketed as "Same As Cash Plans."
+
+Perks
+- Free shipping on qualifying Best Buy purchases.
+- Cardmember-exclusive offers/bonus rewards throughout the year for accounts in good standing.
+- My Best Buy Plus membership extends the standard return window (typically 15 days) to 60 days on most products; does not apply to products requiring activation (e.g., cell phones). My Best Buy Total includes all Plus benefits.
+- My Best Buy Total additionally includes up to 24 months of product protection on eligible purchases while the membership is active, and AppleCare+ coverage for qualifying Apple purchases.
+- Some aggregator reviews list additional perks (early access to sales, member-only deals, free in-home consultation, birthday gift, "extended warranty manager service," auto rental collision damage waiver) — these could not be confirmed on an official Best Buy/Citi page during this research pass, and at least one of them (auto rental collision damage waiver) is a benefit typically tied to card network (Visa) coverage rather than a closed-loop store card, so it is treated as likely misattributed/aggregator conflation rather than confirmed fact for this product. See GAPS.
+- Price protection: not confirmed as a benefit of this card in any official source found (see GAPS).
+
+Fees / Rate Notes (from the official Citibank Card Agreement filed with the CFPB, plus current disclosures)
+- Purchase APR: variable, officially disclosed by Citi as 30.74% (as of a disclosure dated 3/27/26 per aggregator citation); Best Buy's own site has been reported showing a range of 27.74%–30.74% variable depending on creditworthiness. Both figures are Citi/Best Buy-sourced per secondary reporting but could not be independently confirmed against a live official page during this research pass (bestbuy.com and citi.com pages returned incomplete/truncated pricing fields or timed out on fetch). Note: some aggregator reviews cite a much lower APR (e.g., ~25%), which appears inconsistent with the higher figures corroborated across multiple sources and Citi's own disclosure date — treat the lower figure as likely stale/incorrect.
+- Minimum Interest Charge: $2.00 (confirmed in the official Card Agreement).
+- Late Fee: $29 for a first late payment in a billing cycle; $40 for any additional late payment in the next six billing cycles (confirmed in the official Card Agreement); fee will not exceed the amount permitted by law.
+- No cash advance fee/APR or balance transfer fee/APR terms appear in the official Card Agreement for this product — consistent with this being a closed-loop store card without cash-advance or balance-transfer functionality. (Aggregator sources that list a cash advance fee or balance transfer fee for "the Best Buy card" appear to be describing the Visa version.)
+- Grace period on purchases: at least 25 days, contingent on paying the New Balance in full by the due date each cycle (per official Card Agreement); balances under active deferred-interest or reduced-rate promotions are treated as "excluded balances" with separate rules described in the Agreement.
+- Governing law: Federal law and the law of South Dakota (per official Card Agreement, since Citibank, N.A. is located in Sioux Falls, SD).
+
+Redemption
+- Reward points convert to Best Buy reward certificates (and, per one official source, "gift cards at top merchants"). Cardholders log in to their My Best Buy account to redeem points for reward certificates, which are then used on qualifying purchases at Best Buy.
+- Under the June 2026 membership reward-points relaunch, Plus/Total membership rewards and card rewards are tracked and calculated separately but stack (1% + 5% = 6% back), visible in a rewards hub on BestBuy.com/the Best Buy app and reflected in cart/at checkout.
+
+GAPS / NOT VERIFIED (omitted from firm claims above rather than estimated):
+- Exact, current (as of this writing) deferred-interest financing thresholds/durations by product category — bestbuy.com's financing pages (storewide financing details, "Learn About Best Buy Financing," and the financing-rewards hub) repeatedly timed out on automated fetch, so only aggregator-reported figures (which conflicted with each other) could be gathered; not confirmed against a live official page.
+- Whether "price protection" is a confirmed benefit of this card — not found on any official page consulted.
+- Whether early access to sales, a birthday-month gift, "extended warranty manager service," free in-home consultation, or auto rental collision damage waiver are genuinely benefits of the store-only card specifically, versus benefits of Best Buy membership generally or the Visa card specifically — could not be confirmed on an official page; auto rental CDW in particular looks like Visa-network-benefit conflation.
+- Full, current Schumer-box detail: returned payment fee amount, penalty APR (if any), foreign transaction fee (likely not applicable to a domestic closed-loop card, but not explicitly confirmed) — the official CFPB Card Agreement PDF is dated 2021 (form BBYPL-0721) and references "the Supplement" for exact current Purchase APR/fee figures, but that Supplement was not part of the retrievable PDF text.
+- Exact current wording/terms of any "limited-time welcome offer" beyond the standard first-day 10%-back offer.
+- Whether the legacy "Elite/Elite Plus" tier names (referenced in some older aggregator reviews) still exist alongside, or have been fully superseded by, the free/Plus/Total structure described above.
+- Full text of citi.com's "How to Apply for the My Best Buy® Credit Card" and "Credit Management" pages were checked but did not yield store-card-specific figures beyond what's stated above.
+
+Issued by Citibank, N.A.

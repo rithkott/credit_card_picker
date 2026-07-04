@@ -64,6 +64,26 @@ Common inference traps specific to this dataset:
   narrow or widen the issuer's definition.
 - **`approval.credit_tier`**: offer files almost never state this. It is *always* an inference
   unless you fetch a page that states it — treat it as inferred by default.
+- **`kind: in_kind` credit valuations**: the USD value you assign to a free night, companion
+  certificate, or lounge-pass allotment is *always* an inference — the issuer never states one.
+  Record your valuation reasoning in the credit's `notes` (e.g. "Category 1-4 Hyatt night ≈ $150
+  based on the redemption ceiling"), never just the number. An offer file's own marketing
+  valuation ("worth $469 a year") is a claim to note, not a fact to transcribe as the value.
+- **`relationship_boost.boost_pct`**: offer files state boosts in different shapes — BofA says
+  "25%-75% more rewards" (transcribe directly), but tiered total rates like Smartly's
+  "2% base → 3% total at $50k" require you to compute the boost (3/2 − 1 = `boost_pct: 50`).
+  That conversion is arithmetic on a transcribed fact — show it in the `note`.
+- **Bundled program earn**: headline rates that fold non-card loyalty earn into the number —
+  Frontier's "up to 15x" is 10x for program membership + 5x for the card; GM's "up to 10x" is
+  7x card + up-to-3x member — must be split, and only the *card-attributable* portion becomes
+  the `rate` (5x, 7x). If the offer file doesn't state the split, the whole rate is suspect:
+  flag it in `notes` rather than transcribing the marketing number.
+- **Which rate is the baseline**: for membership/payment-method-tiered rates ("5% with
+  Walmart+, 3% without"; "2% via Apple Pay, 1% physical card"), deciding which figure goes in
+  `rate` vs `conditional_rate`/`base_rate_conditional` is an interpretation — the plain rate
+  must be the rate with NO memberships, no linked accounts, worst payment method. Getting this
+  backwards inflates every recommendation; the validator only catches it when the conditional
+  rate isn't strictly higher.
 
 ## Step 3 — No forced-fit registry keys
 
@@ -76,7 +96,7 @@ closest-sounding key just to make the validator pass. Stop and either:
 Forcing a fit here is worse than an omission — it silently corrupts a shared assumption every
 other card also relies on.
 
-## Step 4 — Rotating and choice cards get read twice
+## Step 4 — Rotating, choice, combined-cap, and multi-part-bonus cards get read twice
 
 For any card with rotating categories or choose-your-own-category rewards:
 - Confirm you used the `rotating` / `choice` pseudo-categories, not a snapshot of this quarter's
@@ -85,6 +105,53 @@ For any card with rotating categories or choose-your-own-category rewards:
 - Re-read the offer file's selection mechanism once more after drafting — automatic top-category
   cards and user-selectable cards are schema-equivalent (`choice`) but the `note` field must say
   which one it is.
+
+For any card whose cap or bonus prose contains the word "combined", "total", or "additional":
+- **Combined caps**: "3 points/$1 on gas + grocery + dining, *combined*, on the first $6,000"
+  means one shared pool — use `cap.shared_cap_id` on every member entry, each stating the FULL
+  pool (`max_spend_usd: 6000` on all three, not a split). Modeling a combined cap as independent
+  per-category caps silently double- or triple-counts headroom; the validator can't detect it
+  because each cap looks plausible alone. Re-read the cap sentence after drafting specifically
+  to answer: per-category, or combined?
+- **Tiered bonuses**: "70,000 miles after $3,000, plus an *additional* 20,000 (90,000 total)
+  after $5,000 total" → base `value` 70k / `spend_requirement_usd` 3000, plus one `tiers` entry
+  of 20k at 5000. Tier values are the *increment*, tier spend requirements are *cumulative* —
+  offer files mix both framings in one sentence, so recompute which is which (see Step 6).
+- **Mixed bonuses**: "100,000 points + $100 statement credit" is one `value` with both `points`
+  and `usd`, not a bonus plus a credit. Approval-time gift cards with no spend requirement are a
+  bonus with `spend_requirement_usd: 0`.
+- **First-year match** (Discover): use `first_year_match: true` with no value/spend/window —
+  never invent a dollar figure for it.
+- **What tiers can't hold**: second tranches in a *different window* or gated on
+  *merchant-specific* spend ("plus 30,000 after $750 at Hotels by Wyndham in 180 days") do NOT
+  go in `tiers` — the validator's cumulative-ascending check will reject them or, worse, accept
+  a distorted version. Structure only the primary spend-gated tranche; describe the rest in
+  `signup_bonus.notes`.
+
+For store cards, co-brands, and fintech cards tied to a membership or account (read the
+"Modeling conventions" section of the curation guide before drafting these):
+- **Conditional rates**: membership-gated ("5% at Walmart with linked Walmart+"), payment-method-gated
+  (Apple Pay), and status-gated rates use `conditional_rate` (or `base_rate_conditional`),
+  with the unconditional baseline in `rate`/`base_rate` — see the Step 2 trap.
+- **`required_membership`** for *paid* prerequisites (Sam's Club, Prime, REI Co-op, Robinhood
+  Gold — the membership fee is a real cost the note must surface). Free credit-union
+  eligibility (Navy Federal, PenFed, Alliant) goes in `approval.notes`, not here.
+- **Reward-dollar caps vs spend caps**: "maximum $5,000 in Sam's Cash per calendar year" caps
+  *reward dollars* → `max_annual_rewards_usd: 5000`. "Up to $300 cash back at 6%" caps *spend*
+  → `cap.max_spend_usd: 5000`. Confusing the two is off by the rate multiple.
+- **Instant discounts** (Target 5% off, Lowe's 5% off) are modeled as the earn rate with the
+  discount mechanics in `notes`. **Repayment-contingent earn** (Upgrade) is a normal rate + note.
+- **One file per variant**: Luxury Card tiers, store-vs-Visa pairs (Kohl's, Best Buy,
+  Nordstrom), apply-time scheme elections (Truist), credit-limit-determined variants (Navy
+  Federal cashRewards) each get their own YAML with the siblings cross-referenced in `notes`.
+- **Scoped credit triggers**: `unlock_spend_usd` is TOTAL card spend per period only — a credit
+  triggered by spend at a specific merchant/category ("$100 after $100+ at Hotels by Wyndham")
+  or by non-spend activity ("after 5 nights stayed") keeps `unlock_spend_usd` unset and carries
+  the trigger in `realistic_capture_rate_note`.
+- **Not structured, ever**: elite-status grants and spend-based retention (`benefit_flags` +
+  `notes`), deferred-interest financing (`special_financing` flag + `notes`), redemption-side
+  rebates ("10% points back on award flights" → `notes`), spend-progressive loyalty ladders
+  (model the lowest tier, ladder in `notes`).
 
 ## Step 5 — Attempt a live cross-check before finalizing confidence
 
@@ -115,6 +182,26 @@ required a conversion:
 - Signup bonus `expires` date arithmetic (e.g., "offer ends 90 days after account opening" is
   *not* a fixed `expires` date — don't invent one; omit `expires` and say so in `notes` if the
   offer file gives a relative window instead of a calendar date).
+- **Tier math**: confirm each `tiers[].value` is the increment (not the "90,000 total" figure)
+  and each `tiers[].spend_requirement_usd` is cumulative (not the "$2,000 more" figure), and
+  that tier spend requirements strictly ascend past the base — the validator errors otherwise.
+- **Credit period vs face**: `amount_usd`/`amount_points` is per *period* — "$120 rideshare
+  credit, up to $10/month" is `amount_usd: 10, period: monthly`, never 120. Same for
+  `unlock_spend_usd`: it's per period ("$200 credit after $10,000 in a calendar year" →
+  `unlock_spend_usd: 10000` on an `annual` credit).
+- **Percentage-rebate perks** ("10% back on concessions up to $250/yr", "25% back on in-flight
+  purchases"): modeled as a credit whose `amount_usd` is the annual cap or a realistic fraction
+  of it — write down which you chose and why in the capture note; the cap alone overstates what
+  anyone captures.
+- **`relationship_boost.boost_pct`** derived from tiered total rates (see the Step 2 trap).
+- **Reward-dollar cap vs spend cap**: re-read every "maximum"/"up to" sentence and confirm
+  whether it caps reward dollars (`max_annual_rewards_usd`, no division) or spend at a rate
+  (`cap.max_spend_usd` = reward cap ÷ rate). One divides, the other doesn't.
+- **Card-attributable rate**: when a headline bundles program earn ("up to 15x" = 10x program
+  + 5x card), confirm the subtraction and that only the card's portion was written as `rate`.
+- **Conditional-rate direction**: confirm `rate` < `conditional_rate` and that `rate` is the
+  no-membership / worst-payment-method figure (the validator checks the inequality, not the
+  reading).
 
 ## Step 7 — Sources block honesty
 

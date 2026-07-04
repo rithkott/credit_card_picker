@@ -1,0 +1,69 @@
+Sam's Club Mastercard (Synchrony Bank)
+[Official CFPB-filed agreement title: "Sam's Club® Mastercard® Account Agreement." Synchrony's own account-servicing portal (mysamscredit.com) labels the product "Sam's Club World Elite Mastercard®" in one place — likely reflecting a specific card network tier rather than a separate product; treat as the same card.]
+
+NOTE — two distinct Sam's Club cards exist, both issued by Synchrony Bank:
+1. "Sam's Club Mastercard" (this file) — open-loop, usable anywhere Mastercard is accepted, earns "Sam's Cash" rewards. If an applicant isn't approved for this card, Synchrony may instead approve them for card #2 below.
+2. "Sam's Club Credit Card" (a.k.a. "Sam's Club Personal Credit Card") — closed-loop/private-label, usable ONLY at Sam's Club and Walmart (in-store and online), and earns NO Sam's Cash / no rewards at all. Its CFPB-filed agreement ("Sam's Club Personal Credit Card Account Agreement and Pricing Information") is a separate document from the Mastercard one used below. Do not conflate the two — this file covers only the open-loop Mastercard.
+
+Sources used:
+- https://scene7.samsclub.com/is/content/samsclub/sams-cash-with-mastercard ("How to Earn Sam's Cash with Your Sam's Club® Mastercard®" — official program page)
+- https://files.consumerfinance.gov/a/assets/credit-card-agreements/pdf/Synchrony_Bank/Sams_Club_MasterCard_Account_Agreement_and_Pricing_Information.pdf (Synchrony Bank Sam's Club Mastercard Account Agreement & Pricing Information, filed with CFPB; document itself is dated 12/19, so APR figures are stale relative to the mysamscredit.com "as of 1/1/26" figures — noted below)
+- https://mysamscredit.com/ (Synchrony's official Sam's Club Mastercard account-servicing/marketing page; current APR, fee, and rewards summary "as of 1/1/26")
+- https://corporate.walmart.com/about/samsclub/news/2021/01/27/new-sams-club-mastercard-rewards-program-by-synchrony-unlocks-additional-value-on-sams-club-purchases (official Walmart/Sam's Club corporate newsroom press release announcing the current Sam's Cash rewards program structure, 1/27/2021)
+- https://www.synchrony.com/partner/sams-club (Synchrony's official Sam's Club partner/FAQ landing page — page loaded but detailed FAQ text could not be reliably extracted during this research pass; listed for completeness)
+- Secondary cross-check only (not used as primary source for any number): WalletHub, Forbes Advisor, NerdWallet, The Points Guy, Savings Grove review pages (titles/snippets surfaced in search, used only to corroborate figures already found on official pages, never as the source of a number).
+
+Annual Fee
+- No annual fee on the Sam's Club Mastercard itself (confirmed on mysamscredit.com).
+- However, an active paid Sam's Club Membership is required to apply for and hold the card. Per the CFPB-filed Account Agreement's "Membership Billing/Cancellation" clause: "Your Sam's Club Membership ('Membership') fees will be charged annually to your account on or before your Membership renewal date. Your acceptance of the Card constitutes your agreement to such billing. You are not required to apply and/or have an account in order to have a Membership, but you must be a Member in order to apply and/or have an account." If the Membership is suspended/cancelled, or if the account is 90+ days past due, the Membership itself may be suspended or cancelled at Sam's Club's sole discretion.
+- The membership fee itself is not rebated/waived by having the Mastercard (not found in official sources as a distinct "fee waiver" benefit).
+
+Signup/Welcome Bonus
+- Sam's Club runs a rotating statement-credit welcome offer for new Mastercard applicants; exact amount and terms change over time and were not confirmed on an official Sam's Club or Synchrony page during this research pass (search-engine snippets referenced figures such as "$30 statement credit after $30 in Sam's Club purchases within 30 days" and a limited-time "$50 statement credit" offer, but these came from aggregator/review sites, not a directly-fetched official page — see "Not found" section below).
+
+Earn Rates ("Sam's Cash")
+- 5% back in Sam's Cash on gas anywhere Mastercard is accepted, on the first $6,000 in gas purchases per calendar year, then 1% back thereafter.
+- 3% back in Sam's Cash on Sam's Club purchases (in-club and online at SamsClub.com) — but ONLY for Sam's Club Plus members. Standard "Club" (non-Plus) members earn 1% back on Sam's Club purchases instead of 3%.
+- 3% back in Sam's Cash on dining and takeout.
+- 1% back in Sam's Cash on all other eligible purchases.
+- Maximum of $5,000 in Sam's Cash can be earned per calendar year. Per the official program page, if a member holds multiple card accounts, eligible purchases across those accounts are aggregated toward this same $5,000 annual maximum.
+- Sam's Cash is NOT earned on: cash advances, tobacco and smoking-related products (including e-cigarettes), prescription purchases, reloading or purchase of prepaid cards, gift cards (including third-party gift cards), traveler's checks, or other cash-equivalent items. (Per official program terms page.)
+- Note: the Sam's Club Plus membership tier separately provides its own base 2% cash back on most in-club/online purchases (up to an annual cap) regardless of payment method used — this is a Plus-membership benefit, not a Mastercard-specific reward, and the two can stack. Full mechanics of that separate 2% Plus benefit were not the subject of this research pass and are not detailed further here.
+
+Redemption of Sam's Cash
+- Sam's Cash earned is issued and combined with any other Sam's Cash earned (e.g., from the Plus membership's own cash-back program) within 1-2 billing cycles after being earned.
+- Sam's Cash is automatically loaded onto the member's Sam's Club membership account/card.
+- May be redeemed only at a Sam's Club location or at SamsClub.com — i.e., it is a Sam's Club-only reward, not a statement credit against the Mastercard balance and not usable outside Sam's Club (unlike, e.g., a general-purpose cash-back card).
+- Sam's Cash is forfeited if the Mastercard account is not in good standing (delinquent) or if the underlying Sam's Club Membership terminates or lapses.
+
+Foreign Transaction Fee
+- No foreign transaction fee, per mysamscredit.com ("No foreign transaction fees").
+- Note: the CFPB-filed 12/19 Account Agreement PDF fetched for this research did not include a foreign-transaction-fee line item in its Rates and Fees Table (older cards of this type sometimes charged one historically per secondary sources, but no official document confirming a prior fee was found/fetched during this pass — treat current "no FX fee" as the confirmed figure).
+
+APR (per mysamscredit.com, stated "as of 1/1/26")
+- Variable Purchase APR: 20.15% or 28.15% (tiered by creditworthiness).
+- Variable Cash APR: 25.15% or 31.15%, plus a 3% cash advance fee ($5 minimum).
+- NOTE: The CFPB-filed Account Agreement PDF used for this research is dated 12/19 and shows older, structurally different figures (APR expressed as Prime Rate + a margin, e.g., Prime + 11.65% or Prime + 19.65% for purchases/quick cash advances depending on "Account Type 1" vs "Account Type 2"; illustrative rate "as of November 1, 2019" was 16.40% or 24.40%). This document is clearly out of date relative to the mysamscredit.com 1/1/26 figures — flagging the discrepancy rather than reconciling it, since no newer official Schumer box/account agreement PDF was successfully fetched in readable form during this pass.
+- Minimum interest charge (per 12/19 agreement): no less than $2.00 in any billing cycle in which interest is charged.
+- Due date is at least 23 days after the close of each billing cycle; no interest on purchases if the entire balance is paid by the due date each month. Interest begins accruing on balance transfers and cash advances from the transaction date (no grace period on those).
+
+Other Fees (per Synchrony Bank Account Agreement, dated 12/19 — not confirmed current as of 2026, but fee structures of this type typically change less often than APR):
+- Balance Transfer Fee: $10 or 4% of the amount of each balance transfer, whichever is greater.
+- Cash Advance Fee: $5 or 3% of the amount of each cash advance, whichever is greater (ATM cash advances may incur an additional fee from the ATM owner).
+- Late Payment Fee: $28 if the total minimum payment was paid on time in each of the prior six billing cycles; $39 if not paid on time in any one or more of the prior six billing cycles. Never more than the total minimum payment that was due.
+- Returned Payment Fee: mentioned as a standard fee category in the agreement's Section III but the specific dollar amount was not captured in the fetched pages (not found in this pass, beyond the general "will not be more than the amount permitted by applicable law" type language common to Synchrony agreements).
+- Minimum Payment: greater of (a) $28 (or $39, including any past-due amounts, if the total minimum payment was missed in any of the prior six billing cycles), or (b) the sum of: any past-due amounts + 1% of the new balance shown on the billing statement (excluding special-promotion balances with unique payment terms) + any late fees charged in the current billing cycle + all interest charged in the current billing cycle + any payment due on a special-promotion purchase. Rounded up to the next whole dollar; never more than the new balance.
+- Balance calculation method: "daily balance" — a daily rate (APR / 365) is applied to the daily balance, calculated separately for each balance type (purchases, balance transfers, cash advances, and any balances under special promotional terms).
+- Quick Cash Advances: a special in-club feature — available only in fixed increments of $20, $40, $60, $80, or $100, obtainable only when making an approved purchase with the card at a participating Sam's Club register, limited to one per account per day. Quick Cash Advances are treated as purchases (not cash advances) for interest-calculation purposes.
+- Special promotional financing: the agreement describes standard "No Interest for [6/12/18/24/36/48] Months" and "No Interest if Paid in Full Within [6/12/18/24/36/48] Months" deferred-interest promotion types that may be offered on qualifying purchases, subject to credit approval and specific promotional disclosures at time of offer.
+
+Not found / not confirmed from official sources during this research pass (do not estimate):
+- A current (2026-dated), fully readable Schumer box / rates-and-fees table superseding the 12/19 CFPB filing (the balance transfer, cash advance, late payment, and returned payment fee amounts above come from the 12/19 document and may no longer be current; only the Purchase/Cash APR figures were confirmed current via mysamscredit.com).
+- Exact current welcome/signup bonus offer terms (amount, spend requirement, deadline) from a directly-fetched official Sam's Club or Synchrony page — search snippets suggested a rotating offer (examples seen: "$30 after $30 spend in 30 days," a limited-time "$50 statement credit" through 7/7/26), but no official page was successfully fetched to confirm current terms.
+- Specific dollar amount of the Returned Payment Fee.
+- Whether a foreign transaction fee was ever charged historically on this card (secondary/aggregator sources suggested a legacy 3% FX fee existed before being removed, but no official document confirming this history was fetched).
+- Full mechanics/eligibility/annual cap details of the separate Sam's Club Plus membership's own 2% base cash-back benefit (noted above only as a stacking caveat, not researched in depth here since it is a membership benefit rather than a Mastercard-specific term).
+- Credit limit ranges or minimum credit limit.
+- Full text of the Synchrony Bank Sam's Club partner FAQ page (www.synchrony.com/partner/sams-club) — page was found via search but its detailed content could not be reliably extracted via fetch during this pass.
+
+Issued by Synchrony Bank [per CFPB-filed Account Agreement cover page: "This is an Agreement between you and Synchrony Bank, 170 Election Road, Suite 125, Draper, UT 84020, for your credit card account shown above."]

@@ -1,0 +1,54 @@
+Upgrade Cash Rewards Visa (Upgrade)
+
+How It Works (unusual structure — not a standard revolving card)
+- This card is not a typical open-ended revolving credit card. Per Upgrade's official product page and Help Center: "The Upgrade Card allows you to obtain a series of closed-end loans which you may access through transactions such as card purchases up to your approved amount."
+- Each statement period, your transactions (purchases made during that billing cycle) are combined and converted into an installment loan with a fixed rate and fixed term, rather than carrying an open-ended balance at a variable APR like most credit cards.
+- At the end of the month, the issuer creates an installment plan based on your current monthly balance, with a fixed monthly payment amount, so the cardholder knows exactly how much is due every month and can budget accordingly.
+- Interest starts accruing at the time of purchase (or transfer, if used similarly to a cash advance to move funds to a bank account) — it is not treated as open revolving interest.
+- As balances are repaid, additional credit becomes available up to the approved credit line amount, but "your line will not replenish automatically" the way a typical revolving credit card's available credit does.
+- Example given on the official site: "$1,000 card purchase with a 36 month term and a 19.99% APR has a monthly payment of $37.55."
+- There is no stated revolving-balance option — the card converts spend into fixed installment terms rather than allowing indefinite revolving carry at a variable rate.
+
+Cash Back Earn Rate
+- Unlimited 1.5% cash back on all purchases (no stated category restrictions or caps found for this specific "Cash Rewards" version of the card).
+- Official page language: "Earn 1.5% unlimited cash back everyday on every purchase when you pay it back."
+
+Cash Back Payout Mechanics
+- Cash back is earned specifically "when you pay it back" — i.e., rewards accrue tied to repayment of the purchase/installment, not simply at the time of the purchase.
+- Help Center language: "Purchases accrue unlimited 1.5% cash back when you pay them back. Rewards are earned on repaid balances, with certain limitations applying" (specific limitations not detailed on the pages found).
+- Rewards redemption mechanic: cash back rewards automatically redeem as statement credits (per secondary-source cross-check; official page did not spell out the exact redemption timing/threshold beyond "automatically redeem for statement credits").
+
+Signup Bonus
+- $200 bonus available when the cardholder also opens a Rewards Checking Preferred account and makes 3 debit card transactions. (This bonus is tied to a companion checking product, not pure card spend.)
+
+APR
+- Annual Percentage Rates (APRs) of 14.99% - 29.99%, based on creditworthiness.
+- The lowest rates in that range require Autopay enrollment.
+
+Credit Line
+- Approved credit line amount is set at approval based on creditworthiness (qualifying credit score, credit usage history, requested amount, and other factors).
+- You can access funds up to the full line amount.
+- The line does NOT replenish automatically as you repay — this is a structural difference from traditional revolving credit cards.
+
+Fees
+- Annual fee: $0 (no annual fee).
+- Late payment fee: up to $29 per late payment.
+- Balance transfer fee: up to 5% per transfer.
+- Foreign transaction fee: up to 3% per transaction.
+- ATM withdrawal fee: may apply; per the official site, "these fees will increase your finance charge and APR."
+
+Benefits
+- Visa Signature® benefits, including:
+  - Extended Warranty Protection
+  - Price Protection
+  - Roadside Dispatch
+  - Travel and Emergency Assistance Services
+  - Visa's Zero Liability Policy
+
+Gaps / Not Found
+- Exact redemption threshold/timing for cash back statement credits (e.g., whether cash back only posts once balance reaches $0, or per-payment) was not spelled out verbatim on the official pages found — the clearest official language is "earned when you pay it back" / "earned on repaid balances, with certain limitations applying," but the specific limitations were not detailed on the pages retrieved.
+- Whether there are any merchant-category exclusions or caps on the 1.5% rate was not found (official pages describe it as unlimited on all purchases with no stated exceptions).
+- Some third-party sources describe a "2% on everyday categories / 1% on everything else" structure, but that appears to describe Upgrade's VISA DEBIT card program, not this Cash Rewards Visa credit card — excluded here to avoid conflating products.
+- Some aggregator sources reference Sutton Bank as an issuer for certain other Upgrade Visa cards/products; Upgrade's own Help Center page ("Who is Cross River Bank?") explicitly states Cross River Bank "issues personal credit lines and Upgrade Visa® Cards," which is the basis for the issuer line below. Could not find a page-specific Schumer box/cardholder agreement PDF for this exact card to double-confirm the issuer at the individual-product level.
+
+Issued by Cross River Bank, pursuant to a license from Visa U.S.A. Inc.

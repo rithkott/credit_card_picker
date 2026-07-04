@@ -259,6 +259,124 @@ class TestSyntheticFixtures(unittest.TestCase):
         self.assertEqual(r["unassigned"], {"groceries": 2000.0, "other": 1000.0})
 
 
+class TestSharedCaps(unittest.TestCase):
+    """shared_cap_id: multiple reward entries drawing one combined spend pool."""
+
+    def shared_cap_card(self, **cap_extra):
+        cap = {"period": "annual", "max_spend_usd": 5000, "fallback_rate": 1, **cap_extra}
+        return synth_card(category_rewards=[
+            {"category": "gas", "rate": 2, "cap": dict(cap)},
+            {"category": "groceries", "rate": 2, "cap": dict(cap)}])
+
+    def test_shared_pool_limits_combined_spend(self):
+        # gas 3000@2% drains the pool to 2000; groceries gets 2000@2%, the
+        # remaining 2000 groceries falls back to 1%; other 1000@1%.
+        card = self.shared_cap_card(shared_cap_id="gas_grocery")
+        prof = make_profile({"gas": 3000, "groceries": 4000, "other": 1000})
+        r = score([card], prof)
+        self.assertAlmostEqual(r["earnings"], 130.0)
+
+    def test_independent_caps_do_not_share(self):
+        # Same card without the shared id: each category gets its own $5,000
+        # room, so all 7000 elevated spend earns 2%.
+        card = self.shared_cap_card()
+        prof = make_profile({"gas": 3000, "groceries": 4000, "other": 1000})
+        r = score([card], prof)
+        self.assertAlmostEqual(r["earnings"], 150.0)
+
+
+class TestCreditVariants(unittest.TestCase):
+    def test_unlock_spend_reachable_and_not(self):
+        credit = {"name": "flight credit", "amount_usd": 200, "period": "annual",
+                  "unlock_spend_usd": 10000, "realistic_capture_rate_note": "x"}
+        card = synth_card(credits=[credit])
+        r = score([card], make_profile({"other": 12000}))
+        self.assertAlmostEqual(r["credits"][0]["value"], 200.0)  # no category → face
+        r = score([card], make_profile({"other": 8000}))
+        self.assertAlmostEqual(r["credits"][0]["value"], 0.0)
+        self.assertIn("unreachable", r["credits"][0]["note"])
+
+    def test_unlock_spend_is_per_period(self):
+        # $10/month unlocked at $1,000/month: $6,000/yr total = $500/month < $1,000.
+        credit = {"name": "monthly credit", "amount_usd": 10, "period": "monthly",
+                  "unlock_spend_usd": 1000, "realistic_capture_rate_note": "x"}
+        r = score([synth_card(credits=[credit])], make_profile({"other": 6000}))
+        self.assertAlmostEqual(r["credits"][0]["value"], 0.0)
+
+    def test_points_credit_valued_by_cpp(self):
+        credit = {"name": "anniversary points", "amount_points": 10000,
+                  "period": "annual", "realistic_capture_rate_note": "automatic"}
+        card = synth_card(currency={"type": "points", "program": "chase_ur"},
+                          credits=[credit])
+        prof = make_profile({"other": 5000})
+        self.assertAlmostEqual(score([card], prof, "floor")["credits"][0]["value"], 100.0)
+        self.assertAlmostEqual(score([card], prof, "optimistic")["credits"][0]["value"], 200.0)
+
+    def test_in_kind_credit_always_haircut(self):
+        # Uncategorized statement credits pay full face; in_kind gets the
+        # period capture haircut even without a category (annual = 0.9).
+        credit = {"name": "free night", "kind": "in_kind", "amount_usd": 150,
+                  "period": "annual", "realistic_capture_rate_note": "estimate"}
+        r = score([synth_card(credits=[credit])], make_profile({"other": 5000}))
+        self.assertAlmostEqual(r["credits"][0]["value"], 135.0)
+
+
+class TestRewardCapAndPeriods(unittest.TestCase):
+    def test_max_annual_rewards_clamp(self):
+        # 5% on $10,000 = $500 earned, clamped to a $300/yr reward cap.
+        card = synth_card(base_rate=5, max_annual_rewards_usd=300)
+        r = score([card], make_profile({"other": 10000}))
+        self.assertAlmostEqual(r["earnings"], 300.0)
+        self.assertEqual(r["reward_cap_clamps"], {"synth": 200.0})
+        # Under the cap: untouched, no clamp recorded.
+        r = score([card], make_profile({"other": 2000}))
+        self.assertAlmostEqual(r["earnings"], 100.0)
+        self.assertEqual(r["reward_cap_clamps"], {})
+
+    def test_clamped_earnings_feed_first_year_match(self):
+        card = synth_card(base_rate=5, max_annual_rewards_usd=300,
+                          signup_bonus={"first_year_match": True})
+        r = score([card], make_profile({"other": 10000}))
+        self.assertAlmostEqual(r["bonuses"]["synth"]["value"], 300.0)
+
+    def test_every_5_years_credit(self):
+        # $120 every 5 years, uncategorized statement credit → face value
+        # annualized: 120 * 0.2 = $24.
+        credit = {"name": "global entry", "amount_usd": 120,
+                  "period": "every_5_years", "realistic_capture_rate_note": "x"}
+        r = score([synth_card(credits=[credit])], make_profile({"other": 5000}))
+        self.assertAlmostEqual(r["credits"][0]["value"], 24.0)
+
+
+class TestBonusVariants(unittest.TestCase):
+    def test_mixed_points_plus_usd_bonus(self):
+        bonus = {"value": {"points": 10000, "usd": 100},
+                 "spend_requirement_usd": 500, "window_months": 3}
+        card = synth_card(currency={"type": "points", "program": "chase_ur"},
+                          signup_bonus=bonus)
+        r = score([card], make_profile({"other": 12000}), "floor")
+        # 10000 × 1.0cpp + $100 = $200.
+        self.assertAlmostEqual(r["bonuses"]["synth"]["value"], 200.0)
+
+    def test_tiered_bonus_counts_only_reachable_tiers(self):
+        bonus = {"value": {"usd": 200}, "spend_requirement_usd": 500,
+                 "window_months": 3,
+                 "tiers": [{"value": {"usd": 100}, "spend_requirement_usd": 2000},
+                           {"value": {"usd": 300}, "spend_requirement_usd": 10000}]}
+        # 12000/yr × 3/12 = 3000 window spend → base + first tier only.
+        r = score([synth_card(signup_bonus=bonus)], make_profile({"other": 12000}))
+        self.assertAlmostEqual(r["bonuses"]["synth"]["value"], 300.0)
+        self.assertIn("1 tier(s) unreachable", r["bonuses"]["synth"]["note"])
+
+    def test_first_year_match_equals_card_earnings(self):
+        card = synth_card(base_rate=1.5, signup_bonus={"first_year_match": True})
+        r = score([card], make_profile({"other": 10000}))
+        self.assertAlmostEqual(r["earnings"], 150.0)
+        self.assertAlmostEqual(r["bonuses"]["synth"]["value"], 150.0)
+        self.assertAlmostEqual(r["year1_net"], 300.0)
+        self.assertIn("first-year match", r["bonuses"]["synth"]["note"])
+
+
 class TestPortfolio(unittest.TestCase):
     def test_cap_competition_floor(self):
         # BCP 6% wins groceries at floor (Gold 4x*0.6cpp=2.4%): BCP takes 6000

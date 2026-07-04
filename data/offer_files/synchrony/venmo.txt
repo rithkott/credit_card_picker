@@ -1,0 +1,102 @@
+Venmo Credit Card (Synchrony Bank)
+
+[Official product is offered in two forms per the CFPB-filed agreement: "Venmo Visa® Credit Card" (Account Type varies) and "Venmo Visa Signature® Credit Card." The marketing site (venmo.com/about/creditcard) refers to it simply as "Venmo Credit Card" / "Venmo Visa Signature Credit Card."]
+
+Sources used:
+- https://venmo.com/about/creditcard (official product/marketing page)
+- https://venmo.com/about/creditcard/rewards (official rewards marketing page)
+- https://venmo.com/about/creditcard/features/visa (official features page)
+- https://help.venmo.com/cs/articles/venmo-credit-card-faq-vhel312 (official FAQ, last updated May 19, 2026)
+- https://help.venmo.com/cs/articles/venmo-credit-card-rewards-program-vhel325 (official rewards summary help article)
+- https://help.venmo.com/cs/articles/general-venmo-credit-card-billing-questions-vhel321 (official billing FAQ)
+- https://help.venmo.com/cs/articles/venmo-credit-card-rewards-program-terms-and-cash-back-to-crypto-terms-vhel127 (links to full official Rewards Program Terms)
+- https://www.synchronycredit.com/gecrbterms/html/RewardsTerms.htm (full official "Rewards Terms and Conditions for Venmo Visa Credit Card and Venmo Visa Signature Card Accounts" — fetched and parsed directly; document code WF7572459AGW, dated 8/2020, REV 4/2024)
+- https://files.consumerfinance.gov/a/assets/credit-card-agreements/pdf/Synchrony_Bank/Venmo_Visa_Signature_Card_Account_Agreement_and_Pricing_Information.pdf (Synchrony Bank Account Agreement & Pricing Information filed with CFPB; document dated 6/2021 — daily-rate example rates shown in it are "as of August 1, 2020" illustrations of the underlying prime-plus-margin formula, not current absolute APRs)
+- Secondary cross-check only (not used as the source of any number): NerdWallet, The Points Guy, CNBC Select, Forbes Advisor, LendingTree, Doctor of Credit, Sweepbase, CardCurator (titles surfaced in search; used only to corroborate that official figures found elsewhere were consistent, never as primary source).
+
+Annual Fee
+- No annual fee (confirmed on venmo.com marketing page, FAQ page, and CFPB Account Agreement Rates and Fees Table: "Annual Fee: None").
+- FAQ page notes: "Other account fees may apply for certain transactions or activities, such as cash advances or late payments."
+
+Signup/Welcome Bonus
+- No standing/publicly-advertised welcome bonus is disclosed on the official venmo.com or help.venmo.com pages fetched in this research pass.
+- Secondary sources (Doctor of Credit, CardCurator — not verified against an official Venmo/Synchrony page) reference targeted, in-app-only promotional offers, e.g. a "$100 signup bonus" and a separate targeted "triple cash back for first 6 months" (effectively 9%/6%/3%) offer, both said to be visible only inside the Venmo app's Credit tab (Cards > Credit) on a per-user targeted basis rather than published on a public offer page. Could not confirm exact current terms, amounts, spend requirements, or expiration dates from an official source.
+
+Earn Rates ("Cash Rewards" / "Cash Back")
+- Per the official Rewards Terms and Conditions (Synchrony, doc WF7572459AGW, 8/2020, REV 4/2024), during each Statement Period (billing cycle), automatically earn Cash Rewards on each Eligible Purchase:
+  - 3% on your "Top Spend Category" (the Spend Category with the highest dollar amount of Eligible Purchases that Statement Period).
+  - 2% on your "Second Top Spend Category" (the Spend Category with the second-highest dollar amount of Eligible Purchases that Statement Period).
+  - 1% on all other Eligible Purchases, including everything in the catch-all "Other" category and everything in Spend Categories other than that cycle's Top Spend and Second Top Spend.
+  - 1% on Venmo P2P (sending money to another Venmo user, not for goods/services) and non-Venmo P2P (person-to-person transfer not through Venmo), but only when such transactions are classified as a purchase (not a cash advance).
+- Eligible "Spend Categories" that can earn the 3%/2% rate (8 categories, defined by merchant MCC — merchant category code):
+  - Dining & Nightlife: restaurants/quick-serve (dine-in, carry-out, drive-through, delivery) plus establishments selling alcoholic beverages for on-premises consumption.
+  - Travel: airlines, hotels, motels, resorts, steamships, cruise lines; may include B&Bs, resorts, cabins, cottages, hostels, timeshares, short-term property rentals under 30 days, local inns. (App displays airline + hotel MCCs as "Travel.")
+  - Bills & Utilities: telecom, ISPs, subscription TV/radio/streaming, magazine/newspaper subscriptions, electric/gas power, water supply, refuse disposal, other utility services.
+  - Health & Beauty: drug stores/pharmacies (prescription drugs, OTC medicine, vitamins, cosmetics, toiletries), cosmetic stores, and membership sports/recreation facilities (health clubs, tennis, golf, swimming clubs).
+  - Grocery: food-for-home-consumption stores, convenience/bakery/delicatessen stores, wholesale clubs selling a full range of goods/services in warehouse-style stores. (App displays Grocery + Wholesale MCCs as "Grocery.")
+  - Gas: service stations selling engine fuel.
+  - Transportation: ground transportation — rental cars, taxis, rideshare, limousines, bus lines, passenger railways; also tolls, parking meters, parking garages. (App displays Ground Transportation MCCs as "Transportation.")
+  - Entertainment: movie theaters, theatrical/concert promoters, video rental/game stores, books/newsstands, amusement parks, music stores, toy/hobby stores.
+  - "Other": any Eligible Purchase not falling into the above 8 categories — not eligible for 3%/2%, earns 1% only.
+- Mechanics/how the top categories are determined (verbatim mechanics from official terms):
+  - At the end of each Statement Period, Eligible Purchases within each Spend Category are totaled; the category with the highest total dollar amount = Top Spend (3%); the category with the second-highest total = Second Top Spend (2%).
+  - No minimum amount of Eligible Purchases required to start earning Cash Rewards.
+  - No maximum amount of Eligible Purchases that may earn the 3% and 2% rates (i.e., official terms state there is no earning cap), though Synchrony reserves the right to add a cap to Spend Category purchases in the future via Program modification.
+  - Tie-breaker: if the dollar totals are equal in the top two Spend Categories in a Statement Period, Cash Rewards are assigned based on the fixed order the categories are listed above (e.g., a Gas/Transportation tie resolves with Gas getting 3% and Transportation 2%, since Gas is listed before Transportation).
+  - MCC-based classification: category assignment depends entirely on the merchant's assigned MCC, not on what's actually purchased (e.g., a gas station's attached café may carry a non-gas MCC and not qualify as "Gas"). Neither Venmo nor Synchrony assigns MCCs.
+  - Purchases made via a third-party payment account, mobile/wireless card reader, digital wallet, or similar technology that does not support transmission of MCCs earn only 1% (cannot qualify for 3%/2%).
+  - "Bonus Rewards" (extra promotional cash back) may periodically be offered on top of this structure, subject to separate terms, and may be modified/cancelled at any time.
+- Exclusions from "Eligible Purchases" (do not earn any Cash Rewards): cash advances (including non-Venmo P2P transactions classified as a cash advance) and any other transaction Synchrony determines, in its sole discretion, is not eligible ("Non-Rewards Eligible").
+- Rounding: fractional cent Cash Rewards round up if ≥ $0.005, round down if < $0.005.
+- Adjustments: cancelled transactions, refunds/credits from merchants, other account credits (incl. successful transaction disputes), or Program-abuse determinations can reduce Cash Rewards earned on a purchase, up to the full amount originally earned; can create a negative Cash Rewards balance, which is not transferred to the Venmo balance until resolved.
+
+Foreign Transaction Fee
+- None. Confirmed in the CFPB Account Agreement Rates and Fees Table ("Foreign Transaction: None") and restated in the agreement body ("We will not charge you a foreign transaction fee.").
+- Standard Visa currency-conversion disclosure applies: non-USD transactions are converted to USD by Visa U.S.A. Inc. using its own currency conversion procedure/rate (either a rate Visa selects from wholesale currency markets for the applicable central processing date, or a government-mandated rate), which may differ from the rate in effect on the transaction or posting date and may be higher than a direct USD-to-foreign-currency conversion.
+
+APR
+- Per the CFPB-filed Synchrony Bank "Venmo Visa Signature Credit Card Account Agreement" Rates and Fees Table (document dated 6/2021, doc code FR833282333, TC DC SIG PDF WF3895470D/E/F):
+  - Purchase APR = Prime Rate + a margin that depends on account tier, assigned at account opening based on creditworthiness:
+    - Account Type 1: Prime + 11.99% (illustrative: 15.24% APR "as of August 1, 2020")
+    - Account Type 2: Prime + 17.99% (illustrative: 21.24% APR "as of August 1, 2020")
+    - Account Type 3: Prime + 20.99% (illustrative: 24.24% APR "as of August 1, 2020")
+  - Cash Advance APR = Prime Rate + 20.99% for all account types (illustrative: 24.24% APR "as of August 1, 2020").
+  - Prime rate used = the highest bank prime loan rate published in the Wall Street Journal Money Rates section on the last business day of the calendar month preceding the first day of the billing cycle. Rate changes take effect the first day of the first billing cycle after a prime-rate change and apply to the entire account balance.
+  - No interest is charged on purchases if the entire balance is paid by the due date each month (grace period). Interest on cash advances begins accruing from the transaction date (no grace period on cash advances).
+  - Due date is at least 23 days after the close of each billing cycle.
+  - Minimum interest charge: no less than $2.00 if interest is charged in a billing cycle (allocated proportionately across balance types).
+- NOTE: This Rates and Fees Table is dated 6/2021 with illustrative rates "as of August 1, 2020" — no more current (2026-dated) official Schumer box/rates table was found during this research pass; absolute current APR percentages (post prime-rate movement since 2020/2021) could not be confirmed.
+
+Other Fees
+- Balance Transfer Fee: not offered/not mentioned in the CFPB Account Agreement or Rates and Fees Table (no balance transfer fee line item found; balance transfers do not appear to be a supported transaction type per the agreement's "Types of Transactions" section, which covers only Purchases and Cash Advances).
+- Cash Advance Fee: $10.00 or 5% of the cash advance amount, whichever is greater (per Rates and Fees Table and agreement body).
+- Late Payment Fee: $29 if the minimum payment was paid on time in each of the prior six billing cycles; $40 if not paid on time in any of the prior six billing cycles. Never more than the minimum payment that was due. (Note: FAQ page confirms a late fee applies but does not state the amount; the $29/$40 figures come from the CFPB agreement dated 6/2021.)
+- Returned Payment Fee: $29, never more than the amount permitted by applicable law.
+- Minimum Payment: the greater of (a) $29, or $40 (including any past-due amounts) if the minimum payment was missed in any of the prior six billing cycles; or (b) past-due amounts + 1% of the new statement balance (excluding special-promotion balances with unique payment calculations) + interest charged in the current cycle + late payment fees charged in the current cycle + any special-promotion payment due. Rounded up to the next whole dollar; never more than the new balance.
+- Balance calculation method: "daily balance," calculated separately per balance type (purchases, cash advances, and any balances subject to different rates/plans/promotions). Late payment fees and returned payment fees are treated as new purchases for balance purposes; cash advance fees are added to the cash advance balance.
+- Credit Limit: assigned at account opening, minimum of $250, including a cash advance limit that is a portion of the total credit limit. A temporary credit limit applies to the Virtual Card until the Physical Card is activated, at which point it is adjusted to the full credit limit.
+- Card structure: an account number is assigned to the cardholder's Venmo wallet (wallet-transactions-only); at least one Virtual Card is issued (accessible only via the Venmo app); a Physical Card is issued subsequently and requires activation before use. The Physical Card is printed with the cardholder's personal Venmo QR code. New virtual card numbers can be requested via the app.
+- Eligibility: a Venmo Credit Card account requires an open Venmo account in good standing that has existed for at least 30 calendar days prior to application. Closing the linked Venmo account will close the Venmo Credit Card account (subject to paying off any balance first).
+
+Redemption
+- Cash Rewards are automatically transferred to the cardholder's Venmo account balance at the end of each Statement Period (billing cycle) — generally within three business days, and in any event no more than one Statement Period after being earned — provided the Card Account and Venmo account are both open, in good standing, and linked.
+- No stated minimum redemption amount; rewards flow automatically as a Venmo balance credit (no manual redemption/point-conversion step; no separate "points" currency — cash back is denominated directly in dollars/cents).
+- Once in the Venmo balance, Cash Rewards can be used like any other Venmo balance: to make payments, make purchases, send money to other Venmo users, or transfer to a linked bank account or debit card — subject to standard Venmo account terms.
+- Venmo's marketing rewards page additionally advertises the option to direct cash back toward automatic cryptocurrency purchases with a "0% crypto transaction fee" (not available in Hawaii or where prohibited by law); mechanics/limits of this crypto auto-purchase option were not further detailed in the official pages fetched.
+- Cash Rewards do not expire, but can be forfeited: if the Card Account is closed by Synchrony, any Cash Rewards earned but not yet transferred to the Venmo balance are forfeited; if closed by the cardholder, any such earned-but-not-yet-transferred rewards are transferred at the end of that Statement Period; if the Venmo account is suspended, transfer is paused until reinstatement; if the Venmo account is closed or unlinked, the Card Account is closed and any earned-but-untransferred Cash Rewards are forfeited. New York-mailing-address accountholders get up to 90 days after closure/modification notice to redeem accumulated Cash Rewards (unless the account was delinquent or closed for fraud/misuse, in which case rewards are forfeited immediately).
+- Cash Rewards are explicitly stated to have "no cash value" until transferred to the Venmo balance, and no tangible/intangible right to them exists prior to that transfer.
+- Synchrony reserves the right to modify the Program at any time, including adding earning caps, changing Eligible Purchases/Spend Categories, excluding transactions, adding restrictions, or terminating the Program.
+
+Visa Signature Benefits
+- venmo.com/about/creditcard/features/visa references "Visa Signature® cardholders get extra travel and lifestyle perks" and points to an external "Visa Guide to Benefits" document; the page fetched in this research pass did not enumerate the specific individual benefits (e.g., travel/emergency assistance, concierge, etc.) — not confirmed in detail.
+
+Not found / not confirmed from official sources during this research pass (do not estimate):
+- Current, absolute (2026-dated) purchase/cash-advance APR percentages — only the prime-plus-margin formula and 2020-dated illustrative examples were found in the most recent official CFPB filing (6/2021); no more current official Schumer box/rates table was located.
+- Exact current, publicly-standing welcome/signup bonus terms (amount, spend requirement, expiration) — official pages show no standing bonus; only secondary-source references to targeted, in-app-only offers (e.g., "$100" and "triple cash back for 6 months") that could not be verified against an official Venmo page.
+- Whether a balance transfer option/fee exists at all (no mention found in official sources; likely not supported, but absence of evidence is not confirmation of non-existence).
+- Full enumerated list of Visa Signature benefits and their specific terms.
+- Specific credit limit ranges beyond the stated $250 minimum.
+- Exact mechanics/terms of the "0% crypto transaction fee" cash-back-to-crypto redemption option.
+- Whether the Venmo Credit Card is now issued only as "Visa Signature" or whether a non-Signature "Venmo Visa Credit Card" tier (referenced in some source titles/URLs, e.g. "Account Type 1/2/3") is still actively issued alongside or instead of the Signature product.
+
+Issued by Synchrony Bank pursuant to a license from Visa U.S.A. Inc. [per venmo.com/about/creditcard: "The Venmo Visa Credit Card is issued by Synchrony Bank pursuant to a license from Visa USA Inc."]

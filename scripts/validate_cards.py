@@ -7,7 +7,11 @@ Checks, per card file:
   3. Every category / merchant / currency.program / credit category / choice-option
      key exists in the data/meta/ registries; pseudo-categories may not be used as
      credit categories or choice options; a `choice` block appears only on the
-     'choice' pseudo-category, at most once per card.
+     'choice' pseudo-category, at most once per card; shared_cap_id groups have
+     >= 2 members with identical period and max_spend_usd; point-denominated
+     credits (amount_points) only on points cards; signup-bonus tier spend
+     requirements exceed the base requirement and strictly ascend;
+     conditional_rate / base_rate_conditional strictly exceed their baseline rate.
   4. `verification.last_verified_date` is not in the future and not stale
      (> STALE_DAYS old → warning; CI stays green so staleness nags, not blocks).
   5. The card is listed in docs/card-backlog.md — the backlog is the tracking
@@ -114,6 +118,41 @@ def main() -> int:
                 errors.append(f"{rel}: credits[{i}]: unknown category '{cat}'")
             elif cat in pseudo_categories:
                 errors.append(f"{rel}: credits[{i}]: '{cat}' is a pseudo-category and may not be a credit category")
+            if "amount_points" in credit and card["currency"]["type"] != "points":
+                errors.append(f"{rel}: credits[{i}]: amount_points on a cash card — point-denominated credits need a points program to value them")
+            if "expires" in credit:
+                expires = date.fromisoformat(credit["expires"])
+                if expires < date.today():
+                    warnings.append(f"{rel}: credits[{i}] '{credit['name']}' EXPIRED {expires} — re-check whether the promo was renewed and update")
+
+        # conditional_rate must genuinely be a boost over the stated baseline,
+        # otherwise the baseline was recorded wrong (or the two are swapped).
+        for kind_name, rewards in (("category_rewards", card["category_rewards"]),
+                                   ("merchant_rewards", card["merchant_rewards"])):
+            for i, rw in enumerate(rewards):
+                cond = rw.get("conditional_rate")
+                if cond and cond["rate"] <= rw["rate"]:
+                    errors.append(f"{rel}: {kind_name}[{i}]: conditional_rate {cond['rate']} must exceed the baseline rate {rw['rate']} — the plain rate must be the unconditional baseline")
+        cond = card.get("base_rate_conditional")
+        if cond and cond["rate"] <= card["base_rate"]:
+            errors.append(f"{rel}: base_rate_conditional {cond['rate']} must exceed base_rate {card['base_rate']} — base_rate must be the unconditional baseline")
+
+        # shared_cap_id: every group needs >= 2 members (else it's a typo or
+        # pointless) all stating the same pool (period + max_spend_usd).
+        cap_groups: dict[str, list] = {}
+        for kind_name, rewards in (("category_rewards", card["category_rewards"]),
+                                   ("merchant_rewards", card["merchant_rewards"])):
+            for i, rw in enumerate(rewards):
+                cap = rw.get("cap")
+                if cap and "shared_cap_id" in cap:
+                    cap_groups.setdefault(cap["shared_cap_id"], []).append(
+                        (f"{kind_name}[{i}]", cap))
+        for gid, members in sorted(cap_groups.items()):
+            if len(members) < 2:
+                errors.append(f"{rel}: {members[0][0]}: shared_cap_id '{gid}' has only one member — drop it or add the other entries sharing the pool")
+            pools = {(c["period"], c["max_spend_usd"]) for _, c in members}
+            if len(pools) > 1:
+                errors.append(f"{rel}: shared_cap_id '{gid}': members disagree on the pool ({sorted(pools)}) — each entry must state the identical period and max_spend_usd")
 
         if path.stem not in backlog:
             warnings.append(
@@ -129,10 +168,20 @@ def main() -> int:
             populated.add("signup_bonus")
         if "closed_loop" in card:
             populated.add("closed_loop")
+        if "relationship_boost" in card:
+            populated.add("relationship_boost")
+        if "required_membership" in card:
+            populated.add("required_membership")
         for block in sorted(populated - supported):
             warnings.append(f"{rel}: UNSOURCED — no entry in `sources` supports the '{block}' block")
 
         bonus = card["signup_bonus"]
+        if bonus is not None and "tiers" in bonus:
+            reqs = [t["spend_requirement_usd"] for t in bonus["tiers"]]
+            if reqs and reqs[0] <= bonus["spend_requirement_usd"]:
+                errors.append(f"{rel}: signup_bonus.tiers[0] spend requirement {reqs[0]} must exceed the base requirement {bonus['spend_requirement_usd']} (tiers are cumulative)")
+            if reqs != sorted(reqs) or len(set(reqs)) != len(reqs):
+                errors.append(f"{rel}: signup_bonus.tiers spend requirements must strictly ascend, got {reqs}")
         if bonus is not None and "expires" in bonus:
             expires = date.fromisoformat(bonus["expires"])
             if expires < date.today():

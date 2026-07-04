@@ -1,0 +1,55 @@
+Target Circle Card (TD Bank USA, N.A.) — store-only credit card version of Target's Circle Card family
+Sources: target.com/circlecard; target.com/help/article/000062733 (Target Circle Card Benefits); Target Credit Card Agreement "TD TC161965 (R01.26)" via td.com/content/dam/tdb/document/pdf/about-us/target_nordstrom_cc_disclosures.pdf; digitalcontent.target.com credit agreement (R06.22, June 2022, cross-check); frequentmiler.com and joinkudos.com (secondary cross-check only)
+
+NOTE ON CARD FAMILY: Target currently offers four "Target Circle" branded card products: (1) Target Circle Card — closed-loop store credit card, usable only at Target stores in the US and Target.com, issued by TD Bank USA, N.A.; this is the card documented below. (2) Target Circle Card Mastercard — open-loop, usable anywhere Mastercard is accepted, also issued by TD Bank USA, N.A., has different (broader) earn rates (2% dining/gas, 1% elsewhere) not covered here. (3) Target Circle Debit Card — linked to a checking account, not a credit product. (4) Target Circle 360 Reloadable Account — prepaid, not a credit product. Do not conflate the Mastercard's 2%/1% off-Target earn rates with this store-only card; the store-only card has no reward for purchases made elsewhere.
+
+Annual Fee
+- $0 (no monthly or annual fee).
+
+Closed-Loop / Where Usable
+- Closed-loop: per the cardmember agreement, the Card "may only be used to make purchases of goods and services at Target stores located in the United States and from the Target.com website." Not usable anywhere else (no gas stations, no restaurants, no general merchant acceptance) — that broader acceptance is exclusive to the separate Target Circle Mastercard.
+
+Earn Rates (in Target Circle Rewards / discount form, not point currency)
+- 5% off at Target: applies at Target stores and Target.com when paid with the Target Circle Card, Target Debit Card, Target Credit Card, or Target Circle Mastercard. Framed by Target as a 5% instant discount at checkout rather than accrued "points."
+- 5% off Starbucks purchases at in-store Starbucks locations inside Target.
+- 5% off specialty/gift-card-adjacent purchases as listed on the benefits page (see exclusions below for what's carved out).
+- No stated reward rate for purchases made elsewhere — card cannot be used elsewhere (closed-loop).
+- Per official benefits article, the 5% discount does NOT apply to: pharmacy items and clinic services; Target Optical exams and vision protection plans; gift cards and prepaid cards (Target GiftCards, Visa/Mastercard/American Express gift cards, sports-betting-branded cards, Starbucks cards); Shipt membership fees and Target Circle 360 membership fees; alcohol purchases in Indiana; wireless protection plans, gift wrapping, taxes, shipping charges, and other fees; previous purchases; and account payments. Discount is applied only to the portion of a transaction actually paid with the card (not portions paid via other tender when split payment is used), and is calculated after other discounts and promotional gift-card value are subtracted.
+
+Signup / Welcome Offer
+- New credit-cardholders get $50 in Target Circle Rewards after spending $50 or more on qualifying purchases in-store or on Target.com within 60 days of account approval.
+- Offer does not apply to mail-in applications.
+- Qualifying-spend exclusions for the offer: alcohol; Target GiftCards; Visa/American Express/Mastercard gift cards and prepaid cards; CVS pharmacy and clinic purchases; Target Optical.
+- Reward credited to the Target Circle account within 24 hours of approval per some sources; limit of one acquisition/welcome credit per guest, lifetime (shared limit with the Target Circle Reloadable Account).
+- Target Circle Rewards (including this welcome credit) expire after one year of no reward activity (no earning or redeeming) on the account.
+- Offer terms subject to change or cancellation at any time; exact current wording should be reverified at time of application since Target periodically runs elevated limited-time versions (e.g., a promotional $100 offer was seen for a specific application window in June 2026 — treat any such elevated amount as temporary/promotional, not the standing offer).
+
+Financing / Deferred-Interest Offers
+- Could not find a standing 0% APR or deferred-interest promotional financing offer disclosed in the current cardmember agreement or the official benefits/terms pages searched. The agreement's "SPECIAL PROMOTIONS" clause reserves the right for Target/TD Bank to offer special financing from time to time with its own terms, but no specific current deferred-interest program (e.g., "no interest if paid in full within N months" on large purchases) was found advertised for this store-only card as of this research. Treat as a gap — do not assume a promo APR exists.
+
+Perks
+- Extended returns: 30 additional days beyond Target's standard return window on purchases made with the Target Circle Card (also applies to Target Debit Card, Target Credit Card, and Target Mastercard). Per the benefits page, this extended-return perk does not apply to Target Optical purchases, contract/carrier phone purchases, or purchases paid partly via SNAP/EBT combined with the card.
+- Free 2-day shipping on eligible/hundreds of thousands of items when checking out on Target.com with the card (no minimum-purchase threshold, vs. the $35 minimum non-cardholders need for free 2-day shipping); also described elsewhere as free standard shipping on most items.
+- Target Circle 360 membership discount: cardholders can get the Target Circle 360 paid membership tier (same-day delivery, etc.) for $49/year instead of the standard $99/year (50% off).
+- Access to cardholder-exclusive offers/items surfaced periodically in the Target Circle app/account (issuer describes these only generically as "exclusive extras" without a fixed list).
+- Wallet/Target-app integration for in-app checkout convenience.
+- Birthday 5% discount, single-purchase, valid 30 days after the cardholder's birthday: this is a benefit of free Target Circle membership generally (available to any Target Circle member who adds a birthdate), not an exclusive perk of holding the Circle Card — noting to avoid over-crediting the card.
+- Target Circle Deal Days early access: early-access windows are tied to Target Circle 360 (paid) membership status in observed 2026 promotions, not confirmed as a Circle-Card-specific exclusive; flagging as unverified whether the plain credit card (without Circle 360) grants early access on its own.
+
+Interest / Fees (from current cardmember agreement, "Target Credit Card" section, revision TD TC161965 (R01.26))
+- Purchase APR: variable, set at Prime Rate + 19.65% margin per the 2022-dated agreement text and Prime Rate + 21.45% margin per the most current (R01.26) fee schedule found — the current disclosure lists an example Purchase APR of 28.20% (as of the billing period referenced in that document; will move with the Prime Rate). Confirm the live rate at application since it is variable and tied to the WSJ Prime Rate.
+- No penalty/default APR disclosed for this store card.
+- Minimum interest charge: $1.00 in any billing period where interest is imposed.
+- Grace period: due date is at least 25 days after the close of the billing cycle; no interest on purchases if the full New Balance is paid by the due date.
+- Late Payment Fee: $30 for a first late payment; escalates to $41 for subsequent late payments until the Minimum Payment Due is made on time for six consecutive billing periods. Fee is capped at that period's Minimum Payment Due if lower.
+- Returned Payment Fee: up to $30 (matches the current fee schedule; an older 2022-dated version of the agreement listed $27, showing this fee has moved over time — use the current $30 figure).
+- No annual fee, confirmed in the fee schedule as "None."
+- Minimum Payment Due: greater of $27.00 (per 2018-era text — later revisions may differ; not reconfirmed in the current disclosure excerpt reviewed) or 1% of New Balance plus interest/returned-payment/late fees.
+- Governed by federal law and the substantive laws of Delaware (with a Maryland-law carve-out clause for accounts a court finds subject to Maryland consumer credit law).
+- Account is unsecured; no security interest taken.
+- Card can be used only for personal, family, or household purposes (not business use).
+
+Redemption
+- Rewards are delivered as an automatic 5% instant discount at checkout on qualifying Target purchases, and as "Target Circle Rewards" (dollar-value reward credits, e.g. the $50 welcome offer) applied to the cardholder's Target Circle account for use on future purchases — this is a discount/rebate model, not a transferable point currency, and there is no cash-out, statement-credit, or travel-transfer redemption path described anywhere in official materials reviewed.
+
+Issued by TD Bank USA, N.A. (Target has the contractual right to service the accounts and collect on TD Bank's behalf, per the cardmember agreement).

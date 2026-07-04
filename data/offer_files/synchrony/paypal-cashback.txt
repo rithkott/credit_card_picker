@@ -1,0 +1,82 @@
+PayPal Cashback Mastercard (Synchrony Bank)
+[Official Synchrony/PayPal legal documents cover two co-badged products under one agreement: "PayPal Cashback Mastercard®" and "PayPal Cashback World Mastercard®." This file documents the standard PayPal Cashback Mastercard; the World Mastercard variant shares the same rewards terms and appears to share the same rates/fees table, per the combined credit card agreement below. There was an older, differently-named predecessor product ("PayPal Extras Mastercard") with a flat 2% + eBay rewards structure, documented in a 2017/2021-dated CFPB-filed agreement — that structure has been superseded; do not use it. All facts below are drawn from documents dated January 2026 (account agreement) and rewards terms revised 3/2026, i.e. current as of this research pass (July 2026).]
+
+Sources used:
+- https://www.paypal.com/us/digital-wallet/manage-money/paypal-cashback-mastercard (official product/marketing page)
+- https://www.paypal.com/us/cshelp/article/how-does-cash-back-rewards-work-with-paypal-cashback-mastercard-help757 (official PayPal help article)
+- https://apply.syf.com/cs/groups/public/documents/et_tcdoc/e049364.pdf (Synchrony Bank "Section I: Rates and Fees Table — PayPal Cashback Mastercard Account Agreement," dated accurate as of May 20, 2021 — superseded on APR figures by the combo terms doc below, kept for context/cross-check)
+- https://www.synchronybankterms.com/syfterms/html/PayPalCashbackApplyTerms_combo.htm (Synchrony Bank "Credit Card Agreement — PayPal Cashback Mastercard or PayPal Cashback World Mastercard," rates/fees "accurate as of January 1, 2026" — most current official source found, used as primary source for APR/fees below)
+- https://www.synchronycredit.com/syfterms/html/PayPalCashbackRewardsTerms.htm (Synchrony Bank "Rewards Terms and Conditions for PayPal Cashback Mastercard or PayPal Cashback World Mastercard," document code dated 1/2022, REV 3/2026 — used for rewards program details)
+- (secondary cross-check only, not used as source of any number) NerdWallet, WalletHub review pages confirming general 3%/1.5% structure
+
+Annual Fee
+- None. Confirmed in the Rates and Fees Table of the official Synchrony Bank combined credit card agreement ("Annual Fee: None") and on the PayPal marketing page ("There is no annual fee with the PayPal Cashback Mastercard").
+
+Signup/Welcome Bonus
+- Not found on any official page checked (PayPal marketing page, PayPal help article, Synchrony terms pages). No sign-up/welcome bonus is disclosed anywhere in the official sources reviewed.
+
+Earn Rates ("Cash Rewards" / "Cash Back")
+- Requires an active PayPal account in good standing, linked to the Card Account, to earn or redeem rewards. Per PayPal: "You will need an active PayPal account in good standing to apply for and manage your PayPal Cashback Mastercard."
+- 3%: "Each Eligible Purchase made by you through your PayPal account online, or when you send money to other PayPal users through your PayPal account will earn 3% Cash Rewards."
+- 1.5%: "Each Eligible Purchase made by you everywhere else that Mastercard is accepted will earn 1.5% Cash Rewards."
+- Authorized users: earn 1.5% on all Eligible Purchases (even PayPal ones), unless/until PayPal in the future allows an authorized user to add their own Card to their own PayPal account, at which point their PayPal-account purchases would earn 3% and other purchases 1.5%.
+- No minimum spend required to earn Cash Rewards and no maximum/cap on Cash Rewards earned.
+- "Eligible Purchases" = dollar amount of purchases of goods/services on the Card Account, plus amounts sent to another PayPal user via the Card Account through PayPal. Eligible Purchases do NOT include: balance transfers, cash advances, convenience checks, disputed transactions, unauthorized/fraudulent transactions, interest, fees, or any other transaction Synchrony determines in its sole discretion is ineligible.
+- Cash Rewards do not expire, but may be forfeited (see "Caveats" below).
+- Fractional cents round up at $0.005 or more, otherwise round down.
+- "Bonus Cash Rewards" (extra % on certain purchases) may be offered from time to time under separate promotional terms; no specifics available generally (offer-specific).
+- Historical note: an older Synchrony-filed agreement (PayPal Extras Mastercard, CFPB filing, "accurate as of" no later than 2017/2021 revision) described a flat "2% Cash Rewards on all Eligible Purchases" including at PayPal.com and eBay.com — this is a legacy/superseded structure under a different product name and should not be used for the current card.
+
+Redemption
+- Cash Rewards are made available for transfer to the Accountholder's PayPal account within approximately 3 days after each Eligible Purchase.
+- Minimum to transfer: must have at least $0.01 in Cash Rewards available.
+- To use: log in to PayPal account, view the Card Account Rewards Summary Page, and transfer the chosen amount to your PayPal account.
+- If you have a PayPal Balance account: transferred Cash Rewards can be used to make payments/purchases, send money to other PayPal users, or be transferred to a linked bank account/debit card.
+- If you do NOT have a PayPal Balance account: the only option is to transfer Cash Rewards to a linked bank account or debit card.
+- Cash Rewards earned by authorized users may only be transferred to the primary Accountholder's PayPal account (not the authorized user's own account).
+- Cash Rewards "have no cash value" until redeemed/transferred per the terms; the Program is described as promotional, with no consideration paid for participation.
+
+Caveats / Forfeiture Conditions
+- If the Card Account is delinquent (missed minimum payment): rewards earning/redemption may be paused starting the next billing cycle until the account is brought current; if minimum payment is missed for 2 consecutive billing cycles, Cash Rewards earning stops and any accumulated Cash Rewards are forfeited starting the 3rd cycle.
+- If the Card Account is closed for any reason: Program participation terminates and any unredeemed Cash Rewards are forfeited.
+- If the linked PayPal account is suspended: redemption is blocked until the PayPal account is reinstated (rewards keep accruing per terms, but can't be transferred).
+- If the linked PayPal account is closed, or the Card Account becomes unlinked from the PayPal account: the Card Account will be closed and any unredeemed Cash Rewards are forfeited.
+- New York residents: may redeem accumulated Cash Rewards for up to 90 days after Synchrony sends notice that the account is closed or the Program is modified/canceled/terminated — except rewards are still forfeited if the account was delinquent or closed for fraud/misuse.
+- Synchrony reserves the right to add caps, modify eligible purchases, exclude transactions, add restrictions, or terminate the Program at any time in its sole discretion.
+
+Foreign Transaction Fee
+- 3% of each transaction (applies to purchases and cash advances made in a currency other than U.S. dollars, and/or in a country other than the U.S., "whether or not the transaction was in a foreign currency").
+
+APR
+- Purchase APR (set at account opening based on creditworthiness, then variable with Prime Rate), per the January 1, 2026 Rates and Fees Table:
+  - Account Type 1: 18.49% (Prime + 11.74%)
+  - Account Type 2: 30.24% (Prime + 23.49%)
+  - Account Type 3: 33.24% (Prime + 26.49%)
+  - "A limited number of applicants are expected to receive Account Types 1 and 2" (i.e., most approved applicants likely land in Type 3, the highest tier).
+  - None of the purchase/cash-advance/penalty APRs will exceed 35.99% regardless of Prime Rate moves.
+- APR for Cash Advances: 33.24% (Prime + 26.49%), variable, capped at 35.99%.
+- Penalty APR: 34.24% (Prime + 27.49%), variable, capped at 35.99%. Applies if the total minimum payment due is not received by the due date 2 or more times during any 12 consecutive billing cycles. Once in effect, the Penalty APR "may remain in effect indefinitely," though Synchrony states it will periodically review the account for a possible reduction.
+- Interest is calculated via a daily rate (APR ÷ 365) applied to the daily balance for each balance type (purchases, cash advances, etc.), by the "daily balance" method (see below).
+- No interest on purchases if the entire balance is paid by the due date each billing cycle (standard grace period); cash advances always accrue interest from the transaction date, with no grace period.
+- Minimum Interest Charge: no less than $2.00 in any billing cycle in which interest is owed.
+
+Other Fees (per Synchrony Bank Credit Card Agreement, effective/accurate as of January 1, 2026):
+- Balance Transfer Fee: Not disclosed/not found in the official Rates and Fees Table or Agreement text reviewed. Balance transfers are referenced only as a category of transaction excluded from earning Cash Rewards; no balance-transfer fee amount or availability statement was found. Flagged below as unconfirmed.
+- Cash Advance Fee: Either $10.00 or 5% of the amount of each cash advance, whichever is greater.
+- Foreign Transaction Fee: 3% of each transaction (see above).
+- Late Payment Fee: $29 if the total minimum payment was paid by the due date in each of the prior 6 billing cycles; otherwise $40 if it was missed in any one or more of the prior 6 billing cycles. Fee will never exceed the total minimum payment that was due.
+- Returned Payment Fee: $30 if no returned payment fee was charged in any of the prior 6 billing cycles; otherwise $41 if one was charged in any of the prior 6 billing cycles. Will not exceed the amount permitted by applicable law.
+- Paper Statement Fee: $1.99 per month, charged in any billing cycle where the balance exceeds $2.50 and a paper statement is sent (even if also provided electronically). Avoidable by electing electronic-only statements.
+- Minimum Payment: The greater of (a) $29, or $40 if the total minimum payment was missed in any of the prior 6 billing cycles (includes past-due amounts); or (b) the sum of: any past-due amount + 1% of the new balance (excluding certain special-promotion balances) + any late payment fees charged in the current cycle + all interest charged in the current cycle + any payment due on a special promotional purchase. Rounded up to the next whole dollar. Never more than the new balance.
+- Balance calculation method: "Daily balance" — starting balance each day, plus new charges/fees, minus payments/credits; daily rate (APR/365) applied to each day's balance for each balance type (purchases, cash advances, etc.), then summed over the billing cycle.
+- Special promotional financing (e.g., "No Interest if Paid in Full Within 6/12/18 Months") may be offered on certain purchases per separate promotional disclosures; if the promotional balance isn't paid in full within the promo period, interest is retroactively assessed from the purchase date at the standard Purchase APR.
+
+Not found / not confirmed from official sources during this research pass (do not estimate):
+- No signup/welcome bonus was found on any official PayPal or Synchrony page.
+- Balance Transfer Fee / whether balance transfers are actually offered as a feature on this card — no amount or explicit availability statement found in the official Rates and Fees Table or Agreement.
+- Exact current Prime Rate used as of Jan 1, 2026 to derive the stated APRs (the Agreement gives the resulting APR and the margin over Prime, but does not separately restate the raw Prime Rate value).
+- Any credit score/creditworthiness thresholds tied to Account Type 1 vs. 2 vs. 3 approval (Synchrony discloses only that "a limited number of applicants are expected to receive Account Types 1 and 2," without further criteria).
+- Specifics of "Bonus Cash Rewards" promotional offers (rates, categories, durations) — these are offer-specific and not published in the standing terms.
+- Whether the World Mastercard variant (co-mentioned throughout the Agreement) differs in any way (e.g., additional benefits like travel/purchase protections) from the standard PayPal Cashback Mastercard — the Agreement text treats both as sharing identical rates, fees, and rewards terms, but no separate World Mastercard benefits guide was located.
+
+Issued by Synchrony Bank pursuant to a license by Mastercard. [Exact wording per PayPal's official product page: "The PayPal Cashback Mastercard is issued by Synchrony Bank pursuant to a license by Mastercard." The Synchrony Credit Card Agreement itself identifies the account as offered by "Synchrony Bank (the 'Lender')" without restating the Mastercard license clause verbatim in the portion reviewed.]

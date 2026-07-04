@@ -158,6 +158,13 @@ pre#yaml .k{color:var(--code-key)} pre#yaml .s{color:var(--code-str)} pre#yaml .
     <div class="field"><label for="base">base_rate <span class="req">*</span></label>
       <input type="number" id="base" class="mono" min="0" step="any" placeholder="1"></div>
   </div>
+  <label class="check" style="margin-top:10px"><input type="checkbox" id="bcron"> base rate has a conditional boost (membership / payment method — stored, unscored)</label>
+  <div class="grid g2 sub" id="bcrfields" hidden>
+    <div class="field"><label for="bcrate">conditional rate <span class="req">*</span> <span class="hint">must exceed base_rate</span></label>
+      <input type="number" id="bcrate" class="mono" min="0" step="any"></div>
+    <div class="field"><label for="bcreq">requires <span class="req">*</span></label>
+      <input type="text" id="bcreq" placeholder="paid via Apple Pay"></div>
+  </div>
 </section>
 
 <section class="block">
@@ -186,26 +193,35 @@ pre#yaml .k{color:var(--code-key)} pre#yaml .s{color:var(--code-str)} pre#yaml .
   <p class="why">One-time, year-one only, current public offer only. Mark limited-time elevated promos and their end date — the validator nags once an offer expires so it can't silently inflate recommendations.</p>
   <div class="toggle-row">
     <label class="radio"><input type="radio" name="sub" value="none" checked> no public bonus</label>
-    <label class="radio"><input type="radio" name="sub" value="usd"> cash bonus</label>
-    <label class="radio"><input type="radio" name="sub" value="points"> points bonus</label>
+    <label class="radio"><input type="radio" name="sub" value="bonus"> standard bonus</label>
+    <label class="radio"><input type="radio" name="sub" value="match"> first-year match (Discover)</label>
   </div>
   <div id="subfields" hidden>
-    <div class="grid g3">
-      <div class="field"><label for="subval">bonus value <span class="req">*</span> <span class="hint" id="subunit">USD</span></label>
-        <input type="number" id="subval" class="mono" min="0" step="any"></div>
+    <div class="grid g2">
+      <div class="field"><label for="subpts">bonus points <span class="hint">at least one of points / USD</span></label>
+        <input type="number" id="subpts" class="mono" min="0" step="any"></div>
+      <div class="field"><label for="subusd">bonus USD <span class="hint">use both for mixed bonuses</span></label>
+        <input type="number" id="subusd" class="mono" min="0" step="any"></div>
       <div class="field"><label for="subspend">spend requirement (USD) <span class="req">*</span></label>
         <input type="number" id="subspend" class="mono" min="0" step="any"></div>
       <div class="field"><label for="subwin">window (months) <span class="req">*</span></label>
         <input type="number" id="subwin" class="mono" min="0" step="any"></div>
+    </div>
+    <div style="margin-top:12px">
+      <div id="subtiers"></div>
+      <button type="button" class="btn-add" data-add="tier">+ Add bonus tier (extra tranche at higher cumulative spend)</button>
     </div>
     <div class="grid g2" style="margin-top:12px">
       <label class="check"><input type="checkbox" id="sublimited"> limited-time elevated offer</label>
       <div class="field"><label for="subexp">offer expires <span class="hint">omit if evergreen</span></label>
         <input type="date" id="subexp"></div>
     </div>
-    <div class="field" style="margin-top:12px"><label for="subnotes">notes <span class="hint">e.g. "standard offer is 60k"</span></label>
-      <input type="text" id="subnotes"></div>
   </div>
+  <div id="submatch" hidden>
+    <p class="none-note">Issuer matches all rewards earned in year one — no value/spend fields; the optimizer values it as the card's own first-year earnings.</p>
+  </div>
+  <div class="field" id="subnoteswrap" style="margin-top:12px" hidden><label for="subnotes">notes <span class="hint">e.g. "standard offer is 60k"</span></label>
+    <input type="text" id="subnotes"></div>
 </section>
 
 <section class="block">
@@ -229,8 +245,26 @@ pre#yaml .k{color:var(--code-key)} pre#yaml .s{color:var(--code-str)} pre#yaml .
     <div class="field"><label for="minscore">estimated min FICO <span class="hint">optional, 300–850</span></label>
       <input type="number" id="minscore" class="mono" min="300" max="850"></div>
   </div>
-  <div class="field" style="margin-top:12px"><label for="apnotes">approval notes <span class="hint">Chase 5/24, Amex lifetime bonus, deposit…</span></label>
+  <div class="field" style="margin-top:12px"><label for="apnotes">approval notes <span class="hint">Chase 5/24, Amex lifetime bonus, deposit, free credit-union eligibility…</span></label>
     <input type="text" id="apnotes"></div>
+</section>
+
+<section class="block">
+  <h2><code>required_membership</code> &amp; <code>max_annual_rewards_usd</code> <span class="hint" style="font-weight:400">rare</span></h2>
+  <p class="why">A PAID membership prerequisite (Sam's Club, Amazon Prime, REI Co-op, Robinhood Gold) — stored, unscored; the optimizer assumes the user holds it. The reward cap is for issuers that cap total reward dollars per year (Sam's Cash $5,000/yr), not spend at a rate.</p>
+  <label class="check" style="margin-bottom:10px"><input type="checkbox" id="rmon"> a paid membership gates this card or its earn</label>
+  <div id="rmfields" hidden>
+    <div class="grid g2">
+      <div class="field"><label for="rmname">membership name <span class="req">*</span></label>
+        <input type="text" id="rmname" placeholder="Amazon Prime"></div>
+      <div class="field"><label for="rmcost">annual cost (USD) <span class="hint">cheapest qualifying tier</span></label>
+        <input type="number" id="rmcost" class="mono" min="0" step="any"></div>
+    </div>
+    <div class="field" style="margin-top:10px"><label for="rmnote">note <span class="req">*</span> <span class="hint">what it gates: eligibility, earn rate, redemption</span></label>
+      <input type="text" id="rmnote"></div>
+  </div>
+  <div class="field" style="margin-top:12px"><label for="maxrew">max annual rewards (USD) <span class="hint">omit unless the issuer caps total reward dollars/yr</span></label>
+    <input type="number" id="maxrew" class="mono" min="0" step="any"></div>
 </section>
 
 <section class="block">
@@ -242,6 +276,22 @@ pre#yaml .k{color:var(--code-key)} pre#yaml .s{color:var(--code-str)} pre#yaml .
       <div class="chips" id="clchips"></div></div>
     <div class="field" style="margin-top:12px"><label for="clnote">note</label>
       <input type="text" id="clnote" placeholder="RedCard works only at Target / Target.com"></div>
+  </div>
+</section>
+
+<section class="block">
+  <h2><code>relationship_boost</code> <span class="hint" style="font-weight:400">banking-relationship cards only</span></h2>
+  <p class="why">For cards whose earn scales with a deposit/investment relationship (BofA Preferred Rewards, U.S. Bank Smartly). Recorded but unscored in v1 — the card's rates above must always be the no-relationship baseline.</p>
+  <label class="check" style="margin-bottom:10px"><input type="checkbox" id="rbon"> earn scales with a banking relationship</label>
+  <div id="rbfields" hidden>
+    <div class="field"><label for="rbprog">program <span class="req">*</span></label>
+      <input type="text" id="rbprog" placeholder="Bank of America Preferred Rewards"></div>
+    <div style="margin-top:10px">
+      <div id="rbtiers"></div>
+      <button type="button" class="btn-add" data-add="rbtier">+ Add relationship tier</button>
+    </div>
+    <div class="field" style="margin-top:10px"><label for="rbnote">note <span class="req">*</span> <span class="hint">which accounts qualify, caps, base-vs-bonus mechanics</span></label>
+      <input type="text" id="rbnote"></div>
   </div>
 </section>
 
@@ -302,9 +352,9 @@ pre#yaml .k{color:var(--code-key)} pre#yaml .s{color:var(--code-str)} pre#yaml .
 const CATS = ["groceries","dining","travel_flights","travel_hotels","travel_other","gas","transit","streaming","drugstores","online_shopping","entertainment","utilities","other","rotating","choice"];
 const PSEUDO_CATS = ["rotating","choice"];
 const MERCHANTS = ["amazon","whole_foods","walmart","target","costco","uber","lyft","dunkin"];
-const PROGRAMS = ["cash","chase_ur","amex_mr","citi_typ","capital_one_miles","discover_cashback"];
-const SUPPORTS = ["identity","currency","base_rate","category_rewards","merchant_rewards","credits","signup_bonus","fees","approval","closed_loop","benefit_flags"];
-const PERIODS = ["monthly","quarterly","semiannual","annual","every_4_years"];
+const PROGRAMS = ["cash","chase_ur","amex_mr","citi_typ","capital_one_miles","wells_fargo_rewards","bilt_points","discover_cashback","bofa_premium_rewards","bofa_travel_rewards","us_bank_points","navy_federal_rewards","penfed_points","fidelity_rewards","sofi_points","robinhood_points","luxury_card_points","delta_skymiles","united_mileageplus","southwest_rapid_rewards","jetblue_trueblue","aa_advantage","aeroplan","avios","flying_blue","emirates_skywards","frontier_miles","miles_and_more","atmos_rewards","allegiant_points","world_of_hyatt","marriott_bonvoy","hilton_honors","ihg_one_rewards","wyndham_rewards","choice_privileges","mycruise_points","disney_rewards","gm_rewards","verizon_dollars","nordstrom_notes","macys_star_money","best_buy_rewards","rei_rewards","kohls_rewards","rci_rewards"];
+const SUPPORTS = ["identity","currency","base_rate","category_rewards","merchant_rewards","credits","signup_bonus","fees","approval","closed_loop","relationship_boost","required_membership","benefit_flags"];
+const PERIODS = ["monthly","quarterly","semiannual","annual","every_4_years","every_5_years"];
 const CAP_PERIODS = ["monthly","quarterly","annual"];
 
 const $ = (s,el=document)=>el.querySelector(s);
@@ -322,6 +372,7 @@ function capFields(){ return `
       <div class="field"><label>cap period</label><select data-role="capperiod">${opts(CAP_PERIODS,"annual")}</select></div>
       <div class="field"><label>max spend (USD) <span class="hint">spend, not reward</span></label><input type="number" data-role="capmax" class="mono" min="0" step="any"></div>
       <div class="field"><label>fallback rate</label><input type="number" data-role="capfall" class="mono" min="0" step="any"></div>
+      <div class="field"><label>shared cap id <span class="hint">only for combined caps; each entry states the FULL pool</span></label><input type="text" data-role="capshared" class="mono" placeholder="gas_grocery"></div>
     </div>
   </div>`;}
 
@@ -336,8 +387,16 @@ function addCat(){
     <div class="grid g3" style="margin-top:10px">
       ${capFields()}
       <label class="check"><input type="checkbox" data-role="portal"> portal only</label>
+      <label class="check"><input type="checkbox" data-role="enrollcat"> requires enrollment</label>
       <label class="check"><input type="checkbox" data-role="roton"> rotating quarterly</label>
       <label class="check"><input type="checkbox" data-role="chon"> choose-your-own category</label>
+      <label class="check"><input type="checkbox" data-role="condon"> conditional boost</label>
+    </div>
+    <div class="sub" data-role="condfields" hidden>
+      <div class="grid g2">
+        <div class="field"><label>conditional rate <span class="req">*</span> <span class="hint">must exceed the baseline rate; stored, unscored</span></label><input type="number" data-role="condrate" class="mono" min="0" step="any"></div>
+        <div class="field"><label>requires <span class="req">*</span></label><input type="text" data-role="condreq" placeholder="linked Walmart+ membership"></div>
+      </div>
     </div>
     <div class="sub" data-role="rotfields" hidden>
       <div class="grid g2">
@@ -361,7 +420,15 @@ function addMer(){
       <div class="field"><label>merchant</label><select data-role="mer">${opts(MERCHANTS,"amazon")}</select></div>
       <div class="field"><label>rate <span class="req">*</span></label><input type="number" data-role="rate" class="mono" min="0" step="any"></div>
     </div>
-    <div class="grid g3" style="margin-top:10px">${capFields()}</div>
+    <div class="grid g3" style="margin-top:10px">${capFields()}
+      <label class="check"><input type="checkbox" data-role="condon"> conditional boost</label>
+    </div>
+    <div class="sub" data-role="condfields" hidden>
+      <div class="grid g2">
+        <div class="field"><label>conditional rate <span class="req">*</span> <span class="hint">must exceed the baseline rate; stored, unscored</span></label><input type="number" data-role="condrate" class="mono" min="0" step="any"></div>
+        <div class="field"><label>requires <span class="req">*</span></label><input type="text" data-role="condreq" placeholder="Sam's Club Plus tier"></div>
+      </div>
+    </div>
     <div class="field" style="margin-top:10px"><label>notes</label><input type="text" data-role="notes"></div>
   </div>`);
 }
@@ -371,16 +438,48 @@ function addCred(){
     <div class="item-head"><span class="item-title">Credit</span><button type="button" class="btn-x" data-remove>Remove</button></div>
     <div class="grid g3">
       <div class="field"><label>name <span class="req">*</span></label><input type="text" data-role="name" placeholder="Uber Cash"></div>
-      <div class="field"><label>amount (USD, per period) <span class="req">*</span></label><input type="number" data-role="amount" class="mono" min="0" step="any"></div>
-      <div class="field"><label>period</label><select data-role="period">${opts(PERIODS,"monthly")}</select></div>
+      <div class="field"><label>amount (per period) <span class="req">*</span></label><input type="number" data-role="amount" class="mono" min="0" step="any"></div>
+      <div class="field"><label>amount unit <span class="hint">points cards only for points</span></label>
+        <select data-role="amtunit"><option value="usd">USD</option><option value="points">points</option></select></div>
     </div>
-    <div class="grid g2" style="margin-top:10px">
+    <div class="grid g3" style="margin-top:10px">
+      <div class="field"><label>period</label><select data-role="period">${opts(PERIODS,"monthly")}</select></div>
       <div class="field"><label>offsets category <span class="hint">optional</span></label>
         <select data-role="cat"><option value="">—</option>${opts(CATS.filter(c=>!PSEUDO_CATS.includes(c)))}</select></div>
-      <div class="field"><label>notes</label><input type="text" data-role="notes"></div>
+      <div class="field"><label>unlock spend (USD/period) <span class="hint">spend-triggered credits only</span></label>
+        <input type="number" data-role="unlock" class="mono" min="0" step="any"></div>
+    </div>
+    <div class="grid g3" style="margin-top:10px">
+      <label class="check"><input type="checkbox" data-role="inkind"> in-kind benefit (free night, companion cert — amount is your estimate)</label>
+      <label class="check"><input type="checkbox" data-role="enroll"> requires enrollment / activation</label>
+      <div class="field"><label>promo expires <span class="hint">omit if evergreen</span></label><input type="date" data-role="credexp"></div>
     </div>
     <div class="field" style="margin-top:10px"><label>realistic capture-rate note <span class="req">*</span></label>
       <textarea data-role="capture" placeholder="Who actually captures this and who doesn't — enrollment, partner list, monthly forfeit…"></textarea></div>
+    <div class="field" style="margin-top:10px"><label>notes <span class="hint">for in-kind: how you estimated the value</span></label><input type="text" data-role="notes"></div>
+  </div>`);
+}
+function addTier(){
+  $("#subtiers").insertAdjacentHTML("beforeend",`
+  <div class="item" data-kind="tier" data-uid="${++uid}">
+    <div class="item-head"><span class="item-title">Bonus tier</span><button type="button" class="btn-x" data-remove>Remove</button></div>
+    <div class="grid g3">
+      <div class="field"><label>tier points <span class="hint">at least one of points / USD</span></label><input type="number" data-role="tpts" class="mono" min="0" step="any"></div>
+      <div class="field"><label>tier USD</label><input type="number" data-role="tusd" class="mono" min="0" step="any"></div>
+      <div class="field"><label>cumulative spend (USD) <span class="req">*</span> <span class="hint">total, not incremental</span></label><input type="number" data-role="tspend" class="mono" min="0" step="any"></div>
+    </div>
+  </div>`);
+}
+function addRbTier(){
+  $("#rbtiers").insertAdjacentHTML("beforeend",`
+  <div class="item" data-kind="rbtier" data-uid="${++uid}">
+    <div class="item-head"><span class="item-title">Relationship tier</span><button type="button" class="btn-x" data-remove>Remove</button></div>
+    <div class="grid g3">
+      <div class="field"><label>tier name <span class="hint">optional</span></label><input type="text" data-role="rbname" placeholder="Platinum Honors"></div>
+      <div class="field"><label>min balance (USD) <span class="hint">and/or requirement</span></label><input type="number" data-role="rbbal" class="mono" min="0" step="any"></div>
+      <div class="field"><label>boost % <span class="req">*</span> <span class="hint">75 = 75% more rewards</span></label><input type="number" data-role="rbpct" class="mono" min="0" step="any"></div>
+    </div>
+    <div class="field" style="margin-top:10px"><label>requirement <span class="hint">non-balance condition — direct deposit, account type; needed if no min balance</span></label><input type="text" data-role="rbreq" placeholder="qualifying direct deposit each 30-day period"></div>
   </div>`);
 }
 function addSrc(){
@@ -424,11 +523,25 @@ function readCap(it){
   if (!$('[data-role=capon]',it).checked) return null;
   return { period: $('[data-role=capperiod]',it).value,
            max: num($('[data-role=capmax]',it).value),
-           fall: num($('[data-role=capfall]',it).value) };
+           fall: num($('[data-role=capfall]',it).value),
+           shared: $('[data-role=capshared]',it).value.trim() };
 }
 function capLines(cap, ind){
   const p = " ".repeat(ind);
-  return [`${p}cap:`, `${p}  period: ${cap.period}`, `${p}  max_spend_usd: ${cap.max ?? "?"}`, `${p}  fallback_rate: ${cap.fall ?? "?"}`];
+  const out = [`${p}cap:`, `${p}  period: ${cap.period}`, `${p}  max_spend_usd: ${cap.max ?? "?"}`, `${p}  fallback_rate: ${cap.fall ?? "?"}`];
+  if (cap.shared) out.push(`${p}  shared_cap_id: ${cap.shared}`);
+  return out;
+}
+function emitCond(it, rate, label, L, errs){
+  const on = $('[data-role=condon]',it);
+  if (!on || !on.checked) return;
+  const cr = num($('[data-role=condrate]',it).value);
+  const rq = $('[data-role=condreq]',it).value.trim();
+  if (cr===null || !rq) errs.push(`${label}: conditional boost needs a rate and a condition`);
+  else if (rate!==null && cr<=rate) errs.push(`${label}: conditional rate ${cr} must exceed the baseline rate ${rate} — the plain rate must be the unconditional baseline`);
+  L.push(`    conditional_rate:`);
+  L.push(`      rate: ${cr ?? "?"}`);
+  L.push(`      requires: ${rq?ystr(rq):"?"}`);
 }
 
 function build(){
@@ -454,6 +567,14 @@ function build(){
   L.push(`  type: ${curtype}`);
   L.push(`  program: ${program}`);
   L.push(`base_rate: ${base ?? "?"}`);
+  if ($("#bcron").checked){
+    const bcr = num(val("bcrate")), bcq = val("bcreq").trim();
+    if (bcr===null || !bcq) errs.push("base-rate conditional boost needs a rate and a condition");
+    else if (base!==null && bcr<=base) errs.push(`base_rate_conditional ${bcr} must exceed base_rate ${base} — base_rate must be the unconditional baseline`);
+    L.push("base_rate_conditional:");
+    L.push(`  rate: ${bcr ?? "?"}`);
+    L.push(`  requires: ${bcq?ystr(bcq):"?"}`);
+  }
 
   /* category rewards */
   const cats = $$('#cats .item');
@@ -488,6 +609,8 @@ function build(){
         L.push(`      note: ${cn?fold(cn,8):"?"}`);
       } else if (cat==="choice") errs.push(`category reward #${i+1}: 'choice' category requires a choice block (tick "choose-your-own category")`);
       if ($('[data-role=portal]',it).checked) L.push(`    portal_only: true`);
+      if ($('[data-role=enrollcat]',it).checked) L.push(`    requires_enrollment: true`);
+      emitCond(it, rate, `category reward #${i+1}`, L, errs);
       const n = $('[data-role=notes]',it).value.trim();
       if (n) L.push(`    notes: ${fold(n,6)}`);
     });
@@ -505,9 +628,25 @@ function build(){
       L.push(`    rate: ${rate ?? "?"}`);
       const cap = readCap(it);
       if (cap){ if(cap.max===null||cap.fall===null) errs.push(`merchant reward #${i+1}: cap needs max spend and fallback rate`); L.push(...capLines(cap,4)); }
+      emitCond(it, rate, `merchant reward #${i+1}`, L, errs);
       const n = $('[data-role=notes]',it).value.trim();
       if (n) L.push(`    notes: ${fold(n,6)}`);
     });
+  }
+
+  /* shared-cap groups (mirrors validate_cards.py) */
+  const capGroups = {};
+  [...cats, ...mers].forEach(it=>{
+    const cap = readCap(it);
+    if (cap && cap.shared){
+      if (!/^[a-z0-9]+(_[a-z0-9]+)*$/.test(cap.shared)) errs.push(`shared cap id '${cap.shared}' must be snake_case`);
+      (capGroups[cap.shared] ??= []).push(cap);
+    }
+  });
+  for (const [gid, members] of Object.entries(capGroups)){
+    if (members.length < 2) errs.push(`shared_cap_id '${gid}' has only one member — drop it or add the other entries sharing the pool`);
+    if (new Set(members.map(c=>`${c.period}|${c.max}`)).size > 1)
+      errs.push(`shared_cap_id '${gid}': every member must state the identical period and max spend (the full pool)`);
   }
 
   /* credits */
@@ -518,15 +657,23 @@ function build(){
     creds.forEach((it,i)=>{
       const nm = $('[data-role=name]',it).value.trim();
       const amt = num($('[data-role=amount]',it).value);
+      const unit = $('[data-role=amtunit]',it).value;
       const capn = $('[data-role=capture]',it).value.trim();
       if (!nm) errs.push(`credit #${i+1}: name is required`);
       if (amt===null || amt<=0) errs.push(`credit #${i+1}: amount must be > 0`);
+      if (unit==="points" && curtype!=="points") errs.push(`credit #${i+1}: point-denominated credits only on points cards`);
       if (!capn) errs.push(`credit #${i+1}: capture-rate note is required`);
       L.push(`  - name: ${nm?ystr(nm):"?"}`);
-      L.push(`    amount_usd: ${amt ?? "?"}`);
+      if ($('[data-role=inkind]',it).checked) L.push(`    kind: in_kind`);
+      L.push(`    ${unit==="points"?"amount_points":"amount_usd"}: ${amt ?? "?"}`);
       L.push(`    period: ${$('[data-role=period]',it).value}`);
       const c = $('[data-role=cat]',it).value;
       if (c) L.push(`    category: ${c}`);
+      const ul = num($('[data-role=unlock]',it).value);
+      if (ul!==null && ul>0) L.push(`    unlock_spend_usd: ${ul}`);
+      if ($('[data-role=enroll]',it).checked) L.push(`    requires_enrollment: true`);
+      const cx = $('[data-role=credexp]',it).value;
+      if (cx){ L.push(`    expires: "${cx}"`); if (cx < today) warns.push(`credit #${i+1}: promo already expired — re-check whether it was renewed`); }
       L.push(`    realistic_capture_rate_note: ${capn?fold(capn,6):"?"}`);
       const n = $('[data-role=notes]',it).value.trim();
       if (n) L.push(`    notes: ${fold(n,6)}`);
@@ -536,16 +683,41 @@ function build(){
   /* signup bonus */
   const subMode = $('input[name=sub]:checked').value;
   if (subMode==="none") L.push("signup_bonus: null");
+  else if (subMode==="match"){
+    L.push("signup_bonus:");
+    L.push("  first_year_match: true");
+    const sn = val("subnotes");
+    if (sn) L.push(`  notes: ${fold(sn,4)}`);
+  }
   else {
-    const v = num(val("subval")), sp = num(val("subspend")), w = num(val("subwin"));
-    if (v===null||v<=0) errs.push("signup bonus: value is required");
+    const vp = num(val("subpts")), vu = num(val("subusd"));
+    const sp = num(val("subspend")), w = num(val("subwin"));
+    if ((vp===null||vp<=0) && (vu===null||vu<=0)) errs.push("signup bonus: at least one of points / USD is required");
     if (sp===null) errs.push("signup bonus: spend requirement is required");
     if (w===null||w<=0) errs.push("signup bonus: window (months) is required");
     L.push("signup_bonus:");
     L.push("  value:");
-    L.push(`    ${subMode}: ${v ?? "?"}`);
+    if (vp!==null && vp>0) L.push(`    points: ${vp}`);
+    if (vu!==null && vu>0) L.push(`    usd: ${vu}`);
     L.push(`  spend_requirement_usd: ${sp ?? "?"}`);
     L.push(`  window_months: ${w ?? "?"}`);
+    const tiers = $$('#subtiers .item');
+    if (tiers.length){
+      L.push("  tiers:");
+      let prev = sp ?? 0;
+      tiers.forEach((it,i)=>{
+        const tp = num($('[data-role=tpts]',it).value), tu = num($('[data-role=tusd]',it).value);
+        const ts = num($('[data-role=tspend]',it).value);
+        if ((tp===null||tp<=0) && (tu===null||tu<=0)) errs.push(`bonus tier #${i+1}: at least one of points / USD is required`);
+        if (ts===null||ts<=0) errs.push(`bonus tier #${i+1}: cumulative spend is required`);
+        else if (ts<=prev) errs.push(`bonus tier #${i+1}: cumulative spend must exceed ${prev} (tiers ascend past the base requirement)`);
+        if (ts!==null) prev = Math.max(prev, ts);
+        L.push("    - value:");
+        if (tp!==null && tp>0) L.push(`        points: ${tp}`);
+        if (tu!==null && tu>0) L.push(`        usd: ${tu}`);
+        L.push(`      spend_requirement_usd: ${ts ?? "?"}`);
+      });
+    }
     if ($("#sublimited").checked) L.push("  limited_time: true");
     const exp = val("subexp");
     if (exp){ L.push(`  expires: "${exp}"`); if (exp < today) warns.push("signup bonus offer is already expired"); }
@@ -582,6 +754,52 @@ function build(){
     L.push(`  merchants: [${clMerch.join(", ")}]`);
     const cn = val("clnote");
     if (cn) L.push(`  note: ${fold(cn,4)}`);
+  }
+
+  /* relationship boost */
+  const rbOn = $("#rbon").checked;
+  if (rbOn){
+    const prog = val("rbprog"), rn = val("rbnote");
+    const rbtiers = $$('#rbtiers .item');
+    if (!prog) errs.push("relationship boost: program is required");
+    if (!rbtiers.length) errs.push("relationship boost: at least one tier is required");
+    if (!rn) errs.push("relationship boost: note is required");
+    L.push("relationship_boost:");
+    L.push(`  program: ${prog?ystr(prog):"?"}`);
+    L.push("  tiers:");
+    rbtiers.forEach((it,i)=>{
+      const tn = $('[data-role=rbname]',it).value.trim();
+      const bal = num($('[data-role=rbbal]',it).value);
+      const req = $('[data-role=rbreq]',it).value.trim();
+      const pct = num($('[data-role=rbpct]',it).value);
+      if (bal===null && !req) errs.push(`relationship tier #${i+1}: needs a min balance and/or a requirement`);
+      if (pct===null||pct<=0) errs.push(`relationship tier #${i+1}: boost % must be > 0`);
+      const rows = [];
+      if (tn) rows.push(`tier_name: ${ystr(tn)}`);
+      if (bal!==null) rows.push(`min_balance_usd: ${bal}`);
+      if (req) rows.push(`requirement: ${ystr(req)}`);
+      rows.push(`boost_pct: ${pct ?? "?"}`);
+      L.push(`    - ${rows[0]}`);
+      rows.slice(1).forEach(r=>L.push(`      ${r}`));
+    });
+    L.push(`  note: ${rn?fold(rn,4):"?"}`);
+  }
+
+  /* required membership + card-wide reward cap */
+  const rmOn = $("#rmon").checked;
+  if (rmOn){
+    const rmn = val("rmname"), rmnote = val("rmnote"), rmc = num(val("rmcost"));
+    if (!rmn) errs.push("required membership: name is required");
+    if (!rmnote) errs.push("required membership: note is required — say what the membership gates");
+    L.push("required_membership:");
+    L.push(`  name: ${rmn?ystr(rmn):"?"}`);
+    if (rmc!==null) L.push(`  annual_cost_usd: ${rmc}`);
+    L.push(`  note: ${rmnote?fold(rmnote,4):"?"}`);
+  }
+  const maxrew = num(val("maxrew"));
+  if (maxrew!==null){
+    if (maxrew<=0) errs.push("max annual rewards must be > 0 (leave empty when uncapped)");
+    else L.push(`max_annual_rewards_usd: ${maxrew}`);
   }
 
   /* flags */
@@ -622,6 +840,8 @@ function build(){
   if (flags.length) populated.add("benefit_flags");
   if (subMode!=="none") populated.add("signup_bonus");
   if (clOn) populated.add("closed_loop");
+  if (rbOn) populated.add("relationship_boost");
+  if (rmOn) populated.add("required_membership");
   [...populated].filter(b=>!supported.has(b)).sort().forEach(b=>warns.push(`UNSOURCED — no source supports the '${b}' block`));
 
   /* verification */
@@ -672,7 +892,7 @@ $("#vdate").value = today;
 
 document.addEventListener("click", e=>{
   const add = e.target.closest("[data-add]");
-  if (add){ ({cat:addCat, mer:addMer, cred:addCred, src:addSrc})[add.dataset.add](); render(); return; }
+  if (add){ ({cat:addCat, mer:addMer, cred:addCred, src:addSrc, tier:addTier, rbtier:addRbTier})[add.dataset.add](); render(); return; }
   if (e.target.closest("[data-remove]")){ e.target.closest(".item").remove(); render(); }
 });
 document.addEventListener("input", e=>{
@@ -680,15 +900,20 @@ document.addEventListener("input", e=>{
   if (it && e.target.matches("[data-role=capon]")) $('[data-role=capfields]',it).hidden = !e.target.checked;
   if (it && e.target.matches("[data-role=roton]")) $('[data-role=rotfields]',it).hidden = !e.target.checked;
   if (it && e.target.matches("[data-role=chon]")) $('[data-role=chfields]',it).hidden = !e.target.checked;
+  if (it && e.target.matches("[data-role=condon]")) $('[data-role=condfields]',it).hidden = !e.target.checked;
   if (e.target.id==="curtype"){
     if (e.target.value==="cash") $("#program").value = "cash";
     else if ($("#program").value==="cash") $("#program").value = PROGRAMS[1];
   }
   if (e.target.name==="sub"){
-    $("#subfields").hidden = e.target.value==="none";
-    $("#subunit").textContent = e.target.value==="points" ? "points" : "USD";
+    $("#subfields").hidden = e.target.value!=="bonus";
+    $("#submatch").hidden = e.target.value!=="match";
+    $("#subnoteswrap").hidden = e.target.value==="none";
   }
   if (e.target.id==="clon") $("#clfields").hidden = !e.target.checked;
+  if (e.target.id==="rbon") $("#rbfields").hidden = !e.target.checked;
+  if (e.target.id==="bcron") $("#bcrfields").hidden = !e.target.checked;
+  if (e.target.id==="rmon") $("#rmfields").hidden = !e.target.checked;
   render();
 });
 $("#copy").addEventListener("click", async ()=>{

@@ -152,35 +152,41 @@ Bilt's three-card lineup ("Bilt Card 2.0") launched Feb 7, 2026, issued by Colum
 
 - [ ] JetBlue Card — `jetblue`
 - [ ] JetBlue Plus — `jetblue-plus`
+- [ ] JetBlue Premier — `jetblue-premier`
+- [ ] RCI Elite Rewards - `rci-elite`
+- [ ] Capital Vacations - `capital-vacations`
 - [ ] AAdvantage Aviator Red — `aviator-red`
 - [ ] Wyndham Rewards Earner — `wyndham-earner`
+- [ ] Wyndham Rewards Earner Plus — `wyndham-plus`
 - [ ] Frontier Airlines World Mastercard — `frontier`
 - [ ] Emirates Skywards Rewards World Elite — `emirates-skywards`
+- [ ] Emirates Skywards Rewards Premier World Elite — `emirates-premier`
 - [ ] Lufthansa Miles & More World Elite — `miles-and-more`
-- [ ] Breeze Airways Mastercard — `breeze`
+- [ ] Breeze Airways Mastercard — `breeze` *(actual live product is "Breeze Easy Visa Signature" — Visa network, not Mastercard; see offer file)*
 - [ ] My GM Rewards Mastercard — `my-gm-rewards`
 
 ## Synchrony — `data/cards/synchrony/`
 
-- [ ] PayPal Cashback Mastercard — `paypal-cashback`
-- [ ] Verizon Visa — `verizon-visa`
-- [ ] Sam's Club Mastercard — `sams-club-mastercard`
+- [/] PayPal Cashback Mastercard — `paypal-cashback`
+- [/] Verizon Visa — `verizon-visa`
+- [/] Sam's Club Mastercard — `sams-club-mastercard`
 
 ## Store / closed-loop cards (use the schema's `closed_loop` block)
 
 Usable only at their merchant, but often 5%-level rewards there — recommendable alongside open-loop cards when a big share of the user's spend is at that merchant. Verify current issuers; store-card portfolios get sold between banks often.
 
-- [ ] Target Circle Card (TD Bank) — `data/cards/td-bank/target-circle`
-- [ ] Amazon Store Card / Prime Store Card (Synchrony) — `data/cards/synchrony/amazon-store`
-- [ ] My Best Buy Card (Citi) — `data/cards/citi/best-buy`
-- [ ] Lowe's Advantage Card (Synchrony) — `data/cards/synchrony/lowes-advantage`
-- [ ] Home Depot Consumer Card (Citi) — `data/cards/citi/home-depot`
-- [ ] Kohl's Card (Capital One) — `data/cards/capital-one/kohls`
-- [ ] Macy's Card (Citi) — `data/cards/citi/macys`
+- [/] Target Circle Card (TD Bank) — `data/cards/td-bank/target-circle`
+- [/] Amazon Store Card / Prime Store Card (Synchrony) — `data/cards/synchrony/amazon-store`
+- [/] My Best Buy Card (Citi) — `data/cards/citi/best-buy`
+- [/] Lowe's Advantage Card (Synchrony) — `data/cards/synchrony/lowes-advantage`
+- [/] Home Depot Consumer Card (Citi) — `data/cards/citi/home-depot`
+- [/] Kohl's Card (Capital One) — `data/cards/capital-one/kohls`
+- [/] Macy's Card (Citi) — `data/cards/citi/macys`
 - [ ] Gap Good Rewards / Old Navy (Barclays) — `data/cards/barclays/gap-good-rewards`
-- [ ] Nordstrom Card (TD Bank) — `data/cards/td-bank/nordstrom`
-- [ ] OnePay Walmart Credit Card (OnePay/Synchrony, launched Dec 2025) — `data/cards/synchrony/onepay-walmart` *(verify: has both store-only and open-loop Mastercard versions)*
-- [ ] REI Co-op Mastercard (Capital One) — `data/cards/capital-one/rei-co-op` *(open-loop, but REI-centric rewards)*
+- [/] Nordstrom Card (TD Bank) — `data/cards/td-bank/nordstrom`
+- [/] Nordstrom Visa (open-loop) (TD Bank) — `data/cards/td-bank/nordstrom-visa`
+- [/] OnePay Walmart Credit Card (OnePay/Synchrony, launched Dec 2025) — `data/cards/synchrony/onepay-walmart` *(confirmed: two distinct products — closed-loop "OnePay Walmart Spend Card" and open-loop "OnePay CashRewards World Mastercard"; both terms sheets written)*
+- [/] REI Co-op Mastercard (Capital One) — `data/cards/capital-one/rei-co-op` *(open-loop, but REI-centric rewards)*
 
 > Note: many of these have both a store-only version and an open-loop Visa/Mastercard version (e.g. Nordstrom, Verizon historically). Curate them as separate files — one with `closed_loop`, one without.
 
@@ -211,22 +217,22 @@ In scope so users with thin/damaged credit get real recommendations. Rewards are
 
 ## Other issuers
 
-- [ ] Apple Card (Goldman Sachs — verify current issuer) — `data/cards/goldman-sachs/apple-card`
-- [ ] Fidelity Rewards Visa (Elan) — `data/cards/elan/fidelity-rewards`
-- [ ] Robinhood Gold Card — `data/cards/robinhood/gold-card`
-- [ ] Venmo Credit Card (Synchrony) — `data/cards/synchrony/venmo`
-- [ ] SoFi Credit Card — `data/cards/sofi/credit-card`
-- [ ] Navy Federal cashRewards — `data/cards/navy-federal/cash-rewards`
-- [ ] Navy Federal Flagship Rewards — `data/cards/navy-federal/flagship-rewards`
-- [ ] PenFed Platinum Rewards — `data/cards/penfed/platinum-rewards`
-- [ ] PenFed Pathfinder Rewards — `data/cards/penfed/pathfinder`
-- [ ] Alliant Cashback Visa Signature (2.5%) — `data/cards/alliant/cashback`
-- [ ] TD Double Up — `data/cards/td-bank/double-up`
-- [ ] Truist Enjoy Cash — `data/cards/truist/enjoy-cash`
-- [ ] Upgrade Cash Rewards Visa — `data/cards/upgrade/cash-rewards`
-- [ ] Bread Cashback American Express (2%) — `data/cards/bread-financial/bread-cashback`
-- [ ] Max Cash Preferred (Elan, via many credit unions) — `data/cards/elan/max-cash-preferred`
-- [ ] Luxury Card Mastercard Gold/Black/Titanium — `data/cards/luxury-card/…` *(niche premium; low priority)*
+- [/] Apple Card (Goldman Sachs — verify current issuer) — `data/cards/goldman-sachs/apple-card`
+- [/] Fidelity Rewards Visa (Elan) — `data/cards/elan/fidelity-rewards`
+- [/] Robinhood Gold Card — `data/cards/robinhood/gold-card`
+- [/] Venmo Credit Card (Synchrony) — `data/cards/synchrony/venmo`
+- [/] SoFi Credit Card — `data/cards/sofi/credit-card`
+- [/] Navy Federal cashRewards — `data/cards/navy-federal/cash-rewards`
+- [/] Navy Federal Flagship Rewards — `data/cards/navy-federal/flagship-rewards`
+- [/] PenFed Platinum Rewards — `data/cards/penfed/platinum-rewards`
+- [/] PenFed Pathfinder Rewards — `data/cards/penfed/pathfinder`
+- [/] Alliant Cashback Visa Signature (2.5%) — `data/cards/alliant/cashback`
+- [/] TD Double Up — `data/cards/td-bank/double-up`
+- [/] Truist Enjoy Cash — `data/cards/truist/enjoy-cash`
+- [/] Upgrade Cash Rewards Visa — `data/cards/upgrade/cash-rewards`
+- [/] Bread Cashback American Express (2%) — `data/cards/bread-financial/bread-cashback`
+- [/] Max Cash Preferred (Elan, via many credit unions) — `data/cards/elan/max-cash-preferred`
+- [/] Luxury Card Mastercard Gold/Black/Titanium — `data/cards/luxury-card/…` *(niche premium; low priority)*
 
 
 

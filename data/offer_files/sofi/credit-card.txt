@@ -1,0 +1,35 @@
+SoFi Credit Card — Unlimited 2% Card (SoFi)
+
+Account-Relationship Dependency (IMPORTANT)
+- Rewards Points redeem at full value (1 cent/point = effectively 2% cash back on the base earn rate) ONLY when redeemed toward an active SoFi account: SoFi Checking or Savings, SoFi Money, SoFi Active Invest, SoFi Automated Invest, SoFi Credit Card account (statement credit), SoFi Personal Loan, Private Student Loan, Student Loan Refinance, or SoFi Travel purchases.
+- Multiple secondary/aggregator sources (not confirmed on SoFi's own current redemption-value page, which returned an access error during this research) claim that redeeming as a statement credit yields a lower rate (~1 cent per 2 points, i.e. an effective ~1% return) versus the full 1 cent/point value when redeemed into a SoFi bank, investment, or loan account. NEEDS human verification against SoFi's current Rewards Terms & Conditions before using this as a scoring input — do not treat the statement-credit-penalty claim as confirmed.
+- Separately, SoFi offers a 10% cash back rewards rate boost (bringing the ~2% base rate to ~2.2%, and the 3% SoFi Travel rate to ~3.3%) for Credit Card members who receive a qualifying Direct Deposit into a SoFi Checking or Savings account during each 30-day evaluation period. It can take up to 90 days for a new Direct Deposit to be recognized before the boost starts. This is a checking-account-relationship boost, distinct from the redemption-value point above.
+- A separate legacy "SoFi Plus" membership boost has also been referenced (up to 10% boost / effectively 5.5% cash back is cited in some sources for bookings other than air travel) — SoFi Plus reportedly now carries a $10/month subscription fee (as of March 30, 2026 per secondary sources). Exact current SoFi Plus vs. Direct-Deposit-boost mechanics were not fully reconcilable from official pages during this research; flagged as NEEDS human verification.
+
+Signup Bonus
+- Conflicting information found: some secondary sources cite "$200 cash rewards bonus after spending $500 in first 3 months," others state the Unlimited 2% Card carries no signup bonus at all. Could not confirm on an official SoFi page. NEEDS human verification — omit from scoring until confirmed, or verify current offer directly on sofi.com/credit-card/unlimited/ at time of use.
+
+Earn Rates
+- 2 points/$1 (i.e. base 2% cash back value) on all purchases.
+- 3 points/$1 (i.e. 3% cash back value) on SoFi Travel portal purchases.
+- Both rates are eligible for the 10% Direct Deposit boost described above (bringing them to ~2.2% / ~3.3%).
+
+Annual Fee
+- $0 (confirmed via secondary sources; not located verbatim on an official page during this research — NEEDS human verification of the exact Schumer box, but "no annual fee" is stated consistently and repeatedly across SoFi's own marketing pages).
+
+Foreign Transaction Fee
+- $0 (stated consistently across SoFi marketing content; not verified against the primary Schumer box/Pricing document — NEEDS human verification).
+
+Redemption
+- Redeemable for cash back via statement credit on the SoFi Credit Card account, or (at full 1 cent/point value) toward SoFi Checking, Savings, SoFi Money, SoFi Active Invest, SoFi Automated Invest accounts, SoFi Personal Loan, Private Student Loan, Student Loan Refinance payoff, or SoFi Travel purchases.
+- Rewards can be delayed up to 7 business days after a transaction posts to the SoFi Credit Card ledger before points are credited.
+
+Exclusions
+- No Rewards Points earned on: fees or interest charges, balance transfers, cash advances, purchase of traveler's checks or other cash equivalents, purchase or reloading of prepaid cards, or reversed/returned transactions.
+
+Gaps Not Found (flagged rather than estimated)
+- Exact current signup bonus terms (see above).
+- Exact statement-credit redemption rate vs. SoFi-account redemption rate (see above) — SoFi's own "How much are my rewards points worth upon redemption?" support article returned a 403 error during this research and could not be directly quoted; only the SoFi-account rate of 1 cent/point is confirmed from an official product page (sofi.com/credit-card/ and sofi.com/credit-card/unlimited/).
+- Whether "SoFi Plus" and the "Direct Deposit 10% boost" are the same program, successor programs, or stackable — could not fully reconcile from official pages.
+
+Issued by SoFi Bank, N.A., pursuant to license by Mastercard International Incorporated.

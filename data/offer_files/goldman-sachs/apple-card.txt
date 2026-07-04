@@ -1,0 +1,49 @@
+Apple Card (Goldman Sachs)
+
+NOTE: On January 7, 2026, Apple and JPMorgan Chase announced that Chase will become the new issuer of Apple Card, replacing Goldman Sachs Bank USA. The transition is expected to take approximately 24 months from the announcement (targeting roughly early 2028) and is subject to regulatory approvals. During the transition, existing cardholders can continue using their card as normal, and all current terms/benefits (including up to 3% Daily Cash, Mastercard network, Apple Card Family) remain unchanged. Savings accounts continue to be provided by Goldman Sachs Bank USA, Salt Lake City Branch, through the transition period. This file is saved under the goldman-sachs path per current instructions, but the card's issuer is actively transitioning to JPMorgan Chase — this needs to be re-tagged / moved to a chase offer file (and re-verified) once the transition completes or once Chase becomes the operative issuer of record. [Sources: JPMorgan Chase newsroom (jpmorganchase.com/ir/news/2026/chase-to-become-new-issuer-of-apple-card), CNBC, TechCrunch, Banking Dive, Jan 2026 coverage.]
+
+Signup Bonus
+- No welcome/signup bonus found. Apple Card does not appear to offer a new-cardmember bonus; earning is purely via ongoing Daily Cash rates on all purchases from day one.
+
+Earn Rates (Daily Cash)
+- 3% Daily Cash: Purchases made directly from Apple (Apple Store, apple.com, App Store, Apple services) and purchases with Apple Pay at select partner merchants (examples cited: Nike, Uber, Walgreens, Booking.com, Exxon Mobil, ChargePoint, Hertz, Duane Reade, Ace Hardware — partner list can change over time, verify current list at support.apple.com before relying on specific merchants).
+- 2% Daily Cash: All other purchases made with Apple Pay (titanium Apple Card or eligible device) anywhere Mastercard is accepted.
+- 1% Daily Cash: Purchases made by swiping/inserting/tapping the physical titanium Apple Card where Apple Pay is not used or not accepted.
+- No limit to how much Daily Cash can be earned; no expiration mentioned.
+
+Annual Fee
+- None.
+
+Foreign Transaction Fee
+- None. No annual, over-the-limit, foreign-transaction, or late fees charged.
+
+Late Fees / Other Fees
+- No late fees charged (per issuer marketing materials — cardholders should still confirm via the official Customer Agreement, as "no late fees" is a marketing claim and payment history still affects credit).
+
+Redemption / Daily Cash Mechanics
+- Daily Cash is deposited daily (not monthly) directly to an Apple Cash card, where it can be spent anywhere Apple Pay is accepted, sent to friends/family, or transferred to a linked bank account.
+- Daily Cash can alternatively be automatically deposited into an Apple Card Savings account to earn interest, growing balance over time with "no limits or deadlines" cited by Apple.
+
+Savings Account
+- Apple Card Savings account is a high-yield savings account provided by Goldman Sachs Bank USA, Salt Lake City Branch (during current transition period — see NOTE above regarding pending Chase transition).
+- Daily Cash can be automatically routed into Savings; external bank transfers can also fund the account.
+- Withdrawals to an external bank typically process within 1-3 business days.
+- Interest rate is variable and not captured here — verify current APY at time of YAML conversion, as it changes with market conditions.
+
+Membership / Eligibility Requirement
+- Apple Card requires an eligible iPhone or iPad and an Apple ID to apply, accept, and manage the card via the Wallet app; a physical titanium card is also issued.
+- Co-ownership: Apple Card supports Co-Owners, where both parties build credit "equally" and both have activity reported to credit bureaus.
+
+Credit Reporting
+- Account activity and payment history are reported to credit bureaus for the primary cardholder and, where applicable, Co-Owners.
+
+Security Features
+- Physical titanium card has no visible card number, expiration date, CVV, or signature.
+- Authentication for purchases/access relies on Face ID, Touch ID, and unique dynamic security codes generated for transactions rather than a static printed number.
+
+Gaps / Unverified Items
+- Full current merchant list for the 3% Apple Pay partner tier was not exhaustively verified — should be re-checked against support.apple.com/en-us/120400 at YAML-conversion time since this list changes periodically.
+- Exact current Apple Card Savings APY not captured (variable rate, changes frequently).
+- Full legal Customer Agreement / Consumer Financial Protection terms not independently pulled — only marketing/support-page level detail confirmed here.
+
+Issued by Goldman Sachs Bank USA (current, as of this writing — actively transitioning to JPMorgan Chase Bank, N.A. over an announced ~24-month window beginning January 2026; re-verify issuer of record before/at YAML conversion).

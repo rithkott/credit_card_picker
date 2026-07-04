@@ -1,0 +1,1009 @@
+# Statement-descriptor keyword registry.
+#
+# Purpose: groundwork for a future statement-import feature — parse a user's
+# credit card statement export and detect merchant-level spend that maps to a
+# pointed reward, statement credit, or unlockable benefit in data/cards/.
+#
+# How this file was built: every merchant/brand below was extracted from the
+# terms sheets in data/offer_files/ because at least one card ties a reward
+# multiplier, credit, or benefit to spend at that merchant. The
+# statement_patterns are the common ways that merchant appears in the
+# description field of a US credit card statement.
+#
+# Matching guidance for the eventual parser:
+#   - Match case-insensitively; statements are usually uppercase.
+#   - Patterns are stable stems, not exact strings. Real descriptors append
+#     store numbers, city/state, dates, phone numbers, or order suffixes
+#     (e.g. "LYFT *2 RIDES 06-11", "TARGET 00021453 AUSTIN TX",
+#     "DD *DOORDASH CHIPOTLE"). Treat each pattern as a prefix/substring.
+#   - "*" appears literally in many processor descriptors (Stripe/Square-style
+#     "PAYFAC* MERCHANT"); it is part of the pattern, not a wildcard here.
+#   - Aggregator prefixes hide the underlying merchant: "PAYPAL *X",
+#     "SQ *X", "TST* X" (Toast, restaurants), "APLPAY X" (some Apple Pay
+#     acquirers), "PY *X", "CKE*X". When a prefix matches, the reward usually
+#     keys off the PREFIX network (e.g. PayPal 3%) or the underlying merchant
+#     after it — both entries exist below where relevant.
+#
+# Confidence: descriptor variants are heuristics from common knowledge, NOT
+# verified against real statement exports. Treat as draft (confidence: low)
+# until confirmed with real data; corrections should be made here, never
+# inline in card files.
+#
+# benefit_context is a human note on why the keyword matters (which benefit
+# types depend on detecting it) — informational, not machine-parsed.
+
+descriptors:
+
+  # ── Issuer travel portals ──────────────────────────────────────────────
+  amex_travel:
+    label: Amex Travel (AmexTravel.com)
+    benefit_context: "5x hotels / 3x air portal earn; FHR + Hotel Collection credits (Amex Gold/Platinum/Green, Delta, Hilton)"
+    statement_patterns:
+      - "AEXP TRAVEL"
+      - "AMEX TRAVEL"
+      - "AMERICAN EXPRESS TRAVEL"
+      - "AMEXTRAVEL.COM"
+  chase_travel:
+    label: Chase Travel
+    benefit_context: "5x-8x portal earn; $300 travel credit, The Edit hotel credits (Sapphire family, United, Southwest, IHG)"
+    statement_patterns:
+      - "CHASE TRAVEL"
+      - "ULTIMATE REWARDS TRAVEL"
+      - "EXPEDIA/CHASETRAVEL"
+  capital_one_travel:
+    label: Capital One Travel / Entertainment
+    benefit_context: "5x-10x portal earn; $300 Venture X travel credit; 5x Entertainment (Venture family, Savor)"
+    statement_patterns:
+      - "CAPITAL ONE TRAVEL"
+      - "CAPITALONE TRAVEL"
+      - "CAPITAL ONE ENTERTAINMENT"
+  citi_travel:
+    label: Citi Travel (powered by Rocket Travel by Agoda)
+    benefit_context: "5x-12x portal earn; hotel credits (Strata family, Double Cash portal boost)"
+    statement_patterns:
+      - "CITI TRAVEL"
+      - "CITITRAVEL"
+      - "ROCKET TRAVEL"
+      - "AGODA"
+  us_bank_travel_center:
+    label: U.S. Bank Rewards Travel Center
+    benefit_context: "5x/5.5% prepaid travel (Altitude Connect, Cash+, Shopper Cash Rewards)"
+    statement_patterns:
+      - "US BANK TRAVEL"
+      - "REWARDS TRAVEL CENTER"
+  bilt_travel:
+    label: Bilt Travel portal
+    benefit_context: "Bilt hotel credits ($100-$400) and portal earn (Bilt Blue/Obsidian/Palladium)"
+    statement_patterns:
+      - "BILT TRAVEL"
+      - "BILT REWARDS TRAVEL"
+  sofi_travel:
+    label: SoFi Travel portal
+    benefit_context: "3x/3% portal earn (SoFi Credit Card)"
+    statement_patterns:
+      - "SOFI TRAVEL"
+  robinhood_travel:
+    label: Robinhood travel portal
+    benefit_context: "up to 5x portal earn (Robinhood Gold Card)"
+    statement_patterns:
+      - "ROBINHOOD TRAVEL"
+  luxury_card_travel:
+    label: LuxuryCardTravel.com
+    benefit_context: "2x airfare/hotel portal earn + per-stay hotel benefits (Luxury Card Mastercards)"
+    statement_patterns:
+      - "LUXURYCARDTRAVEL"
+      - "LUXURY CARD TRAVEL"
+  aadvantage_hotels:
+    label: AAdvantage Hotels / Cars (Rocket Travel)
+    benefit_context: "6x-10x hotels, 10x cars (Citi AAdvantage cards)"
+    statement_patterns:
+      - "AADVANTAGEHOTELS"
+      - "AADVANTAGECARS"
+      - "AADVANTAGE HOTELS"
+
+  # ── Airlines ───────────────────────────────────────────────────────────
+  delta:
+    label: Delta Air Lines (incl. Delta Vacations, Delta Stays)
+    benefit_context: "2x-3x Delta earn, Delta Stays credit, $200 flight credit unlock, in-flight credit (Amex Delta family)"
+    statement_patterns:
+      - "DELTA AIR LINES"
+      - "DELTA AIR"
+      - "DELTA 006"          # air tickets: 3-digit airline prefix 006 + ticket number
+      - "DELTA VACATIONS"
+      - "DELTA STAYS"
+      - "DELTA SKY CLUB"
+  united:
+    label: United Airlines (incl. United Club, TravelBank, United Hotels)
+    benefit_context: "2x-5x United earn; rideshare/hotel/TravelBank credits (Chase United family)"
+    statement_patterns:
+      - "UNITED AIRLINES"
+      - "UNITED 016"
+      - "UNITED.COM"
+      - "UNITED CLUB"
+      - "UNITED TRAVEL BANK"
+  american_airlines:
+    label: American Airlines / AAdvantage (incl. American Eagle)
+    benefit_context: "2x-5x AA earn, in-flight 25% savings, Admirals Club, companion certs (Citi AAdvantage family, Strata Elite Splurge)"
+    statement_patterns:
+      - "AMERICAN AIRLINES"
+      - "AMERICAN AIR"
+      - "AMERICAN 001"
+      - "AA INFLT"
+      - "ADMIRALS CLUB"
+  southwest:
+    label: Southwest Airlines (incl. Getaways by Southwest)
+    benefit_context: "2x-4x Southwest earn, in-flight credit, Companion Pass qualifying (Chase Southwest family; SR $500 credit)"
+    statement_patterns:
+      - "SOUTHWEST AIRLINES"
+      - "SOUTHWES"
+      - "SOUTHWEST 526"
+      - "SOUTHWEST INFLT"
+      - "GETAWAYS BY SOUTHWEST"
+  jetblue:
+    label: JetBlue (incl. JetBlue Vacations, Paisly)
+    benefit_context: "3x/6x JetBlue earn, in-flight savings, TrueBlue Travel + Vacations credits (Barclays JetBlue family)"
+    statement_patterns:
+      - "JETBLUE"
+      - "JETBLUE 279"
+      - "JETBLUE VACATIONS"
+      - "PAISLY"
+  alaska_airlines:
+    label: Alaska Airlines / Atmos Rewards (incl. Hawaiian Airlines)
+    benefit_context: "3x earn, companion fare, lounge credit, in-flight savings (BofA Atmos Ascent/Summit)"
+    statement_patterns:
+      - "ALASKA AIR"
+      - "ALASKA 027"
+      - "ALASKA LOUNGE"
+      - "HAWAIIAN AIR"
+      - "HAWAIIAN 173"
+  frontier:
+    label: Frontier Airlines
+    benefit_context: "up to 15x on flyfrontier.com, elite status spend (Barclays Frontier)"
+    statement_patterns:
+      - "FRONTIER AIRLINES"
+      - "FRONTIER AI"
+      - "FLYFRONTIER.COM"
+  allegiant:
+    label: Allegiant
+    benefit_context: "3x Allegiant earn (BofA Allegiant)"
+    statement_patterns:
+      - "ALLEGIANT AIR"
+      - "ALLEGIANT-AIR"
+      - "ALLEGIANT 4AA"
+  emirates:
+    label: Emirates
+    benefit_context: "3x Skywards earn on Emirates purchases (Barclays Emirates family)"
+    statement_patterns:
+      - "EMIRATES"
+      - "EMIRATES 176"
+  lufthansa:
+    label: Lufthansa / Miles & More partner airlines
+    benefit_context: "2x on Miles & More partner airline tickets (Barclays Miles & More)"
+    statement_patterns:
+      - "LUFTHANSA"
+      - "LUFTHANSA 220"
+      - "SWISS AIR"
+      - "AUSTRIAN AIR"
+      - "BRUSSELS AIRLINES"
+  air_canada:
+    label: Air Canada (incl. Rouge, Express)
+    benefit_context: "3x Aeroplan earn (Chase Aeroplan)"
+    statement_patterns:
+      - "AIR CANADA"
+      - "AIR CAN 014"
+  british_airways:
+    label: British Airways
+    benefit_context: "3x Avios earn, 10% flight discount (Chase BA/Aer Lingus/Iberia)"
+    statement_patterns:
+      - "BRITISH AIRWAYS"
+      - "BRITISH A 125"
+  aer_lingus:
+    label: Aer Lingus
+    benefit_context: "3x Avios earn, companion ticket (Chase Aer Lingus)"
+    statement_patterns:
+      - "AER LINGUS"
+      - "AERLINGUS"
+  iberia:
+    label: Iberia / LEVEL
+    benefit_context: "3x Avios earn, airfare voucher (Chase Iberia)"
+    statement_patterns:
+      - "IBERIA"
+      - "IBERIA 075"
+      - "LEVEL AIRLINE"
+  air_france_klm:
+    label: Air France / KLM / SkyTeam partners
+    benefit_context: "3x Flying Blue earn on AF/KLM/SkyTeam purchases (BofA Flying Blue)"
+    statement_patterns:
+      - "AIR FRANCE"
+      - "AIRFRANCE"
+      - "AIR FRANCE 057"
+      - "KLM"
+      - "KLM ROYAL DUTCH"
+  jsx:
+    label: JSX (semi-private air)
+    benefit_context: "$100-$200/yr JSX statement credit (Chase United cards)"
+    statement_patterns:
+      - "JSX AIR"
+      - "JSX.COM"
+
+  # ── Hotels / lodging / cruise ─────────────────────────────────────────
+  hilton:
+    label: Hilton portfolio (Hilton, Waldorf Astoria, Conrad, Hampton, DoubleTree, Embassy Suites, Homewood, Tru, Garden Inn)
+    benefit_context: "7x-14x earn, quarterly/resort credits, free-night unlocks (Amex Hilton family)"
+    statement_patterns:
+      - "HILTON"
+      - "WALDORF ASTORIA"
+      - "CONRAD"
+      - "HAMPTON INN"
+      - "DOUBLETREE"
+      - "EMBASSY SUITES"
+      - "HILTON GARDEN INN"
+      - "HOMEWOOD SUITES"
+      - "HOME2 SUITES"
+      - "TRU BY HILTON"
+  marriott:
+    label: Marriott Bonvoy portfolio (Marriott, Ritz-Carlton, St. Regis, Westin, Sheraton, W, Courtyard, Residence Inn, Fairfield, Element, TownePlace)
+    benefit_context: "3x-6x earn, dining/property credits, free nights, elite-night spend (Amex Bevy/Brilliant, Chase Bold/Boundless/Bountiful)"
+    statement_patterns:
+      - "MARRIOTT"
+      - "RITZ-CARLTON"
+      - "RITZ CARLTON"
+      - "ST REGIS"
+      - "ST. REGIS"
+      - "WESTIN"
+      - "SHERATON"
+      - "W HOTELS"
+      - "COURTYARD"
+      - "RESIDENCE INN"
+      - "FAIRFIELD INN"
+      - "SPRINGHILL SUITES"
+      - "TOWNEPLACE SUITES"
+      - "ELEMENT HOTEL"
+      - "ALOFT"
+      - "MOXY"
+      - "LE MERIDIEN"
+      - "RENAISSANCE HOTEL"
+      - "AC HOTEL"
+      - "FOUR POINTS"
+      - "GAYLORD"
+  hyatt:
+    label: Hyatt portfolio (Hyatt, Grand/Park Hyatt, Hyatt Place/House, Andaz, Thompson, Miraval, Ziva/Zilara)
+    benefit_context: "4x earn, free nights, status spend thresholds (Chase World of Hyatt; SR $75k Explorist)"
+    statement_patterns:
+      - "HYATT"
+      - "GRAND HYATT"
+      - "PARK HYATT"
+      - "HYATT PLACE"
+      - "HYATT HOUSE"
+      - "ANDAZ"
+      - "THOMPSON HOTEL"
+      - "MIRAVAL"
+      - "HYATT ZIVA"
+      - "HYATT ZILARA"
+  ihg:
+    label: IHG portfolio (InterContinental, Holiday Inn, Crowne Plaza, Kimpton, Staybridge, Candlewood, avid, EVEN, Hotel Indigo)
+    benefit_context: "5x-10x earn, free nights, $50 United TravelBank via Premier (Chase IHG family)"
+    statement_patterns:
+      - "HOLIDAY INN"
+      - "INTERCONTINENTAL"
+      - "CROWNE PLAZA"
+      - "KIMPTON"
+      - "STAYBRIDGE SUITES"
+      - "CANDLEWOOD SUITES"
+      - "HOTEL INDIGO"
+      - "EVEN HOTELS"
+      - "AVID HOTEL"
+      - "IHG"
+  wyndham:
+    label: Wyndham portfolio (Wyndham, Days Inn, Super 8, La Quinta, Ramada, Microtel, Travelodge, Baymont, Howard Johnson, Dolce, Trademark)
+    benefit_context: "6x-8x earn, $100 Wyndham hotel credit (Barclays Wyndham Earner family)"
+    statement_patterns:
+      - "WYNDHAM"
+      - "DAYS INN"
+      - "SUPER 8"
+      - "LA QUINTA"
+      - "RAMADA"
+      - "MICROTEL"
+      - "TRAVELODGE"
+      - "BAYMONT"
+      - "HOWARD JOHNSON"
+      - "WINGATE"
+      - "AMERICINN"
+      - "DOLCE HOTEL"
+  choice_hotels:
+    label: Choice Hotels portfolio (Comfort, Quality Inn, Sleep Inn, Clarion, Cambria, Econo Lodge, Rodeway, Ascend)
+    benefit_context: "5x-10x earn, reward nights (Wells Fargo Choice Privileges family)"
+    statement_patterns:
+      - "COMFORT INN"
+      - "COMFORT SUITES"
+      - "QUALITY INN"
+      - "SLEEP INN"
+      - "CLARION"
+      - "CAMBRIA HOTEL"
+      - "ECONO LODGE"
+      - "RODEWAY INN"
+      - "ASCEND HOTEL"
+      - "MAINSTAY SUITES"
+      - "CHOICE HOTELS"
+  rci:
+    label: RCI (timeshare exchange)
+    benefit_context: "5x RCI earn, $250 vacation credit (Barclays RCI Elite)"
+    statement_patterns:
+      - "RCI"
+      - "RCI.COM"
+      - "RCI TIMESHARE"
+  royal_caribbean:
+    label: Royal Caribbean / Celebrity / Silversea
+    benefit_context: "3x-4x cruise-brand earn (BofA Royal One / Royal One+)"
+    statement_patterns:
+      - "ROYAL CARIBBEAN"
+      - "RCCL"
+      - "CELEBRITY CRUISES"
+      - "SILVERSEA"
+  disney_parks:
+    label: Disney (theme parks, resorts, cruise, shopDisney)
+    benefit_context: "Disney Rewards earn, park/resort spend credits, merch discounts (Chase Disney family)"
+    statement_patterns:
+      - "WALT DISNEY WORLD"
+      - "WDW"
+      - "DISNEYLAND"
+      - "DISNEY RESORT"
+      - "DISNEY CRUISE"
+      - "SHOPDISNEY"
+      - "DISNEY STORE"
+      - "AULANI"
+  booking_com:
+    label: Booking.com
+    benefit_context: "3% Daily Cash Apple Pay partner (Apple Card)"
+    statement_patterns:
+      - "BOOKING.COM"
+      - "BOOKING .COM"
+
+  # ── Rideshare / ground transport / car rental ─────────────────────────
+  uber:
+    label: Uber (rides) / Uber One
+    benefit_context: "Uber Cash credits (Amex Gold/Platinum), Uber One credit (Platinum), rideshare credits (Delta cards), 3% Apple Pay partner"
+    statement_patterns:
+      - "UBER *TRIP"
+      - "UBER TRIP"
+      - "UBER* TRIP"
+      - "UBER *ONE"
+      - "HELP.UBER.COM"
+  uber_eats:
+    label: Uber Eats
+    benefit_context: "food-delivery earn (Marriott Bold 2x delivery); Uber Cash redeemable"
+    statement_patterns:
+      - "UBER *EATS"
+      - "UBER EATS"
+      - "UBEREATS"
+  lyft:
+    label: Lyft
+    benefit_context: "2x-5x earn (Chase Freedom/Sapphire), $10/mo credits (Citi AAdvantage Executive, Delta cards), Bilt partner points"
+    statement_patterns:
+      - "LYFT"
+      - "LYFT *"
+      - "LYFT.COM"
+      - "LYFT *RIDE"
+  curb:
+    label: Curb (taxi app)
+    benefit_context: "eligible for Delta rideshare credit"
+    statement_patterns:
+      - "CURB"
+      - "CURB SVC"
+      - "CURB MOBILITY"
+  alto:
+    label: Alto (rideshare)
+    benefit_context: "eligible for Delta rideshare credit"
+    statement_patterns:
+      - "RIDE ALTO"
+      - "ALTO EXPERIENCE"
+  turo:
+    label: Turo (car sharing)
+    benefit_context: "$30/trip statement credits up to $180-$240/yr (Citi AAdvantage Globe / Platinum Select)"
+    statement_patterns:
+      - "TURO"
+      - "TURO INC"
+      - "TURO TRIP"
+  hertz:
+    label: Hertz
+    benefit_context: "3% Apple Pay partner; elite status perks (Amex, Cap One Venture family)"
+    statement_patterns:
+      - "HERTZ"
+      - "HERTZ CAR RENTAL"
+      - "HERTZ RENT-A-CAR"
+  avis_budget:
+    label: Avis / Budget
+    benefit_context: "prepaid rental credits up to $120/yr (Citi AAdvantage Executive), $50-$100 credits (Chase United cards)"
+    statement_patterns:
+      - "AVIS RENT"
+      - "AVIS.COM"
+      - "BUDGET RENT"
+      - "BUDGET CAR"
+      - "BUDGET.COM"
+  national_car_rental:
+    label: National Car Rental
+    benefit_context: "Emerald Club Executive status (Amex Platinum, Hilton Surpass/Aspire)"
+    statement_patterns:
+      - "NATIONAL CAR RENTAL"
+      - "NATIONALCAR"
+  metropolis:
+    label: Metropolis (parking)
+    benefit_context: "Bilt partner bonus points on parking"
+    statement_patterns:
+      - "METROPOLIS"
+      - "MPS*"
+      - "METROPOLIS PARKING"
+  blacklane:
+    label: Blacklane (chauffeur)
+    benefit_context: "up to $200/yr chauffeur credit (Citi Strata Elite)"
+    statement_patterns:
+      - "BLACKLANE"
+  chargepoint:
+    label: ChargePoint (EV charging)
+    benefit_context: "3% Daily Cash Apple Pay partner (Apple Card)"
+    statement_patterns:
+      - "CHARGEPOINT"
+      - "CHARGEPOINT INC"
+
+  # ── Dining / food delivery ────────────────────────────────────────────
+  doordash:
+    label: DoorDash / Caviar (incl. DashPass)
+    benefit_context: "DashPass membership + monthly credits (nearly all Chase cards); 4% earn (DoorDash Rewards MC)"
+    statement_patterns:
+      - "DD *DOORDASH"
+      - "DOORDASH"
+      - "DD DOORDASH"
+      - "DD *DASHPASS"
+      - "TRYCAVIAR"
+  grubhub:
+    label: Grubhub / Seamless
+    benefit_context: "$120/yr dining credit partner (Amex Gold); $120/yr credit (Citi AAdvantage Executive); 2x delivery (Marriott Bold)"
+    statement_patterns:
+      - "GRUBHUB"
+      - "GRUBHUB*"
+      - "GH *"
+      - "SEAMLESS"
+      - "SEAMLSS"
+  resy:
+    label: Resy (reservations / Resy Pay)
+    benefit_context: "$100-$400/yr Resy dining credits (Amex Gold/Platinum/Delta/Hilton Aspire)"
+    statement_patterns:
+      - "RESY"
+      - "RESY*"
+      - "RESY PAY"
+  opentable:
+    label: OpenTable
+    benefit_context: "mechanism for Sapphire Reserve $300 Exclusive Tables dining credit"
+    statement_patterns:
+      - "OPENTABLE"
+      - "OPENTABLE*"
+  dunkin:
+    label: Dunkin'
+    benefit_context: "$7/month credit (Amex Gold)"
+    statement_patterns:
+      - "DUNKIN"
+      - "DUNKIN #"
+      - "DUNKIN' #"
+  buffalo_wild_wings:
+    label: Buffalo Wild Wings
+    benefit_context: "Amex Gold dining credit partner"
+    statement_patterns:
+      - "BUFFALO WILD WINGS"
+      - "BWW"
+  five_guys:
+    label: Five Guys
+    benefit_context: "Amex Gold dining credit partner"
+    statement_patterns:
+      - "FIVE GUYS"
+      - "FIVEGUYS"
+  cheesecake_factory:
+    label: The Cheesecake Factory
+    benefit_context: "Amex Gold dining credit partner"
+    statement_patterns:
+      - "CHEESECAKE FACTORY"
+      - "THE CHEESECAKE"
+  wonder:
+    label: Wonder (food hall / delivery)
+    benefit_context: "Amex Gold dining credit partner"
+    statement_patterns:
+      - "WONDER*"
+      - "WONDER HALSTED"   # location-suffixed; stem "WONDER " + location
+  goldbelly:
+    label: Goldbelly
+    benefit_context: "Amex Gold dining credit partner (removed 7/1/2026)"
+    statement_patterns:
+      - "GOLDBELLY"
+  wine_com:
+    label: Wine.com
+    benefit_context: "Amex Gold dining credit partner (removed 7/1/2026)"
+    statement_patterns:
+      - "WINE.COM"
+      - "WINECOM"
+  home_chef:
+    label: Home Chef (meal kits)
+    benefit_context: "$15/month credit (Amex Blue Cash Everyday)"
+    statement_patterns:
+      - "HOME CHEF"
+      - "HOMECHEF"
+  starbucks:
+    label: Starbucks (incl. in-Target cafes)
+    benefit_context: "5% off at in-Target Starbucks (Target Circle Card)"
+    statement_patterns:
+      - "STARBUCKS"
+      - "STARBUCKS STORE"
+      - "SBX"
+
+  # ── Grocery / retail / warehouse ──────────────────────────────────────
+  amazon:
+    label: Amazon.com (incl. Amazon Fresh, Amazon Go, Prime membership)
+    benefit_context: "5%/3% earn (Prime Visa / Amazon Visa / Prime Store Card); 6% choose-your-retailer (US Bank Shopper); Prime membership credit (NavyFed Flagship)"
+    statement_patterns:
+      - "AMZN MKTP"
+      - "AMAZON.COM"
+      - "AMAZON MKTPL"
+      - "AMAZON RETA"
+      - "AMAZON GROCE"
+      - "AMAZON PRIME"
+      - "AMZN DIGITAL"
+      - "AMAZON FRESH"
+      - "AMAZON GO"
+  whole_foods:
+    label: Whole Foods Market
+    benefit_context: "5%/3% earn (Prime Visa / Amazon Visa / Prime Store Card)"
+    statement_patterns:
+      - "WHOLEFDS"
+      - "WHOLE FOODS"
+      - "WFM"
+  walmart:
+    label: Walmart (stores, Walmart.com)
+    benefit_context: "5%/3% earn (OnePay Walmart cards); 6% choose-your-retailer (US Bank Shopper); excluded from some grocery bonuses (Sapphire Preferred, Savor, Wyndham)"
+    statement_patterns:
+      - "WAL-MART"
+      - "WALMART"
+      - "WM SUPERCENTER"
+      - "WALMART.COM"
+      - "WMT"
+  walmart_plus:
+    label: Walmart+ membership
+    benefit_context: "monthly membership credit (Amex Platinum); unlocks 5% at Walmart (OnePay Walmart MC)"
+    statement_patterns:
+      - "WALMART PLUS"
+      - "WMT PLUS"
+      - "WALMART+"
+  target:
+    label: Target (stores, Target.com)
+    benefit_context: "5% off (Target Circle Card); 6% choose-your-retailer (US Bank Shopper); excluded from some grocery bonuses"
+    statement_patterns:
+      - "TARGET "
+      - "TARGET.COM"
+      - "TARGET 000"
+  costco:
+    label: Costco (warehouse, gas, Costco.com, Costco Travel)
+    benefit_context: "2% warehouse / 4% gas / 3% travel (Citi Costco Anywhere); wholesale-club category example (US Bank Shopper)"
+    statement_patterns:
+      - "COSTCO WHSE"
+      - "COSTCO GAS"
+      - "COSTCO.COM"
+      - "COSTCO TRAVEL"
+  sams_club:
+    label: Sam's Club (club, SamsClub.com, fuel)
+    benefit_context: "3%/1% Sam's Cash (Synchrony Sam's Club MC); wholesale-club example (US Bank Shopper)"
+    statement_patterns:
+      - "SAMSCLUB"
+      - "SAMS CLUB"
+      - "SAM'S CLUB"
+  best_buy:
+    label: Best Buy
+    benefit_context: "5%-6% store-card rewards (Citi Best Buy); 6% choose-your-retailer (US Bank Shopper)"
+    statement_patterns:
+      - "BEST BUY"
+      - "BESTBUY"
+      - "BESTBUYCOM"
+  home_depot:
+    label: The Home Depot
+    benefit_context: "store-card financing/discount (Citi Home Depot); 6% choose-your-retailer (US Bank Shopper)"
+    statement_patterns:
+      - "THE HOME DEPOT"
+      - "HOME DEPOT"
+      - "HOMEDEPOT.COM"
+  lowes:
+    label: Lowe's
+    benefit_context: "5% off every purchase (Synchrony Lowe's Advantage); 6% choose-your-retailer (US Bank Shopper)"
+    statement_patterns:
+      - "LOWES"
+      - "LOWE'S"
+      - "LOWES.COM"
+  macys:
+    label: Macy's (incl. Backstage)
+    benefit_context: "Star Rewards store-card tiers (Citi Macy's); choose-your-retailer option (US Bank Shopper)"
+    statement_patterns:
+      - "MACYS"
+      - "MACY'S"
+      - "MACYS .COM"
+      - "MACYS BACKSTAGE"
+  kohls:
+    label: Kohl's
+    benefit_context: "7.5% Kohl's Card rewards (Cap One Kohl's); choose-your-retailer option (US Bank Shopper)"
+    statement_patterns:
+      - "KOHL'S"
+      - "KOHLS"
+      - "KOHLS.COM"
+  nordstrom:
+    label: Nordstrom / Nordstrom Rack
+    benefit_context: "1x-3x Nordy Club points + Rack 5% (TD Nordstrom cards); choose-your-retailer option (US Bank Shopper)"
+    statement_patterns:
+      - "NORDSTROM"
+      - "NORDSTROM.COM"
+      - "NORDSTROM RACK"
+      - "NORDSTROMRACK"
+  rei:
+    label: REI / REI.com
+    benefit_context: "5% earn (Cap One REI Co-op Mastercard)"
+    statement_patterns:
+      - "REI #"
+      - "REI.COM"
+      - "REI GREENVILLE"    # store descriptors are "REI #NNN CITY" or "REI CITY"
+  ikea:
+    label: IKEA
+    benefit_context: "choose-your-retailer option (US Bank Shopper)"
+    statement_patterns:
+      - "IKEA"
+  ace_hardware:
+    label: Ace Hardware
+    benefit_context: "3% Apple Pay partner (Apple Card); choose-your-retailer option (US Bank Shopper)"
+    statement_patterns:
+      - "ACE HARDWARE"
+      - "ACE HDWE"
+  chewy:
+    label: Chewy.com
+    benefit_context: "choose-your-retailer option (US Bank Shopper)"
+    statement_patterns:
+      - "CHEWY.COM"
+      - "CHEWY INC"
+  wayfair:
+    label: Wayfair
+    benefit_context: "choose-your-retailer option (US Bank Shopper)"
+    statement_patterns:
+      - "WAYFAIR"
+      - "WAYFAIR*"
+  anthropologie:
+    label: Anthropologie
+    benefit_context: "choose-your-retailer option (US Bank Shopper)"
+    statement_patterns:
+      - "ANTHROPOLOGIE"
+  apple:
+    label: Apple (Apple Store, apple.com, App Store, Apple services billing)
+    benefit_context: "3% Daily Cash (Apple Card); choose-your-retailer option (US Bank Shopper); apple.com/bill also carries Apple Music/TV/One subscription credits (Chase Sapphire)"
+    statement_patterns:
+      - "APPLE.COM/BILL"
+      - "APPLE STORE"
+      - "APPLE ONLINE STORE"
+      - "APPLE.COM"
+  nike:
+    label: Nike
+    benefit_context: "3% Daily Cash Apple Pay partner (Apple Card)"
+    statement_patterns:
+      - "NIKE"
+      - "NIKE.COM"
+      - "NIKETOWN"
+  walgreens:
+    label: Walgreens / Duane Reade
+    benefit_context: "3% Daily Cash Apple Pay partner (Apple Card); Bilt pharmacy partner points"
+    statement_patterns:
+      - "WALGREENS"
+      - "DUANE READE"
+  exxon:
+    label: Exxon Mobil
+    benefit_context: "3% Daily Cash Apple Pay partner (Apple Card)"
+    statement_patterns:
+      - "EXXON"
+      - "EXXONMOBIL"
+      - "MOBIL"
+  verizon:
+    label: Verizon (Wireless, Fios)
+    benefit_context: "4% Verizon Dollars on Verizon purchases + bill-pay earn (Synchrony Verizon Visa)"
+    statement_patterns:
+      - "VERIZON"
+      - "VZWRLSS"
+      - "VERIZON WRLS"
+      - "VERIZON FIOS"
+  att:
+    label: AT&T (incl. Internet Air)
+    benefit_context: "2x on AT&T products/services (Citi AT&T Points Plus)"
+    statement_patterns:
+      - "ATT*BILL"
+      - "AT&T"
+      - "ATT PAYMENT"
+      - "ATT UVERSE"
+  gm:
+    label: General Motors (dealership parts/service, OnStar, GM Financial, ACDelco, GM Energy)
+    benefit_context: "up to 10x on eligible GM purchases (Barclays My GM Rewards)"
+    statement_patterns:
+      - "GM FINANCIAL"
+      - "ONSTAR"
+      - "ACDELCO"
+      - "GM ENERGY"
+      - "GENERAL MOTORS"
+
+  # ── Streaming / digital subscriptions ─────────────────────────────────
+  netflix:
+    label: Netflix
+    benefit_context: "self-select 3x streaming (Citi Strata); streaming credit example (US Bank Altitude Go)"
+    statement_patterns:
+      - "NETFLIX.COM"
+      - "NETFLIX"
+  hulu:
+    label: Hulu
+    benefit_context: "self-select 3x streaming (Citi Strata); Disney Bundle credit component (Amex)"
+    statement_patterns:
+      - "HULU"
+      - "HLU*HULU"
+  disney_plus:
+    label: Disney+ (incl. Disney Bundle)
+    benefit_context: "$7/mo Disney Bundle credit (Amex Blue Cash cards); self-select 3x (Citi Strata); 10% back (Chase Disney Premier)"
+    statement_patterns:
+      - "DISNEY PLUS"
+      - "DISNEYPLUS"
+      - "DISNEY+ BUNDLE"
+  espn:
+    label: ESPN+ / Stream.ESPN.com
+    benefit_context: "Amex Platinum digital entertainment credit; self-select 3x (Citi Strata)"
+    statement_patterns:
+      - "ESPN PLUS"
+      - "ESPNPLUS"
+      - "ESPN.COM"
+  paramount_plus:
+    label: Paramount+
+    benefit_context: "Amex Platinum digital entertainment credit; self-select 3x (Citi Strata)"
+    statement_patterns:
+      - "PARAMOUNT+"
+      - "PARAMOUNTPLUS"
+      - "PARAMOUNT PLUS"
+  peacock:
+    label: Peacock
+    benefit_context: "Amex Platinum digital entertainment credit"
+    statement_patterns:
+      - "PEACOCK"
+      - "PEACOCKTV"
+  nytimes:
+    label: The New York Times
+    benefit_context: "Amex Platinum digital entertainment credit"
+    statement_patterns:
+      - "NYTIMES"
+      - "NYT DIGITAL"
+      - "NEW YORK TIMES"
+  wsj:
+    label: The Wall Street Journal
+    benefit_context: "Amex Platinum digital entertainment credit"
+    statement_patterns:
+      - "WSJ"
+      - "DOWJONES"
+      - "WALL STREET JOURNAL"
+  youtube:
+    label: YouTube Premium / YouTube TV
+    benefit_context: "Amex Platinum digital entertainment credit (YouTube); self-select 3x (Citi Strata)"
+    statement_patterns:
+      - "GOOGLE *YOUTUBE"
+      - "GOOGLE YOUTUBE"
+      - "YOUTUBEPREMIUM"
+      - "YOUTUBE TV"
+  hbo_max:
+    label: HBO Max
+    benefit_context: "self-select 3x streaming (Citi Strata)"
+    statement_patterns:
+      - "HBO MAX"
+      - "HBOMAX"
+      - "MAX.COM"
+      - "WARNERMEDIA"
+  spotify:
+    label: Spotify
+    benefit_context: "self-select 3x streaming (Citi Strata); streaming credit example (US Bank Altitude Go)"
+    statement_patterns:
+      - "SPOTIFY"
+      - "SPOTIFY USA"
+  apple_music:
+    label: Apple Music / Apple TV / Apple One (billed via apple.com/bill)
+    benefit_context: "complimentary AppleTV+/Apple Music (Chase Sapphire cards); self-select 3x (Citi Strata) — indistinguishable from other Apple services on statements; see `apple`"
+    statement_patterns:
+      - "APPLE.COM/BILL"
+  pandora:
+    label: Pandora
+    benefit_context: "self-select 3x streaming (Citi Strata)"
+    statement_patterns:
+      - "PANDORA"
+      - "PANDORA*"
+  siriusxm:
+    label: SiriusXM
+    benefit_context: "self-select 3x streaming (Citi Strata); qualifying GM purchase (My GM Rewards)"
+    statement_patterns:
+      - "SIRIUSXM"
+      - "SXM*SIRIUSXM"
+  sling:
+    label: Sling TV
+    benefit_context: "self-select 3x streaming (Citi Strata)"
+    statement_patterns:
+      - "SLING.COM"
+      - "SLING TV"
+  fubotv:
+    label: fuboTV
+    benefit_context: "self-select 3x streaming (Citi Strata)"
+    statement_patterns:
+      - "FUBOTV"
+      - "FUBO.TV"
+  starz:
+    label: Starz
+    benefit_context: "self-select 3x streaming (Citi Strata)"
+    statement_patterns:
+      - "STARZ"
+  tidal:
+    label: Tidal
+    benefit_context: "self-select 3x streaming (Citi Strata)"
+    statement_patterns:
+      - "TIDAL.COM"
+      - "TIDAL"
+  mlb_tv:
+    label: MLB.TV
+    benefit_context: "self-select 3x streaming (Citi Strata)"
+    statement_patterns:
+      - "MLB.TV"
+      - "MLBAM"
+  nba_league_pass:
+    label: NBA League Pass
+    benefit_context: "self-select 3x streaming (Citi Strata)"
+    statement_patterns:
+      - "NBA LEAGUE PASS"
+      - "NBA DIGITAL"
+  directv_stream:
+    label: DirecTV Stream
+    benefit_context: "self-select 3x streaming (Citi Strata)"
+    statement_patterns:
+      - "DIRECTV STREAM"
+      - "DIRECTV"
+  prime_video:
+    label: Amazon Prime Video
+    benefit_context: "self-select 3x streaming (Citi Strata) — often billed as Amazon digital; see `amazon`"
+    statement_patterns:
+      - "AMAZON PRIME VIDEO"
+      - "PRIME VIDEO"
+      - "AMZN DIGITAL"
+  fandango_at_home:
+    label: Fandango at Home (formerly Vudu)
+    benefit_context: "self-select 3x streaming (Citi Strata)"
+    statement_patterns:
+      - "FANDANGO"
+      - "VUDU"
+
+  # ── Memberships / fitness / lifestyle ─────────────────────────────────
+  instacart:
+    label: Instacart / Instacart+
+    benefit_context: "5% earn (Chase Instacart MC); Instacart+ membership + $10/mo credits (Chase IHG/Southwest/United cards)"
+    statement_patterns:
+      - "INSTACART"
+      - "INSTACART*"
+      - "IC* INSTACART"
+  peloton:
+    label: Peloton (equipment + membership)
+    benefit_context: "5x-10x equipment earn + $10/mo membership credit (Chase Sapphire cards)"
+    statement_patterns:
+      - "PELOTON"
+      - "PELOTON*"
+      - "PELOTON INTERACTIVE"
+  equinox:
+    label: Equinox / Equinox+
+    benefit_context: "$300/yr credit (Amex Platinum)"
+    statement_patterns:
+      - "EQUINOX"
+      - "EQUINOX #"
+  soulcycle:
+    label: SoulCycle at-home bike
+    benefit_context: "$300/bike credit (Amex Platinum)"
+    statement_patterns:
+      - "SOULCYCLE"
+      - "EQUINOXPLUS.COM/BIKE"
+  lululemon:
+    label: lululemon
+    benefit_context: "$75/quarter credit (Amex Platinum)"
+    statement_patterns:
+      - "LULULEMON"
+  oura:
+    label: Oura Ring
+    benefit_context: "$200/yr credit (Amex Platinum)"
+    statement_patterns:
+      - "OURARING"
+      - "OURA RING"
+      - "OURARING.COM"
+  cultivist:
+    label: The Cultivist (museum membership)
+    benefit_context: "50% off membership (Cap One Venture X)"
+    statement_patterns:
+      - "THE CULTIVIST"
+      - "CULTIVIST"
+  gigsky:
+    label: GigSky (travel eSIM data)
+    benefit_context: "complimentary global data plan (US Bank Altitude Connect, NavyFed Flagship)"
+    statement_patterns:
+      - "GIGSKY"
+
+  # ── Events / entertainment ────────────────────────────────────────────
+  stubhub:
+    label: StubHub / viagogo
+    benefit_context: "$300/yr credit (Chase Sapphire Reserve)"
+    statement_patterns:
+      - "STUBHUB"
+      - "VIAGOGO"
+  ticketmaster:
+    label: Ticketmaster / Live Nation
+    benefit_context: "Splurge Credit carve-out — direct purchases at US venues (Citi Strata Elite)"
+    statement_patterns:
+      - "TICKETMASTER"
+      - "TM *"
+      - "LIVE NATION"
+      - "LIVENATION"
+
+  # ── Trusted traveler / lounges ────────────────────────────────────────
+  clear:
+    label: CLEAR / CLEAR+
+    benefit_context: "$209-$219/yr membership credit (Amex Green/Platinum/Hilton Aspire)"
+    statement_patterns:
+      - "CLEARME.COM"
+      - "CLEAR *CLEARME"
+      - "CLEAR SECURE"
+  global_entry_tsa:
+    label: Global Entry / TSA PreCheck / NEXUS application fees
+    benefit_context: "application-fee statement credit (~$85-$120 every 4-4.5 yrs) — very widely offered (Amex, Chase, Citi, Cap One, BofA, US Bank, Barclays, WF, NavyFed, PenFed, Luxury Card)"
+    statement_patterns:
+      - "US CUSTOMS TTP"
+      - "USCBP TTP"
+      - "TRUSTED TRAVELER"
+      - "TSA PRECHECK"
+      - "UNIVERSAL ENROLL"   # TSA PreCheck enrollment provider (IDEMIA)
+      - "IDEMIA"
+      - "TELOS"              # alternate TSA PreCheck enrollment provider
+  priority_pass:
+    label: Priority Pass (paid membership/visit fees)
+    benefit_context: "complimentary membership on many premium cards — a PAID descriptor signals the user isn't using a card that includes it"
+    statement_patterns:
+      - "PRIORITY PASS"
+      - "PRIORITYPASS"
+
+  # ── Payments / P2P / housing ──────────────────────────────────────────
+  paypal:
+    label: PayPal (checkout prefix + P2P)
+    benefit_context: "3% via PayPal (Synchrony PayPal Cashback); descriptor prefix hides underlying merchant"
+    statement_patterns:
+      - "PAYPAL *"
+      - "PP*"
+  venmo:
+    label: Venmo
+    benefit_context: "Venmo Credit Card cash-back destination; P2P earn (Synchrony Venmo)"
+    statement_patterns:
+      - "VENMO"
+      - "VENMO*"
+      - "VENMO PAYMENT"
+  bilt_rent:
+    label: Bilt rent/housing payments
+    benefit_context: "housing-payment earn without fees — the core Bilt hook (Bilt Blue/Obsidian/Palladium)"
+    statement_patterns:
+      - "BILT"
+      - "BILT REWARDS"
+      - "BILT *RENT"
+
+  # ── Aggregator prefixes (detection helpers, not merchants) ────────────
+  square_prefix:
+    label: Square-acquired merchants (often small food/retail)
+    benefit_context: "underlying merchant follows the prefix; category detection helper"
+    statement_patterns:
+      - "SQ *"
+      - "SQU*"
+  toast_prefix:
+    label: Toast-acquired restaurants
+    benefit_context: "strong dining-category signal; underlying restaurant follows the prefix"
+    statement_patterns:
+      - "TST*"
+      - "TST* "
+  apple_pay_prefix:
+    label: Apple Pay acquirer prefix (some processors)
+    benefit_context: "relevant to Apple Card 2% Apple Pay tier and Apple Pay partner 3% merchants"
+    statement_patterns:
+      - "APLPAY"
+      - "APL*"

@@ -1,0 +1,92 @@
+Verizon Visa Card (Synchrony Bank)
+[Card is a Visa Signature product; official name used on Verizon's own FAQ page is "Verizon Visa Signature® Card." Marketing page calls it "Verizon Visa® Card." Both names refer to the same product.]
+
+Sources used:
+- https://www.verizon.com/financial-services/verizon-visa-card/ (official product/marketing page)
+- https://www.verizon.com/support/verizon-visa-card-faqs/ (official FAQ page)
+- https://www.verizon.com/support/verizon-visa-card-rewards-legal/ (official Rewards Program Terms and Conditions)
+- https://files.consumerfinance.gov/a/assets/credit-card-agreements/pdf/Synchrony_Bank/Verizon_Visa_Account_Agreement_and_Pricing_Information.pdf (Synchrony Bank Account Agreement & Pricing Information filed with CFPB; document itself is dated 6/2021, so APR figures within it are stale relative to the FAQ page's "as of 1/1/26" figures — noted below with dates)
+- Secondary cross-check only (not used as primary source for any number): NerdWallet, Forbes Advisor, U.S. News review pages (titles surfaced in search, not fetched as authority).
+
+Annual Fee
+- No annual fee (confirmed on both verizon.com marketing page and FAQ page).
+
+Signup/Welcome Bonus
+- $50 statement credit when you open an account and make a purchase in the first 90 days.
+- Additional $100 statement credit when you spend $1,500 using the card in the first 90 days (total up to $150 cash back).
+- Credits post within 1-2 billing cycles.
+- Account must remain open, in good standing, and not become delinquent.
+- Limited time offer; only one per account.
+
+Earn Rates ("Verizon Dollars")
+- 4% Verizon Dollars on grocery store purchases.
+- 4% Verizon Dollars on gas stations and EV charging station purchases.
+- 4% Verizon Dollars on restaurants, including takeout and delivery.
+- 4% Verizon Dollars on Verizon purchases (excludes Verizon bill payment).
+- 1% Verizon Dollars on Verizon Wireless account bill or Verizon Fios account bill payments.
+- 1% Verizon Dollars on all other purchases where Visa credit cards are accepted.
+- No limit on the amount of Verizon Dollars that can be earned ("There's no limit on the amount of Verizon Dollars you can earn for purchases.").
+- Rewards Program Terms and Conditions note: rewards categories are determined by merchant category codes (MCCs) assigned by payment processors/networks, not by Verizon.
+- Verizon Dollars are NOT earned on: unauthorized or fraudulent charges, the purchase of debt cancellation products, cash advances, balance transfers, or interest/fees charged on the account. (Verbatim from Rewards Program Terms and Conditions.)
+
+Device Financing
+- Verizon Wireless customers get 0% APR financing with 36 equal monthly payments on select device purchases made with the Verizon Visa Card.
+- Interest-free financing also applies to accessories priced $100+ over 12 months.
+
+Bill-Pay / Auto Pay Credit
+- Auto Pay enrollees get up to $10/month off per eligible wireless line (max 12 lines) or Fios service. (Exact eligibility/mechanics beyond this were not further detailed on the pages fetched — not found in more granular form.)
+
+Redemption of Verizon Dollars
+- Redeemable toward:
+  - Lowering/paying the Verizon Visa Card statement balance ($1 Verizon Dollar = $1 credit, $1.00 minimum redemption).
+  - Verizon Wireless or Fios bill payments.
+  - Purchasing devices and accessories (smartwatches, headphones, 5G phones, gaming consoles/accessories).
+  - Device payment agreement down payments or payoffs.
+- Redemption channels: My Verizon app/website, Verizon retail stores, the Synchrony account manager portal, or authorized retailers.
+- Account-type redemption rules (from Rewards Program Terms and Conditions):
+  - Wireless-only accountholders access/redeem rewards through their Wireless account.
+  - Fios-only accountholders access/redeem through their Fios account.
+  - Dual-account holders (both Wireless and Fios) can only redeem through the account under which the card was opened.
+  - Account Owners and Account Managers can view/redeem rewards linked to their accounts.
+
+Expiration / Forfeiture of Verizon Dollars
+- No fixed expiration date on Verizon Dollars, but forfeiture rules apply:
+  - 24-month inactivity rule: no transactions or reward activity for 24 months forfeits the balance.
+  - Forfeited 90 days after credit card account closure (if no other linked cards exist).
+  - Immediate forfeiture upon cancellation of the linked Verizon Wireless or Fios account.
+  - Forfeiture also on change of account ownership.
+
+Foreign Transaction Fee
+- None. Marketing page: "no additional, surprise fees on foreign transactions." FAQ page: "No foreign transaction fees." Account Agreement (Synchrony, dated 6/2021): "Foreign Transaction [fee]: None," with standard Visa currency-conversion-procedure disclosure (Visa converts non-USD transactions using its own currency conversion rate, which may differ from the rate in effect on the transaction or posting date).
+
+APR
+- Per Verizon's official FAQ page, stated as "APR (New Accounts as of 1/1/26)": Variable Purchase APRs are 22.24%, 27.24%, or 33.24% (tiered by creditworthiness). Penalty APRs: 32.24%, 37.24%, or 39.99%.
+- NOTE: The CFPB-filed Synchrony Bank Account Agreement & Pricing Information document is dated 6/2021 and shows older/different figures (Purchase APR = prime rate + 15.49%, with an illustrative 18.74% APR "as of May 1, 2020"; Cash Advance APR = 29.99% flat). This document is clearly out of date relative to the FAQ page's 1/1/26 figures — flagging the discrepancy rather than reconciling it, since no more current official Schumer box/account agreement PDF was found during this research pass.
+- Minimum interest charge (per 6/2021 agreement): no less than $2.00 if interest is charged.
+
+Other Fees (per Synchrony Bank Account Agreement, dated 6/2021 — not confirmed current as of 2026, but fee structure of this type typically changes less often than APR):
+- Balance Transfer Fee: $5 or 5% of the transfer amount, whichever is greater.
+- Cash Advance Fee: $10 or 5% of the cash advance amount, whichever is greater.
+- Late Payment Fee: $28 if the total minimum payment was paid on time in each of the prior six billing cycles; $39 if not. Never more than the total minimum payment that was due.
+- Returned Payment Fee: $28, never more than the amount permitted by applicable law.
+- Minimum Payment: greater of (a) $28 (or $39 including past-due amounts, if a payment was missed in any of the prior six billing cycles), or (b) past-due amounts + 1% of new balance + late fees charged in the current cycle + interest charged in the current cycle + any special-promotion payment due. Rounded up to the next whole dollar; never more than the new balance.
+- Balance calculation method: "daily balance" (interest applied daily to each balance type - purchases, balance transfers, cash advances - separately).
+
+Visa Signature Benefits (per official FAQ page)
+- Sofar Sounds
+- Universal Destinations & Experiences
+- Travel and Emergency Assistance Services
+- Rental Car Privileges
+- Visa Luxury Hotel Collection
+- Troon Golf Rewards
+- Visa Signature Concierge
+- (Referenced: "Visit The Visa Signature Credit Card Guide to Benefits to learn more" — guide itself not fetched.)
+
+Not found / not confirmed from official sources during this research pass (do not estimate):
+- Current (2026-dated) Schumer box / rates-and-fees table superseding the 6/2021 CFPB filing (balance transfer/cash advance/late/returned-payment fee amounts above may no longer be current).
+- Specific credit limit ranges or minimum credit limit.
+- Exact mechanics/eligibility detail of the Auto Pay $10/month/line discount beyond what's stated above.
+- Whether the welcome bonus is currently active/unchanged as of this research date (2026-07-04) versus a legacy promo still showing on a cached page.
+- Full Visa Signature Guide to Benefits detail (only benefit names were captured, not full terms).
+
+Issued by Synchrony Bank pursuant to a license from Visa U.S.A. Inc.

@@ -1,0 +1,56 @@
+Pathfinder Rewards Visa Signature Card (PenFed / Pentagon Federal Credit Union)
+
+NOTE ON SOURCING: Direct WebFetch to penfed.org (product page, FAQ, membership page, rewards T&C PDF, travel-credits PDF) timed out across 8+ attempts in this research session — this looks like a systematic block/slowness for the domain rather than a one-off failure. Facts below come from WebSearch's indexed synthesis of the actual penfed.org page content (search snippets quote/paraphrase the official pages directly, URLs given below) plus secondary aggregator cross-checks (NerdWallet, U.S. News, WalletHub, CardRatings, Yahoo Finance, themilitarywallet.com), clearly flagged where only secondary sources could confirm a figure or where sources conflicted. Recommend re-verification via a direct fetch attempt later, or a manual visit to penfed.org, before treating flagged figures as final.
+
+Official sources referenced (indexed via search, not directly rendered):
+- https://www.penfed.org/credit-cards/pathfinder-rewards-visa
+- https://www.penfed.org/content/dam/penfed/general/pdf/creditcardpdfs/Visa/Pathfinder_RWDTC.pdf (rewards terms & conditions)
+- https://www.penfed.org/content/dam/penfed/general/pdf/creditcardpdfs/Visa/penfed-pathfinder-travel-credits.pdf (travel benefits)
+
+Membership Eligibility Requirement (IMPORTANT)
+- PenFed Credit Union membership is required to hold this card.
+- Per multiple 2026-dated sources (including a Yahoo Finance 2026 review describing PenFed as "a top military credit union anyone can join"), PenFed membership eligibility has broadened significantly and no longer requires military/government affiliation as a hard gate. The most consistently repeated current claim: anyone can join by opening a PenFed savings account with a minimum $5 deposit.
+- Automatic-eligibility categories still exist and remain listed on PenFed's site: current/former servicemembers; DoD/DHS/NOAA/U.S. Public Health Service employees; family members of the above; people living/working at certain locations; members of 50+ affiliated associations.
+- The historical donation-to-join path (paying roughly $15-20 to join a partner organization such as Voices for America's Troops or the National Military Family Association to gain eligibility) still appears in some sources (one dated "updated March 2024"), but this may now be redundant/vestigial rather than necessary, since the $5-deposit general-public path appears to have superseded it.
+- CAVEAT: penfed.org's own membership/eligibility page (home.penfed.org/s/membership) could not be directly fetched in this session (timeout). This conclusion rests on secondary sources and search-indexed synthesis, not a directly-read official page. Re-verify directly against home.penfed.org/s/membership before treating as certain.
+
+Annual Fee
+- $95; waived for PenFed Honors Advantage members.
+
+Foreign Transaction Fee
+- $0 (none).
+
+Signup Bonus
+- 50,000 points after spending $3,000 within 90 days of account opening, as currently advertised (per search-indexed penfed.org content).
+
+Earn Rates
+- Travel category (airfare, hotels, car rentals, cruises, tolls, bus lines, taxi/rideshare): 4X points/$1 for PenFed Honors Advantage members; 3X points/$1 for standard cardholders.
+- Dining: 3X for Honors Advantage members, 2X for standard members — secondary sources vary slightly on the exact framing here; NOT independently confirmed against official page text, treat as approximate.
+- All other purchases: 1.5X points/$1.
+- No specific bonus-category cap was found in available sources — NOT FULLY CONFIRMED (the official rewards T&C PDF would define this but could not be fetched).
+
+Travel Credits / Other Benefits
+- Global Entry/TSA PreCheck application fee credit: statement credit up to $120 (Global Entry) or up to $85 (TSA PreCheck), once every 4 years per eligible account; credit posts 6-8 weeks after the charge. One search result gave a conflicting figure ("$100 or $85") — the more consistently repeated figures are $120/$85; flagging residual uncertainty.
+- Priority Pass Select lounge membership: described as complimentary, auto-renewing annual membership (normally valued ~$99), giving access to 1,300+ airport lounges. One secondary source (WalletHub) states a $35-per-person-per-visit guest/member fee applies, which conflicts with the "complimentary" framing — could not verify against actual Priority Pass terms. Flag as needing verification.
+- Airline incidental fee credit: one search synthesis mentioned up to $100/year in statement credits for domestic airline fees (baggage, seat selection, etc.) — NOT independently confirmed by a second source; treat with caution.
+
+Standard Purchase APR
+- Reported as a single variable rate of 17.99% per secondary aggregator synthesis (CardRatings referencing penfed.org). Could not confirm whether PenFed actually publishes a creditworthiness-based range, since the official rates-and-fees table could not be fetched. Treat with caution.
+
+Balance Transfer (secondary, found incidentally)
+- 0% intro APR for 12 months on balance transfers; 3% balance transfer fee; reverts to 17.99% after the intro period (secondary source only).
+
+Redemption
+- Program name: PenFed Pathfinder Rewards (points), redeemed via the PenFed Honors Rewards portal.
+- Reported point value range: roughly $0.0085-$0.01 per point depending on redemption type; travel redemptions (hotel, car rental, airline, vacation packages) reportedly get the higher end of value, merchandise redemptions the lower end (~$0.008/point). Not independently confirmed against an official value chart.
+- No evidence found of airline/hotel point transfer partners — appears to be a proprietary points program redeemed only through PenFed's own portal, not a transferable-currency program.
+- Point expiration policy: NOT FOUND in sources reviewed (would be defined in the official Rewards T&C PDF, which could not be fetched).
+
+Gaps / Not Found
+- Exact bonus-category spending caps.
+- Confirmed APR range (vs. the single rate found).
+- Point expiration policy.
+- Definitive Priority Pass guest-fee terms (conflicting info between "complimentary" framing and a reported $35/visit fee).
+- Direct confirmation of the current membership/eligibility page text (see Membership section above).
+
+Issued by PenFed (Pentagon Federal Credit Union) directly, as a Visa Signature card — no separate partner-bank issuer found in sources reviewed.

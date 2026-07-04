@@ -34,7 +34,24 @@
     "base_rate": {
       "type": "number",
       "minimum": 0,
-      "description": "Catch-all earn rate applied to spend not matched by any category or merchant reward"
+      "description": "Catch-all earn rate applied to spend not matched by any category or merchant reward. For conditionally boosted base rates (Apple Card 2% via Apple Pay vs 1% physical) store the unconditional baseline here and the boost in base_rate_conditional"
+    },
+    "base_rate_conditional": { "$ref": "#/$defs/conditionalRate" },
+    "required_membership": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "note"],
+      "description": "Paid membership/subscription that is a prerequisite for holding the card or earning its rewards (Sam's Club membership, Amazon Prime, REI Co-op, Robinhood Gold). Recorded but NOT scored in v1 — the optimizer assumes the user already holds it. Omit for cards without one; free credit-union membership goes in approval.notes instead",
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "description": "Membership name, e.g. 'Amazon Prime'" },
+        "annual_cost_usd": { "type": "number", "minimum": 0, "description": "Current annual cost of the cheapest qualifying tier" },
+        "note": { "type": "string", "minLength": 1, "description": "What the membership gates (card eligibility, earn rate, redemption) and which tier qualifies" }
+      }
+    },
+    "max_annual_rewards_usd": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Card-wide cap on total reward value earnable per year, in USD (Sam's Cash $5,000/calendar year). Optimizer clamps the card's spend earnings at this value. Omit when uncapped"
     },
     "category_rewards": {
       "type": "array",
@@ -49,12 +66,34 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["name", "amount_usd", "period", "realistic_capture_rate_note"],
+        "required": ["name", "period", "realistic_capture_rate_note"],
+        "oneOf": [
+          { "required": ["amount_usd"], "not": { "required": ["amount_points"] } },
+          { "required": ["amount_points"], "not": { "required": ["amount_usd"] } }
+        ],
         "properties": {
           "name": { "type": "string", "minLength": 1 },
-          "amount_usd": { "type": "number", "exclusiveMinimum": 0, "description": "Face value per period" },
-          "period": { "enum": ["monthly", "quarterly", "semiannual", "annual", "every_4_years"] },
+          "kind": {
+            "enum": ["statement_credit", "in_kind"],
+            "default": "statement_credit",
+            "description": "statement_credit (default) = cash-equivalent credit valued at face. in_kind = non-cash recurring benefit (hotel free night, companion certificate, lounge passes) whose amount_usd is a curator-estimated value — the optimizer always applies a capture haircut, and the estimation reasoning belongs in notes"
+          },
+          "amount_usd": { "type": "number", "exclusiveMinimum": 0, "description": "Face value per period (for kind: in_kind, the curator-estimated USD value per period)" },
+          "amount_points": { "type": "number", "exclusiveMinimum": 0, "description": "Points/miles granted per period instead of USD (anniversary bonus points, spend-triggered point drops). Points cards only — valued via the card's currency.program" },
+          "period": { "enum": ["monthly", "quarterly", "semiannual", "annual", "every_4_years", "every_5_years"] },
           "category": { "type": "string", "description": "Optional canonical category this credit offsets" },
+          "unlock_spend_usd": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "Card spend per period required before this credit pays out (e.g. a $200 flight credit after $10,000 in a calendar year). Omit for unconditional credits"
+          },
+          "requires_enrollment": { "type": "boolean", "description": "true when the benefit must be enrolled/activated before it pays out — a major capture-rate drag worth recording structurally" },
+          "expires": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "Last day of a promotional credit with an announced end date (e.g. 'offer ends 12/31/2026'). Omit for evergreen credits. The validator flags credits past this date"
+          },
           "realistic_capture_rate_note": {
             "type": "string",
             "minLength": 1,
@@ -71,23 +110,44 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["value", "spend_requirement_usd", "window_months"],
-          "properties": {
-            "value": {
-              "type": "object",
-              "additionalProperties": false,
-              "description": "Exactly one of points or usd",
-              "oneOf": [
-                { "required": ["points"], "not": { "required": ["usd"] } },
-                { "required": ["usd"], "not": { "required": ["points"] } }
-              ],
-              "properties": {
-                "points": { "type": "number", "exclusiveMinimum": 0 },
-                "usd": { "type": "number", "exclusiveMinimum": 0 }
-              }
+          "oneOf": [
+            {
+              "required": ["value", "spend_requirement_usd", "window_months"],
+              "properties": { "first_year_match": { "const": false } }
             },
+            {
+              "required": ["first_year_match"],
+              "properties": { "first_year_match": { "const": true } },
+              "allOf": [
+                { "not": { "required": ["value"] } },
+                { "not": { "required": ["spend_requirement_usd"] } },
+                { "not": { "required": ["window_months"] } },
+                { "not": { "required": ["tiers"] } }
+              ]
+            }
+          ],
+          "properties": {
+            "value": { "$ref": "#/$defs/bonusValue" },
             "spend_requirement_usd": { "type": "number", "minimum": 0 },
             "window_months": { "type": "number", "exclusiveMinimum": 0 },
+            "tiers": {
+              "type": "array",
+              "minItems": 1,
+              "description": "Additional bonus tranches on top of the base value, each unlocked at a higher CUMULATIVE spend within the same window_months (e.g. '70k after $3k, +20k more after $5k total' → value 70k points / spend_requirement_usd 3000, plus one tier of 20k points at spend_requirement_usd 5000). Tier spend requirements must exceed the base requirement and ascend",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["value", "spend_requirement_usd"],
+                "properties": {
+                  "value": { "$ref": "#/$defs/bonusValue" },
+                  "spend_requirement_usd": { "type": "number", "exclusiveMinimum": 0 }
+                }
+              }
+            },
+            "first_year_match": {
+              "type": "boolean",
+              "description": "Discover-style Cashback Match: the issuer matches all rewards earned in year one, dollar-for-dollar. When true, omit value/spend_requirement_usd/window_months/tiers — the optimizer values the match as the card's own computed first-year earnings"
+            },
             "limited_time": {
               "type": "boolean",
               "description": "true when this is a limited-time elevated offer above the card's standard bonus (note the standard bonus in `notes` for comparison)"
@@ -149,6 +209,35 @@
         "note": { "type": "string" }
       }
     },
+    "relationship_boost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["program", "tiers", "note"],
+      "description": "Earn boost conditional on a banking relationship with the issuer (BofA Preferred Rewards 25-75%, U.S. Bank Smartly balance tiers). Recorded but NOT scored in v1 — the optimizer models the no-relationship baseline. Omit entirely for cards without one.",
+      "properties": {
+        "program": { "type": "string", "minLength": 1, "description": "Issuer program name, e.g. 'Bank of America Preferred Rewards'" },
+        "tiers": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["boost_pct"],
+            "anyOf": [
+              { "required": ["min_balance_usd"] },
+              { "required": ["requirement"] }
+            ],
+            "properties": {
+              "tier_name": { "type": "string", "description": "Issuer's tier label, e.g. 'Platinum Honors'" },
+              "min_balance_usd": { "type": "number", "minimum": 0, "description": "Qualifying combined deposit/investment balance for this tier" },
+              "requirement": { "type": "string", "minLength": 1, "description": "Non-balance qualifying condition when the tier isn't balance-keyed (SoFi 'qualifying direct deposit each 30-day period', Truist 'Marquee Checking account'). Provide this and/or min_balance_usd" },
+              "boost_pct": { "type": "number", "exclusiveMinimum": 0, "description": "Percentage increase applied to rewards earnings at this tier, e.g. 75 = 75% more" }
+            }
+          }
+        },
+        "note": { "type": "string", "minLength": 1, "description": "Mechanics and caveats: which accounts qualify, caps on boosted spend, whether the boost applies to base or bonus earn" }
+      }
+    },
     "benefit_flags": {
       "type": "array",
       "items": { "type": "string", "pattern": "^[a-z0-9]+(_[a-z0-9]+)*$" },
@@ -168,7 +257,7 @@
             "type": "array",
             "minItems": 1,
             "items": {
-              "enum": ["identity", "currency", "base_rate", "category_rewards", "merchant_rewards", "credits", "signup_bonus", "fees", "approval", "closed_loop", "benefit_flags"]
+              "enum": ["identity", "currency", "base_rate", "category_rewards", "merchant_rewards", "credits", "signup_bonus", "fees", "approval", "closed_loop", "relationship_boost", "required_membership", "benefit_flags"]
             },
             "description": "Which schema blocks this link backs"
           },
@@ -201,7 +290,22 @@
       "properties": {
         "period": { "enum": ["monthly", "quarterly", "annual"] },
         "max_spend_usd": { "type": "number", "exclusiveMinimum": 0 },
-        "fallback_rate": { "type": "number", "minimum": 0, "description": "Earn rate on spend above the cap" }
+        "fallback_rate": { "type": "number", "minimum": 0, "description": "Earn rate on spend above the cap" },
+        "shared_cap_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(_[a-z0-9]+)*$",
+          "description": "Marks caps that draw from ONE combined spend pool across multiple reward entries on this card (e.g. '2x on gas + groceries, combined, on the first $5,000/yr'). Every entry carrying the same id must state identical period and max_spend_usd (each states the full pool, not a share); the optimizer treats them as a single pool. Omit for independent caps"
+        }
+      }
+    },
+    "bonusValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "At least one of points / usd; both together for mixed bonuses (e.g. 100,000 points + $100 statement credit)",
+      "minProperties": 1,
+      "properties": {
+        "points": { "type": "number", "exclusiveMinimum": 0 },
+        "usd": { "type": "number", "exclusiveMinimum": 0 }
       }
     },
     "rotation": {
@@ -240,6 +344,8 @@
         "rotation": { "$ref": "#/$defs/rotation" },
         "choice": { "$ref": "#/$defs/choice" },
         "portal_only": { "type": "boolean", "description": "true if the rate only applies when booked through the issuer's portal" },
+        "requires_enrollment": { "type": "boolean", "default": false, "description": "true when the rate pays nothing unless the cardholder actively enrolls/activates the category each cycle (Elan Max Cash Preferred category enrollment)" },
+        "conditional_rate": { "$ref": "#/$defs/conditionalRate" },
         "notes": { "type": "string" }
       },
       "if": { "properties": { "category": { "const": "choice" } }, "required": ["category"] },
@@ -253,7 +359,19 @@
         "merchant": { "type": "string", "description": "Key from data/meta/merchants.yaml" },
         "rate": { "type": "number", "minimum": 0 },
         "cap": { "$ref": "#/$defs/cap" },
+        "conditional_rate": { "$ref": "#/$defs/conditionalRate" },
         "notes": { "type": "string" }
+      }
+    },
+    "conditionalRate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rate", "requires"],
+      "description": "A higher earn rate gated on a condition the schema can't model structurally: a paid membership tier (Walmart+ 5% vs 3%, Sam's Club Plus 3% vs 1%, My Best Buy Total), a payment method (Apple Pay 2% vs 1% physical), or an account/status relationship (PenFed Honors Advantage). The sibling rate MUST be the unconditional baseline — recorded but NOT scored in v1; the optimizer models the baseline",
+      "properties": {
+        "rate": { "type": "number", "exclusiveMinimum": 0, "description": "The boosted rate when the condition holds. Must exceed the baseline rate" },
+        "requires": { "type": "string", "minLength": 1, "description": "The condition, stated plainly: 'linked Walmart+ membership', 'paid via Apple Pay', 'Sam's Club Plus tier'" },
+        "note": { "type": "string" }
       }
     }
   }

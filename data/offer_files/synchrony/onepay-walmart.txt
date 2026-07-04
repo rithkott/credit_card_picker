@@ -1,0 +1,57 @@
+OnePay Walmart Spend Card (issued by Synchrony Bank, in partnership with OnePay/One Finance, Inc. and Walmart Inc.) — closed-loop, Walmart-only, private-label card
+
+RELATIONSHIP TO THE OTHER ONEPAY/WALMART CARD (read before using this file):
+This program has TWO distinct card products, confirmed via official Synchrony Bank cardholder-agreement PDFs (same filing family, "FR833282333"):
+  1. THIS FILE — OnePay Walmart Spend Card: closed-loop/private-label, usable ONLY at Walmart, earns NO rewards.
+  2. OnePay CashRewards World Mastercard — open-loop, usable anywhere Mastercard is accepted, earns cash back. See sibling file: data/offer_files/synchrony/onepay-walmart-mastercard.txt
+Both are issued by Synchrony Bank; both require the applicant to have a OnePay account in good standing; both were announced together (June 9, 2025 press release) as a single "credit card program" with Walmart, going live "this fall" (fall 2025). Per Mastercard's official press release: "OnePay and Synchrony will introduce both a general-purpose card, which will serve as the program's signature card and be available to use anywhere Mastercard is accepted, and a private label card, which will be exclusively for Walmart purchases." This file covers that private-label card. Secondary coverage (not primary-sourced) characterizes the Spend Card as the option "for shoppers who don't qualify for the Mastercard version" — i.e., it appears to function as a lower-tier/soft-decline fallback within the same OnePay application funnel rather than an independently marketed card line. Terms differ materially: no rewards program, single flat APR (vs. two-tier APR on the Mastercard version), no cash-advance feature, and no foreign-transaction-fee clause (moot, since it's Walmart-only/domestic use).
+
+Sources used:
+- https://www.onepay.com/help-center/articles/about-the-onepay-credit-card (official OnePay help-center article distinguishing the two cards; states "Walmart Spend Card is limited to purchases at Walmart" and no rewards)
+- https://www.synchronybankterms.com/syfterms/pdf/OnePay_Spend_Card_Account_Agreement_and_Pricing_Addendum.pdf (official Synchrony Bank Account Agreement & Rates/Fees Table, document dated 3/2026, filing code FR833282333_ONEPAY WALMART SPEND CARD, TC PLCC PDF WF13625080GL — authoritative, current source for all APR/fee figures below)
+- https://www.mastercard.com/news/press/2025/june/onepay-and-synchrony-to-launch-new-industry-leading-credit-card-program-with-walmart-credit-card-to-be-powered-by-mastercard-and-set-to-go-live-this-fall/ (Mastercard Newsroom press release, June 9, 2025 — original program announcement distinguishing the general-purpose card from the private-label card)
+- https://www.synchrony.com/contenthub/newsroom/onepay-and-synchrony-to-launch-new-industry-leading-credit-card.html (Synchrony Newsroom, same press release, mirrored)
+- https://www.onepay.com/newsroom/credit-card-synchrony-announcement (OnePay Newsroom, same press release, mirrored)
+- Secondary cross-check only (not used as primary source for any number): NerdWallet "Walmart Launches 2 New OnePay Store Credit Cards," CardCurator/CardSavvy/Firstcard/ThePointsParty blog reviews — titles/snippets surfaced in search, used only to corroborate the "no rewards" / "for shoppers who don't qualify for Mastercard version" characterization, not as a source for any figure below.
+
+Annual Fee
+- $0 / no annual fee (confirmed on OnePay help-center article: "There is no annual fee for either the CashRewards Card or the Walmart Spend Card").
+
+Signup/Welcome Bonus
+- None found. This card does not appear to carry a welcome/signup bonus — none is mentioned in any official source fetched, consistent with it being a no-rewards product.
+
+Earn Rates
+- None. Per official help-center article and the card's Account Agreement, this card does not earn any cash back, points, or rewards of any kind. It is purely a store financing/spending instrument for Walmart purchases.
+
+Foreign Transaction Fee
+- Not applicable / not disclosed. The card can only be used "for purchases from Walmart" (per the official Account Agreement's "Use Of Your Account" clause) — it is domestic/closed-loop only, and no foreign-transaction-fee clause appears in the official Rates and Fees Table or fee sections (unlike the Mastercard version, which explicitly states no FTF). Presumed moot given the closed-loop, Walmart-only usage restriction, but not explicitly confirmed with a "no FTF" statement in this card's own agreement.
+
+APR (per official Synchrony Rates and Fees Table, document dated 3/2026)
+- Single tier (no Account Type 1/2 split, unlike the Mastercard version): Purchase APR = Prime Rate + 23.99% (illustrative APR as of January 1, 2026: 30.74%, daily rate .08422%).
+- No cash-advance APR listed — this card does not offer cash advances (confirmed by the Account Agreement's "Use Of Your Account" clause, which only authorizes "purchases from Walmart," with no cash-advance provision, unlike the Mastercard version's explicit cash-advance section).
+- Grace period: due date is at least 23 days after the close of each billing cycle; no interest charged on purchases if the entire balance is paid by the due date each month.
+- Minimum Interest Charge: no less than $2.00 if interest is charged.
+
+Other Fees (per official Synchrony Account Agreement, dated 3/2026)
+- No cash advance fee (card does not support cash advances).
+- No balance transfer fee/terms found (not offered/not mentioned).
+- Late Payment Fee: $30 if the total minimum payment was paid on time in each of the prior six billing cycles; $41 if not. Never more than the total minimum payment that was due.
+- Returned Payment Fee: $30 if no returned-payment fee occurred in the prior six billing cycles; $41 if one did occur in that period. Never more than the amount permitted by applicable law. May be charged even if the payment is honored on a subsequent representment.
+- Minimum Payment: greater of (a) $30 (or $41 including past-due amounts, if the total minimum payment was missed by the due date in any of the prior six billing cycles), or (b) past-due amounts + 1% of new balance (excluding special-promotion balances) + late fees charged in the current cycle + interest charged in the current cycle + any special-promotion payment due. Rounded up to the next whole dollar; never more than the new balance.
+- Balance calculation method: "daily balance" — interest calculated by applying the daily rate to the daily balance each day; late/returned-payment fees and credit-insurance/debt-cancellation fees (if any) treated as new purchases for balance purposes.
+
+Account/Program Structure Notes (from the official Account Agreement)
+- Governing law: federal law and, where state law applies, the laws of Utah (agreement "accepted by us in Utah"). Synchrony Bank address of record: 170 Election Road, Suite 125, Draper, UT 84020 — identical contracting-bank language to the CashRewards Mastercard agreement.
+- "OnePay Account" clause: cardholders are not required to have this card to have a OnePay account, but must have a OnePay account in good standing to apply for and maintain this card account. If the linked OnePay account is closed for any reason, this card account will also be closed.
+- Information sharing: applicant information is shared between Synchrony Bank, "One Finance, Inc." (OnePay's legal entity name), and Walmart Inc.
+- Standard binding arbitration clause (with 45-day opt-out right, identical structure to the Mastercard version's agreement).
+- Card usable only "for purchases from Walmart" (closed-loop; explicitly does not extend to any other merchant, unlike the Mastercard sibling product).
+
+Not found / not confirmed from official sources during this research pass (do not estimate):
+- Specific credit limit ranges or minimum credit limit.
+- Whether this card is offered as an alternative/fallback specifically to declined Mastercard-version applicants, or is independently applied for — the "for shoppers who don't qualify for the Mastercard version" framing comes only from secondary (non-official) coverage and was not confirmed in any official OnePay/Synchrony/Walmart source.
+- Any non-monetary perks (e.g., special financing/deferred-interest promotions on large Walmart purchases, common on other retail private-label cards) — none were found in the sources fetched, but retail private-label cards frequently run periodic special-financing promotions not captured in the base Account Agreement; absence of evidence here is not confirmation of absence.
+- Exact official launch/go-live date (only "this fall" from the June 2025 press release, plus a 3/2026-dated agreement document, were found).
+- Foreign-transaction-fee language specific to this card's own agreement (see note above).
+
+Issued by Synchrony Bank. Per the official Account Agreement itself, the contracting bank is "Synchrony Bank, 170 Election Road, Suite 125, Draper, UT 84020" — the same issuer identified on the CashRewards Mastercard sibling product. No separate OnePay bank charter or program-manager structure was found; OnePay ("One Finance, Inc.") is described elsewhere on onepay.com as "a financial technology company, not a bank." No Mastercard/Visa network-license language appears for this card (consistent with it being a closed-loop, network-less private-label product usable only at Walmart).

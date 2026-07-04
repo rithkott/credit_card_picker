@@ -1,0 +1,42 @@
+Fidelity Rewards Visa Signature Card (Elan Financial Services)
+
+Signup Bonus
+- No standard welcome/signup bonus found on official Fidelity or Elan sources as of this writing. (Some third-party aggregators reference occasional targeted/promotional offers, e.g. a cited $150 bonus after spending $1,000 in 90 days, but this could not be confirmed on an official issuer page and appears to be a limited-time or channel-specific promotion rather than the standard, ongoing offer — omit unless independently verified at conversion time.)
+
+Earn Rates
+- 2 points per dollar on all eligible net purchases (net of returns/credits), no category restrictions and no cap mentioned.
+- Points are worth 1 cent each when redeemed for deposit into an eligible Fidelity account, making the effective rate "unlimited 2% cash back" for that redemption path.
+- Redemption value differs (lower) for other redemption options (e.g., travel, merchandise, gift cards, statement credit) — exact alternate redemption values not independently verified here; verify via fidelityrewards.com account portal or Guide to Benefits before citing specific alternate rates.
+
+Annual Fee
+- None ("no annual fee" stated explicitly on official Fidelity card page).
+
+Foreign Transaction Fee
+- None ("no foreign transaction fee" stated explicitly on official Fidelity card page).
+
+Redemption Mechanics
+- Points convert to cash and deposit into a designated eligible Fidelity account; no other redemption path is required to get the full 2% value.
+- Minimum redemption threshold: 2,500 points before a redemption/conversion can occur.
+- Auto-redemption available: if enrolled, accumulated points are automatically converted and deposited into the designated Fidelity account at the end of each month once the 2,500-point minimum is met.
+- Cardholders may also accrue points and redeem on-demand rather than via auto-redemption.
+
+Eligible Accounts for Point Deposit
+- Most nonretirement Fidelity brokerage account registrations.
+- Fidelity Cash Management Account.
+- Retirement accounts: Traditional IRA, Roth IRA, Rollover IRA, SEP IRA.
+- Fidelity Charitable Giving Account.
+- Fidelity HSA (Health Savings Account).
+- Fidelity-managed 529 College Savings Plan accounts.
+- Fidelity Go accounts.
+
+Administration / Eligibility Caveats
+- Elan Financial Services is the creditor/issuer and reviews all credit applications; Fidelity is not involved in the credit qualification decision and cannot guarantee approval for any existing Fidelity customer.
+- Card is issued under the Visa Signature brand, pursuant to a license from Visa U.S.A. Inc.
+- Cardholders must have or open an eligible Fidelity account to direct point redemptions to; the card and the Fidelity brokerage/banking relationship are administered separately (Elan handles the credit card account; Fidelity holds the destination account).
+
+Gaps / Unverified Items
+- Full Guide to Benefits PDF (purchase protection, extended warranty, travel/rental car insurance, roadside assistance, etc. — typical for Visa Signature cards) could not be extracted as machine-readable text in this research pass; contains standard Visa Signature benefits but exact terms/exclusions were not independently confirmed from the PDF and should be pulled again (via direct download + text extraction, not automated fetch) before finalizing a YAML entry citing specific protections.
+- Any current limited-time/targeted signup bonus was not confirmed on an official page — flagged above, omit unless verified.
+- Exact alternate-redemption values (travel, gift cards, statement credit, merchandise) not captured.
+
+Issued by Elan Financial Services, pursuant to a license from Visa U.S.A. Inc.

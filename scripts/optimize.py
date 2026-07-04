@@ -45,10 +45,10 @@ STALE_DAYS = 183  # matches scripts/validate_cards.py
 # redemption friction: monthly use-it-or-lose-it coupons are easy to miss;
 # annual credits are hard to miss.
 CREDIT_CAPTURE = {"monthly": 0.5, "quarterly": 0.7, "semiannual": 0.8,
-                  "annual": 0.9, "every_4_years": 0.9}
+                  "annual": 0.9, "every_4_years": 0.9, "every_5_years": 0.9}
 
 PERIODS_PER_YEAR = {"monthly": 12, "quarterly": 4, "semiannual": 2,
-                    "annual": 1, "every_4_years": 0.25}
+                    "annual": 1, "every_4_years": 0.25, "every_5_years": 0.2}
 
 CAP_PERIODS_PER_YEAR = {"monthly": 12, "quarterly": 4, "annual": 1}
 
@@ -247,7 +247,7 @@ def build_lines(card: dict, profile: dict, mode: str, programs: dict, buckets: d
     closed = set(card.get("closed_loop", {}).get("merchants", []))
     lines = []
 
-    def add(kind, key, rate, eligible, room, note=""):
+    def add(kind, key, rate, eligible, room, note="", room_key=None):
         eligible = [b for b in eligible if b in buckets]
         if closed:
             eligible = [b for b in eligible
@@ -255,15 +255,26 @@ def build_lines(card: dict, profile: dict, mode: str, programs: dict, buckets: d
         lines.append({"card_id": card["id"], "kind": kind, "key": key,
                       "rate": rate, "cpp": cpp,
                       "effective_rate": rate * cpp / 100.0,
-                      "room": room, "eligible": sorted(eligible), "note": note})
+                      "room": room, "room_key": room_key,
+                      "eligible": sorted(eligible), "note": note})
+
+    def cap_room(cap):
+        """Annualized spend room and, for shared caps, the pool key uniting the
+        entries that draw from one combined pool (validator guarantees members
+        agree on period + max_spend_usd)."""
+        room = cap["max_spend_usd"] * CAP_PERIODS_PER_YEAR[cap["period"]]
+        shared = cap.get("shared_cap_id")
+        room_key = f"{card['id']}|{shared}" if shared else None
+        note = f"capped at ${room:,.0f}/yr" + (f" (shared pool '{shared}')" if shared else "")
+        return room, room_key, note
 
     merchant_line_keys = {mr["merchant"] for mr in card["merchant_rewards"]}
     for mr in card["merchant_rewards"]:
         cap = mr.get("cap")
         if cap:
-            room = cap["max_spend_usd"] * CAP_PERIODS_PER_YEAR[cap["period"]]
+            room, room_key, cap_note = cap_room(cap)
             add("merchant", mr["merchant"], mr["rate"], [mr["merchant"]], room,
-                f"capped at ${room:,.0f}/yr")
+                cap_note, room_key)
             add("fallback", mr["merchant"], cap["fallback_rate"], [mr["merchant"]],
                 None, "above-cap fallback")
         else:
@@ -305,10 +316,9 @@ def build_lines(card: dict, profile: dict, mode: str, programs: dict, buckets: d
                      and b not in merchant_line_keys]
         cap = cr.get("cap")
         if cap:
-            room = cap["max_spend_usd"] * CAP_PERIODS_PER_YEAR[cap["period"]]
-            cap_note = f"capped at ${room:,.0f}/yr"
+            room, room_key, cap_note = cap_room(cap)
             add("category", cat, rate, eligible, room,
-                f"{note}; {cap_note}" if note else cap_note)
+                f"{note}; {cap_note}" if note else cap_note, room_key)
             add("fallback", cat, cap["fallback_rate"], eligible, None, "above-cap fallback")
         else:
             add("category", cat, rate, eligible, None, note)
@@ -329,6 +339,12 @@ def assign_spend(lines: list, buckets: dict) -> tuple:
     remaining = {b: bk["amount"] for b, bk in buckets.items()}
     order = sorted(lines, key=lambda ln: (-ln["effective_rate"], ln["card_id"],
                                           KIND_RANK[ln["kind"]], ln["key"]))
+    # Shared-cap pools: lines carrying the same room_key draw down one combined
+    # spend pool (e.g. "2x on gas + groceries, combined, up to $5,000/yr").
+    pools = {}
+    for ln in order:
+        if ln["room"] is not None and ln.get("room_key"):
+            pools.setdefault(ln["room_key"], ln["room"])
     assignments = []
     for i, ln in enumerate(order):
         eligible = [b for b in ln["eligible"] if remaining[b] > EPS]
@@ -345,7 +361,9 @@ def assign_spend(lines: list, buckets: dict) -> tuple:
             eligible.sort(key=lambda b: (best_alternative(b), b))
         else:
             eligible.sort()
-        room_left = float("inf") if ln["room"] is None else ln["room"]
+        pool_key = ln.get("room_key") if ln["room"] is not None else None
+        room_left = (float("inf") if ln["room"] is None
+                     else pools[pool_key] if pool_key else ln["room"])
         for b in eligible:
             if room_left <= EPS:
                 break
@@ -359,6 +377,8 @@ def assign_spend(lines: list, buckets: dict) -> tuple:
                                 "cpp": ln["cpp"], "kind": ln["kind"],
                                 "usd_value": take * ln["effective_rate"],
                                 "note": ln["note"]})
+        if pool_key:
+            pools[pool_key] = room_left
     unassigned = {b: amt for b, amt in sorted(remaining.items()) if amt > EPS}
     return assignments, unassigned
 
@@ -367,22 +387,59 @@ def assign_spend(lines: list, buckets: dict) -> tuple:
 # Value model (spec §4)
 # ---------------------------------------------------------------------------
 
-def score_credits(cards: list, profile: dict) -> list:
+def score_credits(cards: list, profile: dict, mode: str, programs: dict) -> list:
     """Value every credit across the portfolio against a shared per-category
     remaining-spend tracker, so stacked credits can never exceed the user's real
     spend. Draw order is deterministic: file order within a card, card-id order
-    across the portfolio."""
+    across the portfolio.
+
+    Credit variants beyond the classic USD statement credit:
+      - unlock_spend_usd: the credit is $0 unless the user's per-period total
+        spend can plausibly reach the unlock threshold (same optimistic
+        feasibility rule as signup bonuses — all spend could go on this card).
+      - amount_points: points-denominated drops (anniversary miles), valued via
+        the card's program cpp; they don't offset spend, so no tracker draw.
+      - kind: in_kind: amount_usd is a curator estimate (free nights, companion
+        certificates), so the capture haircut always applies, even uncategorized.
+    """
     tracker = {cat: float(v) for cat, v in profile["spend"].items()}
+    total_spend = sum(profile["spend"].values())
     results = []
     for card in sorted(cards, key=lambda c: c["id"]):
+        cpp = programs[card["currency"]["program"]][mode + "_cpp"]
         for credit in card["credits"]:
             periods = PERIODS_PER_YEAR[credit["period"]]
+            capture = CREDIT_CAPTURE[credit["period"]]
+            in_kind = credit.get("kind") == "in_kind"
+
+            unlock = credit.get("unlock_spend_usd")
+            if unlock is not None and total_spend / periods < unlock - EPS:
+                results.append({"card_id": card["id"], "name": credit["name"],
+                                "value": 0.0,
+                                "note": f"$0 — unlock spend ${unlock:,.0f}/{credit['period']} unreachable at your volume"})
+                continue
+            unlock_note = f"; unlocked (${unlock:,.0f}/{credit['period']} spend)" if unlock is not None else ""
+
+            if "amount_points" in credit:
+                face = credit["amount_points"] * periods * cpp / 100.0
+                value = face * capture if in_kind else face
+                note = (f"{credit['amount_points'] * periods:,.0f} pts/yr × {cpp}cpp"
+                        + (f" × capture {capture}" if in_kind else "") + unlock_note)
+                results.append({"card_id": card["id"], "name": credit["name"],
+                                "value": value, "note": note})
+                continue
+
             face = credit["amount_usd"] * periods
             cat = credit.get("category")
             if cat is None:
-                results.append({"card_id": card["id"], "name": credit["name"],
-                                "value": face,
-                                "note": "automatic (no category) — full face value"})
+                if in_kind:
+                    results.append({"card_id": card["id"], "name": credit["name"],
+                                    "value": face * capture,
+                                    "note": f"in-kind est. ${face:,.2f}/yr × capture {capture}{unlock_note}"})
+                else:
+                    results.append({"card_id": card["id"], "name": credit["name"],
+                                    "value": face,
+                                    "note": f"automatic (no category) — full face value{unlock_note}"})
                 continue
             available = tracker.get(cat, 0.0)
             if available <= EPS:
@@ -390,10 +447,11 @@ def score_credits(cards: list, profile: dict) -> list:
                                 "value": 0.0,
                                 "note": f"$0 — no remaining spend in '{cat}'"})
                 continue
-            haircut = face * CREDIT_CAPTURE[credit["period"]]
+            haircut = face * capture
             value = min(haircut, available)
             tracker[cat] = available - value
-            note = f"face ${face:,.2f}/yr × capture {CREDIT_CAPTURE[credit['period']]}"
+            kind_label = "in-kind est." if in_kind else "face"
+            note = f"{kind_label} ${face:,.2f}/yr × capture {capture}{unlock_note}"
             if haircut > available:
                 note += f" (capped by remaining '{cat}' spend)"
             results.append({"card_id": card["id"], "name": credit["name"],
@@ -401,22 +459,47 @@ def score_credits(cards: list, profile: dict) -> list:
     return results
 
 
-def score_bonus(card: dict, profile: dict, mode: str, programs: dict, as_of: date) -> dict:
-    """Signup-bonus value — counted once, year-1 only."""
+def score_bonus(card: dict, profile: dict, mode: str, programs: dict, as_of: date,
+                card_earnings: float = 0.0) -> dict:
+    """Signup-bonus value — counted once, year-1 only. A bonus's `value` may mix
+    points and usd (both summed); `tiers` add tranches whose cumulative spend
+    requirements are checked with the same feasibility rule as the base;
+    `first_year_match` (Discover) is valued as the card's own computed
+    first-year earnings."""
     bonus = card["signup_bonus"]
     if bonus is None:
         return {"value": 0.0, "note": "no signup bonus"}
     if "expires" in bonus and date.fromisoformat(bonus["expires"]) < as_of:
         return {"value": 0.0, "note": f"$0 — offer expired {bonus['expires']}"}
+    if bonus.get("first_year_match"):
+        return {"value": card_earnings,
+                "note": f"first-year match of this card's computed earnings (${card_earnings:,.2f})"}
     total_spend = sum(profile["spend"].values())
-    if total_spend * bonus["window_months"] / 12.0 < bonus["spend_requirement_usd"] - EPS:
+    window_spend = total_spend * bonus["window_months"] / 12.0
+    if window_spend < bonus["spend_requirement_usd"] - EPS:
         return {"value": 0.0, "note": "$0 — spend requirement unreachable at your volume"}
-    value = bonus["value"]
-    if "usd" in value:
-        return {"value": float(value["usd"]), "note": "cash bonus"}
     cpp = programs[card["currency"]["program"]][mode + "_cpp"]
-    return {"value": value["points"] * cpp / 100.0,
-            "note": f"{value['points']:,.0f} points × {cpp}cpp"}
+
+    def usd_of(value):
+        parts, worth = [], 0.0
+        if "points" in value:
+            worth += value["points"] * cpp / 100.0
+            parts.append(f"{value['points']:,.0f} points × {cpp}cpp")
+        if "usd" in value:
+            worth += float(value["usd"])
+            parts.append(f"${value['usd']:,.0f} cash")
+        return worth, " + ".join(parts)
+
+    total, note = usd_of(bonus["value"])
+    tiers = bonus.get("tiers", [])
+    reached = [t for t in tiers if window_spend >= t["spend_requirement_usd"] - EPS]
+    for tier in reached:
+        worth, desc = usd_of(tier["value"])
+        total += worth
+        note += f"; +tier at ${tier['spend_requirement_usd']:,.0f} spend ({desc})"
+    if len(reached) < len(tiers):
+        note += f"; {len(tiers) - len(reached)} tier(s) unreachable at your volume"
+    return {"value": total, "note": note}
 
 
 def score_portfolio(cards: list, profile: dict, mode: str, programs: dict,
@@ -428,10 +511,23 @@ def score_portfolio(cards: list, profile: dict, mode: str, programs: dict,
     for card in cards:
         lines += build_lines(card, profile, mode, programs, buckets)
     assignments, unassigned = assign_spend(lines, buckets)
-    earnings = sum(a["usd_value"] for a in assignments)
-    credits = score_credits(cards, profile)
+    credits = score_credits(cards, profile, mode, programs)
     credits_total = sum(c["value"] for c in credits)
-    bonuses = {card["id"]: score_bonus(card, profile, mode, programs, as_of)
+    per_card_earnings = {card["id"]: 0.0 for card in cards}
+    for a in assignments:
+        per_card_earnings[a["card_id"]] += a["usd_value"]
+    # Card-wide annual reward caps (e.g. Sam's Cash $5,000/yr): clamp the
+    # card's spend earnings; bonuses/credits are unaffected.
+    reward_cap_clamps = {}
+    for card in cards:
+        cap = card.get("max_annual_rewards_usd")
+        cid = card["id"]
+        if cap is not None and per_card_earnings[cid] > cap:
+            reward_cap_clamps[cid] = round(per_card_earnings[cid] - cap, 2)
+            per_card_earnings[cid] = cap
+    earnings = sum(per_card_earnings.values())
+    bonuses = {card["id"]: score_bonus(card, profile, mode, programs, as_of,
+                                       per_card_earnings[card["id"]])
                for card in cards}
     bonus_total = sum(b["value"] for b in bonuses.values())
     ongoing_fee = sum(c["fees"]["annual_fee_usd"] for c in cards)
@@ -446,6 +542,7 @@ def score_portfolio(cards: list, profile: dict, mode: str, programs: dict,
         "unassigned": unassigned,
         "credits": credits,
         "bonuses": bonuses,
+        "reward_cap_clamps": reward_cap_clamps,
         "ongoing_fee": ongoing_fee,
         "year1_fee": year1_fee,
     }

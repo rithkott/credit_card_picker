@@ -1,0 +1,107 @@
+Nordstrom Credit Card (TD Bank) — store-only / closed-loop
+
+Note: Nordstrom also offers an open-loop Nordstrom Visa Signature/Platinum version
+that can be used anywhere Visa is accepted, with different (lower/simpler) earn rates
+outside Nordstrom and additional Visa Signature/Platinum perks — see nordstrom-visa.txt.
+Approval logic: applicants are first considered for a Visa Platinum/Signature card based
+on creditworthiness; if they don't qualify for the Visa version, they're considered for
+this retail-only card instead.
+
+Annual Fee
+- None.
+
+Closed-Loop Scope
+- Can be used ONLY at "Nordstrom locations," defined in the official Nordstrom Credit
+  Card Agreement as: Nordstrom full-line stores, Nordstrom Rack stores, Nordstrom.com,
+  NordstromRack.com, through Nordstrom catalogs, and for purchases of Nordstrom gift
+  cards through CashStar. Per the agreement text, "the Nordstrom retail credit card
+  cannot be used to make purchases at Nordstrom stores located in Canada."
+- Not a Visa/Mastercard/etc. — cannot be used anywhere else.
+
+Nordy Club Status & Earn Rates
+- Cardmembers are automatically enrolled in the Nordy Club and get instant Influencer
+  status (no minimum annual spend required to hold that status as a cardholder).
+- Per official Nordy Club Terms & Conditions, points-per-$1 at Nordstrom/Nordstrom Rack/
+  Nordstrom Local are tiered by Nordy Club status (based on Net Purchase Balance per
+  calendar year):
+  - Member (no card, $0 NPB): 1 point/$1
+  - Influencer ($500 NPB, or automatic with any Nordstrom credit card): 1.5 points/$1
+  - Ambassador ($5,000 NPB): 2 points/$1
+  - Icon ($15,000 NPB — requires a Nordstrom credit card to reach): 3 points/$1
+- NOTE ON CONFLICTING SOURCES: Nordstrom's own cardmember-benefits marketing page
+  (nordstrom.com/browse/nordy-club/manage-card/visa-cardmember-benefits) describes
+  cardholders earning "2 base points/$1" at Influencer status and "3 base points/$1" at
+  Ambassador/Icon status — a different framing than the 1/1.5/2/3 table in the official
+  Nordy Club Terms & Conditions page. Both are official Nordstrom sources; this
+  discrepancy could not be resolved with certainty and is flagged here rather than
+  guessed at. Treat the Terms & Conditions figures (1/1.5/2/3) as the more legally
+  authoritative source, but verify current tier math before relying on it.
+- No points earned at Nordstrom Rack or Last Chance locations beyond the standard
+  cardmember discount (see below) — per Nordy Club T&Cs, "No points earned at Nordstrom
+  Rack or Last Chance (except 5% cardmember discount)." (This conflicts with the
+  cardmember-benefits page's claim of earning rewards at Rack; noting both.)
+- Exclusions: per Nordy Club T&Cs, "Members do not earn points on charitable donations,
+  purchases of alcoholic beverages or certain brands, or purchases from standalone
+  vending machines."
+
+Nordstrom Notes (Redemption)
+- 1,000 points = $10 Nordstrom Note (Member/Influencer tiers).
+- 2,000 points = $20 Nordstrom Note (Ambassador/Icon tiers) — i.e., same $10-per-1,000
+  redemption rate, just issued as larger Notes at higher tiers.
+- A positive point balance is required to convert points into a Nordstrom Note.
+- All points expire after 12 consecutive months without Nordy Club program activity.
+- Notes expire per the date printed on the individual Note; Bonus Notes (e.g. signup
+  offers) may have shorter expiration windows than standard earned Notes.
+
+Perks
+- Extra 5% discount at Nordstrom Rack when paying with the card (cardmember discount).
+- Free/reimbursed alterations: Influencer and Ambassador tiers get alterations
+  reimbursed (as a Nordstrom Note) up to a tier-specific benefit amount; Icon tier gets
+  "Unlimited Free Alterations" at Nordstrom locations on items purchased with the
+  Nordstrom card. Exclusions include Nordstrom.com orders shipped outside the U.S. and
+  Nordstrom Rack purchases.
+- Early access to the Nordstrom Anniversary Sale (exact advance-access window/dates are
+  set per sale event and were not independently verified here — could not find a
+  standing, dated policy on nordstrom.com beyond "early access for cardmembers").
+- Birthday gift/offer valid at Nordstrom Rack stores, NordstromRack.com, and
+  Nordstrom.com during birthday month; birthdate must be saved to account at least 30
+  days before the birthday month begins. (Sourced from secondary aggregator coverage,
+  not confirmed verbatim on an official Nordstrom page — flagged as lower confidence.)
+
+Welcome / Signup Offer
+- As of research date, Nordstrom's official card-signup page (nordstromrack.com/
+  customer-service/nordstromcard) advertised "$40 OFF your next purchase when you apply
+  and get approved." A separate nordstrom.com application page showed a "$60 Off Your
+  Next Purchase" offer expiring August 9 (year not stated on page). These are
+  time-limited promotional offers that change frequently — do not treat either dollar
+  figure as a permanent term; confirm the live offer at application time.
+- Offer excludes current/previous cardmembers and Nordstrom employees. Discount
+  requires paying directly with the credit card; Apple Pay, PayPal, and Afterpay are
+  excluded even if linked to the card.
+
+Financing
+- 0% introductory APR for 12 months from account opening on purchases and qualifying
+  balance transfers has been reported by secondary sources (not directly confirmed in
+  the official Account Opening Disclosure reviewed here, which shows a standard ongoing
+  APR with no stated intro period) — flagged as UNVERIFIED, omit from any modeling
+  until confirmed on an official page.
+- The Nordstrom Credit Card Agreement (official TD Bank agreement, effective/accurate
+  as of January 22, 2026) provides for "Special Payment Options": "From time to time TD
+  Bank may reduce my Annual Percentage Rate or interest charge, or allow me to take
+  advantage of other options that may be made available." These are ad hoc, not a
+  standing 0% offer.
+
+Rates & Fees (from the official TD Bank Account Opening Disclosure, accurate as of
+January 22, 2026)
+- APR for Nordstrom Purchases: 31.90% (variable, tied to Prime Rate).
+- Minimum interest charge: $0.50 per billing cycle in which interest is charged.
+- Grace period: due date is at least 25 days after the close of each billing cycle; no
+  interest on purchases if the entire balance is paid by the due date.
+- Late Payment Fee: up to $40.
+- Returned Payment Fee: up to $29.
+- Balance calculation method: Average Daily Balance.
+- No separately-disclosed cash-advance or foreign-transaction fee line item on this
+  card's Schumer box (unlike the Visa version), consistent with it being a closed-loop
+  store card without a cash-advance feature.
+
+Issued by TD Bank USA, N.A.

@@ -1,0 +1,51 @@
+Platinum Rewards Visa Signature Card (PenFed / Pentagon Federal Credit Union)
+
+NOTE ON SOURCING: Direct WebFetch to penfed.org (product page, PDF summary of terms, PDF pricing list, help-center article) consistently timed out or was blocked by an Akamai "Access Denied" wall (confirmed via a raw curl attempt). Facts below come from WebSearch's crawl/summarization of the actual penfed.org page content, cross-checked directly against a fetched SuperMoney aggregator page (https://www.supermoney.com/reviews/personal-credit-cards/pen-fed-platinum-rewards-visa-signature) and other secondary sources (CNBC, Yahoo Finance, themilitarywallet.com, CFPB's card registry), clearly flagged where only one source could confirm a figure. Recommend re-verification via a direct fetch of penfed.org later if the block clears.
+
+Official source referenced (indexed via search, not directly rendered):
+- https://www.penfed.org/credit-cards/platinum-rewards-visa
+- https://www.penfed.org/credit-cards/rewards-center (redemption)
+
+Membership Eligibility Requirement (IMPORTANT)
+- PenFed Credit Union membership is required to hold this card.
+- Per multiple 2026 sources (including a Yahoo Finance review explicitly titled "a top military credit union anyone can join"), membership is now effectively open to the general public with no donation required: the current standard path is simply opening a PenFed savings account and depositing at least $5 — no military/government/DoD affiliation and no donation to a partner organization required.
+- The historical requirement — a one-time small donation (previously reported around $15-20) to a partner advocacy group such as Voices for America's Troops or the National Military Family Association — still appears as a listed alternative pathway in some older/secondary sources (themilitarywallet.com, allcards.com), but current-year sources describe the $5 savings deposit as the primary and simplest general-public route, with no donation needed.
+- CAVEAT: penfed.org's own membership/FAQ page could not be directly fetched (blocked/timeout), so PenFed's own precise wording distinguishing pathways could not be quoted verbatim. Treat "no donation currently required via the $5 deposit path" as well-corroborated across secondary sources but not confirmed by a first-hand read of penfed.org's eligibility page. Re-verify directly if possible.
+
+Annual Fee
+- $0 (no annual fee).
+
+Foreign Transaction Fee
+- $0 (none).
+
+Signup Bonus
+- 15,000 bonus points after spending $1,500 in qualifying purchases within 90 days of account opening.
+
+Earn Rates
+- 5 points/$1 on gas paid at the pump.
+- 3 points/$1 at supermarkets and restaurants.
+- 3 points/$1 on cable/streaming services.
+- 1 point/$1 on everything else.
+- No spending caps/limits found in sources reviewed for any category.
+
+Standard Purchase APR
+- 17.99% variable. Every source checked (penfed.org via search, SuperMoney direct fetch, and a targeted search for a possible creditworthiness-based range) showed a single flat rate rather than a range — no evidence PenFed publishes a tiered purchase APR for this specific card.
+
+Balance Transfer / Cash Advance Terms
+- Balance transfer: intro 0% APR for 12 months on transfers made within the first 60 days of account opening; 3% balance transfer fee; reverts to the standard 17.99% variable APR after the intro period.
+- Cash advance: 17.99% variable APR (per SuperMoney). SuperMoney's page also showed a "0%" cash advance fee, which is inconsistent with typical card fee structures and could not be independently corroborated on penfed.org — flag this fee figure as unconfirmed / possibly an aggregator extraction error.
+
+Redemption
+- Program: PenFed Platinum Rewards points, redeemed via PenFed's online "Rewards Center" (Online Account -> "View Rewards Point Balance" -> "Access my Rewards").
+- Redeemable for travel (hotel, car rental, airline, and other travel/vacation packages), merchandise, and gift cards (300+ brands).
+- Points expire 5 years from the end of the month in which they were earned.
+
+Other Notable Terms
+- The card operates on the Visa Signature network tier.
+
+Gaps / Not Found
+- Exact cash advance fee (conflicting/likely-erroneous "0%" figure from one aggregator, not confirmed elsewhere).
+- Any per-category spending caps (none found, but the official terms PDF could not be fetched to confirm their absence definitively).
+- PenFed's own verbatim membership-eligibility page wording (see Membership section above).
+
+Issued by Pentagon Federal Credit Union (PenFed) directly — confirmed via penfed.org (via search), SuperMoney, and the CFPB's card registry; no partner bank identified in any source reviewed. PenFed is a federally chartered, federally insured credit union.

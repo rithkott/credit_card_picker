@@ -1,0 +1,79 @@
+Amazon Store Card / Amazon Prime Store Card (Synchrony Bank)
+[CLOSED-LOOP: usable only at Amazon.com and Whole Foods Market, NOT a Visa/Mastercard. Do not confuse with the Chase-issued Amazon Visa/Prime Visa.]
+
+Sources used:
+- https://files.consumerfinance.gov/a/assets/credit-card-agreements/pdf/synchrony-bank_Amazon.com%20Store%20Card%20Account%20Agreement%20and%20Pricing%20Information.pdf (CFPB-filed Synchrony Bank "Amazon Store Card Account Agreement," doc code FR833282333, dated 9/2022 — explicitly states it applies to both Amazon Store Card and Amazon Prime Store Card accounts; PRIMARY SOURCE for APR, fee, minimum payment, and special-financing mechanics below)
+- https://files.consumerfinance.gov/a/assets/credit-card-agreements/pdf/Synchrony_Bank/Amazon.com_Store_Card_Account_Agreement_and_Pricing_Information.pdf (older CFPB-filed "Amazon.com Store Card Account Agreement," dated 6/2021 — cross-checked against the 9/2022 version; terms materially the same, older illustrative APR figure)
+- https://www.amazon.com/Synchrony-Bank-Amazon-com-Store-Card/dp/B008A0GNA8 (Amazon product listing page for the card — WebFetch of this page returned server errors during this research pass; content below relies on search-indexed snippets only, flagged where used)
+- Amazon Customer Service help-center pages (amazon.com/gp/help/customer/display.html), specifically pages titled "Store Card and Secured Card Restrictions" (nodeId=202035950), "Earning 5% Back with Prime Visa" (nodeId=202109390, Prime Visa-specific, used only for contrast), and "Terms and Conditions for Refer-A-Friend to Amazon Store Card and Prime Store Card" (nodeId=TU3cdSScI78u4OMH6K) — direct WebFetch of these pages returned HTTP 503 errors repeatedly during this research pass; content below is drawn from search-engine-indexed snippets of these official Amazon pages, not a direct page fetch. Flagged accordingly.
+- Secondary cross-check only (not used as primary source for any number): WalletHub (multiple "Amazon Store Card" answer/review pages, 2026-dated), NerdWallet ("5 Things to Know About the Amazon Store Card"), Doctor of Credit (financing-change article), ficoforums.myfico.com thread on financing changes.
+
+Annual Fee
+- None (confirmed in both the 9/2022 and 6/2021 CFPB-filed Rates and Fees Tables: "Annual Fee: None").
+
+Card Usage / Closed-Loop Scope
+- Per the Account Agreement: "You may use your account for purchases at Amazon.com, Amazon Books and other Amazon owned or affiliated locations that accept the card and for purchases from other merchants who have enabled the Amazon Store Card as a payment option using Pay with Amazon."
+- Per Amazon's "Store Card and Secured Card Restrictions" help page (via search snippet): Store Card accounts (Amazon Store Card and Prime Store Card) can be used on "most purchases on Amazon.com and Amazon-branded physical stores, including Amazon Fresh and Amazon Go, and from merchant sites that accept payments using Amazon Pay."
+- The physical card does NOT work at Whole Foods Market registers. In-store Whole Foods purchases require the unique In-Store Code found in the Amazon app or Whole Foods Market app (linked to the Store Card/Prime Store Card account) rather than swiping/tapping the physical card.
+- Equal Monthly Payments and special (deferred-interest) financing are NOT available at Whole Foods Market when paying in-store with the In-Store Code.
+- Certain Whole Foods Eateries and Bars may not accept the card/In-Store Code at all; in that case no % back benefit applies.
+- Amazon Pay purchases at third-party merchant sites made with the card do not earn reward points (per search-indexed Amazon help content), even though the card itself can technically be used there.
+- This is a proprietary/closed-loop card not on the Visa/Mastercard/Amex/Discover network — it cannot be used at any retailer outside the Amazon ecosystem described above.
+
+Rewards / Cash Back Structure
+- Amazon Store Card (non-Prime members): does NOT earn rewards points/cash back under normal use (per search-indexed Amazon help content: "The Amazon Store Card and Amazon Secured Card do not earn rewards points").
+- Amazon Prime Store Card (requires an eligible Amazon Prime membership; per the Account Agreement: "The Amazon Prime Store Card is only available to accountholders with an eligible Amazon Prime membership. Please see amazon.com/prime for more details."): earns 5% back on eligible purchases at Amazon.com and Whole Foods Market.
+  - NOT FULLY CONFIRMED FROM A DIRECTLY-FETCHED OFFICIAL PAGE: exact reward-crediting mechanics (points vs. statement credit, timing) — search snippets attributed to Amazon's official Prime Visa/Prime Store Card help pages describe "reward points equal to 5% of eligible purchases (1 reward point = $1 in rewards) credited within 3 days, but in some cases up to two billing cycles" — this description appears to blend Prime Visa and Prime Store Card program language in the search snippet, so it is reported here with that caveat rather than asserted as certainly applicable verbatim to the Prime Store Card.
+  - The 5% back benefit CANNOT be combined with any special financing or Equal Monthly Payments offer on the same purchase — cardholder must choose either (a) special financing/equal monthly payments, or (b) the 5% back benefit, not both.
+  - Amazon Pay purchases made with the Prime Store Card are not eligible to earn reward points.
+  - Also referenced (not independently verified in detail): "5-15% back on select rotating items throughout the year" for Prime Store Card members, per search-indexed content — treat as unconfirmed promotional detail, not a standing rate.
+  - Amazon reserves the right to discontinue or alter the terms of the % back benefit at any time, subject to applicable law (per search-indexed Amazon T&C content).
+
+Signup/Welcome Bonus
+- NOT FULLY CONFIRMED FROM OFFICIAL SOURCES: Secondary sources (WalletHub) describe a $10 Amazon gift card upon approval for the Amazon Store Card (no spending requirement) and an $80 gift card upon approval for the Amazon Prime Store Card. These figures come from an aggregator, not an Amazon/Synchrony official page fetched in this research pass — flagged as unconfirmed and potentially stale/time-limited.
+
+Special Financing / Deferred Interest Promotions
+The 9/2022 CFPB-filed Account Agreement (applicable to both Amazon Store Card and Amazon Prime Store Card accounts) describes two distinct types of special promotional financing that may be offered on qualifying purchases:
+
+1. Equal Monthly Payments Offer (0% interest, fixed installments)
+   - "When you make a qualifying purchase under an Equal Monthly Payments Offer, no interest will be charged on your promotional purchase and equal monthly payments are required equal to the total promotional purchase amount divided equally by the number of months in the promotional period until the promotional purchase is paid in full."
+   - Payment is rounded to the whole cent and "may be higher or lower than the minimum payment that would be required if the purchase was a non-promotional purchase."
+   - Example given verbatim in the agreement: a $1,000 purchase on a 24-month Equal Monthly Payments Offer requires payments of $41.67/month; a $400 purchase on the same 24-month offer requires only $16.67/month and is NOT bumped up to the standard $29/$40 minimum payment otherwise due.
+   - Per secondary-source (WalletHub) figures, not confirmed in an official document fetched during this pass: Equal Monthly Payment Financing has been advertised as 0% APR for 6 months on purchases of $50+, 0% APR for 12 months on purchases of $600+, and 0% APR for 24 months on "select purchases."
+
+2. Deferred Interest Financing Promotion ("No Interest if Paid in Full Within [6/12/24] Months")
+   - Verbatim from the agreement: "For each promotion, if the promotional balance is not paid in full within the promotional period, interest will be imposed from the date of purchase at the variable Purchase APR that applies to your account when the promotional purchase is made."
+   - "When you make a qualifying purchase under one of these promotions, no interest will be assessed on the purchase if you pay the following (the 'promotional balance') in full within the applicable promotional period: (1) the promotional purchase amount, and (2) any related optional credit insurance/debt cancellation charges. If you do not, interest will be assessed on the promotional balance from the date of the purchase."
+   - Minimum monthly payments are still required during the promotional period even though no interest accrues if paid off in time.
+   - Regular (non-promotional) account terms apply to all non-promotional purchases, and to the promotional purchase itself once the promotional period ends.
+   - Offers "may not be available at all times for all purchases" and are "subject to credit approval."
+   - At the time the 9/2022 agreement was filed, the illustrative variable Purchase APR at account opening was stated as 28.24% (i.e., deferred-interest promotions retroactively charge interest at this ordinary variable Purchase APR, not a special penalty rate, if the balance isn't paid off in time).
+
+Reported upcoming change (NOT from an official Amazon/Synchrony document fetched in this pass — sourced from Doctor of Credit, citing a cardholder email from Amazon, and corroborated by a ficoforums.myfico.com thread and secondary aggregator pages):
+- Special (deferred-interest) financing offers on the Prime Store Card and Prime Secured Card are reported to no longer be offered for new purchases starting the week of February 16, 2026. Purchases made under a deferred-interest offer before that date are said to continue under their original terms. After that date, Equal Monthly Payments is reported to be the only promotional financing offer type still available going forward. This change could not be verified against an official Amazon or Synchrony page during this research pass — flagged as unconfirmed.
+
+APR
+- Per the CFPB-filed 9/2022 Rates and Fees Table: "The APR for purchases is the prime rate plus 22.74%. This APR will vary with the market based on the Prime Rate." As of August 1, 2022 (per the agreement text), the daily rate for purchases was .07737%, equating to an illustrative APR of 28.24%.
+- The older 6/2021 CFPB filing shows the identical formula (prime + 22.74%) with an illustrative APR of 25.99% as of March 1, 2021 — consistent methodology, just an earlier snapshot of the prime rate.
+- Minimum interest charge: "If you are charged interest, the charge will be no less than $1.50" (both the 9/2022 and 6/2021 filings).
+- NOTE / DISCREPANCY FLAG: Secondary aggregator sources (WalletHub, accessed during this research pass and dated "as of 01/01/2026") state a current standard variable Purchase APR of 29.49% and a late fee of "up to $40" for the Store Card. This 29.49% figure could not be located in an official CFPB-filed document or a directly-fetched Amazon/Synchrony page during this research pass (WebFetch of amazon.com and synchrony.com pages returned repeated 503/timeout errors) — it is reported here only as an unconfirmed, aggregator-sourced data point that appears directionally consistent with rate increases over time from the 25.99% (2021) / 28.24% (2022) figures in the official filings, not as a verified official number.
+
+Other Fees (per the CFPB-filed 9/2022 Account Agreement, cross-checked against the 6/2021 filing — terms identical between the two)
+- Late Payment Fee: charged if the total minimum payment due is not received by 5 p.m. (ET) on the due date. Equal to $29 if the total minimum payment was paid on time in each of the prior six billing cycles; $40 if not paid on time in any one or more of the prior six billing cycles. Never more than the total minimum payment that was due. (Aggregator sources describe this simply as "up to $40" as of 01/01/2026, consistent with the official $29/$40 tiered structure but not independently confirmed as unchanged.)
+- Minimum Payment Calculation: the greater of (1) $29, or $40 (including past-due amounts) if a payment was missed in any of the prior six billing cycles; or (2) the sum of: past-due amounts + 1% of new balance (excluding any balance under an Equal Monthly Payments Offer) + late fees charged in the current cycle + interest charged in the current cycle, all rounded up to the next whole dollar, PLUS any payment due under an Equal Monthly Payments Offer. Total minimum payment is never more than the new balance; Equal Monthly Payments amounts are not inflated up to the $29/$40 floor.
+- Balance calculation method: "daily balance," with a separate daily balance tracked for each balance type (regular purchases vs. balances under different special promotions). Interest = daily rate x daily balance, summed across the billing cycle, with a $1.50 per-cycle minimum interest charge if any interest is owed, applied proportionately across balance types. Late payment fees are treated as new purchases for balance-calculation purposes; debt cancellation fees are added proportionately across balances.
+- No cash advance fee, balance transfer fee, or foreign transaction fee is listed in the Rates and Fees Table (Section I) of either CFPB filing — the card has no cash advance or balance transfer functionality disclosed, consistent with it being a closed-loop retail card.
+- Expedited phone payments: the agreement notes Synchrony "may allow you to make payments over the phone but we will charge you a fee to make expedited phone payments" — exact dollar amount of this fee is not stated in the sections fetched.
+
+Not found / not confirmed from official sources during this research pass (do not estimate):
+- The current (2026) Schumer box superseding the 9/2022 CFPB filing — specifically, whether the 29.49% Purchase APR figure reported by WalletHub (as of 01/01/2026) is accurate; no official document showing this figure was located.
+- Exact current dollar thresholds and durations for all active Equal Monthly Payments offers (the $50/6-month and $600/12-month figures come only from a secondary aggregator, not an official Amazon/Synchrony schedule).
+- Whether the February 16, 2026 removal of deferred-interest financing for the Prime Store Card/Prime Secured Card (reported by Doctor of Credit via a cardholder email) has been officially confirmed by Amazon or Synchrony, and whether it also applies to the non-Prime Amazon Store Card.
+- Exact welcome-bonus amounts and conditions ($10 / $80 gift cards) — sourced only from an aggregator, not verified against an official Amazon promotional page.
+- Precise mechanics/timing of Prime Store Card reward-point crediting (statement credit vs. points, exact crediting window) — search snippets may conflate Prime Visa and Prime Store Card program language.
+- Whether "5-15% back on select rotating items" is a real, current, standing Prime Store Card benefit or a time-limited promotion; not verified against an official source.
+- Credit limit ranges, minimum credit limit, or specific approval/credit-score criteria.
+- Exact dollar amount of the "expedited phone payment" fee mentioned in the agreement.
+- Any current Schumer box figures for the separate Amazon Secured Card / Amazon Prime Secured Card products (a related but distinct secured-card product family also issued by Synchrony) — out of scope for this file but noted so it is not conflated with the unsecured Amazon Store Card.
+
+Issued by Synchrony Bank [exact legal wording from the Account Agreement: "This is an Agreement between you and Synchrony Bank, 170 Election Road, Suite 125, Draper, UT 84020, for your credit card account shown above."]
