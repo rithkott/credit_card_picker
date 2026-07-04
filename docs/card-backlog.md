@@ -27,7 +27,7 @@ Suggested priority: **Tier 1** (the flat-rate + everyday-category cards most Ame
 - [/] Freedom Flex — `freedom-flex`
 - [/] Freedom Unlimited — `freedom-unlimited`
 - [/] Freedom Rise — `freedom-rise`
-- [/] Sapphire Preferred — `sapphire-preferred` *(drafted, confidence: low — needs verification)*
+- [/] Sapphire Preferred — `sapphire-preferred`
 - [/] Sapphire Reserve — `sapphire-reserve`
 - [/] Slate Edge — `slate-edge`
 - [/] Prime Visa (Amazon) — `prime-visa`
@@ -57,25 +57,25 @@ Suggested priority: **Tier 1** (the flat-rate + everyday-category cards most Ame
 
 ## American Express — `data/cards/amex/`
 
-- [ ] Blue Cash Everyday — `blue-cash-everyday`
-- [~] Blue Cash Preferred — `blue-cash-preferred` *(drafted, confidence: low — needs verification)*
-- [~] Gold — `gold` *(drafted, confidence: low — needs verification)*
-- [ ] Green — `green`
-- [ ] Platinum — `platinum`
-- [ ] Delta SkyMiles Blue — `delta-blue`
-- [ ] Delta SkyMiles Gold — `delta-gold`
-- [ ] Delta SkyMiles Platinum — `delta-platinum`
-- [ ] Delta SkyMiles Reserve — `delta-reserve`
-- [ ] Hilton Honors — `hilton-honors`
-- [ ] Hilton Honors Surpass — `hilton-surpass`
-- [ ] Hilton Honors Aspire — `hilton-aspire`
-- [ ] Marriott Bonvoy Bevy — `marriott-bevy`
-- [ ] Marriott Bonvoy Brilliant — `marriott-brilliant`
+- [/] Blue Cash Everyday — `blue-cash-everyday`
+- [/] Blue Cash Preferred — `blue-cash-preferred`
+- [/] Gold — `gold`
+- [/] Green — `green`
+- [/] Platinum — `platinum`
+- [/] Delta SkyMiles Blue — `delta-blue`
+- [/] Delta SkyMiles Gold — `delta-gold`
+- [/] Delta SkyMiles Platinum — `delta-platinum`
+- [/] Delta SkyMiles Reserve — `delta-reserve`
+- [/] Hilton Honors — `hilton-honors`
+- [/] Hilton Honors Surpass — `hilton-surpass`
+- [/] Hilton Honors Aspire — `hilton-aspire`
+- [/] Marriott Bonvoy Bevy — `marriott-bevy`
+- [/] Marriott Bonvoy Brilliant — `marriott-brilliant`
 
 ## Citi — `data/cards/citi/`
 
-- [~] Double Cash — `double-cash` *(drafted, confidence: low — needs verification)*
-- [~] Custom Cash — `custom-cash` *(drafted, confidence: low — needs verification)*
+- [ ] Double Cash — `double-cash`
+- [ ] Strata — `strata`
 - [ ] Strata Premier — `strata-premier`
 - [ ] Strata Elite — `strata-elite`
 - [ ] Rewards+ — `rewards-plus`
@@ -85,11 +85,12 @@ Suggested priority: **Tier 1** (the flat-rate + everyday-category cards most Ame
 - [ ] AAdvantage MileUp — `aadvantage-mileup`
 - [ ] AAdvantage Platinum Select — `aadvantage-platinum-select`
 - [ ] AAdvantage Executive — `aadvantage-executive`
+- [ ] AAdvantage Globe — `aadvantage-globe`
 - [ ] AT&T Points Plus — `att-points-plus`
 
 ## Capital One — `data/cards/capital-one/`
 
-- [~] Venture X — `venture-x` *(drafted, confidence: low — needs verification)*
+- [ ] Venture X — `venture-x`
 - [ ] Venture — `venture`
 - [ ] VentureOne — `venture-one`
 - [ ] Savor — `savor`
