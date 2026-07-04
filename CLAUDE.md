@@ -20,5 +20,6 @@ The diagram documents **only what is built** — never add planned/future compon
 - The dataset is hand-curated and verified — never scrape or generate card data on the fly, and never add affiliate/monetization features (see `docs/research.md` for why).
 - New/edited card files must pass `python3 scripts/validate_cards.py` (needs `pyyaml` + `jsonschema`).
 - Card data drafted without checking issuer sources must be marked `confidence: low` with a "NEEDS human verification" marker in `verified_by`.
+- When converting a `data/offer_files/<issuer>/<slug>.txt` terms sheet into `data/cards/<issuer>/<card-id>.yaml`, follow `docs/ai-conversion-protocol.md` exactly — it is a mandatory, stricter checklist layered on top of `docs/curation-guide.md` for this specific AI task.
 - Cross-card assumptions (categories, merchants, point valuations) live only in `data/meta/` registries, referenced by key — never inline them in card files.
 - `tools/card-entry-form.html` embeds copies of the `data/meta/` registry keys and mirrors the schema and validator checks — when the schema, registries, or validator change, update the form's embedded lists and emitted YAML in the same change.

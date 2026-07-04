@@ -8,6 +8,10 @@ How to write, verify, and review a card file in `data/cards/`. This is the human
 
 ## Workflow for adding or updating a card
 
+0. **If you're an AI converting a `data/offer_files/<issuer>/<slug>.txt` terms sheet into YAML**,
+   stop and follow [`docs/ai-conversion-protocol.md`](ai-conversion-protocol.md) first — it's a
+   stricter, mandatory checklist that gates entry into the workflow below, because transcribing
+   a transcription is exactly where silent errors compound.
 1. **Create the file** at `data/cards/<issuer>/<card-id>.yaml`. The `issuer` field must match the directory name and `id` must match the filename — the validator enforces both. Slugs are lowercase with hyphens (`blue-cash-preferred`, not `BlueCashPreferred`).
 2. **Copy the template** at the bottom of this guide and fill it in, reading the field reference below for anything ambiguous.
 3. **Verify every number** against the issuer's own page (rates, caps, fees, credits, bonus). Put the URLs in `verification.source_urls` and set `confidence` honestly (see [Verification standards](#verification-standards)).
