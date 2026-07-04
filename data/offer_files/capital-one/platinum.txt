@@ -1,0 +1,50 @@
+SOURCE: https://www.capitalone.com/credit-cards/platinum/
+SOURCE: https://www.capitalone.com/learn-grow/money-management/all-about-platinum-card/
+Fetched via WebFetch (AI-summarized extraction of live page content) on 2026-07-04.
+APR and cash advance fee figures were not surfaced by either direct Capital One page fetch (both
+gate exact rates behind an unrendered "View important rates and disclosures" link) — supplemented
+via WebSearch aggregation citing bankrate.com, cardrates.com, financebuzz.com, forbes.com. NEEDS
+human verification of exact APR/fee figures against Capital One's Schumer box before finalizing
+card data.
+
+=== Capital One Platinum Credit Card ===
+
+Annual Fee: $0 ("No Annual Fees" — confirmed via direct page fetch).
+
+Rewards: None. Page explicitly states "No Annual Fees or Rewards" — this is a credit-building
+card, not a rewards card.
+
+Welcome / Signup Bonus: None disclosed on either page.
+
+APR (per secondary-source aggregation, verify):
+Purchase APR: 28.99% variable.
+Cash advance APR: 28.99% variable.
+Cash advance fee: $5 or 5% of the amount of each cash advance, whichever is greater.
+
+Foreign Transaction Fees: None (confirmed via direct page fetch: "you don't have to pay foreign
+transaction fees when you use your card outside the U.S.").
+
+Security Deposit: Not required — this is an unsecured card (distinct from Capital One Platinum
+Secured).
+
+Credit Line Increase Policy (confirmed via direct page fetch):
+"Platinum cardholders are automatically considered for a credit limit increase in as little as
+six months." Credit limits vary based on financial situation and creditworthiness. Manual
+credit-limit-increase requests are also possible per secondary sources.
+
+Credit Level Required: Fair credit (FICO 580-669 per the Capital One "all about" page). Those
+with lower scores may be directed to the Platinum Secured card instead.
+
+Other Benefits (confirmed via direct page fetch):
+- Credit bureau reporting for building credit history.
+- Tap-to-pay/contactless payment capability.
+- Capital One Mobile app access.
+- Eno AI assistant monitoring.
+- Virtual card numbers for secure online shopping.
+- Customizable payment options and automatic payments.
+- Fraud alerts, card lock feature, $0 fraud liability for unauthorized charges.
+
+Marketing metadata: "#1 Credit Card for Customer Satisfaction" per J.D. Power (as displayed on
+page); 4.5-star rating based on 9,556 reviews, 91% would recommend.
+
+Issuer: Capital One, N.A.

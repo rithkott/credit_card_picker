@@ -74,83 +74,79 @@ Suggested priority: **Tier 1** (the flat-rate + everyday-category cards most Ame
 
 ## Citi — `data/cards/citi/`
 
-- [ ] Double Cash — `double-cash`
-- [ ] Strata — `strata`
-- [ ] Strata Premier — `strata-premier`
-- [ ] Strata Elite — `strata-elite`
-- [ ] Rewards+ — `rewards-plus`
-- [ ] Simplicity — `simplicity`
-- [ ] Diamond Preferred — `diamond-preferred`
-- [ ] Costco Anywhere Visa — `costco-anywhere`
-- [ ] AAdvantage MileUp — `aadvantage-mileup`
-- [ ] AAdvantage Platinum Select — `aadvantage-platinum-select`
-- [ ] AAdvantage Executive — `aadvantage-executive`
-- [ ] AAdvantage Globe — `aadvantage-globe`
-- [ ] AT&T Points Plus — `att-points-plus`
+- [/] Double Cash — `double-cash`
+- [/] Strata — `strata`
+- [/] Strata Premier — `strata-premier`
+- [/] Strata Elite — `strata-elite`
+- [/] Simplicity — `simplicity`
+- [/] Diamond Preferred — `diamond-preferred`
+- [/] Costco Anywhere Visa — `costco-anywhere`
+- [/] AAdvantage MileUp — `aadvantage-mileup`
+- [/] AAdvantage Platinum Select — `aadvantage-platinum-select`
+- [/] AAdvantage Executive — `aadvantage-executive`
+- [/] AAdvantage Globe — `aadvantage-globe`
+- [/] AT&T Points Plus — `att-points-plus`
 
 ## Capital One — `data/cards/capital-one/`
 
-- [ ] Venture X — `venture-x`
-- [ ] Venture — `venture`
-- [ ] VentureOne — `venture-one`
-- [ ] Savor — `savor`
-- [ ] Quicksilver — `quicksilver`
-- [ ] QuicksilverOne — `quicksilver-one`
-- [ ] Platinum — `platinum`
+- [/] Venture X — `venture-x`
+- [/] Venture — `venture`
+- [/] VentureOne — `venture-one`
+- [/] Savor — `savor`
+- [/] Quicksilver — `quicksilver`
+- [/] QuicksilverOne — `quicksilver-one`
+- [/] Platinum — `platinum`
 
 ## Discover — `data/cards/discover/`
 
-- [ ] it Cash Back — `it-cash-back`
-- [ ] it Chrome — `it-chrome`
-- [ ] it Miles — `it-miles`
-- [ ] it Student Cash Back — `it-student-cash-back`
-- [ ] it Secured — `it-secured`
+- [/] it Cash Back — `it-cash-back`
+- [/] it Chrome — `it-chrome`
+- [/] it Miles — `it-miles`
+- [/] it Student Cash Back — `it-student-cash-back`
 
 ## Bank of America — `data/cards/bank-of-america/`
 
-- [ ] Customized Cash Rewards — `customized-cash`
-- [ ] Unlimited Cash Rewards — `unlimited-cash`
-- [ ] Travel Rewards — `travel-rewards`
-- [ ] Premium Rewards — `premium-rewards`
-- [ ] Premium Rewards Elite — `premium-rewards-elite`
-- [ ] Atmos Rewards Ascent Visa Signature — `atmos-ascent` *(the former Alaska Airlines Visa — rebranded 2025 for the merged Alaska/Hawaiian "Atmos Rewards" program, $95 AF)*
-- [ ] Atmos Rewards Summit Visa Infinite — `atmos-summit` *(new premium tier, $395 AF, launched 2025)*
-- [ ] Free Spirit Travel More World Elite — `free-spirit`
-- [ ] Allegiant World Mastercard — `allegiant`
-- [ ] Air France KLM Flying Blue World Elite — `flying-blue`
-- [ ] Virgin Atlantic World Elite — `virgin-atlantic`
-- [ ] Royal Caribbean Visa — `royal-caribbean` *(new 2026 lineup; verify names/tiers)*
-- [ ] BankAmericard — `bankamericard`
+- [/] Customized Cash Rewards — `customized-cash`
+- [/] Unlimited Cash Rewards — `unlimited-cash`
+- [/] Travel Rewards — `travel-rewards`
+- [/] Premium Rewards — `premium-rewards`
+- [/] Premium Rewards Elite — `premium-rewards-elite`
+- [/] Atmos Rewards Ascent Visa Signature — `atmos-ascent` *(the former Alaska Airlines Visa — rebranded 2025 for the merged Alaska/Hawaiian "Atmos Rewards" program, $95 AF)*
+- [/] Atmos Rewards Summit Visa Infinite — `atmos-summit` *(new premium tier, $395 AF, launched 2025)*
+- [/] Allways Rewards Visa (formerly Allegiant World Mastercard) — `allegiant` *(renamed/network changed from Mastercard to Visa — verify)*
+- [/] Air France KLM Flying Blue Visa Signature — `flying-blue` *(renamed/network changed from World Elite Mastercard — verify)*
+- [/] Royal ONE Visa Signature — `royal-one` *(replaces the old Royal Caribbean Visa Signature card, March 2026; $0 AF)*
+- [/] Royal ONE Plus Visa Signature — `royal-one-plus` *(new premium tier alongside Royal ONE, March 2026; $99 AF)*
+- [/] BankAmericard — `bankamericard`
 
 > Note: BofA's Preferred Rewards program boosts cash-back rates 25–75% by banking relationship tier — the schema may need a `relationship_multiplier` concept, or a note-level workaround, when these get curated.
 
 ## Wells Fargo — `data/cards/wells-fargo/`
 
-- [~] Active Cash — `active-cash` *(drafted, confidence: low — needs verification)*
-- [ ] Autograph — `autograph`
-- [ ] Autograph Journey — `autograph-journey` *(Premier & Private Bank versions reportedly launched 2026 — verify whether separate products)*
-- [ ] Attune — `attune`
-- [ ] Reflect — `reflect`
-- [ ] Choice Privileges Mastercard — `choice-privileges`
-- [ ] Choice Privileges Select Mastercard — `choice-privileges-select`
+- [/] Active Cash — `active-cash` *(drafted, confidence: low — needs verification; terms sheet refreshed)*
+- [/] Autograph — `autograph`
+- [/] Autograph Journey — `autograph-journey` *(Premier & Private Bank versions reportedly launched 2026 — verify whether separate products; research suggests they are relationship-tier variants of the same product, not distinct cards — see offer file)*
+- [/] Reflect — `reflect`
+- [/] Choice Privileges Mastercard — `choice-privileges`
+- [/] Choice Privileges Select Mastercard — `choice-privileges-select`
 
 > Bilt left Wells Fargo Feb 2026 — see the Cardless section below. Legacy WF Bilt cards were auto-converted to Autograph.
 
 ## Cardless (Bilt) — `data/cards/cardless/`
 
-Bilt's three-card lineup launched Feb 2026 with Cardless as issuer (replacing the single Wells Fargo Bilt card). Verify official product names — placeholders below:
+Bilt's three-card lineup ("Bilt Card 2.0") launched Feb 7, 2026, issued by Column N.A. and serviced by Cardless Inc. (replacing the single Wells Fargo Bilt card). Official product names confirmed via biltrewards.com newsroom + issuer terms:
 
-- [ ] Bilt Card (no annual fee) — `bilt`
-- [ ] Bilt mid-tier ($95 AF) — `bilt-95` *(verify name)*
-- [ ] Bilt premium ($495 AF) — `bilt-495` *(verify name)*
+- [/] Bilt Blue Card (no annual fee) — `bilt-blue`
+- [/] Bilt Obsidian Card ($95 AF) — `bilt-obsidian`
+- [/] Bilt Palladium Card ($495 AF) — `bilt-palladium`
 
 ## U.S. Bank — `data/cards/us-bank/`
 
-- [ ] Cash+ — `cash-plus`
-- [ ] Altitude Go — `altitude-go`
-- [ ] Altitude Connect — `altitude-connect`
-- [ ] Shopper Cash Rewards — `shopper-cash-rewards`
-- [ ] Smartly Visa — `smartly`
+- [/] Cash+ — `cash-plus`
+- [/] Altitude Go — `altitude-go`
+- [/] Altitude Connect — `altitude-connect`
+- [/] Shopper Cash Rewards — `shopper-cash-rewards`
+- [/] Smartly Visa — `smartly`
 
 ## Barclays — `data/cards/barclays/`
 
@@ -192,7 +188,6 @@ Usable only at their merchant, but often 5%-level rewards there — recommendabl
 
 In scope so users with thin/damaged credit get real recommendations. Rewards are secondary here; approval accessibility is the point.
 
-- [ ] Discover it Secured — `data/cards/discover/it-secured` *(also listed under Discover)*
 - [ ] Capital One Platinum Secured — `data/cards/capital-one/platinum-secured`
 - [ ] Capital One Quicksilver Secured — `data/cards/capital-one/quicksilver-secured`
 - [ ] Chime Credit Builder Visa — `data/cards/chime/credit-builder`
@@ -233,41 +228,11 @@ In scope so users with thin/damaged credit get real recommendations. Rewards are
 - [ ] Max Cash Preferred (Elan, via many credit unions) — `data/cards/elan/max-cash-preferred`
 - [ ] Luxury Card Mastercard Gold/Black/Titanium — `data/cards/luxury-card/…` *(niche premium; low priority)*
 
----
 
-## Announced but not yet open (watch list — do NOT curate until applications open)
-
-Per industry press (as of 2026-07). Move into the main list once live:
-
-- Robinhood Platinum Card (announced)
-- Chime Prime (announced — 5% categories, $1,500/mo cap reported)
-- American Express Fanatics card (announced)
-- Rumored, unconfirmed: Chase premium Hyatt card, Capital One "Savor X", Wells Fargo Autograph Beyond, Amex ultra-premium Delta
-
-## Invite-only / by-invitation cards (separate — not recommendable by the optimizer)
-
-These can't be applied for, so the optimizer should never recommend them; curate only if we later add a "value my existing cards" mode.
-
-- Amex Centurion ("Black Card") — invitation only
-- J.P. Morgan Reserve — invitation only (Chase Private Client / J.P. Morgan relationship)
-
-## Business cards (separate — out of MVP scope)
-
-Personal-spend optimization is the MVP; business cards involve different eligibility and spend patterns. Parking the common ones here for a future mode:
-
-- Chase Ink Business Cash / Unlimited / Preferred / Premier
-- Amex Blue Business Plus / Blue Business Cash / Business Gold / Business Platinum
-- Capital One Spark Cash Plus / Spark Miles / Venture X Business
-- U.S. Bank Business Triple Cash / Business Altitude Connect
-- Bank of America Business Advantage Customized Cash / Unlimited Cash / Travel Rewards
-- Citi AAdvantage Business / CitiBusiness cards
-- Barclays AAdvantage Aviator Business
-- Amex Delta SkyMiles Business (Gold/Platinum/Reserve), Hilton Business, Marriott Business
-- Chase United Business / Southwest Business (Premier/Performance)
 
 ## Student cards (Tier 4)
 
-- [ ] Discover it Student Cash Back — `data/cards/discover/it-student-cash-back` *(also listed under Discover)*
+- [/] Discover it Student Cash Back — `data/cards/discover/it-student-cash-back` *(also listed under Discover)*
 - [ ] Discover it Student Chrome — `data/cards/discover/it-student-chrome`
 - [ ] Capital One Savor Student — `data/cards/capital-one/savor-student`
 - [ ] Bank of America Customized Cash for Students — `data/cards/bank-of-america/customized-cash-students`

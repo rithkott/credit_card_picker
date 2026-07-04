@@ -1,0 +1,37 @@
+SOURCE: https://www.capitalone.com/credit-cards/quicksilverone/
+Fetched via WebFetch (AI-summarized extraction of live page content) on 2026-07-04.
+Annual fee, APR, and fee details were not surfaced by the direct page fetch (behind
+expandable/linked sections not rendered) — supplemented via WebSearch aggregation citing
+money.usnews.com, wallethub.com, nerdwallet.com. NEEDS human verification of exact figures
+against Capital One's page/Schumer box before finalizing card data.
+
+=== Capital One QuicksilverOne Cash Rewards Credit Card ===
+
+Annual Fee: $39 (per secondary-source aggregation, verify)
+
+Credit Level Required: Fair (designed for building/average credit; confirmed via direct page
+fetch).
+
+Rewards Structure:
+- Unlimited 1.5% cash back on every purchase (confirmed via direct page fetch).
+
+Welcome / Signup Bonus: No sign-up bonus (per secondary-source aggregation).
+
+APR (per secondary-source aggregation, verify):
+Standard APR for purchases, balance transfers, and cash advances: 28.99% variable. No
+introductory/promo APR offer on this card.
+
+Balance Transfer Fee (per secondary-source aggregation, verify):
+$0 at the standard transfer APR; 4% of each transferred balance if done at a promotional APR
+that Capital One may offer.
+
+Foreign Transaction Fees: $0 (per secondary-source aggregation, verify).
+
+Customer Rating shown on page: 4.6 stars based on 10,352 reviews, 92% would recommend
+(marketing page metadata, not a card term). Review breakdown: 5-star 76%, 4-star 16%, 3-star 4%,
+2-star 2%, 1-star 2%.
+
+Other notes: Page offers pre-approval check with no credit-score impact; positioned as a
+credit-building card ("build credit with responsible use").
+
+Issuer: Capital One, N.A.

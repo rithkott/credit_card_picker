@@ -1,0 +1,47 @@
+Wells Fargo Active Cash® Card
+Source pages: https://creditcards.wellsfargo.com/active-cash-credit-card/ ; https://www.wellsfargo.com/credit-cards/agreements/active-cash-agreement/ ; https://www.wellsfargo.com/credit-cards/active-cash/guide-to-benefits/
+Captured: 2026-07-04
+
+MARKETING / PRODUCT PAGE CONTENT
+
+- "Unlimited 2% cash rewards" on purchases — "no categories" to track.
+- "$0 annual fee"
+- Welcome offer: "$200 cash rewards bonus when you spend $500 in purchases in the first 3 months"
+- Rewards "don't expire" as long as the account remains open.
+- Redemption options: Pay with Rewards through PayPal, redeem toward past purchases (minimum $1), convert to gift cards, or apply as account credits.
+- Comparison callout on page: highlights "unlimited 2% earn on purchases" vs. competitors named on page (Citi Double Cash®, Discover it® Cash Back, Capital One Quicksilver®).
+- Awards cited on page: NerdWallet "Best All-Purpose Cash Back Credit Card" — "5X winner" 2022-2026; also cited by Fool Money, FinanceBuzz, and WalletHub.
+
+INTRO APR
+- "0% intro APR for 12 months from account opening on purchases and qualifying balance transfers."
+- After intro period: 18.49%, 24.49%, or 28.49% variable APR.
+
+RATES AND FEES DISCLOSURE (Schumer box, from agreement page)
+
+Interest Rates and Interest Charges
+- APR for Purchases: "Prime Rate + 11.74% to Prime Rate + 21.74%, based on your creditworthiness." Variable, tied to U.S. Prime Rate.
+- APR for Balance Transfers: "Prime Rate + 11.74% to Prime Rate + 21.74%, based on your creditworthiness." Variable, tied to U.S. Prime Rate.
+- APR for Cash Advances & Overdraft Protection: "Prime Rate + 22.74%" Variable, tied to U.S. Prime Rate.
+- Grace Period: "Your due date is at least 25 days after the close of each billing period." No interest charged on purchases if full balance paid by due date.
+- Minimum Interest Charge: "$1.00" if interest is assessed.
+- Balance Calculation Method: "Average daily balance (including new purchases)"
+
+Fees
+- Annual Fee: "None"
+- Balance Transfer Fee: "Up to 5% for each balance transfer, with a minimum of $5"
+- Cash Advance Fee: "Either $10 or 5% of the amount of each advance, whichever is greater"
+- Foreign Transaction Fee: "3% of each transaction converted to U.S. dollars"
+- Late Payment Fee: "Up to $40" (calculated as lower of $40 or Minimum Payment amount)
+
+GUIDE TO BENEFITS (effective as of 09/15/2025, replaces all prior benefit disclosures)
+
+- Cellular Telephone Protection: covers repair/replacement of damaged, stolen, or lost phones; requires paying monthly wireless bill with the covered card; $25 deductible per claim; maximum $600 per claim; limited to 2 claims per 12-month period ($1,200 max annually); cracked screens and cosmetic damage not covered.
+- Emergency Cash & Card Replacement: available 24/7; Visa Global Customer Care "1-800-708-8217" or "1-303-967-1096"; may be available within 24 hours in some cases.
+- Auto Rental Collision Damage Waiver: covers accidents/theft on rental cars paid with the card; maximum 15 consecutive days in US, 31 days internationally; $50,000 maximum coverage; does not cover exotic vehicles, antiques, or vans (except small group transport).
+- Travel & Emergency Assistance Services: 24/7 support for medical, legal, and transportation emergencies; includes prescription assistance and document delivery coordination; "1-800-992-6029" or collect "1-804-673-1675".
+- Roadside Dispatch: pay-per-use roadside assistance (no membership required); towing up to 5 miles, jump starts, lockouts, tire changes; "1-800-847-2869".
+- Visa Signature Benefits: complimentary concierge services; access to Luxury Hotel Collection with room upgrades and amenities.
+- Credit Close-Up® — complimentary FICO® Score monitoring and personalized credit insights for Wells Fargo Online customers.
+- Zero Liability Protection for unauthorized transactions.
+
+NOTE: This card already has a drafted YAML at data/cards/wells-fargo/active-cash.yaml marked confidence: low — this fetch is to refresh/verify the terms sheet. Figures above (2% unlimited rewards, $200/$500-in-3-months welcome offer, $0 annual fee, 0% intro APR 12 months, 18.49/24.49/28.49% variable APR) should be cross-checked against that YAML during verification.

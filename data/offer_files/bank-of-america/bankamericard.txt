@@ -1,0 +1,31 @@
+BankAmericard (Bank of America)
+
+Source: https://www.bankofamerica.com/credit-cards/products/bankamericard-credit-card/
+
+Annual Fee
+- $0
+
+Rewards
+- None — this is a low-interest/balance-transfer focused card, not a rewards card.
+
+APR
+- Introductory: 0% for 21 billing cycles for purchases, and for any balance transfers made within 60 days of account opening.
+- Standard variable APR thereafter: 14.99% to 25.99%.
+
+Balance Transfer Fee
+- 5% fee applies to all balance transfers.
+
+Foreign Transaction Fee
+- Not stated on the fetched product page.
+
+Other Benefits
+- No penalty APR for late payments.
+- $0 Liability Guarantee for fraudulent transactions.
+- Balance Connect® overdraft protection (optional, no transfer fees).
+- Paperless statement option.
+- Digital wallet compatibility (Apple Pay, Android Pay, Samsung Pay).
+- Online and mobile banking access, account alerts via email or text.
+
+Positioning: Marketed explicitly as a "low interest" card intended to help cardholders save money on interest and pay down balances faster, rather than earn rewards or cash back.
+
+Issued by Bank of America, N.A.

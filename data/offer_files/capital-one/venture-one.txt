@@ -1,0 +1,45 @@
+SOURCE: https://www.capitalone.com/credit-cards/ventureone/
+Fetched via WebFetch (AI-summarized extraction of live page content) on 2026-07-04.
+Additional details (welcome bonus, earn rates, APR, intro APR) supplemented from a WebSearch
+aggregation citing Capital One's page and secondary review sites (bestguide.com,
+money.usnews.com, creditkarma.com) because the direct WebFetch of the marketing page did not
+surface the welcome bonus, rewards rates, or APR text (page appeared to gate this behind
+interactive elements/links not captured in the fetch). NEEDS human verification of exact figures
+against Capital One's own page/Schumer box before finalizing card data.
+
+=== Capital One VentureOne Rewards Credit Card ===
+
+Annual Fee: $0
+
+Welcome / Signup Bonus (per secondary sources, verify):
+"20,000 bonus miles (a $200 travel value) after spending $500 in the first 3 months."
+
+Rewards Structure (per secondary sources, verify):
+- Base rate: unlimited 1.25 miles per dollar on every purchase, every day.
+- Elevated rate: unlimited 5 miles per dollar on hotels, vacation rentals, and rental cars booked
+  through Capital One Travel.
+
+APR (per secondary sources, verify):
+- 0% introductory APR on purchases and balance transfers for the first 15 months.
+- After intro period: 18.49% - 28.49% variable APR.
+
+Foreign Transaction Fees: None ("no foreign transaction fees").
+
+Travel Benefits (confirmed via direct WebFetch of capitalone.com/credit-cards/ventureone/):
+- Free price drop protection: up to $50 travel credit if a booked flight's price drops within
+  10 days.
+- Price matching guarantee for flights, hotels, and rental cars within 24 hours of booking.
+- Option to cancel a flight up to 3 hours before departure for a refund.
+- Price watch alerts for flight monitoring.
+- Access to Capital One Travel booking portal.
+
+Redemption Options (per secondary sources, verify):
+Miles redeemable at 1 cent per mile as a statement credit for travel purchases made in the last
+90 days. Miles can also be transferred to 15+ airline and hotel loyalty programs.
+
+Credit Level Required: Excellent (per direct page fetch).
+
+Customer Rating shown on page: 4.5 stars based on 6,709 reviews, 90% would recommend (marketing
+page metadata, not a card term).
+
+Issuer: Capital One, N.A.

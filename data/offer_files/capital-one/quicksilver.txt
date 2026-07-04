@@ -1,0 +1,41 @@
+SOURCE: https://www.capitalone.com/credit-cards/quicksilver/
+Fetched via WebFetch (AI-summarized extraction of live page content) on 2026-07-04.
+Annual fee, exact spend threshold, and APR were not surfaced by the direct page fetch (page
+content excerpt omitted them) — supplemented via WebSearch aggregation citing Capital One's own
+page plus secondary sources (wallethub.com, creditcards.com, money.usnews.com). NEEDS human
+verification of exact APR/annual-fee figures against Capital One's page/Schumer box before
+finalizing card data.
+
+=== Capital One Quicksilver Cash Rewards Credit Card ===
+
+Annual Fee: $0 (per secondary-source aggregation, verify)
+
+Welcome / Signup Bonus:
+"Earn unlimited 1.5% cash back on every purchase. Plus, earn a $200 cash bonus." Per secondary
+sources, the spend requirement is "$500 within 3 months of opening your account" (verify exact
+wording against Capital One's page). Existing or previous cardmembers are not eligible if they
+received a new cardmember bonus for this product in the past 48 months.
+
+Rewards Structure:
+- Base rate: unlimited 1.5% cash back on every purchase, no category restrictions.
+- Per secondary-source aggregation (verify): 5% cash back on hotels, vacation rentals, and
+  rental cars booked through Capital One Travel; 5% cash back on Capital One Entertainment
+  purchases.
+
+APR (per secondary-source aggregation, verify):
+0% intro APR for 15 months on purchases and balance transfers; 18.49% - 28.49% variable APR
+after that.
+
+Credit Level Required: Excellent.
+
+Travel Benefits (confirmed via direct page fetch):
+- Price drop protection (up to $50 travel credit if a booked flight's price drops within 10
+  days).
+- Price match guarantee for flights, hotels, and rental cars (within 24 hours of booking).
+- Cancel for any reason option (cancel a flight up to 3 hours before departure).
+- Price watch alerts (24/7 flight price monitoring).
+
+Customer Rating shown on page: 4.5 stars based on 6,517 reviews, 90% would recommend
+(marketing page metadata, not a card term).
+
+Issuer: Capital One, N.A.

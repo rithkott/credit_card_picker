@@ -1,0 +1,603 @@
+Source: https://www.discover.com/credit-cards/cash-back/it-card/ (fetched via live HTTP request, JS-rendered rate widgets not evaluated)
+
+=== SUPPLEMENTARY RATE/FEE FIGURES (cross-referenced from multiple third-party aggregator sites — WalletHub, NerdWallet, Bankrate, US News, CreditCards.com — citing Discover's official Schumer box; live page's static HTML only exposed placeholder "x%" tokens for these fields since they are populated client-side by JavaScript) ===
+- Purchase intro APR: 0% for 15 months from account opening, then 17.49% - 26.49% Variable APR (regular ongoing range per third-party sources; live JSON-LD on the page shows current range as "17.24% to 28.24%" as of fetch date 2026-07-04 — note the JSON-LD figure is the more current/authoritative one, third-party figure may be stale)
+- Balance transfer intro APR: 0% for 15 months, then 17.49% - 26.49% Variable APR (regular)
+- Cash advance APR: Variable (see live page range above)
+- Annual fee: None
+- Foreign transaction fee: None
+- Minimum interest charge: $0.50
+- Cash advance fee: greater of $10 or 5% of the advance amount
+- Late fee: up to $41 (first late payment fee waived)
+- Balance transfer fee: intro fee applies to transfers in the intro period; standard fee for future transfers (exact % not confirmed on live page — third-party sources did not consistently state the numeric fee for this specific card; do not assume Chrome's 3%/5% figures apply here without verification)
+- Rewards: 5% cash back in rotating quarterly categories (activation required, up to quarterly max), 1% on all other purchases, cash back does not expire
+- Welcome offer: Unlimited Cashback Match — Discover automatically matches all cash back earned at the end of the first year, dollar-for-dollar, no limit (live page marketing copy also phrases this as "2X cash back your 1st year")
+
+=== STRUCTURED DATA (JSON-LD, contains real APR/description values) ===
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "CreditCard",
+    "name": " Discover it\u00ae Cash Back Credit Card",
+    "url": "https://www.discover.com/credit-cards/cash-back/it-card.html ",
+    "description": "We match all the cash back earned at the end of your 1st year! See terms & apply today! $0 annual fee & 2X cash back your 1st year. See terms & apply today!",
+    "image": " https://www.discover.com/content/dam/discover/en_us/credit-cards/card-acquisitions/grey-redesign/global/images/background/bg-itcard-affluent-280-230.webp",
+    "category": "CreditCard",
+    "annualPercentageRate": "17.24% to 28.24%",
+    "provider": {
+      "@id": "https://www.discover.com/",
+      "name": " Discover"
+    }
+  },
+  {
+    "@context": "http://www.schema.org",
+    "@type": "WebPage",
+    "sourceOrganization": "Discover",
+    "url": "https://www.discover.com/credit-cards/cash-back/it-card.html",
+    "name": "Discover it\u00ae\u00a0Cash Back Credit Card",
+    "description": "Earn 5% cash back at different places each quarter, up to the quarterly maximum when you activate, and earn 1% cash back on all other purchases. No annual fee."
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "ImageObject",
+    "contentUrl": "https://www.discover.com/content/dam/discover/en_us/credit-cards/card-acquisitions/grey-redesign/global/images/background/bg-cards-itcards-388-350.png",
+    "name": "Discover it\u00ae Cash Back Credit Card"
+  }
+]
+
+=== PAGE TEXT (visible DOM; APR/fee numbers shown here as 'x' are JS-templated placeholders — see JSON-LD above / structured data for real figures) ===
+Discover it® Cash Back Credit Card | Apply in Minutes
+Action required: Update
+your browser
+We noticed that you're using an old version of your internet
+browser to access this page. To protect your account security,
+you must update your browser as soon as possible.
+You'll
+be unable to log in to Discover.com
+in the future if your
+browser has not been updated.
+Learn
+more in the Discover Help Center
+Please Note:
+JavaScript is not enabled in your
+web browser. In order to enjoy the full experience of the Discover
+website, please turn JavaScript on. If JavaScript is disabled,
+some of the functionality on our website will not work, such as
+the display of rates and APRs.
+Menu
+Help
+Card Help Center
+Card Smarts
+Banking Help Center
+Home Loans Help Center
+Personal Loans Help
+Search
+Search Discover
+When
+autocomplete results are available use up and down arrows to
+review and enter to select. Touch device users, explore by
+touch or with swipe gestures.
+Log In
+Opens modal dialog
+.
+Credit Card Products
+All Credit Cards
+Discover it® Cash Back
+Earn cash back rewards
+Discover it® Student Cash Back
+Start building credit in college
+Discover it® Student Chrome
+Earn restaurant & gas rewards as a student
+Discover it® Miles
+Explore with the travel rewards credit card
+Discover it® Chrome
+Earn restaurant & gas rewards
+NHL Credit Card
+Represent your team & earn cash back
+Credit Cards by Feature
+All Credit Cards
+Cash Back Credit Cards
+Balance Transfer Credit Card Offers
+Credit Cards for College Students
+Credit Cards for No Credit History
+Credit Cards to Build Credit
+No Annual Fee Credit Cards
+Rewards Credit Cards
+Low Interest Credit Cards
+Gas Credit Cards
+Instant Use Credit Cards
+Tools and Resources
+All Credit Cards
+Credit Card Calculators
+- Credit Card Interest Calculator
+- Balance Transfer Calculator
+Respond to Mail Offer
+Card Smarts Articles
+- Getting a credit card
+- Using your credit card
+- Credit card rewards
+Compare Credit Cards
+.
+Credit Card Products
+All Credit Cards
+Discover it® Cash Back
+Earn cash back rewards
+Discover it® Student Cash Back
+Start building credit in college
+Discover it® Student Chrome
+Earn restaurant & gas rewards as a student
+Discover it® Miles
+Explore with the travel rewards credit card
+Discover it® Chrome
+Earn restaurant & gas rewards
+NHL Credit Card
+Represent your team & earn cash back
+Credit Cards by Feature
+All Credit Cards
+Cash Back Credit Cards
+Balance Transfer Credit Card Offers
+Credit Cards for College Students
+Credit Cards for No Credit History
+Credit Cards to Build Credit
+No Annual Fee Credit Cards
+Rewards Credit Cards
+Low Interest Credit Cards
+Gas Credit Cards
+Instant Use Credit Cards
+Tools and Resources
+All Credit Cards
+Credit Card Calculators
+- Credit Card Interest Calculator
+- Balance Transfer Calculator
+Respond to Mail Offer
+Card Smarts Articles
+- Getting a credit card
+- Using your credit card
+- Credit card rewards
+Compare Credit Cards
+Discover
+Credit Cards
+Cash Back Credit Cards
+Discover it
+®
+Cash Back Credit Card
+Back To Top
+Apply Now
+Discover it
+®
+Cash Back Credit Card
+Spend instantly with your virtual card, if
+eligible.
+7
+Earn cash back on every purchase, even before your physical card arrives.
+Purchase APR:
+x
+% intro rate for
+x
+months
+, then
+x
+%
+variable to
+x
+%
+variable.
+Balance Transfer APR:
+x
+%
+intro rate for
+x
+months
+, then Purchase APR applies.
+Cash Advance APR:
+x
+%
+variable. Minimum interest charge: $.50.
+Cash advance fee:
+greater of
+$10
+or
+5%
+of the advance amount.
+Balance transfer fee:
+x
+%
+Intro fee of the amount transferred;
+x
+%
+fee for future transfers.
+Annual Fee: None.
+Rates as of
+.
+Earn 5% cash back
+at different places each quarter, up to the quarterly maximum when you activate.
+Apply Now
+See if You're Pre-Approved
+View important rates & disclosures below
+★★★★★
+x
+/ 5 Average of
+x
+Reviews
+8
+See how
+we calculate our ratings
+Earn
+5
+% Cash Back
+On everyday purchases at different places you shop each quarter–like grocery stores, restaurants, gas stations, and more–up to the quarterly maximum when you activate.
+Plus, your cash back won't expire for the life of the
+account.
+3
+Unlimited Cashback Match
+Get an unlimited dollar-for-dollar match of all the cash back you earn at the end of your first year, automatically. There is no limit to how much we’ll
+match.
+1
+$
+0
+Fraud Liability
+You're never responsible for unauthorized purchases on your Discover
+Card.
+6
+Earn
+5
+% Cash Back
+On everyday purchases at different places you shop each quarter–like grocery stores, restaurants, gas stations, and more–up to the quarterly maximum when you activate.
+Plus, your cash back won't expire for the life of the
+account.
+3
+Unlimited Cashback Match
+Get an unlimited dollar-for-dollar match of all the cash back you earn at the end of your first year, automatically. There is no limit to how much we’ll
+match.
+1
+0
+%
+Intro APR
+For
+xx
+months
+on purchases and balance transfers;
+xx
+% -
+xx
+%
+variable APR after that; Balance Transfer Fee applies.
+†See rates, rewards, fees, and other cost
+information
+, Opens new window
+Apply Now
+99% nationwide acceptance
+— Discover is accepted nationwide by 99% of places that take credit
+cards.
+2
+Join those in the know
+“
+Cash back
+l love the cashback on this card! I was surprised to see how fast it adds up.
+One of 28,900+ 5-star reviews as of 04/
+26
+8
+Discover Credit Card
+Continuously amazed with the support and benefits that Discover provides.
+One of 28,900+ 5-star reviews as of 01/
+26
+8
+Great rewards
+I love using my card for purchases! I plan to refer all of my friends to Discover.
+One of 28,900+ 5-star reviews as of 04/
+26
+8
+Security features
+that matter
+Freeze your account
+If you misplace your card, you can prevent new purchases and cash advances in seconds with the on/off switch on our mobile app and
+website.
+5
+Free Social Security number alerts
+Get an alert if we find your Social Security number on the dark
+web.
+4
+Sign up to activate this free benefit.
+A look
+that's all
+yours
+Choose from a gallery of colorful card designs
+when you apply to become
+a Discover it
+®
+cardmember.
+Apply and Choose Design
+Start out right with our
+low intro APR
+x
+% intro
+APR
+†
+for
+x
+months
+on purchases and balance transfers and
+x
+% intro
+Balance Transfer Fee until
+x
+.
+Then
+x
+%
+to
+x
+%
+Standard Variable Purchase APR and up to
+x
+% fee
+for future balance transfers will apply.
+No annual fee
+†See rates, rewards, fees, and other cost
+information
+>
+, Opens new window
+Apply Now
+Cash back credit card FAQs
+What is Cashback Match and how does it work?
+Discover will automatically match all the cash back you earn at the end of your first year after you open your new Discover it
+®
+cash back
+card.
+1
+So if you earn $50 cash back, we'll give you another $50.
+Is there a limit to how much Discover will match?
+No, there's no limit to how much we'll match.
+If I redeem rewards throughout the year, will I still get the Cashback Match?
+Yes, you can redeem cash back any time after you earn it and still receive the full match amount at the end of your first year.
+How do I get my Cashback Match?
+You don’t have to sign up, just use your Discover card for purchases to earn cash back. We'll automatically match all the cash back you earn at the end of your first
+year.
+1
+Does the Discover it
+®
+credit card have an annual fee?
+No, there is
+no annual fee
+for the
+Discover it
+®
+Card. Experience the rewards of our cash back credit card without an annual fee.
+Does Discover it
+®
+offer an intro APR?
+Yes, eligible customers may qualify for an
+x
+% intro APR
+†
+for
+x
+months
+on purchases and balance transfers.
+x
+% intro
+Balance Transfer Fee until
+x
+. Then
+x
+%
+to
+x
+%
+Standard Variable Purchase APR and up to
+x
+% fee
+for future balance transfers will apply.
+No annual fee
+†See rates, fees and other info
+Is a “no annual fee” credit card a free credit card?
+While cards with no annual fee can lower the cost of using your card, these credit cards will charge interest and could have other types of fees. When you pay your balance on time and in full at each billing statement, you may be able to avoid paying interest on purchases and reduce the cost of using credit.
+So while there’s no extra charge each year with a no annual fee credit card, any interest charges on your account are a cost of using credit.
+Purchase APR:
+x
+% intro rate for
+x
+months
+, then
+x
+%
+variable to
+x
+%
+variable.
+Balance Transfer APR:
+x
+%
+intro rate for
+x
+months
+, then Purchase APR applies.
+Cash Advance APR:
+x
+%
+variable. Minimum interest charge: $.50.
+Cash advance fee:
+greater of
+$10
+or
+5%
+of the advance amount.
+Balance transfer fee:
+x
+%
+Intro fee of the amount transferred;
+x
+%
+fee for future transfers.
+Annual Fee: None.
+Rates as of
+.
+Purchase APR:
+x
+% intro rate for
+x
+months
+, then
+x
+%
+variable to
+x
+%
+variable.
+Balance Transfer APR:
+x
+%
+intro rate for
+x
+months
+, then Purchase APR applies.
+Cash Advance APR:
+x
+%
+variable. Minimum interest charge: $.50.
+Cash advance fee:
+greater of
+$10
+or
+5%
+of the advance amount.
+Balance transfer fee:
+x
+%
+Intro fee of the amount transferred;
+x
+%
+fee for future transfers.
+Annual Fee: None.
+Rates as of
+.
+Purchase APR:
+x
+% intro rate for
+x
+months
+, then
+x
+%
+variable to
+x
+%
+variable.
+Balance Transfer APR:
+x
+%
+intro rate for
+x
+months
+, then Purchase APR applies.
+Cash Advance APR:
+x
+%
+variable. Minimum interest charge: $.50.
+Cash advance fee:
+greater of
+$10
+or
+5%
+of the advance amount.
+Balance transfer fee:
+x
+%
+Intro fee of the amount transferred;
+x
+%
+fee for future transfers.
+Annual Fee: None.
+Rates as of
+.
+Apply Now
+Learn more about cash back rewards credit cards from Discover
+What is the Discover Cashback Bonus?
+The Discover Cashback Bonus program allows you to earn cashback rewards on every purchase.
+What Credit Card Do I Qualify For?
+Find out which credit cards you may qualify for with our online credit card-pre-approval tool - checking doesn't impact your credit score and can personalize your offer.
+What You Need to Know About Discover Card’s Acceptance
+With a 99 percent acceptance rate at merchants that accept credit cards, it’s likely that Discover is accepted at your retailer of
+choice.
+2
+View all Cash Back Rewards Articles
+dcit-1.
+gjvp-1.
+Credit Card Quick Links
+All Credit Cards
+See if you're
+pre-approved
+Respond to Mail Offer
+Cardmember Agreement
+Credit Card Benefits
+ATM Locator
+Credit Card Categories
+Cash Back Credit Cards
+Student Credit Cards
+Travel Credit Card
+Compare Credit Cards
+Gas Credit Cards
+Credit Card Features
+Balance Transfer Credit Cards
+Credit Cards to Build Credit
+No Annual Fee Credit Cards
+Intro APR Credit Cards
+Credit Cards for No Credit
+Instant Use Credit Cards
+Card Smarts & More
+Card Smarts
+Getting a Credit Card
+Using a Credit Card
+Credit Card Rewards
+Credit Card Interest Calculator
+Balance Transfer Calculator
+Rewards
+Rewards Credit Cards
+Cash Back Rewards
+5%
+Cashback Bonus
+®
+Refer a Friend
+More Discover Products
+Banking
+Personal Loans
+Debt Consolidation
+Identity Theft Protection
+Quicklinks
+Sitemap
+Terms of Use
+Accessibility
+Browser Support
+Privacy
+Your California Privacy Choices
+AdChoices
+About Us
+Contact Us
+About Discover
+Corporate Impact
+Investor Relations
+Newsroom
+Careers
+Accept Discover
+Inclusion & Belonging
+Follow Us on Twitter opens in a new window
+Like Us on Facebook opens in a new window
+Instagram opens in a new window
+Contact with Us on LinkedIn opens in a new window
+Discover Mobile App
+Equal Housing Lender
+ACCREDITED BUSINESS opens in a new tab Opens in a new window
+Member FDIC opens in a new tab Opens in a new window
+©
+Discover, a division of Capital One, N.A., Member FDIC
+.
+You are now leaving Discover.
+Discover's terms for its website and mobile app do not apply to the site or app you are about to visit, nor do Discover's privacy and  security policies apply to it. Please carefully review the site or app's terms, privacy and security policies to see how those apply to you.
+Continue
+Leave Discover.com and continue to external website
+Cancel
+›
+Cancel and return to Discover.com
+Close X
+Close and return to Discover.com
+.

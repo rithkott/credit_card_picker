@@ -1,0 +1,53 @@
+Wells Fargo Autograph Journey℠ Visa® Card
+Source pages: https://www.wellsfargo.com/credit-cards/autograph-journey-visa/terms/ ; https://www.wellsfargo.com/credit-cards/autograph-journey-visa/guide-to-benefits/
+Captured: 2026-07-04
+
+RATES & FEES DISCLOSURE (from terms page)
+
+APR
+- Purchases & Balance Transfers: "19.49%, 25.49%, or 28.49%, based on your creditworthiness." Variable, tied to U.S. Prime Rate.
+- Cash Advances & Overdraft Protection: "29.49%" variable.
+- No introductory APR offer mentioned for this card.
+
+Annual Fee
+- "$95"
+
+Welcome Bonus
+- "60,000 Rewards Points bonus" when cardholder makes "at least $4,000 in net purchases that post to your account within 3 months from the date you opened your account."
+
+Transaction Fees
+- Balance Transfers: introductory fee of "$5 or 3% of the amount of each balance transfer, whichever is greater, for 120 days"; up to 5% thereafter.
+- Cash Advances: "Either $10 or 5% of the amount of each advance, whichever is greater."
+- Foreign Transactions: "None"
+- Late Payment Penalty: "Up to $40"
+
+Rewards Program (per terms page + secondary corroboration)
+- Base: 1 Rewards Point per $1 on net purchases.
+- Bonus categories (per official product marketing, corroborated by CNBC Select and The Points Guy): unlimited 5X points on hotels, 4X points on airlines, 3X points on other travel and restaurants, 1X points on other purchases.
+
+ANNUAL STATEMENT CREDIT
+- $50 statement credit each year for an airline purchase of at least $50, automatically applied.
+
+GUIDE TO BENEFITS
+
+- Cellular Telephone Protection: damage, theft, or accidental loss of phones on the account's wireless bill; $25 deductible; $1,000 maximum per claim; must pay monthly wireless bill with card; max 2 claims per 12 months, up to $2,000 annually.
+- Visa Signature® Concierge Services: 24/7 assistance booking travel, events, reservations — "1-800-953-7392."
+- Luxury Hotel Collection: best available rate guarantee, automatic room upgrades, complimentary breakfast, late checkout when booking through designated sites.
+- Emergency Cash & Card Replacement: within 1-3 business days, sometimes within 24 hours.
+- Travel & Emergency Assistance: 24/7 at "1-800-992-6029" — medical referrals, legal assistance, emergency transportation, prescription help while traveling.
+- Auto Rental Collision Damage Waiver: covers rental car damage up to $50,000 for accidents/theft when declining rental company's insurance; 15 consecutive days US, 31 days international.
+- Lost Baggage Reimbursement: up to $3,000 per trip for baggage lost by common carriers.
+- Roadside Dispatch®: "1-800-847-2869" — pay-per-use, towing (5 miles), tire changes, lockouts, fuel delivery.
+- Trip Cancellation/Interruption Protection: reimburses up to $15,000 per traveler for covered cancellations (illness, severe weather, terrorism, other specified reasons).
+- $1,000,000 Travel Accident Insurance: covers accidental loss of life, limbs, sight, or speech during covered trips.
+
+TRANSFER PARTNERS (per secondary sources: CNBC, NerdWallet)
+- Choice Privileges, Air France-KLM Flying Blue, Avianca LifeMiles, British Airways Executive Club, AerClub, Iberia Plus, JetBlue, Virgin Atlantic (partner list per multiple outlets — not independently re-verified against an official partner list page in this pass).
+
+PREMIER / PRIVATE BANK TIER QUESTION (per curation backlog note — investigated, NOT captured as separate files)
+
+Research (WebSearch on Doctor of Credit, Frequent Miler, myFICO forums, Upgraded Points) indicates:
+- "Wells Fargo Premier Autograph Visa Infinite Card" — offered to Wells Fargo Premier banking relationship clients (reported threshold ~$250k+ in assets).
+- "Private Bank By Invitation Visa Signature Card" — offered to Wells Fargo Private Bank clients (invitation-only, asset threshold unspecified in sources found).
+- Multiple sources (Frequent Miler, Doctor of Credit) describe these as sharing "all card details" / the same core rewards structure and benefits as the standard Autograph Journey Visa Signature card, distinguished primarily by: different card design/metal, Visa Infinite-tier benefit set (vs. Visa Signature for the base card) which may include enhanced travel protections, and a reported higher (~100,000 point) welcome offer for the Premier variant seen via in-branch/relationship-manager offers, per Frequent Miler ("100K Wells Fargo Autograph Journey offer for Premier members, in-branch only") and Upgraded Points coverage.
+- CONCLUSION for this pass: these appear to be relationship-tier variants/access channels of the same Autograph Journey product (same product family, elevated card network tier and distribution channel) rather than fully distinct products with their own public rates-and-fees disclosure pages on wellsfargo.com. No dedicated public "Pricing & Terms" page was found for a "Premier Autograph" or "Private Bank" card distinct from the Autograph Journey Visa page fetched above. Recommend the curation pass treat Autograph Journey as the single YAML entry and note the Premier/Private Bank variants as a distribution-channel footnote rather than separate cards, pending discovery of an official standalone disclosure page.
