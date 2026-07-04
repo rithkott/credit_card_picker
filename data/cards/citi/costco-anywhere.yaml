@@ -1,0 +1,100 @@
+# Costco co-brand Visa: 4% gas (capped), 3% dining/travel, 2% Costco, cash back paid as an annual certificate.
+id: costco-anywhere
+name: Costco Anywhere Visa Card by Citi
+issuer: citi
+network: visa                 # "Costco Anywhere Visa" stated in the card title
+currency:
+  type: cash
+  program: cash
+base_rate: 1                  # "1% cash back on everything else"
+
+category_rewards:
+  - category: gas
+    rate: 4                   # "4% on other eligible gas and EV charging worldwide"
+    cap:
+      period: annual
+      max_spend_usd: 7000     # "combined cap of $7,000/year in Costco+other gas/EV spend at the elevated rate"
+      fallback_rate: 1
+    notes: >-
+      4% on eligible gas/EV worldwide (5% specifically at Costco warehouse gas — the
+      higher Costco-gas rate is not separately modeled; both draw on one combined
+      $7,000/year SPEND pool, then 1% thereafter). Excludes gas/EV at some superstores/
+      supermarkets/warehouse clubs other than Costco and non-automotive fuel.
+  - category: dining
+    rate: 3                   # "3% cash back on restaurants ... and eligible travel"
+    notes: >-
+      Restaurants incl. cafes, bars, lounges, fast food. Excludes bakeries, certain
+      in-department-store restaurants, grocery/warehouse-club restaurants (those earn 1%).
+  - category: travel_flights
+    rate: 3                   # "3% ... eligible travel worldwide (airfare ...)"
+    notes: Airfare portion of the 3% eligible-travel rate.
+  - category: travel_hotels
+    rate: 3                   # "3% ... hotels ..."
+    notes: >-
+      Hotels/Costco Travel portion of the 3% eligible-travel rate. Excludes timeshares,
+      campgrounds, B&Bs (earn 1%).
+  - category: travel_other
+    rate: 3                   # "3% ... car rentals, travel agencies, cruise lines ..."
+    notes: >-
+      Car rentals, travel agencies, cruise lines portion of the 3% eligible-travel rate.
+      Excludes train/commuter travel (earns 1%).
+
+merchant_rewards:
+  - merchant: costco
+    rate: 2                   # "2% cash back on all other Costco and Costco.com purchases"
+    notes: >-
+      2% on Costco warehouse and Costco.com purchases (other than gas, which earns the
+      elevated gas rate). Costco warehouse gas earns 5% but cannot be distinguished from
+      this 2% merchant bucket in the model — see the gas category note.
+
+credits: []
+
+signup_bonus: null           # No public signup bonus terms were present in this source file
+
+fees:
+  annual_fee_usd: 0           # "Annual Fee: $0 with paid Costco membership"
+  foreign_transaction_pct: 0  # "Foreign Transaction Fee: None"
+
+required_membership:
+  name: Costco membership
+  annual_cost_usd: 65         # "Gold Star/Business $65/yr" (cheapest qualifying tier)
+  note: >-
+    Requires a current paid Costco membership in the cardholder's name; the account and
+    rewards program can be cancelled if membership lapses. The $65/yr fee auto-renews onto
+    the card unless changed. Not scored — the optimizer assumes the user already holds it.
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's mainstream co-brand positioning; not stated in
+    the offer file. Requires a paid Costco membership (each Authorized User needs their
+    own). NEEDS human verification.
+
+benefit_flags: []
+
+sources:
+  - url: https://www.citi.com/credit-cards/costco-anywhere-visa-card-by-citi
+    supports: [identity, currency, base_rate, category_rewards, merchant_rewards, fees, approval, required_membership]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Citi product page; URL not in the offer file and NOT fetched this
+      session — figures unconfirmed. All values transcribed from
+      data/offer_files/citi/costco-anywhere.txt. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/citi/costco-anywhere.txt; all figures unconfirmed.
+  The $7,000/year gas cap is a SPEND cap (cap.max_spend_usd 7000), not a reward cap.
+  REDEMPTION RESTRICTION: cash back is NOT statement credit — it is paid as a SINGLE annual
+  certificate after the February statement, redeemable only in person at a US Costco
+  warehouse for merchandise or cash through Dec 31 of the issue year (unredeemed balance
+  forfeits; membership must be active; no reward if under $1; over $10,000/yr may be paid
+  by check). The `cash` program values these at a flat 1.0cpp and does NOT haircut for
+  this redemption friction — a reviewer may want a dedicated store-locked program key.
+  Costco warehouse gas (5%) and the 2% Costco bucket cannot be cleanly separated; the 5%
+  is noted but modeled at the 4% gas rate.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

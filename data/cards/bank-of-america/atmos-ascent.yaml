@@ -1,0 +1,108 @@
+# Alaska/Hawaiian (Atmos Rewards) co-brand card; earns atmos_rewards miles. Rebranded from Alaska Airlines Visa Signature.
+id: atmos-ascent
+name: Atmos Rewards Ascent Visa Signature
+issuer: bank-of-america
+network: visa                 # "Visa Signature"
+currency:
+  type: points
+  program: atmos_rewards
+base_rate: 1                  # "1 point per $1 on all other purchases"
+
+category_rewards:
+  - category: gas
+    rate: 2                   # "2 points per $1 on gas, EV charging, cable, streaming services, and local transit (including rideshare)"
+    notes: >-
+      Part of a single 2x tier the issuer defines as "gas, EV charging, cable, streaming
+      services, and local transit (including rideshare)". Gas + EV charging map here.
+  - category: streaming
+    rate: 2                   # same 2x tier
+  - category: transit
+    rate: 2                   # same 2x tier; "local transit (including rideshare)"
+    notes: >-
+      Same 2x tier as gas/streaming; covers local transit including rideshare.
+      The issuer's "cable" component of this tier is omitted — mapping it to the broad
+      'utilities' key would wrongly award 2x on all utilities/phone spend. See notes.
+
+merchant_rewards: []          # "3 points per $1 on eligible Alaska/Hawaiian purchases" omitted — no airline merchant key; see notes / registry gap.
+
+credits:
+  - name: Alaska Lounge+ Membership discount
+    amount_usd: 100          # "$100 off an annual Alaska Lounge+ Membership purchased with the card"
+    period: annual
+    realistic_capture_rate_note: >-
+      Captured only by cardholders who actually buy an Alaska Lounge+ membership (list price
+      several hundred dollars) with the card each year; worthless to everyone else. Most
+      cardholders capture $0.
+  - name: Annual Companion Fare ($99 companion fare)
+    kind: in_kind
+    amount_usd: 150          # curator estimate of net value, NOT an issuer-stated figure — see notes
+    period: annual
+    unlock_spend_usd: 6000   # "after spending $6,000+ in the prior anniversary year"
+    realistic_capture_rate_note: >-
+      Requires $6,000+ prior-year spend to earn, then a paid second ticket ($99 + taxes from $23)
+      on a qualifying Alaska/Hawaiian itinerary within North America. Value is realized only by
+      cardholders who book a second traveler; captured by frequent Alaska flyers, near-zero otherwise.
+    notes: >-
+      in_kind value is a curator estimate. A companion fare's savings equal (second-ticket price
+      − $99 − taxes); $150 is a conservative net estimate for a typical short/medium-haul coach
+      fare. Not an issuer valuation. NEEDS human verification.
+
+signup_bonus:
+  value:
+    points: 50000           # "plus 50,000 bonus points"
+  spend_requirement_usd: 2000 # "after spending $2,000 in purchases"
+  window_months: 3           # "within the first 90 days of account opening"
+  notes: >-
+    Offer also includes a "buy one ticket, get one for just the taxes and fees" companion award
+    ($0 fare plus taxes and fees from $23). That in-kind BOGO is not structured into value — it is
+    a one-time award whose worth depends on the fare booked. Described here for the reviewer.
+
+fees:
+  annual_fee_usd: 95         # "$95"
+  foreign_transaction_pct: 0 # "No foreign transaction fees" (per aggregated directory listing; not confirmed on the product page)
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream airline co-brand
+    card; the offer file does not state a credit requirement. NEEDS human verification.
+
+relationship_boost:
+  program: Bank of America Preferred Rewards
+  tiers:
+    - requirement: eligible Bank of America deposit / Merrill account (Preferred Rewards)
+      boost_pct: 10
+  note: >-
+    Offer file: "10% bonus on all points earned with an eligible Bank of America deposit/Merrill
+    account (Preferred Rewards)." This co-brand card states a flat 10% bonus (not the 25%-75%
+    tiered structure of BofA's own-brand cards). Qualifying account details not itemized in the
+    offer file. Not scored in v1 — base_rate/category_rewards are the no-relationship baseline.
+
+benefit_flags:
+  - free_checked_bag
+  - no_blackout_dates
+
+sources:
+  - url: https://www.bankofamerica.com/credit-cards/products/alaska-airlines-credit-card/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, relationship_boost, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session. The offer file
+      carries a NEEDS_VERIFICATION marker — figures are third-party/secondary and unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/bank-of-america/atmos-ascent.txt, which carries a
+  NEEDS_VERIFICATION marker, so all figures are third-party/unconfirmed. Rebranded (Aug 2025) from
+  the Alaska Airlines Visa Signature; Atmos Rewards merges Alaska + Hawaiian loyalty programs.
+  REGISTRY GAPS: (1) "3 points per $1 on eligible Alaska/Hawaiian purchases" is a merchant-specific
+  rate with no airline merchant key in data/meta/merchants.yaml — omitted rather than force-fit onto
+  travel_flights (which covers all airlines). (2) the "cable" component of the 2x tier has no clean
+  category key (utilities is far broader) and was omitted. "20% back on Alaska/Hawaiian inflight
+  purchases" is a redemption-side rebate with no stated cap — described here, not modeled.
+  Free checked bag / preferred boarding extend to the cardholder plus up to 6 guests.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

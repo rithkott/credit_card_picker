@@ -1,0 +1,95 @@
+# Simple 3x MR card: 3x on all travel, transit, and dining; $150 AF.
+id: green
+name: American Express Green Card
+issuer: amex
+network: amex
+currency:
+  type: points
+  program: amex_mr
+base_rate: 1                 # "base 1x"
+
+category_rewards:
+  - category: travel_flights
+    rate: 3                  # "3x ... on travel (airfare ...)"
+    notes: >-
+      Part of Amex's broad "travel" bonus (airfare, hotels, cruises, tours, car
+      rentals, campgrounds, vacation rentals, third-party travel sites, Amex Travel).
+      Excludes timeshare purchases.
+  - category: travel_hotels
+    rate: 3                  # broad "travel" bonus includes hotels
+    notes: Part of the broad Amex "travel" bonus (see travel_flights notes).
+  - category: travel_other
+    rate: 3                  # broad "travel" bonus includes cruises/tours/car rentals/etc.
+    notes: Part of the broad Amex "travel" bonus (cruises, tours, car rentals, vacation rentals, etc.).
+  - category: transit
+    rate: 3                  # "3x ... on transit"
+    notes: Trains, taxis, rideshare, ferries, tolls, parking, buses, subways.
+  - category: dining
+    rate: 3                  # "3x ... at restaurants"
+    notes: >-
+      Excludes restaurants inside another establishment, non-US third-party delivery,
+      bars/nightclubs/cafeterias/convenience stores.
+
+merchant_rewards: []
+
+credits:
+  - name: CLEAR Plus Credit
+    amount_usd: 219          # "up to $219/calendar year"
+    period: annual
+    category: travel_other
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Covers an annual CLEAR+ membership (~$219). Requires separate CLEAR enrollment;
+      full value only to travelers who use CLEAR at airports/venues, $0 to everyone
+      else.
+  - name: American Express Venue Collection Concessions Credit
+    amount_usd: 25
+    period: annual
+    category: entertainment
+    requires_enrollment: true
+    expires: "2026-12-31"
+    realistic_capture_rate_note: >-
+      10% back (up to $250/yr) on Venue Collection concessions, enrollment required;
+      realistic capture is a small fraction — modeled at ~$25.
+
+signup_bonus:
+  value:
+    points: 40000            # "40,000 Membership Rewards points after $3,000 spend in first 6 months"
+  spend_requirement_usd: 3000
+  window_months: 6
+
+fees:
+  annual_fee_usd: 150        # "Annual Fee: $150"
+  foreign_transaction_pct: 0 # "Foreign Transaction Fee: None"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier is an inference from the card's mid-tier positioning; not stated in
+    the offer file — NEEDS human verification. Amex welcome-offer eligibility is
+    once-per-lifetime and also blocked if you have/had this Card, Platinum, Platinum
+    Schwab, Platinum Morgan Stanley, or Gold cards.
+
+benefit_flags:
+  - no_foreign_transaction_fee
+  - trip_cancellation_insurance
+
+sources:
+  - url: https://www.americanexpress.com/us/credit-cards/card/green/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Amex product page. URL not in offer file and not fetched this
+      session; figures transcribed from the local offer file and unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/amex/green.txt; all figures unconfirmed
+  pending human verification. Amex's single broad "travel" 3x bonus is expanded into
+  travel_flights/travel_hotels/travel_other entries so the optimizer routes all
+  travel spend to it.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

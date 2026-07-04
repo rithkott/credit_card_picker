@@ -1,0 +1,73 @@
+# Entry-level no-fee travel card: flat 1.25X Miles + 5X Capital One Travel portal rates.
+id: venture-one
+name: Capital One VentureOne Rewards
+issuer: capital-one
+network: visa                 # NOT stated in offer file — inferred (VentureOne is a Visa product); NEEDS human verification
+currency:
+  type: points
+  program: capital_one_miles
+base_rate: 1.25              # "unlimited 1.25 miles per dollar on every purchase" (per secondary sources)
+
+category_rewards:
+  - category: travel_hotels
+    rate: 5                   # "5 miles per dollar on hotels ... booked through Capital One Travel"
+    portal_only: true
+    notes: >-
+      Applies only to hotels booked through Capital One Travel (issuer portal). Vacation
+      rentals booked via the portal also earn 5X but are not separately modeled (no
+      vacation-rental category key). Per secondary sources. NEEDS human verification.
+  - category: travel_other
+    rate: 5                   # "5 miles per dollar on ... rental cars booked through Capital One Travel"
+    portal_only: true
+    notes: >-
+      Rental cars booked through Capital One Travel only. Per secondary sources. NEEDS
+      human verification.
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus:
+  value:
+    points: 20000
+  spend_requirement_usd: 500
+  window_months: 3
+  notes: >-
+    "20,000 bonus miles (a $200 travel value) after spending $500 in the first 3 months."
+    Per secondary sources — figures third-party/unconfirmed per the offer file's
+    NEEDS_VERIFICATION marker.
+
+fees:
+  annual_fee_usd: 0            # "Annual Fee: $0"
+  foreign_transaction_pct: 0   # "Foreign Transaction Fees: None"
+
+approval:
+  credit_tier: excellent      # "Credit Level Required: Excellent (per direct page fetch)"
+
+benefit_flags:
+  - no_foreign_transaction_fee
+
+sources:
+  - url: https://www.capitalone.com/credit-cards/ventureone/
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session. Earn
+      rates, welcome bonus and APR came from a WebSearch aggregation of secondary review
+      sites (per the offer file), not the official Schumer box — third-party/unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/capital-one/venture-one.txt (NEEDS_VERIFICATION
+  marker) — most figures (earn rates, welcome bonus) are from secondary sources per the
+  offer file, not Capital One's own disclosure. network (visa) is an inference, not stated
+  in the offer file. 5X hotels/rental cars apply ONLY through Capital One Travel; vacation
+  rentals earn 5X via the portal but are omitted for lack of a distinct category key. The
+  up-to-$50 flight price-drop protection is not modeled as a periodic credit (it is
+  per-booking, not per-period). Card offers a 0% intro APR for 15 months (out of scope for
+  the value model).
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

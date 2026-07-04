@@ -1,0 +1,176 @@
+# Premium transferable-points travel card: 8x Chase Travel portal, 4x direct flights/hotels, deep credit stack, high annual fee.
+id: sapphire-reserve
+name: Chase Sapphire Reserve
+issuer: chase
+network: visa                # NOT stated in offer file; Sapphire Reserve is a Visa Infinite — inference, NEEDS human verification
+currency:
+  type: points               # Ultimate Rewards points, transferable to airline/hotel partners
+  program: chase_ur
+base_rate: 1                 # "1 point/$1: everything else"
+
+category_rewards:
+  - category: travel_other
+    rate: 8                  # "8 points/$1 on Chase Travel portal purchases"
+    portal_only: true
+    notes: >-
+      Chase Travel portal purchases of any travel type (flights, hotels, cars, cruises,
+      activities). Modeled on travel_other as the portal channel; direct flights/hotels
+      earn 4x (see travel_flights/travel_hotels). Excludes FROSCH/Valerie Wilson/Frosch
+      International bookings. Portal prices may exceed direct booking.
+  - category: travel_flights
+    rate: 4                  # "4 points/$1: flights ... booked direct"
+    notes: Flights booked directly with the airline; portal-booked flights earn 8x (see travel_other).
+  - category: travel_hotels
+    rate: 4                  # "4 points/$1: ... hotels booked direct"
+    notes: Hotels booked directly with the hotel; portal-booked hotels earn 8x (see travel_other).
+  - category: dining
+    rate: 3                  # "3 points/$1: dining (incl. takeout/delivery)"
+
+merchant_rewards:
+  - merchant: lyft
+    rate: 5                  # "5X points on qualifying Lyft ... through 9/30/2027"
+    notes: >-
+      Limited-time through 9/30/2027 (excludes gift cards, car rentals, vehicle service
+      centers). Reverts to base earn after the promo; merchant_rewards has no expires
+      field, so the end date is noted here.
+
+credits:
+  - name: Annual Travel Credit
+    amount_usd: 300           # "$300 Annual Travel Credit ... up to $300/year"
+    period: annual
+    category: travel_other
+    realistic_capture_rate_note: >-
+      Automatic statement credit applied to the first $300/year of travel-category
+      purchases (year = account anniversary cycle). Near-universal full capture for
+      anyone who travels; the offsetting purchases do not also earn points.
+  - name: The Edit prepaid-stay credit
+    amount_usd: 250           # "$500 Credit for stays with The Edit ... up to $250 twice a year (starting 1/1/2026)"
+    period: semiannual
+    category: travel_hotels
+    realistic_capture_rate_note: >-
+      Up to $250 twice per year ($500/year) on prepaid 2+ night "Pay Now" stays booked via
+      The Edit (Chase's luxury hotel program). Captured only by users who book qualifying
+      luxury 2+ night prepaid stays each half-year; low capture for most cardholders.
+  - name: Select-hotels Chase Travel credit (2026)
+    amount_usd: 250           # "$250 Credit for select hotels through Chase Travel in 2026 ... up to $250 in calendar year 2026"
+    period: annual
+    category: travel_hotels
+    expires: "2026-12-31"
+    realistic_capture_rate_note: >-
+      Up to $250 in calendar year 2026 on prepaid 2+ night stays at IHG, Montage, Pendry,
+      Omni, Virgin Hotels, Minor Hotels, or Pan Pacific booked through Chase Travel.
+      Captured only by users booking those specific brands; promotional (2026 only).
+  - name: Annual Dining Credit
+    amount_usd: 150           # "$300 Annual Dining Credit: up to $150 Jan-Jun and $150 Jul-Dec"
+    period: semiannual
+    category: dining
+    realistic_capture_rate_note: >-
+      Up to $150 per half-year at select restaurants booked via OpenTable Sapphire Reserve
+      Exclusive Tables; identifiable direct-restaurant purchases only (excludes gift cards
+      and third-party delivery apps). Restricted restaurant list — partial capture at best
+      for most users.
+  - name: StubHub / viagogo credit
+    amount_usd: 150           # "$300 Annual StubHub/viagogo Credit ... up to $150 per half-year"
+    period: semiannual
+    requires_enrollment: true
+    expires: "2027-12-31"
+    realistic_capture_rate_note: >-
+      Up to $150 per half-year on StubHub/viagogo, one-time activation required, through
+      12/31/2027. Captured only by live-event ticket buyers who activate; worthless
+      otherwise.
+  - name: Peloton Membership credit
+    amount_usd: 10            # "$120 Annual Peloton Membership Credit ... up to $10/month"
+    period: monthly
+    requires_enrollment: true
+    expires: "2027-12-31"
+    realistic_capture_rate_note: >-
+      Up to $10/month toward qualifying Peloton membership tiers, one-time activation
+      required, through 12/31/2027. Captured only by active paying Peloton members.
+  - name: Lyft ride credit
+    amount_usd: 10            # "$10 monthly Lyft credit (up to $120/year) through 9/30/2027"
+    period: monthly
+    category: transit
+    expires: "2027-09-30"
+    realistic_capture_rate_note: >-
+      $10/month toward Standard/Extra Comfort/XL/Black/Black SUV rides (not memberships),
+      through 9/30/2027. Full capture for regular Lyft riders; forfeited monthly if unused.
+  - name: Global Entry / TSA PreCheck / NEXUS application fee credit
+    amount_usd: 120           # "one statement credit up to $120 every 4 years"
+    period: every_4_years
+    realistic_capture_rate_note: >-
+      Up to $120 once every 4 years for a trusted-traveler application fee. Captured only
+      by travelers who enroll.
+  - name: The Shops at Chase credit (at $75k annual spend)
+    amount_usd: 250           # "$75,000/calendar-year spend unlocks ... $250 credit at The Shops at Chase"
+    period: annual
+    unlock_spend_usd: 75000
+    realistic_capture_rate_note: >-
+      Unlocked only after $75,000 in card spend per calendar year, then redeemable at The
+      Shops at Chase. Reachable by very few cardholders; the optimizer zeroes it below
+      that spend volume.
+  - name: Southwest Airlines Chase Travel credit (at $75k annual spend)
+    amount_usd: 500           # "$75,000/calendar-year spend unlocks ... $500 Southwest Airlines Chase Travel credit"
+    period: annual
+    unlock_spend_usd: 75000
+    category: travel_flights
+    realistic_capture_rate_note: >-
+      Unlocked only after $75,000 in card spend per calendar year, then usable as a $500
+      Southwest credit via Chase Travel (requires linking the Rapid Rewards account).
+      Reachable by very few cardholders; the optimizer zeroes it below that spend volume.
+
+signup_bonus:
+  value:
+    points: 100000            # "100,000 points after spending $6,000 in first 3 months"
+  spend_requirement_usd: 6000
+  window_months: 3
+  notes: >-
+    Not available to current cardmembers or previous cardmembers who received a bonus for
+    this card. Allow 6-8 weeks to post.
+
+fees:
+  annual_fee_usd: 795         # NOT stated in offer file; current Sapphire Reserve annual fee — inference (the file's 2026 credits/8x earn match the $795 refresh), NEEDS human verification
+  foreign_transaction_pct: 0  # NOT stated in offer file; Sapphire Reserve has no FTF — inference, NEEDS human verification
+
+approval:
+  credit_tier: excellent
+  notes: >-
+    credit_tier estimated from the card's premium (Visa Infinite) underwriting; not stated
+    in the offer file. Chase 5/24 applies. NEEDS human verification.
+
+benefit_flags:
+  - lounge_access
+
+sources:
+  - url: https://creditcards.chase.com/travel-credit-cards/sapphire/reserve
+    supports: [identity, currency, base_rate, category_rewards, merchant_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in offer file and not fetched this session; figures transcribed from
+      data/offer_files/chase/sapphire-reserve.txt and unconfirmed against issuer terms.
+      NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/chase/sapphire-reserve.txt. No source URL was on
+  file; the cited page is the issuer's general product page (not fetched). annual_fee_usd
+  (795), foreign_transaction_pct (0), network (visa), and credit_tier are NOT stated in
+  the offer file and are best-estimate inferences — the $795 fee especially NEEDS human
+  verification. MODELING CHOICE: the 8x Chase Travel portal rate is placed on
+  travel_other (portal channel) with portal_only:true to avoid duplicate travel
+  categories; direct flights/hotels are modeled at 4x. This under-scores portal-booked
+  flights/hotels — flagged for reviewer. NOTED, NOT MODELED (no stated fixed value / in-kind
+  / status): Points Boost promotional up-to-2x redemption value; complimentary Apple TV +
+  Apple Music (12+ mo each, activate by 6/22/2027) with $7.50/mo Apple One discount;
+  complimentary DashPass (12+ mo) with $5-off monthly restaurant + two $10-off
+  non-restaurant DoorDash orders monthly; 10X Peloton points on up to $5,000 equipment
+  (Peloton is not a registry merchant); Priority Pass Select + Air Canada Maple Leaf
+  lounge access (captured via lounge_access flag); IHG One Rewards Platinum Elite through
+  12/31/2027; Reserve Travel Designer booking service; and the $75k-spend elite-status
+  unlocks (World of Hyatt Explorist, IHG Diamond, Southwest A-List) which are status
+  grants, not dollar credits. The $250 Shops at Chase and $500 Southwest credits ARE
+  modeled with unlock_spend_usd 75000.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

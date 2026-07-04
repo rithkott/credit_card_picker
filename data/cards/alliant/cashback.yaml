@@ -1,0 +1,73 @@
+# Flat-rate unlimited-cash-back credit-union card (post-11/1/2025 single-rate terms).
+id: cashback
+name: Cashback Visa Signature
+issuer: alliant
+network: visa
+currency:
+  type: cash
+  program: cash
+base_rate: 1.5              # "unlimited 1.50% cash back on all eligible purchases ... no monthly or annual spending cap" (effective 11/1/2025)
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus: null         # "No signup/welcome bonus found on official sources."
+
+fees:
+  annual_fee_usd: 0        # "Annual Fee: None."
+  foreign_transaction_pct: 0  # "Foreign Transaction Fee: None." (stated explicitly in offer file)
+
+approval:
+  credit_tier: very_good
+  notes: >-
+    credit_tier is an inference — the offer file does not state a credit requirement.
+    Estimated very_good from the card's Visa Signature positioning (Visa Signature
+    products generally require a good-to-excellent profile). NEEDS human verification.
+    Alliant Credit Union membership is required to hold the card, but membership is
+    free: everyone in the U.S. can qualify (partner-business employment/retirement,
+    being an immediate family member/domestic partner of a member, or joining the
+    Alliant Credit Union Foundation with the one-time $5 fee paid by Alliant on the
+    applicant's behalf); non-U.S. residents may apply with an SSN or valid ITIN.
+    No membership fees are charged to the member.
+
+benefit_flags:
+  - visa_signature
+
+sources:
+  - url: https://www.alliantcreditunion.org/credit-cards/visa-signature-card
+    supports: [identity, currency, base_rate, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file's Gaps section (the offer file records no
+      header URL/Fetched date); not re-fetched this session. All figures are
+      third-party/unconfirmed — the offer file states the official page and disclosure
+      PDF could not be fully re-read and the rate/fee/eligibility details rest on an
+      initial page read plus secondary sources (Clark.com, Doctor of Credit, NerdWallet,
+      CNBC Select).
+
+notes: >-
+  Drafted offline from data/offer_files/alliant/cashback.txt; figures are
+  third-party/unconfirmed and NEEDS human verification. Key caveats a reviewer must
+  resolve: (1) AVAILABILITY — secondary sources (Doctor of Credit, Clark.com) report
+  this card was removed from new-applicant availability around June 2025; no official
+  "reopened" or "permanently discontinued" statement was found. If it is closed to new
+  applicants, it should not be surfaced in portfolio recommendations. (2) RATE — the
+  1.50% flat rate is the post-11/1/2025 term; some early secondary reporting cited
+  1.6%, though most sources (incl. what appears to be Alliant's own FAQ) converged on
+  1.50%. (3) The 1.50% flat rate REPLACED a prior tiered structure (2.5% on up to
+  $10,000/billing cycle contingent on a qualifying Alliant high-rate checking account
+  with a $1,000+ average daily balance, 1.5% above that or without the checking
+  account); that tier no longer applies as of 11/1/2025, so it is intentionally NOT
+  modeled here. Cash-back redemption minimum is $25 (lowered from $50 on 11/1/2025).
+  Balance-transfer fee (3%) and APR terms are out of scope (no schema field).
+  Visa Signature benefits (concierge, luxury hotel collection, rental privileges) apply
+  per standard Visa Signature terms.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

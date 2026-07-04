@@ -1,0 +1,71 @@
+# Air France-KLM (Flying Blue) co-brand card; earns flying_blue miles. Rebranded from World Elite Mastercard to Visa Signature.
+id: flying-blue
+name: Air France KLM Visa Signature
+issuer: bank-of-america
+network: visa                 # offer file "REBRAND/NETWORK NOTE": moved from World Elite Mastercard to Visa Signature (transition ~Mar 2026). NEEDS human verification.
+currency:
+  type: points
+  program: flying_blue
+base_rate: 1.5               # "1.5 Miles per $1 on all other purchases"
+
+category_rewards:
+  - category: dining
+    rate: 3                   # "3 Miles per $1 on eligible dining purchases"
+
+merchant_rewards: []          # "3 Miles per $1 on eligible Air France, KLM, and SkyTeam purchases" omitted — no airline merchant key; see notes / registry gap.
+
+credits:
+  - name: Anniversary bonus miles
+    amount_points: 5000       # "Anniversary bonus: 5,000 Miles annually after spending $50+ in that year"
+    period: annual
+    unlock_spend_usd: 50      # trivial $50 spend threshold
+    realistic_capture_rate_note: >-
+      Deposited each account anniversary once at least $50 has been spent that year — effectively
+      automatic for any active cardholder. Valued via the flying_blue program.
+
+signup_bonus:
+  value:
+    points: 50000            # "50,000 Bonus Miles"
+  spend_requirement_usd: 2000 # "after making $2,000 or more in purchases within the first 90 days"
+  window_months: 3
+  notes: >-
+    Bonus also grants 100 Experience Points (XP) toward Flying Blue elite status — not structured
+    (elite-status progress is not a scored value). Some third-party reporting cites a 70,000-mile
+    offer; the 50,000 official-page figure is used. NEEDS human verification.
+
+fees:
+  annual_fee_usd: 89          # "$89"
+  foreign_transaction_pct: 0  # "None — no foreign transaction fees"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream airline co-brand
+    card; the offer file does not state a credit requirement. NEEDS human verification.
+
+benefit_flags:
+  - no_foreign_transaction_fee
+
+sources:
+  - url: https://www.bankofamerica.com/credit-cards/products/air-france-credit-card/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session. The offer file
+      carries a NEEDS_VERIFICATION marker — figures are third-party/secondary and unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/bank-of-america/flying-blue.txt, which carries a
+  NEEDS_VERIFICATION marker, so all figures are third-party/unconfirmed. REGISTRY GAP: "3 Miles per
+  $1 on eligible Air France, KLM, and SkyTeam purchases" is a merchant/alliance-specific rate with
+  no matching key in data/meta/merchants.yaml — omitted rather than force-fit onto travel_flights
+  (which would award 3x on all airline spend). Not modeled: the tiered Experience Points (XP)
+  elite-status credits (20/60/60 XP at anniversary / $15k / $25k spend — offer file notes sources
+  conflict on the cumulative totals); XP is elite-status progress, not scored value. Network shown
+  as Visa Signature per the offer file's rebrand note but NEEDS human verification.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

@@ -1,0 +1,64 @@
+# Allegiant co-brand travel card; earns allegiant_points redeemable only toward Allegiant bookings.
+id: allegiant
+name: Allways Rewards Visa
+issuer: bank-of-america
+network: visa                 # offer file "REBRAND NOTE": now marketed as a Visa (formerly Allegiant World Mastercard). NEEDS human verification of current network/product name.
+currency:
+  type: points
+  program: allegiant_points
+base_rate: 1                  # "1 point per $1 on all other purchases"
+
+category_rewards:
+  - category: dining
+    rate: 2                   # "2 points per $1 on dining"
+
+merchant_rewards: []          # "3 points per $1 on eligible Allegiant purchases" omitted — no 'allegiant' key in merchants.yaml; see notes / registry gap.
+
+credits: []
+
+signup_bonus:
+  value:
+    points: 30000            # "30,000 bonus points ($300 off a future trip)"
+  spend_requirement_usd: 1500 # "after spending $1,500 in purchases"
+  window_months: 3           # "within the first 90 days of account opening"
+  notes: >-
+    Offer file also reports an older/third-party figure of "15,000 points" — the 30,000
+    figure is used but flagged as promotion-dependent and unconfirmed. NEEDS human verification
+    of the current welcome offer against the live page.
+
+fees:
+  annual_fee_usd: 59         # "$59"
+  foreign_transaction_pct: 0 # "No foreign transaction fees"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream co-brand
+    travel card; the offer file does not state a credit requirement. NEEDS human verification.
+
+benefit_flags:
+  - no_foreign_transaction_fee
+
+sources:
+  - url: https://www.bankofamerica.com/credit-cards/products/allegiant-credit-card/
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session. The offer file
+      carries a NEEDS_VERIFICATION marker — figures are third-party/secondary and unconfirmed
+      (the dedicated product page returned a temporarily-unavailable error at original fetch time).
+
+notes: >-
+  Drafted offline from data/offer_files/bank-of-america/allegiant.txt, which carries a
+  NEEDS_VERIFICATION marker, so all figures are third-party/unconfirmed. REGISTRY GAP: the headline
+  "3 points per $1 on eligible Allegiant purchases" is a merchant-specific rate with no matching key
+  in data/meta/merchants.yaml (no 'allegiant' merchant), so it was omitted rather than force-fit onto
+  travel_flights (which would wrongly award 3x on all airline spend). Users who actually fly Allegiant
+  earn 3x on those purchases — not modeled. Network shown as Visa per the offer file's rebrand note but
+  NEEDS human verification. allegiant_points redeem at a fixed 1cpp toward Allegiant bookings only.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

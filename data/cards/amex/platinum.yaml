@@ -1,0 +1,190 @@
+# Premium travel/lounge MR card: 5x flights & prepaid hotels (portal), heavy credit stack, $895 AF.
+id: platinum
+name: The Platinum Card from American Express
+issuer: amex
+network: amex
+currency:
+  type: points
+  program: amex_mr
+base_rate: 1                 # "Base: 1 point/$"
+
+category_rewards:
+  - category: travel_flights
+    rate: 5                  # "5 points/$ on scheduled-flight airfare ... (up to $500,000/year)"
+    cap:
+      period: annual
+      max_spend_usd: 500000
+      fallback_rate: 1
+    notes: >-
+      Airfare booked directly with airlines or via Amex Travel, up to $500,000/yr then
+      1x. Excludes charter/private jet, tour/cruise packages, ticketing fees.
+  - category: travel_hotels
+    rate: 5                  # "5 points/$ on prepaid hotel reservations via Amex Travel; prepaid vacation rentals via AmexTravel.com"
+    portal_only: true
+    notes: >-
+      Prepaid hotels and prepaid vacation rentals booked through Amex Travel only.
+      Excludes hotel group bookings.
+  - category: travel_other
+    rate: 2                  # "2 points/$ on cruise bookings made via AmexTravel.com or by phone"
+    portal_only: true
+    notes: 2x on cruise bookings via Amex Travel or phone only.
+
+merchant_rewards: []
+
+credits:
+  - name: Uber Cash
+    amount_usd: 15           # "$15/month + $20 in December"
+    period: monthly
+    category: transit
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $15/month (+$20 in December, ~$200/yr) auto-loaded to Uber Cash; requires the
+      card added in the Uber app; expires monthly, no rollover. Modeled at the base
+      $15/month; the December bump raises the annual face to ~$200. Captured by regular
+      Uber/Uber Eats users only.
+  - name: Uber One Credit
+    amount_usd: 120          # "up to $120/year on Uber One membership fees"
+    period: annual
+    category: transit
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Up to $120/yr on Uber One membership fees; card must be the payment method with
+      Uber Cash toggled off. Only valuable to Uber One subscribers.
+  - name: Airline Fee Credit
+    amount_usd: 200          # "up to $200/year on incidental fees ... one airline you select annually"
+    period: annual
+    category: travel_flights
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Up to $200/yr on incidental fees (bags, seat selection) with one selected
+      airline; NOT tickets/upgrades/miles/gift cards. Capture requires incidental fees
+      on your chosen airline; many cardholders capture partially or not at all.
+  - name: Oura Ring Credit
+    amount_usd: 200          # "up to $200/year, Oura Ring purchases only"
+    period: annual
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Up to $200/yr on Oura Ring hardware at ouraring.com only (excludes memberships/
+      accessories/gift cards). One-off value for buyers of an Oura Ring; ~$0 for
+      everyone else.
+  - name: Digital Entertainment Credit
+    amount_usd: 25           # "up to $25/month ($300/year)"
+    period: monthly
+    category: streaming
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $25/month on direct-purchased Disney+, ESPN, Hulu, NYT, Paramount+, Peacock, WSJ,
+      or YouTube subscriptions; enrollment required; monthly forfeit; excludes bundles/
+      third-party/gift cards. Captured by people who pay those services directly.
+  - name: CLEAR Plus Credit
+    amount_usd: 209          # "up to $209/year on CLEAR+ membership"
+    period: annual
+    category: travel_other
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Covers a CLEAR+ membership (~$209/yr); full value only to CLEAR users.
+  - name: Equinox Credit
+    amount_usd: 300          # "up to $300/year on Equinox membership ... or Equinox+"
+    period: annual
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Up to $300/yr on Equinox or Equinox+ memberships; requires eligibility
+      validation. Only valuable to Equinox members; ~$0 otherwise.
+  - name: lululemon Credit
+    amount_usd: 75           # "up to $75/quarter ($300/year)"
+    period: quarterly
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $75/quarter at lululemon stores/site/app (excludes Studio, Like New, outlet,
+      gift cards); does not roll over. Captured by regular lululemon shoppers.
+  - name: Resy Credit
+    amount_usd: 100          # "up to $100/quarter ($400/year)"
+    period: quarterly
+    category: dining
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $100/quarter at US restaurants via Resy.com/app or Resy Pay; does not roll over.
+      Captured by frequent Resy diners.
+  - name: Hotel Credit
+    amount_usd: 300          # "up to $300 semiannually ($600/year)"
+    period: semiannual
+    category: travel_hotels
+    realistic_capture_rate_note: >-
+      $300 twice a year on prepaid Fine Hotels+Resorts / The Hotel Collection bookings
+      via Amex Travel; does not roll over between halves; Delta SkyMiles Platinum not
+      eligible. Captured by people who book premium hotels through Amex Travel.
+  - name: Walmart Plus Monthly Credit
+    amount_usd: 12.95        # "covers one Walmart+ monthly membership fee (~$12.95)/month"
+    period: monthly
+    realistic_capture_rate_note: >-
+      Covers one monthly Walmart+ membership fee (~$12.95); annual Walmart+ plans do
+      NOT qualify (must switch to monthly). Only valuable to monthly Walmart+
+      subscribers.
+  - name: Global Entry or TSA PreCheck Fee Credit
+    amount_usd: 120
+    period: every_4_years
+    category: travel_other
+    realistic_capture_rate_note: >-
+      One credit every 4 years, up to $120 (Global Entry) or $85 (TSA PreCheck).
+      Modeled at the $120 ceiling; captured once per renewal cycle by enrollees.
+  - name: American Express Venue Collection Concessions Credit
+    amount_usd: 25
+    period: annual
+    category: entertainment
+    requires_enrollment: true
+    expires: "2026-12-31"
+    realistic_capture_rate_note: >-
+      10% back (up to $250/yr) on Venue Collection concessions, enrollment required;
+      realistic capture is a small fraction — modeled at ~$25.
+
+signup_bonus:
+  value:
+    points: 175000           # "Up to 175,000 Membership Rewards points ... after $12,000 spend in first 6 months"
+  spend_requirement_usd: 12000
+  window_months: 6
+  notes: >-
+    Offer file states "up to 175,000"; exact welcome amount disclosed at application
+    and may be lower. Standard evergreen bonus not separately stated.
+
+fees:
+  annual_fee_usd: 895        # "Annual Fee: $895"
+  foreign_transaction_pct: 0 # "Foreign Transaction Fee: None"
+
+approval:
+  credit_tier: excellent
+  notes: >-
+    credit_tier is an inference from the card's top-tier premium underwriting; not
+    stated in the offer file — NEEDS human verification. Amex welcome-offer
+    eligibility is once-per-lifetime and also blocked if you have/had this Card, the
+    Schwab Platinum, or the Morgan Stanley Platinum (or prior versions).
+
+benefit_flags:
+  - no_foreign_transaction_fee
+  - lounge_access
+  - concierge_service
+  - cell_phone_protection
+  - trip_cancellation_insurance
+  - elite_status
+  - metal_card
+
+sources:
+  - url: https://www.americanexpress.com/us/credit-cards/card/platinum-card/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Amex product page. URL not in offer file and not fetched this
+      session; figures transcribed from the local offer file and unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/amex/platinum.txt; all figures unconfirmed
+  pending human verification. The offer file's own realistic-capture caveat is
+  reflected in each credit's capture note: sticker credit value is very large but
+  most cardholders capture only a subset. UNMODELED: the $300 SoulCycle At-Home Bike
+  credit (per-purchase, not periodic) and lounge/hotel-status perks — described here
+  and in benefit_flags rather than valued.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

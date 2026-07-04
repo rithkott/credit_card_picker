@@ -1,0 +1,83 @@
+# No-fee flat cash card: 1.5% on everything + 5% Capital One Travel portal rates.
+id: quicksilver
+name: Capital One Quicksilver Cash Rewards
+issuer: capital-one
+network: mastercard          # NOT stated in offer file — inferred (Quicksilver is a Mastercard product); NEEDS human verification
+currency:
+  type: cash
+  program: cash
+base_rate: 1.5               # "unlimited 1.5% cash back on every purchase, no category restrictions"
+
+category_rewards:
+  - category: travel_hotels
+    rate: 5                   # "5% cash back on hotels ... booked through Capital One Travel" (per secondary sources)
+    portal_only: true
+    notes: >-
+      Applies only to hotels booked through Capital One Travel (issuer portal). Vacation
+      rentals booked via the portal also earn 5% but are not separately modeled (no
+      vacation-rental category key). Per secondary sources. NEEDS human verification.
+  - category: travel_other
+    rate: 5                   # "5% cash back on ... rental cars booked through Capital One Travel" (per secondary sources)
+    portal_only: true
+    notes: >-
+      Rental cars booked through Capital One Travel only. Per secondary sources. NEEDS
+      human verification.
+  - category: entertainment
+    rate: 5                   # "5% cash back on Capital One Entertainment purchases" (per secondary sources)
+    portal_only: true
+    notes: >-
+      Applies ONLY to purchases made through the Capital One Entertainment platform
+      (issuer ticket marketplace), NOT to general entertainment spend. portal_only flags
+      the issuer-platform scoping. Judgment call: mapped onto the broad `entertainment`
+      category to mirror the house style in venture-x.yaml; a reviewer may prefer to omit
+      it pending a dedicated Capital One Entertainment key. Per secondary sources. NEEDS
+      human verification.
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus:
+  value:
+    usd: 200
+  spend_requirement_usd: 500
+  window_months: 3
+  notes: >-
+    "$200 cash bonus" after "$500 within 3 months of opening your account" (per secondary
+    sources; exact wording to verify). Existing/previous cardmembers ineligible if they
+    received a bonus for this product in the past 48 months. Figures third-party/unconfirmed
+    per the offer file's NEEDS_VERIFICATION marker.
+
+fees:
+  annual_fee_usd: 0            # "Annual Fee: $0" (per secondary-source aggregation)
+  foreign_transaction_pct: 0   # INFERRED — no foreign-transaction-fee line appears in the offer file; Capital One charges no FTF on its cards, but this was NOT stated in this file. NEEDS human verification.
+
+approval:
+  credit_tier: excellent      # "Credit Level Required: Excellent"
+
+benefit_flags: []
+
+sources:
+  - url: https://www.capitalone.com/credit-cards/quicksilver/
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, fees, approval]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session. Annual
+      fee, spend threshold, and the 5% portal/entertainment rates came from a WebSearch
+      aggregation of secondary sources (per the offer file), not the official Schumer box
+      — third-party/unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/capital-one/quicksilver.txt (NEEDS_VERIFICATION
+  marker) — many figures (annual fee, 5% portal/entertainment rates) are from secondary
+  sources per the offer file. network (mastercard) is an inference, not stated. The offer
+  file has NO foreign-transaction-fee line: foreign_transaction_pct: 0 is an inference
+  (Capital One charges no FTF), flagged in fees. Capital One Entertainment 5% is
+  platform-scoped (flagged portal_only) — see the reward's notes. The up-to-$50 flight
+  price-drop protection is not modeled as a periodic credit (per-booking, not per-period).
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

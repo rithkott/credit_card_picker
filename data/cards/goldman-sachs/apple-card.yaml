@@ -1,0 +1,93 @@
+# No-annual-fee cash-back card (Daily Cash) with a payment-method-gated base rate:
+# 1% physical titanium card, 2% via Apple Pay, 3% at Apple + select Apple Pay partners.
+id: apple-card
+name: Apple Card
+issuer: goldman-sachs
+network: mastercard            # "anywhere Mastercard is accepted"
+currency:
+  type: cash                   # Daily Cash is cash (deposited to Apple Cash / bank)
+  program: cash
+base_rate: 1                   # UNCONDITIONAL baseline: 1% by swiping/tapping the physical titanium card (Apple Pay not used)
+base_rate_conditional:
+  rate: 2                      # "2% Daily Cash: all other purchases made with Apple Pay"
+  requires: paid via Apple Pay
+
+category_rewards: []
+
+merchant_rewards:
+  # 3% Daily Cash at select partner merchants when paid via Apple Pay. 'uber' is the
+  # only named 3% partner that has a key in data/meta/merchants.yaml. Baseline (physical
+  # card, no Apple Pay) is the 1% base rate; the 3% is the Apple-Pay-gated boost.
+  - merchant: uber
+    rate: 1                    # unconditional baseline (physical card = base 1%)
+    conditional_rate:
+      rate: 3                  # 3% partner rate, Apple Pay only
+      requires: paid via Apple Pay
+    notes: >-
+      3% Daily Cash applies at Uber only when paid via Apple Pay. Apple's 3% partner
+      list changes over time (offer file names Nike, Uber, Walgreens, Booking.com,
+      Exxon Mobil, ChargePoint, Hertz, Duane Reade, Ace Hardware as examples) — Uber
+      is modeled here because it is the only listed partner with a registry key; the
+      rest are omitted (no merchant key). Also, all purchases made directly from Apple
+      (Apple Store, apple.com, App Store, Apple services) earn 3%, but there is no
+      'apple' merchant key, so that is captured only in the card notes below.
+      NEEDS human verification of the current partner list (support.apple.com/en-us/120400).
+
+credits: []
+
+signup_bonus: null            # "No welcome/signup bonus found" — earning is purely ongoing Daily Cash
+
+fees:
+  annual_fee_usd: 0           # "Annual Fee: None"
+  foreign_transaction_pct: 0  # "Foreign Transaction Fee: None. No annual, over-the-limit, foreign-transaction, or late fees"
+
+approval:
+  credit_tier: fair           # inference — see notes
+  notes: >-
+    credit_tier estimated from Apple Card's public positioning as an accessible,
+    no-annual-fee card known to approve thinner/fair-credit files; the offer file does
+    not state a credit requirement. Requires an eligible iPhone/iPad and an Apple ID to
+    apply and manage the card; supports Co-Owners who build credit equally. NEEDS human
+    verification.
+
+benefit_flags: []             # File describes security features (no printed number, dynamic security codes) but none map to an existing benefit_flag spelling — omitted rather than invent.
+
+sources:
+  - url: https://support.apple.com/en-us/120400
+    supports: [identity, currency, base_rate, merchant_rewards, fees, approval]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Apple Daily Cash / 3% partner support page; URL carried over from the offer file
+      body, NOT re-fetched this session. All rate/fee figures are third-party/unconfirmed
+      (transcribed from the local offer file, which is issuer-marketing/support-level detail,
+      not the legal Customer Agreement).
+  - url: https://www.jpmorganchase.com/ir/news/2026/chase-to-become-new-issuer-of-apple-card
+    supports: [identity]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      JPMorgan Chase newsroom announcement (Jan 7, 2026) that Chase will replace Goldman
+      Sachs as Apple Card issuer over ~24 months; URL carried over from the offer file body,
+      NOT re-fetched this session. Third-party/unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/goldman-sachs/apple-card.txt; all figures are
+  third-party/unconfirmed (transcribed from a marketing/support-level offer sheet, not the
+  legal Customer Agreement) — confidence low. ISSUER TRANSITION: on 2026-01-07 Apple and
+  JPMorgan Chase announced Chase will replace Goldman Sachs as the Apple Card issuer over an
+  announced ~24-month window (targeting ~early 2028). Filed under goldman-sachs per current
+  instructions, but this card should be re-tagged / moved to a chase offer file and re-verified
+  once Chase becomes the operative issuer of record. Daily Cash tiers: 1% physical titanium
+  card, 2% via Apple Pay anywhere, 3% for purchases made directly from Apple (Apple Store,
+  apple.com, App Store, Apple services) and at select Apple Pay partner merchants. The 3%
+  Apple-direct rate and most partners are not modeled as rewards because there is no 'apple'
+  merchant key and most partners lack registry keys (see gaps). No limit on Daily Cash earned;
+  Daily Cash does not expire and is deposited daily to Apple Cash or an Apple Card Savings
+  account. Issuer marketing claims "no late fees"; not independently confirmed against the
+  Customer Agreement. NEEDS human verification.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

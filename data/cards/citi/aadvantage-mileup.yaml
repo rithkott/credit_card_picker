@@ -1,0 +1,66 @@
+# No-fee entry AA co-brand: 2X AA + 2X groceries, AAdvantage miles.
+id: aadvantage-mileup
+name: American Airlines AAdvantage MileUp
+issuer: citi
+network: mastercard           # network not stated in offer file; AAdvantage MileUp is a Mastercard — inferred
+currency:
+  type: points
+  program: aa_advantage
+base_rate: 1                  # "1 AAdvantage mile per $1"
+
+category_rewards:
+  - category: travel_flights
+    rate: 2                   # "2X miles on eligible American Airlines purchases"
+    notes: >-
+      Only AA purchases billed by AA as merchant of record (excludes car rentals, hotel
+      reservations, AAdvantage status boost/renewal, AA Cargo) — narrower than the
+      general travel_flights category.
+  - category: groceries
+    rate: 2                   # "2X miles on grocery store purchases"
+    notes: >-
+      Supermarkets, freezer/meat provisioners, dairy, bakeries, food/convenience stores.
+      Excludes general-merchandise/discount superstores, warehouse clubs, candy/
+      confectionery stores, cafes, bars, lounges, fast food.
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus: null           # No public signup bonus terms were present in this source file
+
+fees:
+  annual_fee_usd: 0           # "Annual Fee: None ($0)"
+  foreign_transaction_pct: 3  # "Foreign Transaction Fee: 3% of each purchase transaction in U.S. dollars"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's mainstream no-annual-fee positioning; not
+    stated in the offer file. Requires an open AAdvantage membership. New-account bonus
+    miles blocked if you got one on a MileUp account, or converted such a card, in the
+    past 48 months. NEEDS human verification.
+
+benefit_flags: []
+
+sources:
+  - url: https://www.citi.com/credit-cards/american-airlines-aadvantage-mileup-card
+    supports: [identity, currency, base_rate, category_rewards, fees, approval]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Citi product page; URL not in the offer file and NOT fetched this
+      session — figures unconfirmed. All values transcribed from
+      data/offer_files/citi/aadvantage-mileup.txt. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/citi/aadvantage-mileup.txt; all figures
+  unconfirmed. network (mastercard) is inferred — not stated in the offer file — NEEDS
+  human verification. Status-qualifying Loyalty Points (1 per base mile) are NOT
+  redeemable and are not scored. The 25% inflight food/beverage savings is OMITTED
+  (uncapped percentage rebate). Mastercard ID Theft Protection is an opt-in perk, noted
+  not scored.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

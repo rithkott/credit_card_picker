@@ -1,0 +1,107 @@
+# No-annual-fee rotating-5% card: quarterly 5% categories + fixed 3% dining/drugstore + 5% Chase Travel portal, on Ultimate Rewards points.
+id: freedom-flex
+name: Chase Freedom Flex
+issuer: chase
+network: mastercard          # NOT stated in offer file; Freedom Flex is a Mastercard — inference, NEEDS human verification
+currency:
+  type: points               # earns Ultimate Rewards points (1 pt = $0.01 cash); transferable when paired with a premium Chase card
+  program: chase_ur
+base_rate: 1                 # "1% Cash Back: base rate on all purchases"
+
+category_rewards:
+  - category: rotating
+    rate: 5                  # "5% Cash Back total (rotating quarterly categories) ... up to $1,500 combined spend per quarter"
+    cap:
+      period: quarterly
+      max_spend_usd: 1500     # "$1,500 combined spend per quarter", falls back to 1% after cap
+      fallback_rate: 1
+    rotation:
+      frequency: quarterly
+      requires_activation: true
+      note: >-
+        Categories change each quarter and must be activated by the quarterly deadline;
+        may include specific merchants as well as categories. This quarter's specific
+        categories are intentionally NOT hardcoded here — check chase.com/freedomflex.
+  - category: dining
+    rate: 3                  # "3% Cash Back total: ... dining at restaurants (incl. takeout/delivery)"
+  - category: drugstores
+    rate: 3                  # "3% Cash Back total: drugstores"
+  - category: travel_flights
+    rate: 5                  # "5% Cash Back total: purchases through Chase Travel portal"
+    portal_only: true
+    notes: Only when booked through the Chase Travel portal (portal prices may exceed direct booking).
+  - category: travel_hotels
+    rate: 5
+    portal_only: true
+    notes: Only when booked through the Chase Travel portal (portal prices may exceed direct booking).
+  - category: travel_other
+    rate: 5
+    portal_only: true
+    notes: Chase Travel portal purchases (cars, cruises, activities, etc.); portal prices may exceed direct booking.
+
+merchant_rewards:
+  - merchant: lyft
+    rate: 2                  # "2% cash back total on qualifying Lyft ... through 9/30/2027"
+    notes: >-
+      Limited-time through 9/30/2027 (excludes gift cards, car rentals, vehicle service
+      centers). Reverts to base earn after the promo; merchant_rewards has no expires
+      field, so the end date is noted here.
+
+credits:
+  - name: DashPass DoorDash quarterly credit
+    amount_usd: 10            # "$10 off quarterly on one DoorDash non-restaurant order while enrolled"
+    period: quarterly
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Requires activating the complimentary 6-month DashPass (activation window
+      2/1/2025-12/31/2027, then auto-renews at the then-current rate) and placing one
+      qualifying DoorDash non-restaurant order each quarter (no rollover). Captured only
+      by active DoorDash users who enroll; worthless otherwise.
+
+signup_bonus:
+  value:
+    points: 20000             # "$200 cash back (20,000 points) after spending $500 in first 3 months"
+  spend_requirement_usd: 500
+  window_months: 3
+  notes: >-
+    Marketed as "$200 cash back" (20,000 UR points at 1cpp). Not available to current
+    cardmembers or those who received a bonus for this card in the last 24 months.
+    Allow 6-8 weeks to post.
+
+fees:
+  annual_fee_usd: 0           # NOT stated in offer file; Freedom Flex is a no-annual-fee card — inference, NEEDS human verification
+  foreign_transaction_pct: 3  # NOT stated in offer file; Freedom Flex charges a 3% FTF — inference, NEEDS human verification
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream cash-back
+    card; not stated in the offer file. Chase 5/24 very likely applies (Chase declines
+    applicants with 5+ new cards in 24 months) — not stated in the offer file. NEEDS
+    human verification.
+
+benefit_flags: []
+
+sources:
+  - url: https://creditcards.chase.com/cash-back-credit-cards/freedom/flex
+    supports: [identity, currency, base_rate, category_rewards, merchant_rewards, credits, signup_bonus, fees, approval]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in offer file and not fetched this session; figures transcribed from
+      data/offer_files/chase/freedom-flex.txt and unconfirmed against issuer terms.
+      NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/chase/freedom-flex.txt. No source URL was on
+  file; the cited page is the issuer's general product page (not fetched). annual_fee_usd
+  (0), foreign_transaction_pct (3), network (mastercard), and credit_tier are NOT stated
+  in the offer file and are best-estimate inferences — NEEDS human verification. Chase
+  Travel portal rate modeled across all three travel categories with portal_only:true.
+  Amazon Shop-with-Points redeems these points at only $0.008 each (below 1cpp), noted
+  but not modeled. Lyft 2% promo end date is in the merchant note.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

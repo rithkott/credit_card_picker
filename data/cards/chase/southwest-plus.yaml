@@ -1,0 +1,128 @@
+# Entry-level Southwest co-brand: modest anniversary points + free checked bag, Rapid Rewards currency.
+id: southwest-plus
+name: Southwest Rapid Rewards Plus
+issuer: chase
+network: visa
+currency:
+  type: points
+  program: southwest_rapid_rewards
+base_rate: 1                 # "1 point/$1: everything else"
+
+category_rewards:
+  - category: travel_flights
+    rate: 2                  # "2 points/$1 on purchases made directly with Southwest Airlines"
+    notes: >-
+      Only purchases made directly with Southwest Airlines (flight, inflight,
+      Southwest gift cards, Getaways by Southwest packages); excludes Southwest
+      Cruises/Charters/Cargo. Narrower than the general travel_flights category —
+      this card does not elevate other airlines' tickets.
+  - category: gas
+    rate: 2                  # "2 points/$1 total: gas stations + grocery stores, combined, first $5,000/anniversary year"
+    cap:
+      period: annual
+      max_spend_usd: 5000
+      fallback_rate: 1
+      shared_cap_id: gas_grocery
+    notes: >-
+      Combined $5,000/account-anniversary-year pool shared with groceries; spend
+      above the shared cap earns 1 point/$1.
+  - category: groceries
+    rate: 2                  # same combined line as gas above
+    cap:
+      period: annual
+      max_spend_usd: 5000
+      fallback_rate: 1
+      shared_cap_id: gas_grocery
+    notes: >-
+      Combined $5,000/account-anniversary-year pool shared with gas stations; spend
+      above the shared cap earns 1 point/$1.
+
+merchant_rewards:
+  - merchant: lyft
+    rate: 2                  # "2X points on qualifying Lyft ... through 12/31/2027"
+    notes: >-
+      Limited-time: 2X on qualifying Lyft rideshare/bike/scooter/subscription
+      purchases through 12/31/2027 (excludes gift cards, car rentals, vehicle
+      service centers). Reverts to base earn after the promo; no expires field
+      exists on merchant rewards so the end date is noted here.
+
+credits:
+  - name: Anniversary bonus points
+    amount_points: 3000       # "3,000 bonus points each account anniversary year"
+    period: annual
+    realistic_capture_rate_note: >-
+      Automatic each account anniversary year while the account is open — full
+      capture for anyone who keeps the card.
+  - name: DashPass DoorDash quarterly credit
+    amount_usd: 10            # "$10 off quarterly on one DoorDash non-restaurant order while enrolled"
+    period: quarterly
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Requires activating complimentary DashPass and placing one qualifying
+      DoorDash non-restaurant order each quarter (no rollover). Captured only by
+      active DoorDash users who enroll; worthless otherwise.
+  - name: Instacart monthly credit
+    amount_usd: 10            # "$10/month Instacart credit while active"
+    period: monthly
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Requires an active Instacart+ membership (3 months complimentary, then
+      auto-renews at $99/year) and a qualifying purchase each month (no rollover).
+      After the free window the $99/year membership is a real cost the user must
+      weigh against $120/year of credits — only regular Instacart users net ahead.
+
+signup_bonus:
+  value:
+    points: 50000            # "50,000 bonus points after spending $1,000 in first 3 months"
+  spend_requirement_usd: 1000
+  window_months: 3
+  notes: >-
+    Not available to current holders of any personal Southwest Rapid Rewards card
+    or previous cardmembers who got a bonus within the last 24 months.
+
+fees:
+  annual_fee_usd: 69          # NOT stated in the offer file — estimated; NEEDS human verification (see notes)
+  foreign_transaction_pct: 0  # inferred — offer file states no FTF language; NEEDS human verification
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream
+    co-branded travel card; not stated in the offer file. Chase 5/24 rule very
+    likely applies (Chase declines applicants with 5+ new accounts in 24 months) —
+    not stated in the offer file. NEEDS human verification.
+
+benefit_flags:
+  - free_checked_bag
+  - no_change_fees
+  - no_blackout_dates
+  - companion_pass_qualifying_boost
+
+sources:
+  - url: https://creditcards.chase.com/travel-credit-cards/southwest/plus
+    supports: [identity, currency, base_rate, category_rewards, merchant_rewards, credits, signup_bonus, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      No source URL was present in the offer file; this is the issuer's general
+      product page and was NOT fetched this session. All figures transcribed from
+      data/offer_files/chase/southwest-plus.txt and are unconfirmed against issuer
+      terms. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/chase/southwest-plus.txt. No source URL was
+  on file for this offer sheet — the cited page is the issuer's general product page,
+  not fetched. annual_fee_usd ($69) and foreign_transaction_pct (0) are NOT stated in
+  the offer file and are estimates/inferences — NEEDS human verification. Companion
+  Pass Qualifying Points boost (10,000/calendar year) and Group 5 boarding, seat
+  selection, and the one 10%-off promo code per anniversary year are recorded as
+  benefit_flags/notes, not dollar-valued. 25%-back statement credit on inflight
+  drinks/WiFi is OMITTED as a structured credit: no annual cap is stated and the value
+  is entirely dependent on inflight-purchase habits, so any figure would be invented.
+  Balance-transfer earn (1 pt/$1 on first $10,000 of BTs in 90 days) is not purchase
+  earn and is not modeled.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

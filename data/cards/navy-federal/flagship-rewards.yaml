@@ -1,0 +1,110 @@
+# Navy Federal Visa Signature Flagship Rewards: 3x on broad travel, 2x on everything else, $49 fee.
+id: flagship-rewards
+name: Visa Signature Flagship Rewards
+issuer: navy-federal
+network: visa                # "Visa Signature Flagship Rewards Card"
+currency:
+  type: points
+  program: navy_federal_rewards
+base_rate: 2                 # "2 points/$1 on all other eligible purchases"
+
+# The offer file's single "travel" bonus ("airlines, hotels, car rentals, cruises,
+# campgrounds, ride-sharing, tolls, museums, golf courses, and other travel-related
+# categories") is broader than any one registry key, so it is split across the four
+# closest canonical keys, all at the same 3x. NFCU codes some listed sub-types
+# (campgrounds, museums, golf courses) as travel that our registry would otherwise
+# bucket elsewhere — those are covered by these entries per the issuer's definition;
+# see notes.
+category_rewards:
+  - category: travel_flights
+    rate: 3                  # "3 points/$1 on travel purchases (airlines...)"
+    notes: >-
+      Part of NFCU's single broad travel bonus (airlines). No spending cap; the same
+      3x also applies to hotels, other travel, and transit/rideshare (see sibling
+      entries). Mapping of NFCU's broad travel definition onto our split travel keys
+      is an interpretation.
+  - category: travel_hotels
+    rate: 3                  # "...hotels..."
+    notes: Part of NFCU's single broad 3x travel bonus (hotels, campgrounds). Uncapped.
+  - category: travel_other
+    rate: 3                  # "...car rentals, cruises, campgrounds..."
+    notes: Part of NFCU's single broad 3x travel bonus (car rentals, cruises, campgrounds, other travel). Uncapped.
+  - category: transit
+    rate: 3                  # "...ride-sharing, tolls..."
+    notes: Part of NFCU's single broad 3x travel bonus (ride-sharing, tolls). Uncapped.
+
+merchant_rewards: []
+
+credits:
+  - name: Global Entry / TSA PreCheck application fee credit
+    amount_usd: 120          # "up to $120 statement credit per eligible card"
+    period: every_4_years    # "once every 4 years"
+    realistic_capture_rate_note: >-
+      Captured only by cardholders who apply/reapply for Global Entry or TSA PreCheck
+      within the 4-year window; worth ~$100-$120 (application fees) to travelers, $0
+      to those who don't enroll. Automatic statement credit on the application charge.
+
+signup_bonus:
+  value:
+    points: 35000            # "35,000 bonus points (valued at $350)"
+  spend_requirement_usd: 3500  # "after spending $3,500 in eligible purchases"
+  window_months: 3           # "within 90 days of account opening" (≈3 months)
+  expires: "2027-01-03"      # "Offer as advertised valid for applications 07/01/2026-01/03/2027"
+  notes: >-
+    Spend window is 90 days, recorded as 3 months; points post up to 8 weeks after the
+    90-day period ends. Offer window is 07/01/2026-01/03/2027 and the offer file notes
+    it will roll over, so `expires` marks a re-check date, not necessarily a real
+    expiration. Eligible purchases exclude fees, interest, balance transfers, gambling,
+    convenience checks, cash advances, and cash-equivalents. The offer ALSO bundles a
+    complimentary one-year Amazon Prime membership (NFCU-marketed value $139) — this
+    in-kind perk is noted but NOT structured/scored here (it is a one-time item, not a
+    recurring credit, and requires manual enrollment). Limited to one bonus per new account.
+
+fees:
+  annual_fee_usd: 49         # "Annual Fee: $49"
+  foreign_transaction_pct: 0 # "Foreign Transaction Fee: None"
+
+approval:
+  credit_tier: good
+  notes: >-
+    Navy Federal Credit Union membership is required to apply, but membership is FREE
+    for qualifying military/DoD/Coast Guard members, veterans/retirees, DoD civilian/
+    contractor personnel, and their immediate family/household members — an eligibility
+    restriction, not a paid prerequisite. credit_tier ('good') is an inference: the
+    offer file states no credit requirement, but this is a Visa Signature product
+    (which typically requires a minimum ~$5,000 credit line), so the true floor may be
+    higher (very_good). NEEDS human verification.
+
+benefit_flags:
+  - zero_fraud_liability     # "Zero Liability policy"
+  - visa_signature           # "Visa Signature benefits (concierge, luxury hotel collection...)"
+  - concierge                # "Visa Signature benefits (concierge...)"
+  - car_rental_insurance     # "Auto rental collision damage waiver: secondary coverage"
+  - travel_accident_insurance  # "Travel accident insurance: automatic coverage for common-carrier fares"
+
+sources:
+  - url: https://www.navyfederal.org/credit-cards/flagship-rewards.html
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical NFCU product page; NOT fetched this session (drafted offline from the
+      local offer file). Figures are third-party/unconfirmed. The offer file flags that
+      the NFCU Guide to Benefits PDF (nfcu_824cc.pdf) was not directly parsed, so
+      benefit/insurance details need cross-checking against that PDF.
+
+notes: >-
+  Drafted offline from data/offer_files/navy-federal/flagship-rewards.txt; all figures
+  are third-party/unconfirmed, so confidence is low. Points valued at ~1cpp
+  (navy_federal_rewards program). GigSky complimentary 3GB / 15-day global data plan
+  is a one-time perk noted here but not structured (no recurring period / no honest
+  fixed USD value). No lounge access appears to be included, but the offer file records
+  this as an unconfirmed negative finding (the benefits PDF was not parsed) — do NOT
+  assert "no lounge access" without checking. Rental-car coverage is secondary (not
+  primary); full insurance terms need cross-checking against the Guide to Benefits PDF.
+  Points do not expire while the account is open and have no earning cap.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

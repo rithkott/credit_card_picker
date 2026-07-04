@@ -1,0 +1,112 @@
+# Premium Alaska/Hawaiian (Atmos Rewards) co-brand card ($395 AF); earns atmos_rewards miles. Launched Aug 2025.
+id: atmos-summit
+name: Atmos Rewards Summit Visa Infinite
+issuer: bank-of-america
+network: visa                 # "Visa Infinite"
+currency:
+  type: points
+  program: atmos_rewards
+base_rate: 1                  # "1 point per $1 on all other purchases"
+
+category_rewards:
+  - category: dining
+    rate: 3                   # "3 points per $1 on dining, foreign transactions, and Alaska/Hawaiian purchases"
+    notes: >-
+      Part of the same 3x tier as "foreign transactions" and Alaska/Hawaiian purchases.
+      The "foreign transactions" 3x component has no category key (it is a spend-channel, not
+      a spend category) and is omitted; the airline component has no merchant key (see notes).
+
+merchant_rewards: []          # "3 points on eligible Alaska/Hawaiian purchases" omitted — no airline merchant key; see notes / registry gap.
+
+credits:
+  - name: Airport Security Statement Credit (TSA PreCheck / Global Entry)
+    amount_usd: 120          # "Up to $120 Airport Security Statement Credit every four years"
+    period: every_4_years
+    realistic_capture_rate_note: >-
+      Reimburses the TSA PreCheck (~$78) or Global Entry ($120) application fee once per 4-year
+      cycle. Captured by anyone who applies; otherwise unused.
+  - name: Annual Global Companion Award (25,000-point companion certificate)
+    kind: in_kind
+    amount_usd: 200          # curator estimate of net value, NOT an issuer figure — see notes
+    period: annual
+    realistic_capture_rate_note: >-
+      A 25,000-point companion award granted every account anniversary; realized only when the
+      cardholder books a second traveler on a qualifying itinerary. Captured by frequent
+      Alaska/Hawaiian flyers, near-zero for others.
+    notes: >-
+      in_kind value is a curator estimate (25,000 atmos points ≈ $250 at the program floor of
+      1cpp, haircut for the companion-award redemption restriction). Not an issuer valuation.
+      The separate 100,000-point Global Companion Award that unlocks after $60,000+ anniversary
+      spend is NOT modeled (spend threshold is implausibly high for most users) — see card notes.
+      NEEDS human verification.
+  - name: Alaska Lounge day passes (8 per year)
+    kind: in_kind
+    amount_usd: 200          # curator estimate; issuer markets "a $500+ value" — see notes
+    period: annual
+    realistic_capture_rate_note: >-
+      8 Alaska Lounge passes per year (2 per calendar quarter) plus 8 Wi-Fi passes; valuable only
+      to cardholders who fly through airports with an Alaska Lounge on days they hold unused passes.
+      Most capture well below face value.
+    notes: >-
+      in_kind value is a curator estimate. Issuer markets the passes at "a $500+ value" and Wi-Fi
+      passes at "$60+"; these are marketing claims, not transcribed values. $200 reflects realistic
+      capture of a per-visit lounge benefit. NEEDS human verification.
+
+signup_bonus:
+  value:
+    points: 100000          # "100,000 bonus points" (official page figure; a targeted 80k offer exists)
+  spend_requirement_usd: 6500 # "after spending $6,500 or more ... within the first 90 days"
+  window_months: 3
+  notes: >-
+    Bonus also includes a 25,000-point Global Companion Award and a 50% flight discount code —
+    both in-kind and not structured into value. Offer file notes a lower targeted offer (80,000
+    points + companion award after $4,000); the $6,500/100,000 official-page figure is used.
+
+fees:
+  annual_fee_usd: 395        # "$395"
+  foreign_transaction_pct: 0 # "None"
+
+approval:
+  credit_tier: very_good
+  notes: >-
+    credit_tier estimated from the card's positioning as a premium ($395) travel card; the offer
+    file does not state a credit requirement. NEEDS human verification.
+
+relationship_boost:
+  program: Bank of America Preferred Rewards
+  tiers:
+    - requirement: eligible Bank of America account (Preferred Rewards)
+      boost_pct: 10
+  note: >-
+    Offer file: "10% bonus on all points earned with an eligible Bank of America account
+    (Preferred Rewards)." Flat 10% co-brand bonus, not the 25%-75% tiered own-brand structure.
+    Not scored in v1 — base_rate/category_rewards are the no-relationship baseline.
+
+benefit_flags:
+  - lounge_access
+  - free_checked_bag
+  - no_change_fees
+
+sources:
+  - url: https://www.bankofamerica.com/credit-cards/products/alaska-airlines-infinite-credit-card/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, relationship_boost, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session. The offer file
+      carries a NEEDS_VERIFICATION marker — figures are third-party/secondary and unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/bank-of-america/atmos-summit.txt, which carries a
+  NEEDS_VERIFICATION marker, so all figures are third-party/unconfirmed. New premium tier launched
+  Aug 2025 with the Atmos Rewards rebrand (Alaska + Hawaiian merger). REGISTRY GAPS: (1) "3 points
+  on eligible Alaska/Hawaiian purchases" omitted — no airline merchant key. (2) the "foreign
+  transactions" 3x component omitted — foreign transactions are a spend-channel, not a category key.
+  Not modeled: the 100,000-point companion award after $60,000+ anniversary spend; the $50 Instant
+  Travel Delay Credit (per-incident, not periodic); waived same-day change fees. Free checked bag /
+  preferred boarding extend to the cardholder plus up to 6 guests.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

@@ -1,0 +1,129 @@
+# United Club Infinite: top United co-brand; included United Club membership, 5x United, 2x travel/dining, rich credits.
+id: united-club
+name: United Club
+issuer: chase
+network: visa                   # NOT stated in the offer file — United Club is publicly a Visa Infinite; NEEDS human verification
+currency:
+  type: points
+  program: united_mileageplus
+base_rate: 1                    # "1 mile/$1 base rate"
+
+category_rewards:
+  - category: travel_flights
+    rate: 5                      # "5 miles/$1: airline tickets and other purchases made directly with United"
+    notes: >-
+      5x applies to purchases made directly with United (tickets, seat upgrades, Economy
+      Plus, inflight food/beverage/WiFi, baggage/other fees), United Card Events from
+      Chase, and Renowned Hotels & Resorts via Chase Travel. Modeled at the co-brand
+      rate; other airlines' tickets fall under the card's general 2x travel category
+      (see travel_other) rather than this line.
+  - category: dining
+    rate: 2                      # "2 miles/$1: dining (incl. takeout/delivery)"
+  - category: travel_hotels
+    rate: 2                      # "2 miles/$1: travel category (excludes United purchases earning 5x)"
+    notes: >-
+      Part of the card's broad 2x "travel" category. Hotel purchases at Renowned Hotels
+      and Resorts via Chase Travel earn 5x (portal-only) — that niche portal rate is
+      noted in the card notes rather than modeled as a separate travel_hotels entry.
+  - category: travel_other
+    rate: 2                      # broad "travel" 2x (car rental, trains, cruises, non-United airfare, etc.)
+    notes: Part of the card's broad 2x "travel" category (excludes United purchases earning 5x).
+
+merchant_rewards: []
+
+credits:
+  - name: Renowned Hotels and Resorts credit
+    amount_usd: 200             # "Up to $200/year Renowned Hotels and Resorts statement credit (prepaid via Chase Travel)"
+    period: annual
+    realistic_capture_rate_note: >-
+      Up to $200/year on prepaid Renowned Hotels and Resorts bookings via Chase Travel.
+      Scoped to that portal/program — captured only by those who book qualifying luxury
+      stays that way.
+  - name: Rideshare credit
+    amount_usd: 150             # "Up to $150/year rideshare statement credit ($12/month Jan-Nov, $18 in December)"
+    period: annual
+    realistic_capture_rate_note: >-
+      $12/month Jan-Nov and $18 in December, up to $150/year in rideshare statement
+      credits. Captured only by regular rideshare users; monthly amounts don't roll over.
+  - name: JSX credit
+    amount_usd: 200            # "$200/year JSX statement credit"
+    period: annual
+    realistic_capture_rate_note: >-
+      $200/year toward JSX (a semi-private carrier serving limited routes). Captured only
+      by the small set of flyers with JSX access; near-zero for most cardholders.
+  - name: Avis/Budget credit
+    amount_usd: 100            # "Up to $100/year Avis/Budget statement credit ($50 each on first two qualifying rentals)"
+    period: annual
+    realistic_capture_rate_note: >-
+      $50 each on the first two qualifying Avis/Budget rentals via cars.united.com with
+      discount codes, up to $100/year. Scoped to that booking channel — car renters only.
+  - name: Global Entry / TSA PreCheck / NEXUS fee credit
+    amount_usd: 120            # "one statement credit up to $120 every 4 years"
+    period: every_4_years
+    realistic_capture_rate_note: >-
+      One statement credit up to $120 per 4-year cycle covering a trusted-traveler
+      application fee. Captured only by travelers who apply/renew.
+  - name: Instacart monthly credit
+    amount_usd: 10            # "two $10/month Instacart credits while active"
+    period: monthly
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Offer file states two $10/month Instacart credits while an Instacart+ membership is
+      active (complimentary period, then $99/year auto-renewal). Modeled conservatively at
+      $10/month; the second $10 credit is not separately modeled. Only regular Instacart
+      users net ahead after the free window.
+
+signup_bonus:
+  value:
+    points: 80000            # "80,000 bonus miles after spending $5,000 in first 3 months"
+  spend_requirement_usd: 5000
+  window_months: 3
+  notes: >-
+    Bonus miles don't count toward Premier status. A separate 10,000-mile authorized-user
+    bonus is not modeled as signup value. Not available to current cardmembers of any
+    United Club card or previous cardmembers who received a bonus within the last 24 months.
+
+fees:
+  annual_fee_usd: 525          # NOT stated in the offer file — best estimate from the card's public positioning as United's top premium co-brand; NEEDS human verification
+  foreign_transaction_pct: 0   # inferred: airline co-brands typically carry no FTF, but the offer file states no FTF language; NEEDS human verification
+
+approval:
+  credit_tier: very_good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a premium ($500+-fee)
+    airline co-brand with Visa Infinite underwriting; not stated in the offer file. Chase
+    5/24 rule very likely applies — not stated in the offer file. NEEDS human verification.
+
+benefit_flags:
+  - lounge_access
+  - free_checked_bag
+  - complimentary_elite_status
+
+sources:
+  - url: https://creditcards.chase.com/travel-credit-cards/united/club
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in the offer file and not fetched this session; this is the issuer's
+      general product page. All figures transcribed from
+      data/offer_files/chase/united-club.txt and are unconfirmed against issuer terms.
+      NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/chase/united-club.txt. network (visa),
+  annual_fee_usd ($525) and foreign_transaction_pct (0) are NOT stated in the offer file
+  — estimates/inferences, NEEDS human verification. lounge_access reflects the INCLUDED
+  United Club membership (primary + 1 guest; upgrades to All Access with $50,000 spend or
+  Premier Gold+ status) — its large sticker value is recorded as a benefit_flag, never an
+  invented dollar credit, per convention. The 5x on Renowned Hotels via Chase Travel is
+  portal-only and niche — noted, not modeled as a separate entry. complimentary_elite_status
+  covers included IHG One Rewards Platinum status. OMITTED as structured value (noted, not
+  modeled): the two 10,000-mile award discounts (per $20,000 spend, redemption-side), PQP
+  earn, first/second free checked bags, Premier Access, Avis President's Club, and the
+  25%-back inflight statement credit (no annual cap stated).
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

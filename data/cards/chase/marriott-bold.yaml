@@ -1,0 +1,95 @@
+# Marriott Bonvoy Bold: no-annual-fee entry Marriott co-brand; 3x at Marriott, everyday 2x categories.
+id: marriott-bold
+name: Marriott Bonvoy Bold
+issuer: chase
+network: visa                   # "May be issued as Visa Signature or Visa Platinum depending on underwriting"
+currency:
+  type: points
+  program: marriott_bonvoy
+base_rate: 1                    # "1 point/$1: everything else"
+
+category_rewards:
+  - category: travel_hotels
+    rate: 3                      # "3 points/$1 at hotels participating in Marriott Bonvoy" (card earn only; Marriott base earn posts separately)
+    notes: >-
+      3x applies to Marriott-brand hotel stays. This is the card's earn only — Marriott
+      program base points (10 base pts/$1 at most brands + Silver 10% bonus) post
+      separately to the Marriott account and are not included here.
+  - category: groceries
+    rate: 2                      # "2 points/$1: grocery stores"
+  - category: utilities
+    rate: 2                      # "2 points/$1: internet/cable/phone services"
+    notes: Covers internet/cable/phone services.
+  - category: streaming
+    rate: 2                      # "2 points/$1: select streaming"
+    notes: Select streaming services only (issuer-defined list).
+  - category: transit
+    rate: 2                      # "2 points/$1: taxicabs/limousines"
+    notes: Issuer lists taxicabs/limousines under this 2x tier.
+  - category: dining
+    rate: 2                      # "2 points/$1: select food delivery (DoorDash, Caviar, Uber Eats, Postmates, Grubhub, Seamless, Delivery.com)"
+    notes: >-
+      The issuer's 2x here is scoped to select food-delivery services (DoorDash, Caviar,
+      Uber Eats, Postmates, Grubhub, Seamless, Delivery.com), not all dining/restaurants.
+      Modeled under dining as the closest key; narrower than the general category.
+
+merchant_rewards: []
+
+credits:
+  - name: DashPass DoorDash quarterly credit
+    amount_usd: 10             # "$10 off quarterly on one DoorDash non-restaurant order while enrolled"
+    period: quarterly
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Requires activating complimentary DashPass and one qualifying DoorDash
+      non-restaurant order each quarter (no rollover). Active DoorDash users only.
+
+signup_bonus:
+  value:
+    points: 60000            # "60,000 bonus points after spending $1,000 in first 3 months"
+  spend_requirement_usd: 1000
+  window_months: 3
+  notes: >-
+    Account must stay open 6+ months or points may be clawed back. Extensive Marriott/
+    Amex cross-product exclusions apply (see offer file): not available if you hold or
+    recently held various Marriott Bonvoy / SPG Chase and Amex cards.
+
+fees:
+  annual_fee_usd: 0            # NOT explicitly stated in the offer file — the Bold is publicly a no-annual-fee card; NEEDS human verification
+  foreign_transaction_pct: 0   # inferred: no FTF language in the offer file; NEEDS human verification
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream no-annual-fee
+    hotel co-brand; not stated in the offer file. Chase 5/24 rule very likely applies —
+    not stated in the offer file. NEEDS human verification.
+
+benefit_flags:
+  - complimentary_elite_status
+  - concierge
+
+sources:
+  - url: https://creditcards.chase.com/travel-credit-cards/marriott-bonvoy/bold
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in the offer file and not fetched this session; this is the issuer's
+      general product page. All figures transcribed from
+      data/offer_files/chase/marriott-bold.txt and are unconfirmed against issuer terms.
+      NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/chase/marriott-bold.txt. network (visa — the
+  card issues as Visa Signature or Visa Platinum by underwriting), annual_fee_usd (0)
+  and foreign_transaction_pct (0) are NOT explicitly stated in the offer file —
+  estimates/inferences, NEEDS human verification. Automatic Silver Elite status, 5 Elite
+  Night Credits at account opening, and Pay Yourself Back (redeem points for statement
+  credit on airfare/Marriott purchases, up to $750/year) are recorded as benefit_flags /
+  this note, never dollar-valued.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

@@ -1,0 +1,90 @@
+# No-fee Hilton co-brand: 3x base, 5x dining/supermarkets/gas (Hilton-property 7x omitted — see notes).
+id: hilton-honors
+name: Hilton Honors American Express Card
+issuer: amex
+network: amex
+currency:
+  type: points
+  program: hilton_honors
+base_rate: 3                 # "base 3x" on eligible purchases
+
+category_rewards:
+  - category: dining
+    rate: 5                  # "5x (3 base + 2 bonus) at US restaurants"
+    notes: >-
+      US restaurants only; excludes restaurants inside another establishment
+      (hotel/casino/venue), nightclubs, convenience/grocery stores, and non-US
+      locations of US chains.
+  - category: groceries
+    rate: 5                  # "5x ... US supermarkets"
+    notes: >-
+      US supermarkets only; superstores, warehouse clubs, convenience stores, and
+      meal-kit delivery earn only the 3x base, not the bonus.
+  - category: gas
+    rate: 5                  # "5x ... US gas stations"
+    notes: US gas stations; warehouse-club/superstore fuel earns only the 3x base.
+
+merchant_rewards: []
+
+credits:
+  - name: American Express Venue Collection Concessions Credit
+    amount_usd: 25           # 10% back up to $250/yr; realistic fraction of the cap
+    period: annual
+    category: entertainment
+    requires_enrollment: true
+    expires: "2026-12-31"
+    realistic_capture_rate_note: >-
+      10% back (up to $250/yr) on Venue Collection stadium/arena concessions,
+      enrollment required. Most cardholders attend few/no such events; modeled at ~$25.
+
+signup_bonus:
+  value:
+    points: 100000           # "100,000 Hilton Honors Bonus Points + $100 statement credit"
+    usd: 100
+  spend_requirement_usd: 2000
+  window_months: 6
+  expires: "2026-07-29"
+  notes: >-
+    Mixed bonus: 100,000 Hilton points plus a $100 statement credit. Offer ends
+    07/29/2026 per the offer file ("public offer — check for renewal"). Bonus points
+    don't count toward elite-tier qualification.
+
+fees:
+  annual_fee_usd: 0          # "Annual Fee: $0"
+  foreign_transaction_pct: 0 # "Foreign Transaction Fee: None"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier is an inference from the card's no-fee co-brand positioning; not
+    stated in the offer file — NEEDS human verification. Amex welcome-offer
+    eligibility is once-per-lifetime (blocked if you have/had this Card or prior
+    versions). Complimentary Hilton Honors Silver status; automatic Gold status above
+    $20,000 calendar-year spend.
+
+benefit_flags:
+  - no_foreign_transaction_fee
+  - elite_status
+  - extended_warranty
+  - purchase_protection
+
+sources:
+  - url: https://www.americanexpress.com/us/credit-cards/card/hilton-honors/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Amex product page. URL not in offer file and not fetched this
+      session; figures transcribed from the local offer file and unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/amex/hilton-honors.txt; all figures
+  unconfirmed pending human verification. OMITTED: the "7x at Hilton portfolio
+  properties" earn — no `hilton` merchant key in data/meta/merchants.yaml, and
+  mapping brand-specific hotel earn onto the broad travel_hotels category would
+  overstate it for non-Hilton stays (registry gap flagged for the reviewer).
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

@@ -1,0 +1,75 @@
+# Closed-loop Amazon retail card: Store Card earns nothing; Prime Store Card variant earns 5% back (Prime-gated), Amazon/Whole Foods only.
+id: amazon-store
+name: Amazon Store Card / Amazon Prime Store Card
+issuer: synchrony
+network: mastercard            # PLACEHOLDER: this is a proprietary closed-loop card on NO network — see notes. Schema forces a network enum, so mastercard is a flagged stand-in.
+currency:
+  type: cash                  # 5% back is issued as Amazon reward points at 1 point = $1, redeemable at Amazon; no Amazon program key exists in point-valuations.yaml, so modeled as cash (Amazon-locked, but closed-loop spend makes 1cpp defensible). See registry-gap note.
+  program: cash
+base_rate: 0                  # Amazon Store Card (non-Prime) earns NO rewards under normal use (offer file, Rewards section).
+base_rate_conditional:
+  rate: 5                     # Amazon Prime Store Card variant earns 5% back on eligible Amazon.com + Whole Foods purchases.
+  requires: eligible Amazon Prime membership (Amazon Prime Store Card variant)
+  note: >-
+    5% back requires an active Amazon Prime membership (the Prime Store Card variant of this
+    account). Non-Prime Amazon Store Card holders earn 0%. Amazon Pay purchases at third-party
+    sites earn nothing even when the card works there. The 5% back CANNOT be combined with any
+    special-financing / Equal Monthly Payments offer on the same purchase.
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus: null            # Aggregator (WalletHub) reports a $10 gift card (Store Card) / $80 gift card (Prime Store Card) on approval, no spend — NOT confirmed on any official Amazon/Synchrony page; treated as unconfirmed/possibly stale, so omitted. See notes.
+
+fees:
+  annual_fee_usd: 0           # "Annual Fee: None" — CFPB-filed 9/2022 & 6/2021 agreements.
+  foreign_transaction_pct: 0  # No FTF line in the Rates and Fees Table; card is closed-loop domestic-only so FTF is moot — inferred, NEEDS human verification.
+
+approval:
+  credit_tier: fair
+  notes: >-
+    credit_tier NOT stated in the offer file — estimated from Synchrony store-card underwriting,
+    which typically approves fair files. NEEDS human verification. The Prime Store Card variant
+    additionally requires an eligible Amazon Prime membership.
+
+closed_loop:
+  merchants: [amazon, whole_foods]
+  note: >-
+    Usable only within the Amazon ecosystem (Amazon.com, Amazon-branded stores, Amazon Fresh/Go,
+    and Amazon Pay-enabled sites) and at Whole Foods Market. NOT a Visa/Mastercard — do not confuse
+    with the Chase-issued Amazon Visa / Prime Visa. The physical card does NOT work at Whole Foods
+    registers; in-store Whole Foods purchases need the in-app In-Store Code, and special financing /
+    Equal Monthly Payments are not available for those in-store Whole Foods purchases.
+
+benefit_flags:
+  - special_financing
+
+sources:
+  - url: https://files.consumerfinance.gov/a/assets/credit-card-agreements/pdf/synchrony-bank_Amazon.com%20Store%20Card%20Account%20Agreement%20and%20Pricing%20Information.pdf
+    supports: [identity, currency, base_rate, fees, approval, closed_loop, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL listed in the offer file's "Sources used" (CFPB-filed Synchrony Amazon Store Card
+      agreement, 9/2022); NOT fetched this session. Reward mechanics (5% back, gift-card bonus)
+      come from search-indexed/aggregator snippets per the offer file and are third-party/unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/synchrony/amazon-store.txt; all figures third-party/unconfirmed
+  (the offer file relies on search-indexed snippets for the rewards structure). This one file covers
+  two variants: the base Amazon Store Card (0% back) and the Amazon Prime Store Card (5% back, Prime-gated)
+  — modeled as base_rate 0 with a Prime-gated base_rate_conditional of 5%. REGISTRY GAP: the 5% "back" is
+  Amazon reward points (1 pt = $1, Amazon-locked); no Amazon program key exists in point-valuations.yaml,
+  so it is modeled as cash. Deferred-interest special financing ("No Interest if Paid in Full within
+  6/12/24 Months") is out of scope for the value model — beware the retroactive-interest trap: if not paid
+  in full by the promo end, interest is charged from the purchase date at the standard variable Purchase
+  APR (~28% illustrative). A reported Feb 2026 removal of deferred-interest offers for the Prime Store Card
+  is unconfirmed. Signup gift cards ($10/$80) reported only by an aggregator — omitted as unconfirmed.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

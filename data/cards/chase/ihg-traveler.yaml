@@ -1,0 +1,103 @@
+# IHG One Rewards Traveler: no-annual-fee IHG co-brand; 5x at IHG hotels, automatic Silver status.
+id: ihg-traveler
+name: IHG One Rewards Traveler
+issuer: chase
+network: mastercard             # NOT stated in the offer file — IHG co-brands are World Elite Mastercards by public positioning; NEEDS human verification
+currency:
+  type: points
+  program: ihg_one_rewards
+base_rate: 2                    # "2 points/$1: everything else"
+
+category_rewards:
+  - category: travel_hotels
+    rate: 5                      # "5 points/$1 at hotels participating in IHG One Rewards" (card earn only; IHG base earn posts separately)
+    notes: >-
+      5x applies to IHG-brand hotel stays. This is the card's earn only — IHG program
+      base points (10 base pts/$1 at most brands + Silver 20% bonus) post separately to
+      the IHG account and are not included here.
+  - category: dining
+    rate: 3                      # "3 points/$1: dining (incl. takeout/delivery)"
+  - category: gas
+    rate: 3                      # "3 points/$1: gas stations"
+  - category: utilities
+    rate: 3                      # "3 points/$1: utilities; internet/cable/phone"
+    notes: Covers utilities and internet/cable/phone services.
+  - category: streaming
+    rate: 3                      # "3 points/$1: select streaming"
+    notes: Select streaming services only (issuer-defined list).
+
+merchant_rewards: []
+
+credits:
+  - name: Anniversary bonus points ($10k spend)
+    amount_points: 10000        # "10,000 bonus points each calendar year with $10,000+ spend"
+    period: annual
+    unlock_spend_usd: 10000
+    realistic_capture_rate_note: >-
+      Pays only after $10,000 of card spend in a calendar year; captured by moderate-to-
+      heavy spenders who put everyday spend on this card.
+  - name: DashPass DoorDash quarterly credit
+    amount_usd: 10             # "$10 off quarterly on one DoorDash non-restaurant order while enrolled"
+    period: quarterly
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Requires activating complimentary DashPass and one qualifying DoorDash
+      non-restaurant order each quarter (no rollover). Active DoorDash users only.
+  - name: Instacart monthly credit
+    amount_usd: 10             # "$10/month Instacart credit while active"
+    period: monthly
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Requires an active Instacart+ membership (3 months complimentary, then auto-renews
+      at $99/year) and a qualifying purchase each month (no rollover). Only regular
+      Instacart users net ahead after the free window.
+
+signup_bonus:
+  value:
+    points: 80000            # "80,000 bonus points after spending $2,000 in first 3 months"
+  spend_requirement_usd: 2000
+  window_months: 3
+  notes: >-
+    Standard offer transcribed from the offer file. A separate 10,000-point bonus for
+    adding an authorized user in the first 3 months is not modeled as signup value.
+    Not available to current cardmembers of any personal IHG One Rewards card or previous
+    cardmembers who received a bonus within the last 24 months.
+
+fees:
+  annual_fee_usd: 0            # NOT explicitly stated in the offer file — the Traveler is publicly a no-annual-fee card; NEEDS human verification
+  foreign_transaction_pct: 0   # inferred: no FTF language in the offer file; NEEDS human verification
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream no-annual-fee
+    hotel co-brand; not stated in the offer file. Chase 5/24 rule very likely applies —
+    not stated in the offer file. NEEDS human verification.
+
+benefit_flags:
+  - complimentary_elite_status
+  - fourth_night_free_award
+
+sources:
+  - url: https://creditcards.chase.com/travel-credit-cards/ihg/traveler
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in the offer file and not fetched this session; this is the issuer's
+      general product page. All figures transcribed from
+      data/offer_files/chase/ihg-traveler.txt and are unconfirmed against issuer terms.
+      NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/chase/ihg-traveler.txt. network (mastercard),
+  annual_fee_usd (0) and foreign_transaction_pct (0) are NOT explicitly stated in the
+  offer file — estimates/inferences, NEEDS human verification. Automatic Silver Elite
+  status (Gold with $20,000 spend), the 4th-reward-night-free benefit, 20%-off points
+  purchases, and early sale access are recorded as benefit_flags / this note, never
+  dollar-valued.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

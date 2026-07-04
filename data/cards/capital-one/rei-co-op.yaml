@@ -1,0 +1,76 @@
+# REI Co-op Mastercard (Capital One): earns REI-only rewards; requires REI Co-op membership.
+id: rei-co-op
+name: REI Co-op Mastercard
+issuer: capital-one
+network: mastercard          # "World Elite Mastercard product" / "licensed by Mastercard International Incorporated"
+currency:
+  type: points
+  program: rei_rewards        # REI Co-op Mastercard Rewards, redeemable only at REI
+base_rate: 1.5               # "1.5% in REI Co-op Mastercard Rewards on all other (non-REI) purchases"
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus:
+  value:
+    usd: 100
+  spend_requirement_usd: 0
+  window_months: 2
+  notes: >-
+    "$100 REI gift card after your first purchase made outside of REI, within 60 days of
+    account opening." No minimum dollar spend (any first non-REI purchase) → modeled as
+    spend_requirement_usd 0, window_months 2 (60 days). Value delivered as an REI gift card,
+    not cash. Not available to existing/previous REI Co-op Mastercard holders. NEEDS human
+    verification.
+
+fees:
+  annual_fee_usd: 0            # "$0"
+  foreign_transaction_pct: 0   # "$0 (none)"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier NOT stated in the offer file — inferred (good) from the card's positioning
+    as a no-fee World Elite Mastercard co-brand. NEEDS human verification.
+
+required_membership:
+  name: REI Co-op Membership
+  note: >-
+    A one-time $30 lifetime REI Co-op Membership (not a recurring annual fee) is required
+    to hold the card and to redeem rewards; Capital One may cancel the card if the
+    membership is cancelled. annual_cost_usd is omitted because the cost is a one-time $30,
+    not annual. Not scored in v1 — the optimizer assumes the member already holds it.
+
+benefit_flags:
+  - no_foreign_transaction_fee
+
+sources:
+  - url: https://www.capitalone.com/credit-cards/rei/
+    supports: [identity, currency, base_rate, signup_bonus, fees, approval, required_membership, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session. The
+      capitalone.com/credit-cards/rei/ page was the offer file's primary source; REI-hosted
+      pages could not be fetched directly (corroborated via WebSearch snippets) —
+      third-party/unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/capital-one/rei-co-op.txt. OMITTED REWARDS: the
+  headline "5% back on all purchases at REI" and "5% on donations to the REI Cooperative
+  Action Fund" are issuer-brand-specific merchant rates with no matching key in
+  data/meta/merchants.yaml (no `rei` merchant) — omitted rather than force-fit onto a broad
+  category (registry gap listed for a curator). Only the 1.5% non-REI base rate is modeled.
+  Rewards are REI-only store credit (rei_rewards program) and require maintaining active REI
+  Co-op Membership. This card-earned rewards balance is SEPARATE from REI's standalone Co-op
+  annual member dividend (~10% back tied to the $30 membership) — do not conflate. A periodic
+  "annual double rewards event" (10% total back on REI purchases) runs on an unspecified
+  cadence and is not modeled. Cash advances/balance transfers earn no rewards.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

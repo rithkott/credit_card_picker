@@ -1,0 +1,63 @@
+# No-rewards 0% intro-APR balance-transfer card — in the dataset for completeness, never a rewards pick.
+id: reflect
+name: Wells Fargo Reflect
+issuer: wells-fargo
+network: visa                # "Wells Fargo Reflect Visa Credit Card"
+currency:
+  type: cash
+  program: cash
+base_rate: 0                 # "No rewards program on this card (it is a 0% APR / balance-transfer focused product)"
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus: null           # no rewards / welcome bonus; this is a 0%-APR product
+
+fees:
+  annual_fee_usd: 0          # "Annual Fee: None"
+  foreign_transaction_pct: 3 # "Foreign Transaction Fee: 3% of each transaction converted to U.S. dollars"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from this card's positioning as a mainstream no-annual-fee
+    balance-transfer Visa; the offer file does not state a credit requirement. Not
+    eligible for the intro-APR offer if you hold or opened a Reflect card within the
+    last 48 months (per product page). NEEDS human verification.
+
+benefit_flags:
+  - cell_phone_protection
+  - zero_fraud_liability
+  - free_fico_score
+
+sources:
+  - url: https://creditcards.wellsfargo.com/reflect-visa-credit-card
+    supports: [identity, currency, base_rate, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session.
+      Third-party/unconfirmed (offer file lacks a NEEDS_VERIFICATION marker but was
+      still not fetched live this session).
+  - url: https://www.wellsfargo.com/credit-cards/reflect-visa/terms/
+    supports: [fees]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Rates-and-fees/terms page carried over from the offer file header; not re-fetched
+      this session; third-party/unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/wells-fargo/reflect.txt. This card earns no
+  rewards (base_rate 0) — its value proposition is a 0% intro APR for 21 months on
+  purchases and balance transfers (balance transfers must post within 120 days; APR
+  and financing terms are out of scope for the reward value model). Included so the
+  optimizer knows it exists and never treats it as a rewards card.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

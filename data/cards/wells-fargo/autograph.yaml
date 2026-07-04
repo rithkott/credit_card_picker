@@ -1,0 +1,92 @@
+# No-annual-fee 3X points card across a broad everyday-and-travel category spread.
+id: autograph
+name: Wells Fargo Autograph
+issuer: wells-fargo
+network: visa                # Visa Signature card (perk lines cite Visa Signature Concierge)
+currency:
+  type: points
+  program: wells_fargo_rewards
+base_rate: 1                 # "1X point on all other purchases"
+
+category_rewards:
+  - category: dining
+    rate: 3                  # "3X points: restaurants (dining in, takeout, delivery, catering)"
+  - category: travel_flights
+    rate: 3                  # "travel (airfare, hotels, car rentals, cruises)" — split across travel_* keys
+  - category: travel_hotels
+    rate: 3
+  - category: travel_other
+    rate: 3
+  - category: gas
+    rate: 3                  # "gas stations and EV charging"
+  - category: transit
+    rate: 3                  # "transit (subways, rideshare, parking, tolls)"
+  - category: streaming
+    rate: 3                  # "popular streaming services"
+  - category: utilities
+    rate: 3                  # "phone plans" → mapped to utilities (Utilities & phone)
+    notes: >-
+      Covers "phone plans" only, per the offer file — not utilities broadly. Mapped
+      to the utilities key (labeled "Utilities & phone") for lack of a phone-specific
+      key; the issuer's 3X is narrower than this category. NEEDS human verification.
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus:
+  value:
+    points: 20000            # "20,000 bonus points ... stated value '$200 cash redemption'"
+  spend_requirement_usd: 1000 # "when you spend $1,000 in purchases in the first 3 months"
+  window_months: 3
+
+fees:
+  annual_fee_usd: 0          # "Annual Fee: $0"
+  foreign_transaction_pct: 0 # "No foreign transaction fees"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from this card's public positioning as a mainstream
+    no-annual-fee Visa Signature rewards card; the offer file does not state a credit
+    requirement. NEEDS human verification.
+
+benefit_flags:
+  - cell_phone_protection
+  - car_rental_insurance
+  - visa_signature
+  - concierge
+  - zero_fraud_liability
+  - free_fico_score
+
+sources:
+  - url: https://creditcards.wellsfargo.com/autograph-visa-credit-card
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session.
+      Per the offer file, the official rates-and-fees page declined verbatim fetch;
+      figures are third-party/unconfirmed per the NEEDS_VERIFICATION marker.
+  - url: https://www.wellsfargo.com/credit-cards/autograph-visa/terms/
+    supports: [fees]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Rates-and-fees/terms page carried over from the offer file header; not re-fetched
+      this session; third-party/unconfirmed (fee parity with Active Cash assumed by the
+      offer file, not confirmed).
+
+notes: >-
+  Drafted offline from data/offer_files/wells-fargo/autograph.txt, which carries a
+  NEEDS_VERIFICATION marker — all figures are third-party/unconfirmed and need human
+  verification. The 3X "travel" category is split across travel_flights/travel_hotels/
+  travel_other since the registry has no single "travel" key. Points transfer to travel
+  partners (Choice Privileges, Flying Blue, Avianca LifeMiles, British Airways, AerClub,
+  Iberia — per secondary sources); transfer-partner upside is captured globally in
+  data/meta/point-valuations.yaml (wells_fargo_rewards), not on the card.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

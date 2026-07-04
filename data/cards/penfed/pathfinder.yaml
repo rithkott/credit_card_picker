@@ -1,0 +1,140 @@
+# Premium travel points card from a free-to-join credit union; travel/dining earn is boosted
+# for members with a PenFed "Honors Advantage" checking relationship (modeled as the baseline).
+id: pathfinder
+name: Pathfinder Rewards Visa Signature
+issuer: penfed
+network: visa
+currency:
+  type: points
+  program: penfed_points
+base_rate: 1.5                 # "All other purchases: 1.5X points/$1"
+
+category_rewards:
+  # PenFed groups airfare, hotels, car rentals, cruises, tolls, bus lines, and taxi/rideshare
+  # into ONE "travel" bonus bucket: 3X standard, 4X for Honors Advantage members. The four
+  # entries below split that single issuer bucket across our category registry. Baseline
+  # (no PenFed checking relationship) is 3X; the 4X Honors Advantage rate is the conditional.
+  - category: travel_flights
+    rate: 3
+    conditional_rate:
+      rate: 4
+      requires: PenFed Honors Advantage (active PenFed checking-account relationship)
+      note: >-
+        4X on travel for Honors Advantage members; 3X is the baseline for standard
+        cardholders. Modeled at the 3X baseline.
+    notes: >-
+      Part of PenFed's single "travel" bonus bucket (airfare). No spending cap was found
+      in available sources; the official rewards T&C PDF could not be fetched — NEEDS human
+      verification of whether a bonus-category cap exists.
+  - category: travel_hotels
+    rate: 3
+    conditional_rate:
+      rate: 4
+      requires: PenFed Honors Advantage (active PenFed checking-account relationship)
+      note: 4X for Honors Advantage members; 3X baseline. Modeled at the 3X baseline.
+    notes: Part of PenFed's single "travel" bonus bucket (hotels). No cap found in sources.
+  - category: travel_other
+    rate: 3
+    conditional_rate:
+      rate: 4
+      requires: PenFed Honors Advantage (active PenFed checking-account relationship)
+      note: 4X for Honors Advantage members; 3X baseline. Modeled at the 3X baseline.
+    notes: >-
+      Part of PenFed's single "travel" bonus bucket (car rentals, cruises, tolls, bus
+      lines). No cap found in sources.
+  - category: transit
+    rate: 3
+    conditional_rate:
+      rate: 4
+      requires: PenFed Honors Advantage (active PenFed checking-account relationship)
+      note: 4X for Honors Advantage members; 3X baseline. Modeled at the 3X baseline.
+    notes: >-
+      Part of PenFed's single "travel" bonus bucket (taxi/rideshare). No cap found in sources.
+  - category: dining
+    rate: 2
+    conditional_rate:
+      rate: 3
+      requires: PenFed Honors Advantage (active PenFed checking-account relationship)
+      note: >-
+        3X dining for Honors Advantage members; 2X baseline. Modeled at the 2X baseline.
+    notes: >-
+      Dining earn (2X standard / 3X Honors Advantage) is reported only by secondary sources
+      that vary on the exact framing; NOT independently confirmed against official page text
+      — NEEDS human verification.
+
+merchant_rewards: []
+
+credits:
+  - name: Global Entry / TSA PreCheck application fee credit
+    amount_usd: 120            # up to $120 (Global Entry) / $85 (TSA PreCheck), once every 4 years
+    period: every_4_years
+    realistic_capture_rate_note: >-
+      Captured only by travelers who apply/renew a trusted-traveler membership and pay with
+      the card; credit posts 6-8 weeks after the charge. Face value reported as up to $120
+      (Global Entry) or $85 (TSA PreCheck) once every 4 years — one source instead gave
+      "$100 or $85". NEEDS human verification of the exact amount.
+    notes: >-
+      Figure not confirmed against penfed.org (fetches blocked); most consistently repeated
+      figures are $120 Global Entry / $85 TSA PreCheck.
+
+signup_bonus:
+  value:
+    points: 50000             # "50,000 points after spending $3,000 within 90 days"
+  spend_requirement_usd: 3000
+  window_months: 3
+  notes: >-
+    Currently advertised offer per search-indexed penfed.org content; not confirmed by a
+    direct read of the application page. The 90-day window is a relative period, not a fixed
+    calendar end date, so no `expires` is set. NEEDS human verification.
+
+fees:
+  annual_fee_usd: 95           # "$95; waived for PenFed Honors Advantage members"
+  foreign_transaction_pct: 0   # "$0 (none)"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from this card's positioning as a premium Visa Signature travel
+    card; not stated in the offer file — NEEDS human verification. PenFed Credit Union
+    membership is required but is free and open to the general public (open a PenFed savings
+    account with a $5 minimum deposit); no military/government affiliation and, per current
+    sources, no donation is required. The $95 annual fee is waived for PenFed Honors
+    Advantage members (an active PenFed checking-account relationship).
+
+benefit_flags:
+  - lounge_access
+
+sources:
+  - url: https://www.penfed.org/credit-cards/pathfinder-rewards-visa
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical product page; NOT fetched this session (offer file reports direct
+      penfed.org fetches timed out/were blocked). All figures are third-party /
+      search-indexed and unconfirmed — treat as low confidence.
+  - url: https://www.penfed.org/content/dam/penfed/general/pdf/creditcardpdfs/Visa/Pathfinder_RWDTC.pdf
+    supports: [category_rewards, credits]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Rewards terms & conditions PDF referenced in the offer file header; NOT fetched this
+      session. Would define bonus-category caps and point-expiration policy (both unknown).
+
+notes: >-
+  Drafted offline from data/offer_files/penfed/pathfinder.txt, which reports that direct
+  fetches to penfed.org were systematically blocked; every figure comes from search-indexed
+  synthesis and secondary aggregators, so all figures are third-party/unconfirmed. NEEDS
+  human verification. Unresolved items: (1) bonus-category spending caps not found; (2) point
+  expiration policy not found; (3) a reported "up to $100/year airline incidental fee credit"
+  was single-source and unconfirmed, so it is OMITTED here rather than modeled as a possibly
+  nonexistent credit; (4) Priority Pass Select is modeled only as the lounge_access flag —
+  sources conflict on whether it is truly complimentary or carries a ~$35/visit fee, so no
+  in-kind dollar value is assigned; (5) standard purchase APR reported as a flat 17.99% but
+  not confirmed to be creditworthiness-tiered. Points redeem only through PenFed's own Honors
+  Rewards portal (no transfer partners found).
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

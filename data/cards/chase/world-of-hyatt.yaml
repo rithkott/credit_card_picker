@@ -1,0 +1,111 @@
+# World of Hyatt: 4x at Hyatt, two Category 1-4 free nights/year, automatic Discoverist status.
+id: world-of-hyatt
+name: World of Hyatt Credit Card
+issuer: chase
+network: visa                   # NOT stated in the offer file — World of Hyatt is publicly a Visa Signature; NEEDS human verification
+currency:
+  type: points
+  program: world_of_hyatt
+base_rate: 1                    # "1 point/$1: everything else"
+
+category_rewards:
+  - category: travel_hotels
+    rate: 4                      # "4 points/$1 at Hyatt hotels/resorts ... and World of Hyatt Experiences"
+    notes: >-
+      4x applies to Hyatt hotels/resorts and World of Hyatt Experiences. Modeled at the
+      co-brand rate; non-Hyatt hotels earn only the 1x base rate but cannot be split by
+      brand within the travel_hotels category. This is the card's earn only — Hyatt
+      program base points post separately to the World of Hyatt account.
+  - category: dining
+    rate: 2                      # "2 points/$1: restaurants (excluding Hyatt dining that earns 4x)"
+  - category: travel_flights
+    rate: 2                      # "2 points/$1: airline tickets purchased directly with the airline"
+    notes: Only airline tickets purchased directly with the airline.
+  - category: transit
+    rate: 2                      # "2 points/$1: local transit/commuting"
+
+merchant_rewards: []
+
+credits:
+  - name: Anniversary Free Night Award (Category 1-4)
+    amount_usd: 150             # in_kind: curator estimate of a Category 1-4 Hyatt night
+    kind: in_kind
+    period: annual
+    category: travel_hotels
+    realistic_capture_rate_note: >-
+      Automatic every cardmember anniversary; good for one night at a Category 1-4 Hyatt
+      property (excludes Miraval/Zilara/Ziva), valid 12 months, resort/destination fees
+      waived. Estimated at ~$150 per the curation guide's Category 1-4 Hyatt-night
+      benchmark. Captured by anyone who takes one qualifying Hyatt stay a year;
+      authorized users do not receive it.
+  - name: Free Night Award ($15k spend, Category 1-4)
+    amount_usd: 150             # in_kind: same Category 1-4 terms
+    kind: in_kind
+    period: annual
+    category: travel_hotels
+    unlock_spend_usd: 15000     # "after $15,000 in purchases each calendar year"
+    realistic_capture_rate_note: >-
+      A second Category 1-4 free night, earned each calendar year only after $15,000 of
+      card spend. Same ~$150 estimate and Category 1-4 terms. Captured only by heavier
+      spenders who also take a qualifying Hyatt stay.
+  - name: DashPass DoorDash quarterly credit
+    amount_usd: 10             # "$10 off quarterly on one DoorDash non-restaurant order while enrolled"
+    period: quarterly
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Requires activating complimentary DashPass and one qualifying DoorDash
+      non-restaurant order each quarter (no rollover). Active DoorDash users only.
+
+signup_bonus:
+  value:
+    points: 30000            # "30,000 bonus points after spending $3,000 in first 3 months"
+  spend_requirement_usd: 3000
+  window_months: 3
+  notes: >-
+    The offer also includes 2x bonus points on all other purchases for the first 6
+    months (or until $15,000 of such spend) — an intro earn boost, not a fixed bonus, so
+    it is noted here unscored rather than modeled. Account must stay open 6+ months or
+    points may be clawed back. Not available to current/recent (24-month) cardmembers.
+
+fees:
+  annual_fee_usd: 95           # NOT stated in the offer file — best estimate from the card's public positioning; NEEDS human verification
+  foreign_transaction_pct: 0   # inferred: hotel co-brands typically carry no FTF, but the offer file states no FTF language; NEEDS human verification
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream hotel
+    co-brand; not stated in the offer file. Chase 5/24 rule very likely applies — not
+    stated in the offer file. Authorized users do not receive elite status,
+    Tier-Qualifying Night credits, or Free Night Awards. NEEDS human verification.
+
+benefit_flags:
+  - complimentary_elite_status
+  - concierge
+
+sources:
+  - url: https://creditcards.chase.com/travel-credit-cards/world-of-hyatt
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in the offer file and not fetched this session; this is the issuer's
+      general product page. All figures transcribed from
+      data/offer_files/chase/world-of-hyatt.txt and are unconfirmed against issuer
+      terms. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/chase/world-of-hyatt.txt. network (visa),
+  annual_fee_usd ($95) and foreign_transaction_pct (0) are NOT stated in the offer file
+  — estimates/inferences, NEEDS human verification. Free Night Award values ($150 each)
+  are curator estimates per the Category 1-4 Hyatt-night benchmark, not marketing
+  figures. REGISTRY GAP / OMITTED reward: the "2 points/$1 on fitness club/gym
+  memberships" line has no matching key in categories.yaml (no fitness/gym category), so
+  it is omitted rather than force-fit — a reviewer should decide whether to add a
+  category. Automatic Discoverist status and Tier-Qualifying Night credits (5/year + 2
+  per $5,000 spent) are recorded as benefit_flags / this note, never dollar-valued.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

@@ -1,0 +1,80 @@
+# Open-loop warehouse-club co-brand: 5% gas (capped), 3% dining, Sam's Cash rewards. Paid Sam's Club membership required.
+id: sams-club-mastercard
+name: Sam's Club Mastercard
+issuer: synchrony
+network: mastercard
+currency:
+  type: cash                  # "Sam's Cash" is issued at 1 pt = $1 but redeemable ONLY at Sam's Club; no sams_cash program key exists in point-valuations.yaml, so modeled as cash (member shops there anyway). See registry-gap note.
+  program: cash
+base_rate: 1                  # "1% back in Sam's Cash on all other eligible purchases."
+
+category_rewards:
+  - category: gas
+    rate: 5                   # "5% back in Sam's Cash on gas anywhere Mastercard is accepted, on the first $6,000/calendar year, then 1%."
+    cap:
+      period: annual
+      max_spend_usd: 6000     # "first $6,000 in gas purchases per calendar year"
+      fallback_rate: 1
+    notes: 5% on gas anywhere Mastercard is accepted, up to $6,000/calendar year, then 1%.
+  - category: dining
+    rate: 3                   # "3% back in Sam's Cash on dining and takeout."
+
+merchant_rewards: []
+
+max_annual_rewards_usd: 5000  # "Maximum of $5,000 in Sam's Cash per calendar year" — card-wide reward-dollar cap, aggregated across a member's accounts.
+
+credits: []
+
+signup_bonus: null            # Rotating statement-credit welcome offer (aggregator snippets mention "$30 after $30 spend" or a limited "$50" offer) — NOT confirmed on any official page; omitted as unconfirmed. See notes.
+
+fees:
+  annual_fee_usd: 0           # "No annual fee on the Sam's Club Mastercard itself" (mysamscredit.com). NOTE: a paid Sam's Club membership is separately required — see required_membership.
+  foreign_transaction_pct: 0  # "No foreign transaction fees" (mysamscredit.com).
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier NOT stated in the offer file — estimated. This is the open-loop Mastercard tier (Synchrony
+    may instead approve declined applicants for the closed-loop Sam's Club Credit Card), so ~good is a
+    reasonable estimate; NEEDS human verification. Requires an active paid Sam's Club membership to apply
+    and hold (see required_membership).
+
+required_membership:
+  name: Sam's Club membership
+  annual_cost_usd: 50         # Cheapest "Club" tier (~$50/yr) — NOT stated in the offer file; estimated, NEEDS human verification. The 3% Sam's Club-purchases rate additionally requires the higher-cost "Plus" tier.
+  note: >-
+    A paid Sam's Club membership is a prerequisite to apply for and hold the card; if the membership lapses
+    the card may be suspended/cancelled and earned Sam's Cash forfeited. The membership fee is NOT rebated by
+    the card. Separately, the 3% rate on Sam's Club purchases requires the higher-tier Sam's Club Plus
+    membership; "Club" (non-Plus) members earn only 1% on Sam's Club purchases.
+
+benefit_flags:
+  - special_financing
+
+sources:
+  - url: https://scene7.samsclub.com/is/content/samsclub/sams-cash-with-mastercard
+    supports: [identity, currency, base_rate, category_rewards, fees, approval, required_membership, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL listed in the offer file's "Sources used" (official "How to Earn Sam's Cash" program page);
+      NOT fetched this session. APR/fee context also drawn from the CFPB-filed agreement + mysamscredit.com
+      per the offer file. Figures are third-party/unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/synchrony/sams-club-mastercard.txt; figures unconfirmed. Covers ONLY
+  the open-loop Sam's Club Mastercard (earns Sam's Cash), NOT the closed-loop Sam's Club Credit/Personal Card
+  (no rewards). REGISTRY GAP 1 (currency): "Sam's Cash" is redeemable only at Sam's Club / SamsClub.com and is
+  forfeited if the account or membership lapses; no sams_cash program key exists, so it is modeled as cash at
+  1cpp — a reviewer should add a sams_cash program to point-valuations.yaml with a haircut for the store-lock
+  and forfeiture risk. REGISTRY GAP 2 (merchant): the "3% back on Sam's Club purchases (Plus members; 1% for
+  non-Plus)" reward is Sam's-Club-merchant-specific, but merchants.yaml has no "sams_club" key, so this reward
+  is OMITTED — a reviewer should add a sams_club merchant key and a merchant_rewards entry (rate 1 baseline /
+  conditional 3 for Plus). max_annual_rewards_usd 5000 clamps total Sam's Cash per calendar year. Deferred-
+  interest special financing may be offered (retroactive-interest trap). A separate Sam's Club Plus membership
+  2% base benefit exists but is a membership perk, not a card reward, so it is not modeled.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

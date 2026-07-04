@@ -1,0 +1,73 @@
+# Student rotating-5% cash-back card (no credit score required to apply); first-year Cashback Match.
+id: it-student-cash-back
+name: Discover it Student Cash Back
+issuer: discover
+network: discover
+currency:
+  type: cash
+  program: cash
+base_rate: 1                 # "1% cash back on all other purchases"
+
+category_rewards:
+  - category: rotating
+    rate: 5                  # "5% cash back in rotating quarterly categories"
+    rotation:
+      frequency: quarterly
+      requires_activation: true
+      note: >-
+        Eligible 5% categories rotate each calendar quarter and must be activated
+        each quarter before the elevated rate applies; unactivated spend earns the
+        1% base rate. Categories change quarterly (the offer file lists grocery
+        stores, restaurants, gas stations "and others" as examples) — not modeled
+        as permanent.
+    notes: >-
+      A quarterly maximum applies to the 5% rate (spend above it earns 1%), but the
+      offer file does not state the dollar amount of that cap, so no cap block is
+      modeled here. NEEDS human verification of the quarterly spend cap.
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus:
+  first_year_match: true      # "Unlimited Cashback Match ... matches all cash back earned at the end of the first year"
+
+fees:
+  annual_fee_usd: 0           # "Annual fee: None"
+  foreign_transaction_pct: 0  # not stated in the offer file; set 0 by inference (other Discover it cards are FTF-free) — NEEDS human verification
+
+approval:
+  credit_tier: fair
+  notes: >-
+    Student card marketed for building credit; "no credit score required to apply."
+    credit_tier set to 'fair' as a judgment call — it accepts thin/no-history student
+    files (which could argue for 'building'), but it is an unsecured mainstream rewards
+    product rather than a secured/credit-builder card, so 'fair' better reflects who is
+    actually approved. Not stated in the offer file. NEEDS human verification.
+
+benefit_flags:
+  - zero_fraud_liability
+
+sources:
+  - url: https://www.discover.com/credit-cards/student-credit-card/it-card/
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session.
+      Rate/category figures are third-party/unconfirmed per the offer file's
+      NEEDS_VERIFICATION marker (live page is JS-rendered and exposed only
+      placeholder "x%"/"xx" tokens).
+
+notes: >-
+  Drafted offline from data/offer_files/discover/it-student-cash-back.txt; the offer
+  file carries a NEEDS_VERIFICATION marker, so all figures are third-party/unconfirmed.
+  Student card, no credit score required to apply. The offer file does not mention a
+  foreign transaction fee at all, so foreign_transaction_pct: 0 is an inference from
+  the sibling Discover it cards, not a stated fact. The quarterly 5% cap amount is not
+  stated in the offer file and needs human verification.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

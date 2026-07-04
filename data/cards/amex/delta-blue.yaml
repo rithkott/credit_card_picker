@@ -1,0 +1,86 @@
+# Entry no-fee Delta co-brand: 2x dining + 2x Delta, everything else 1x SkyMile.
+id: delta-blue
+name: Delta SkyMiles Blue American Express Card
+issuer: amex
+network: amex
+currency:
+  type: points
+  program: delta_skymiles
+base_rate: 1                 # "1 mile per dollar on eligible purchases"
+
+category_rewards:
+  - category: dining
+    rate: 2                  # "2x miles at restaurants worldwide"
+    notes: >-
+      Restaurants worldwide. Excludes restaurants inside another establishment
+      (hotel/casino/venue), non-US third-party delivery, bars, nightclubs,
+      cafeterias, convenience stores.
+
+merchant_rewards: []
+
+credits:
+  - name: 20% Back on In-Flight Purchases
+    amount_usd: 15           # uncapped % rebate on Delta in-flight F&B; modeled as a small realistic annual figure
+    period: annual
+    realistic_capture_rate_note: >-
+      20% statement credit on pre-purchased meals and in-flight food/beverage on
+      Delta-operated flights (automatic, no enrollment). No stated cap, so value
+      depends entirely on how much you buy in-flight; most cardholders spend little,
+      so modeled at a nominal ~$15/yr. Excludes wireless internet and charitable
+      contributions.
+  - name: American Express Venue Collection Concessions Credit
+    amount_usd: 25           # 10% back up to $250/yr; realistic fraction of the cap
+    period: annual
+    category: entertainment
+    requires_enrollment: true
+    expires: "2026-12-31"
+    realistic_capture_rate_note: >-
+      10% back (up to $250/yr) on Venue Collection stadium/arena concessions,
+      enrollment required. Most cardholders attend few/no such events; modeled at
+      ~$25.
+
+signup_bonus:
+  value:
+    points: 10000            # "10,000 bonus miles after $1,000 ... first 6 months"
+  spend_requirement_usd: 1000
+  window_months: 6
+
+fees:
+  annual_fee_usd: 0          # "Annual Fee: $0"
+  foreign_transaction_pct: 0 # "Foreign Transaction Fee: None"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier is an inference from the card's positioning as an entry no-fee
+    co-brand; not stated in the offer file — NEEDS human verification. Amex
+    welcome-offer eligibility is once-per-lifetime and also blocked if you have/had
+    this Card or Delta SkyMiles Options/Gold/Platinum/Reserve Amex cards (or
+    previous versions).
+
+benefit_flags:
+  - no_foreign_transaction_fee
+  - no_blackout_dates
+  - purchase_protection
+
+sources:
+  - url: https://www.americanexpress.com/us/credit-cards/card/delta-skymiles-blue/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Amex product page. URL not in offer file and not fetched this
+      session; figures transcribed from the local offer file and unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/amex/delta-blue.txt; all figures unconfirmed
+  pending human verification. OMITTED: the "2x miles on Delta purchases" earn — no
+  `delta` merchant key exists in data/meta/merchants.yaml and mapping Delta-only
+  earn onto the broad travel_flights category would overstate it for non-Delta
+  flights (see registry gap flagged for the reviewer). Pay with Miles gives ~1cpp
+  toward Delta tickets in 5,000-mile increments.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

@@ -1,0 +1,52 @@
+# 0% intro-APR / balance-transfer card with $0 late fee — no rewards program.
+id: simplicity
+name: Citi Simplicity Card
+issuer: citi
+network: mastercard           # network not stated in offer file; Citi Simplicity is a Mastercard — inferred
+currency:
+  type: cash
+  program: cash
+base_rate: 0                 # No rewards program — no points/cash back/miles disclosed on this card
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus: null           # No signup bonus offered on this card
+
+fees:
+  annual_fee_usd: 0           # "Annual Fee: None ($0)"
+  foreign_transaction_pct: 3  # "Foreign Transaction Fee: 3% of each purchase transaction in U.S. dollars"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated — 0% intro-APR balance-transfer cards typically require good
+    credit; not stated in the offer file. NEEDS human verification.
+
+benefit_flags: []
+
+sources:
+  - url: https://www.citi.com/credit-cards/citi-simplicity-credit-card
+    supports: [identity, currency, base_rate, fees, approval]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Citi product page; URL not in the offer file and NOT fetched this
+      session — figures unconfirmed. All values transcribed from
+      data/offer_files/citi/simplicity.txt. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/citi/simplicity.txt; all figures unconfirmed.
+  network (mastercard) is inferred — not stated — NEEDS human verification. A 0%-intro-APR
+  / balance-transfer card with NO rewards program: base_rate 0, no categories/credits/
+  signup bonus. Notable $0 late payment fee and no penalty APR. Intro-APR terms (0%
+  purchases 18 mo, 0% balance transfers 18 mo) are financing offers, out of scope for the
+  reward value model.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

@@ -1,0 +1,84 @@
+# No-fee cash card: 3% dining/entertainment/streaming/groceries + 5% Cap One Travel portal.
+id: savor
+name: Capital One Savor Rewards
+issuer: capital-one
+network: mastercard          # NOT stated in offer file — inferred (Savor is a Mastercard product); NEEDS human verification
+currency:
+  type: cash
+  program: cash
+base_rate: 1                 # "unlimited 1% cash back on all other purchases"
+
+category_rewards:
+  - category: dining
+    rate: 3                   # "3% cash back ... on dining"
+  - category: entertainment
+    rate: 3                   # "3% cash back ... entertainment"
+  - category: streaming
+    rate: 3                   # "3% cash back ... popular streaming services"
+  - category: groceries
+    rate: 3                   # "3% cash back at grocery stores"
+    notes: >-
+      Grocery category excludes superstores like Walmart and Target (stated in the offer
+      file).
+  - category: travel_hotels
+    rate: 5                   # "5% cash back on hotels ... booked through Capital One Travel"
+    portal_only: true
+    notes: >-
+      Applies only to hotels booked through Capital One Travel (issuer portal). Vacation
+      rentals booked via the portal also earn 5% but are not separately modeled (no
+      vacation-rental category key). NEEDS human verification.
+  - category: travel_other
+    rate: 5                   # "5% cash back on ... rental cars booked through Capital One Travel"
+    portal_only: true
+    notes: >-
+      Rental cars booked through Capital One Travel only. NEEDS human verification.
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus:
+  value:
+    usd: 250
+  spend_requirement_usd: 500
+  window_months: 3
+  limited_time: true
+  notes: >-
+    "Earn a one-time $250 cash bonus once you spend $500 on purchases within the first 3
+    months." Marked limited-time in the offer file. Existing cardmembers ineligible if
+    they received a bonus in the past 48 months. Figures third-party/unconfirmed per the
+    offer file's NEEDS_VERIFICATION marker.
+
+fees:
+  annual_fee_usd: 0            # "Annual Fee: $0"
+  foreign_transaction_pct: 0   # "Foreign Transaction Fees: None"
+
+approval:
+  credit_tier: excellent      # "Credit Level Required: Excellent"
+
+benefit_flags:
+  - no_foreign_transaction_fee
+
+sources:
+  - url: https://www.capitalone.com/credit-cards/savor/
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session; figures
+      third-party/unconfirmed per the offer file's NEEDS_VERIFICATION marker.
+
+notes: >-
+  Drafted offline from data/offer_files/capital-one/savor.txt (NEEDS_VERIFICATION marker)
+  — all figures third-party/unconfirmed. network (mastercard) is an inference, not stated
+  in the offer file. 5% hotels/rental cars apply ONLY through Capital One Travel; vacation
+  rentals earn 5% via the portal but are omitted for lack of a distinct category key. The
+  offer file does NOT mention a separate 8% Capital One Entertainment rate, so none is
+  modeled (the 3% entertainment rate is the only entertainment line stated). The
+  up-to-$50 flight price-drop protection is not modeled as a periodic credit (per-booking,
+  not per-period). Rewards do not expire for the life of the account.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

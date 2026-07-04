@@ -1,0 +1,99 @@
+# Mainstream AA co-brand: 2X AA/dining/gas, first-checked-bag, $99 fee (waived yr 1), AAdvantage miles.
+id: aadvantage-platinum-select
+name: Citi / AAdvantage Platinum Select World Elite Mastercard
+issuer: citi
+network: mastercard           # "World Elite Mastercard" stated in the card title
+currency:
+  type: points
+  program: aa_advantage
+base_rate: 1                  # "1 AAdvantage mile per $1"
+
+category_rewards:
+  - category: travel_flights
+    rate: 2                   # "2X miles on eligible American Airlines purchases"
+    notes: >-
+      Only AA purchases billed by AA as merchant of record (excludes car rentals, hotel
+      reservations, AAdvantage status boost/renewal, AA Cargo) — narrower than the
+      general travel_flights category. Admirals Club food/beverage earns 2X here.
+  - category: dining
+    rate: 2                   # "2X miles at restaurants ... and gas stations"
+    notes: >-
+      Restaurants incl. cafes, bars, lounges, fast food. Excludes supercenters,
+      warehouse clubs, discount stores, restaurants inside department stores, bowling
+      alleys, golf/country clubs, convenience stores, movie theaters, caterers, meal-kit
+      delivery.
+  - category: gas
+    rate: 2                   # same "2X at restaurants and gas stations" line
+    notes: >-
+      Gas stations; excludes warehouse clubs not coding as gas, discount stores,
+      department stores, convenience stores. Not a shared cap with dining — both are
+      uncapped 2X.
+
+merchant_rewards: []
+
+credits:
+  - name: American Airlines Flight Discount certificate
+    amount_usd: 125          # "$125 American Airlines Flight Discount certificate after $20,000+ in purchases"
+    kind: in_kind
+    period: annual
+    unlock_spend_usd: 20000
+    realistic_capture_rate_note: >-
+      Requires $20,000+ in card purchases within the cardmembership year; certificate
+      expires 1 year after issuance and is redeemable only toward base airfare + taxes
+      on AA/AA-codeshare flights from US/PR/USVI (not award-ticket taxes, non-refundable).
+      Captured only by heavy spenders who then fly paid AA; most cardholders never reach
+      $20k.
+    notes: >-
+      in_kind valued at its $125 face; realizing it requires reaching the $20k spend
+      threshold and flying paid AA.
+  - name: Turo credit (limited-time)
+    amount_usd: 180          # "up to $180 back on Turo (Oct 19, 2025 - Oct 18, 2026): $30/trip up to 6"
+    period: annual
+    category: travel_other
+    requires_enrollment: true
+    expires: "2026-10-18"
+    realistic_capture_rate_note: >-
+      Limited-time (Oct 19, 2025 - Oct 18, 2026): $30 per completed Turo trip, up to 6,
+      requires linking the card to a Turo account (digital-wallet payments excluded).
+      Captured only by Turo renters during the promo window.
+
+signup_bonus: null           # No public signup bonus terms were present in this source file
+
+fees:
+  annual_fee_usd: 99          # "Annual Fee: $99, waived for the first 12 months"
+  first_year_waived: true
+  foreign_transaction_pct: 0  # "Foreign Transaction Fee: None"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's mainstream co-brand positioning ($99 fee);
+    not stated in the offer file. Requires an open AAdvantage membership. New-account
+    bonus miles blocked if you got one on a Platinum Select account, or converted such a
+    card, in the past 48 months. NEEDS human verification.
+
+benefit_flags:
+  - free_checked_bag          # first checked bag free, domestic AA, up to 4 companions
+  - preferred_boarding        # Group 5, up to 4 companions
+
+sources:
+  - url: https://www.citi.com/credit-cards/citi-aadvantage-platinum-select-world-elite-mastercard
+    supports: [identity, currency, base_rate, category_rewards, credits, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Citi product page; URL not in the offer file and NOT fetched this
+      session — figures unconfirmed. All values transcribed from
+      data/offer_files/citi/aadvantage-platinum-select.txt. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/citi/aadvantage-platinum-select.txt; all figures
+  unconfirmed. Status-qualifying Loyalty Points (1 per base mile) are NOT redeemable and
+  are not scored. The 25% inflight food/beverage savings is OMITTED (uncapped percentage
+  rebate). The $125 Flight Discount is modeled as an in_kind credit gated on $20k annual
+  spend (unlock_spend_usd). First-checked-bag and preferred boarding recorded as flags.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

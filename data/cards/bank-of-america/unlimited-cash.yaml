@@ -1,0 +1,75 @@
+# No-annual-fee flat-rate cash card (1.5% base); Preferred Rewards boosts up to 75%.
+id: unlimited-cash
+name: Unlimited Cash Rewards
+issuer: bank-of-america
+network: visa                 # not stated in offer file — BofA consumer cards are Visa; inferred. NEEDS human verification.
+currency:
+  type: cash
+  program: cash
+base_rate: 1.5               # "unlimited 1.5% cash back on all purchases" (ongoing rate; first-year 2% promo noted below)
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus:
+  value:
+    usd: 200                 # "$200 online cash rewards bonus"
+  spend_requirement_usd: 1000 # "after making at least $1,000 in purchases in the first 90 days"
+  window_months: 3
+
+fees:
+  annual_fee_usd: 0           # "$0"
+  foreign_transaction_pct: 3  # NOT stated in offer file ("Not stated on official product page"). Inferred as BofA's standard non-travel FTF of 3% — NEEDS human verification.
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream no-annual-fee flat-rate
+    cash card; the offer file does not state a credit requirement. NEEDS human verification.
+
+relationship_boost:
+  program: Bank of America Preferred Rewards
+  tiers:
+    - tier_name: Gold
+      requirement: Gold Preferred Rewards tier (eligible BofA/Merrill relationship)
+      boost_pct: 25
+    - tier_name: Platinum
+      requirement: Platinum Preferred Rewards tier (eligible BofA/Merrill relationship)
+      boost_pct: 50
+    - tier_name: Platinum Honors
+      requirement: Platinum Honors Preferred Rewards tier (eligible BofA/Merrill relationship)
+      boost_pct: 75
+  note: >-
+    Offer file: "eligible cardholders can earn bonus rewards (25%-75% boost) on purchases using
+    eligible Bank of America credit cards, based on relationship tier." Endpoints 25% (Gold) /
+    75% (Platinum Honors) transcribed; 50% (Platinum) is the standard middle tier. Balance
+    thresholds not stated — expressed as requirement text. Not scored in v1 — base_rate is the
+    no-relationship baseline.
+
+benefit_flags:
+  - zero_fraud_liability
+
+sources:
+  - url: https://www.bankofamerica.com/credit-cards/products/unlimited-cash-back-credit-card/
+    supports: [identity, currency, base_rate, signup_bonus, fees, approval, relationship_boost, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session. The offer file
+      carries a NEEDS_VERIFICATION marker — figures are third-party/secondary and unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/bank-of-america/unlimited-cash.txt, which carries a
+  NEEDS_VERIFICATION marker, so all figures are third-party/unconfirmed. base_rate is the ongoing
+  1.5%; the card is currently promoted at 2% cash back for the first year from account opening, which
+  is modeled as a promo (noted here), not the evergreen rate. foreign_transaction_pct was NOT stated
+  in the offer file and is inferred at BofA's standard 3% — NEEDS human verification. Network inferred
+  as Visa (not stated) — NEEDS human verification.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

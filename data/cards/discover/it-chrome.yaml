@@ -1,0 +1,75 @@
+# Mainstream no-annual-fee gas + restaurant 2% card with Discover's first-year Cashback Match.
+id: it-chrome
+name: Discover it Chrome
+issuer: discover
+network: discover
+currency:
+  type: cash
+  program: cash
+base_rate: 1                 # "1% cash back on all other purchases, unlimited"
+
+category_rewards:
+  - category: gas
+    rate: 2                  # "2% cash back at gas stations and restaurants (combined)"
+    cap:
+      period: quarterly
+      max_spend_usd: 1000     # "on up to $1,000 in combined purchases per quarter" — full shared pool
+      fallback_rate: 1
+      shared_cap_id: gas_dining
+    notes: >-
+      2% applies automatically (no activation). The $1,000/quarter cap is a single
+      pool shared with restaurants (see the dining entry); combined spend above
+      $1,000 earns 1%.
+  - category: dining
+    rate: 2                  # same combined 2% gas + restaurants
+    cap:
+      period: quarterly
+      max_spend_usd: 1000     # same shared pool, stated in full
+      fallback_rate: 1
+      shared_cap_id: gas_dining
+    notes: >-
+      2% applies automatically (no activation). The $1,000/quarter cap is a single
+      pool shared with gas (see the gas entry); combined spend above $1,000 earns 1%.
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus:
+  first_year_match: true      # "Unlimited Cashback Match ... matches all cash back earned at the end of the first year"
+
+fees:
+  annual_fee_usd: 0           # "Annual fee: None"
+  foreign_transaction_pct: 0  # "Foreign transaction fee: None"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream
+    no-annual-fee card (not secured/student); the offer file does not state a credit
+    requirement. NEEDS human verification.
+
+benefit_flags:
+  - zero_fraud_liability
+  - free_fico_score
+
+sources:
+  - url: https://www.discover.com/credit-cards/cash-back/chrome/
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session.
+      Rate figures are third-party/unconfirmed per the offer file's
+      NEEDS_VERIFICATION marker (live page is JS-rendered and exposed only
+      placeholder "x%" tokens).
+
+notes: >-
+  Drafted offline from data/offer_files/discover/it-chrome.txt; the offer file
+  carries a NEEDS_VERIFICATION marker, so all figures are third-party/unconfirmed.
+  Cash back does not expire for the life of the account.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

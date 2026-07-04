@@ -1,0 +1,147 @@
+# Premium Delta co-brand: 3x Delta & hotels-direct, 2x supermarkets/dining, companion cert, $350 AF.
+id: delta-platinum
+name: Delta SkyMiles Platinum American Express Card
+issuer: amex
+network: amex
+currency:
+  type: points
+  program: delta_skymiles
+base_rate: 1                 # "1 mile per dollar on eligible purchases"
+
+category_rewards:
+  - category: groceries
+    rate: 2                  # "2x miles at U.S. supermarkets"
+    notes: >-
+      US supermarkets only; superstores/convenience stores/warehouse clubs/meal-kit
+      delivery NOT treated as supermarkets.
+  - category: dining
+    rate: 2                  # "2x miles at restaurants worldwide"
+    notes: >-
+      Restaurants worldwide; excludes restaurants inside another establishment,
+      non-US delivery, bars, nightclubs, cafeterias, convenience stores.
+  - category: travel_hotels
+    rate: 3                  # "3x miles at hotels worldwide when paid directly with the hotel"
+    notes: >-
+      Hotels worldwide, paid directly with the hotel only — NOT prepaid third-party/
+      OTA bookings or vacation packages. Incidentals count if billed to the room and
+      paid at checkout.
+
+merchant_rewards: []
+
+credits:
+  - name: Resy Credit
+    amount_usd: 10           # "up to $10/month"
+    period: monthly
+    category: dining
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $10/month at Resy-partnered US restaurants (direct, Resy.com/app, or Resy Pay),
+      enrollment required; monthly forfeit. Captured by people who dine at Resy
+      restaurants monthly; excludes delivery/catering and gift cards.
+  - name: Rideshare Credit
+    amount_usd: 10
+    period: monthly
+    category: transit
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $10/month on US Uber/Lyft/Curb/Alto rides, enrollment required; monthly
+      forfeit. Excludes delivery, bikeshare, scooter, car rental, transit passes.
+  - name: Delta Stays Credit
+    amount_usd: 150          # "up to $150/year"
+    period: annual
+    category: travel_hotels
+    realistic_capture_rate_note: >-
+      $150/yr on prepaid bookings via the Delta Stays platform only; captured only by
+      cardholders who book lodging through delta.com/stays.
+  - name: 20% Back on In-Flight Purchases
+    amount_usd: 15
+    period: annual
+    realistic_capture_rate_note: >-
+      20% statement credit on Delta in-flight food/beverage (automatic); uncapped but
+      typically small — modeled at ~$15/yr.
+  - name: Global Entry or TSA PreCheck Fee Credit
+    amount_usd: 120          # "up to $120 (Global Entry) or $85 (TSA PreCheck)"
+    period: every_4_years
+    category: travel_other
+    realistic_capture_rate_note: >-
+      One statement credit every 4 years, up to $120 (Global Entry) or $85 (TSA
+      PreCheck), for whichever you apply to first. Captured once per renewal cycle by
+      travelers who enroll; modeled at the $120 Global Entry ceiling.
+  - name: Delta Platinum Companion Certificate
+    kind: in_kind
+    amount_usd: 250          # estimated value of a domestic Delta Main round-trip companion ticket net of taxes
+    period: annual
+    category: travel_flights
+    realistic_capture_rate_note: >-
+      One round-trip Delta Main companion ticket per year after renewal, to a defined
+      US/Latin America/Caribbean list, excludes codeshares/Basic Economy. Holder pays
+      taxes/fees (up to $80 domestic, $250 intl). Real value only for cardholders who
+      take a second-passenger Delta trip yearly; $250 is a conservative net-of-taxes
+      estimate of a domestic round-trip companion fare, haircut applied by the model.
+  - name: American Express Venue Collection Concessions Credit
+    amount_usd: 25
+    period: annual
+    category: entertainment
+    requires_enrollment: true
+    expires: "2026-12-31"
+    realistic_capture_rate_note: >-
+      10% back (up to $250/yr) on Venue Collection concessions, enrollment required;
+      realistic capture is a small fraction — modeled at ~$25.
+
+signup_bonus:
+  value:
+    points: 80000            # "80,000 miles after $4,000 ... first 6 months"
+  spend_requirement_usd: 4000
+  window_months: 6
+  tiers:
+    - value:
+        points: 20000        # "additional 20,000 miles (100,000 total) after $6,000 total"
+      spend_requirement_usd: 6000
+  limited_time: true
+  expires: "2026-07-15"
+  notes: >-
+    Limited-time offer ending 07/15/2026 (11:59pm MST). Standard evergreen bonus not
+    stated in the offer file — flag for verification.
+
+fees:
+  annual_fee_usd: 350        # "Annual Fee: $350"
+  foreign_transaction_pct: 0 # "Foreign Transaction Fee: None"
+
+approval:
+  credit_tier: very_good
+  notes: >-
+    credit_tier is an inference from the card's premium positioning; not stated in
+    the offer file — NEEDS human verification. Amex welcome-offer eligibility is
+    once-per-lifetime and also blocked if you have/had this Card or Delta SkyMiles
+    Reserve (or previous versions).
+
+benefit_flags:
+  - no_foreign_transaction_fee
+  - free_checked_bag
+  - cell_phone_protection
+  - trip_cancellation_insurance
+  - no_blackout_dates
+  - car_rental_insurance
+  - extended_warranty
+
+sources:
+  - url: https://www.americanexpress.com/us/credit-cards/card/delta-skymiles-platinum/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Amex product page. URL not in offer file and not fetched this
+      session; figures transcribed from the local offer file and unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/amex/delta-platinum.txt; all figures
+  unconfirmed pending human verification. OMITTED: the "3x miles on Delta purchases"
+  earn — no `delta` merchant key in data/meta/merchants.yaml, and mapping it to
+  travel_flights would overstate it for non-Delta flights (registry gap flagged).
+  Also unmodeled: MQD Boost/Headstart elite-qualifying deposits (not redeemable
+  value).
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

@@ -1,0 +1,105 @@
+# Premium travel points card ($550 AF); earns bofa_premium_rewards points (flat 1cpp). $300 airline + $150 lifestyle credits.
+id: premium-rewards-elite
+name: Premium Rewards Elite
+issuer: bank-of-america
+network: visa                 # "Visa Infinite" (offer file references Visa Infinite Luxury Hotel Collection)
+currency:
+  type: points
+  program: bofa_premium_rewards
+base_rate: 1.5               # "Unlimited 1.5 points per dollar on all other purchases"
+
+category_rewards:
+  - category: travel_flights
+    rate: 2                   # "Unlimited 2 points for every $1 spent on travel and dining purchases"
+  - category: travel_hotels
+    rate: 2                   # same travel+dining 2x tier
+  - category: travel_other
+    rate: 2                   # same travel+dining 2x tier
+  - category: dining
+    rate: 2                   # same travel+dining 2x tier
+
+merchant_rewards: []
+
+credits:
+  - name: Airline Incidental Statement Credit
+    amount_usd: 300          # "Up to $300 annually in statement credits for airline incidental charges"
+    period: annual
+    realistic_capture_rate_note: >-
+      Reimburses airline incidentals (seat upgrades, baggage fees, lounge fees, in-flight services)
+      up to $300/year. Airfare itself usually does NOT qualify; a frequent flyer who checks bags or
+      buys upgrades captures most of it, an infrequent flyer little to none.
+  - name: Lifestyle Conveniences Statement Credit
+    amount_usd: 150          # "Up to $150 annually in statement credits for 'lifestyle conveniences'"
+    period: annual
+    realistic_capture_rate_note: >-
+      Reimburses video streaming, food delivery, fitness subscriptions, and rideshare up to
+      $150/year. Broad enough that most active cardholders capture the full amount.
+  - name: Airport Security Statement Credit (TSA PreCheck / Global Entry)
+    amount_usd: 120          # "Up to $120 every four years for Global Entry or TSA PreCheck application fees"
+    period: every_4_years
+    realistic_capture_rate_note: >-
+      Reimburses the TSA PreCheck (~$78) or Global Entry ($120) application fee once per 4-year
+      cycle. Captured by anyone who applies; otherwise unused.
+
+signup_bonus:
+  value:
+    points: 75000            # "75,000 online bonus points — a $750 value"
+  spend_requirement_usd: 5000 # "after making at least $5,000 in purchases in the first 90 days"
+  window_months: 3
+
+fees:
+  annual_fee_usd: 550         # "$550"
+  foreign_transaction_pct: 0  # "None"
+
+approval:
+  credit_tier: very_good
+  estimated_min_score: 750    # offer file: "third-party sources suggest ~750+ recommended"
+  notes: >-
+    ~750+ recommended per third-party sources (not from the official BofA page) — treated as an
+    estimate. NEEDS human verification.
+
+relationship_boost:
+  program: Bank of America Preferred Rewards
+  tiers:
+    - tier_name: Gold
+      requirement: Gold Preferred Rewards tier (eligible BofA/Merrill relationship)
+      boost_pct: 25
+    - tier_name: Platinum
+      requirement: Platinum Preferred Rewards tier (eligible BofA/Merrill relationship)
+      boost_pct: 50
+    - tier_name: Platinum Honors
+      requirement: Platinum Honors Preferred Rewards tier (eligible BofA/Merrill relationship)
+      boost_pct: 75
+  note: >-
+    Offer file: "eligible cardholders earn bonus rewards on credit card purchases based on Bank of
+    America/Merrill relationship tier (25%-75% boost)." Endpoints 25% (Gold) / 75% (Platinum Honors)
+    transcribed; 50% (Platinum) is the standard middle tier. Balance thresholds not stated —
+    expressed as requirement text. Not scored in v1 — rates above are the no-relationship baseline.
+
+benefit_flags:
+  - lounge_access
+  - no_foreign_transaction_fee
+  - concierge_service
+
+sources:
+  - url: https://www.bankofamerica.com/credit-cards/products/premium-rewards-elite-credit-card/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, relationship_boost, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session. The offer file
+      carries a NEEDS_VERIFICATION marker — figures are third-party/secondary and unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/bank-of-america/premium-rewards-elite.txt, which carries a
+  NEEDS_VERIFICATION marker, so all figures are third-party/unconfirmed. The broad "travel" 2x tier
+  is expanded across travel_flights, travel_hotels, and travel_other. bofa_premium_rewards points
+  redeem at a flat 1cpp; the "20% savings on airfare paid for with points" is a redemption-side boost
+  (not modeled — point valuations stay global per program). Not modeled: up to 4 Priority Pass Select
+  memberships (captured via lounge_access flag), Luxury Hotel Collection perks, travel protections.
+  Network inferred as Visa Infinite from the offer file — NEEDS human verification.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

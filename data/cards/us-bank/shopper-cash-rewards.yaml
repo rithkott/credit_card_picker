@@ -1,0 +1,113 @@
+# Choose-your-own-retailer cash card: 6% at two selected retailers + a 3% everyday pick, 1.5% base.
+id: shopper-cash-rewards
+name: U.S. Bank Shopper Cash Rewards Visa Signature
+issuer: us-bank
+network: visa
+currency:
+  type: cash
+  program: cash
+base_rate: 1.5                    # "1.5% cash back on all other eligible purchases (uncapped)"
+
+category_rewards:
+  - category: choice
+    rate: 3
+    requires_enrollment: true     # everyday category chosen each quarter
+    cap:
+      period: quarterly
+      max_spend_usd: 1500         # "first $1,500 in eligible purchases each quarter" in the chosen everyday category
+      fallback_rate: 1.5
+    choice:
+      options: [gas, utilities]
+      note: >-
+        3% on ONE everyday category chosen each quarter, on the first $1,500/quarter.
+        Registry mappings: gas = gas stations / EV charging; utilities = bills/utilities.
+        The third stated option, "wholesale clubs (Costco, Sam's Club)", has no fitting
+        registry category (groceries excludes wholesale clubs) and is omitted — see card
+        notes. Requires quarterly selection.
+  # 5.5% on hotel/car booked through the U.S. Bank Rewards Travel Center (portal).
+  - category: travel_hotels
+    rate: 5.5
+    portal_only: true
+    notes: 5.5% on hotels booked through the U.S. Bank Rewards Travel Center.
+  - category: travel_other
+    rate: 5.5
+    portal_only: true
+    notes: 5.5% on car rentals booked through the U.S. Bank Rewards Travel Center.
+
+merchant_rewards:
+  # 6% at TWO retailers chosen each quarter; combined $1,500/quarter cap across the picks.
+  - merchant: amazon
+    rate: 6
+    cap:
+      period: quarterly
+      max_spend_usd: 1500
+      fallback_rate: 1.5
+      shared_cap_id: shopper_6pct
+    notes: 6% on the first $1,500/quarter combined across the two selected retailers.
+  - merchant: walmart
+    rate: 6
+    cap:
+      period: quarterly
+      max_spend_usd: 1500
+      fallback_rate: 1.5
+      shared_cap_id: shopper_6pct
+    notes: 6% on the first $1,500/quarter combined across the two selected retailers.
+  - merchant: target
+    rate: 6
+    cap:
+      period: quarterly
+      max_spend_usd: 1500
+      fallback_rate: 1.5
+      shared_cap_id: shopper_6pct
+    notes: 6% on the first $1,500/quarter combined across the two selected retailers.
+
+credits: []
+
+signup_bonus:
+  value:
+    usd: 250                      # "$250 one-time cash back after $2,000 in Net Purchases within 120 days"
+  spend_requirement_usd: 2000
+  window_months: 4
+
+fees:
+  annual_fee_usd: 95              # "$0 first year; $95 thereafter" (third-party)
+  first_year_waived: true
+  foreign_transaction_pct: 3      # INFERRED from sibling U.S. Bank cash cards; not confirmed for this card
+
+approval:
+  credit_tier: very_good
+  notes: >-
+    credit_tier estimated from Visa Signature positioning and the $95 annual fee; the
+    offer file states no credit requirement. NEEDS human verification.
+
+benefit_flags:
+  - visa_signature
+
+sources:
+  - url: https://www.usbank.com/credit-cards/shopper-cash-rewards-visa-signature-credit-card.html
+    supports: [identity, currency, base_rate, category_rewards, merchant_rewards, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header / docs/needs-verification-links.md;
+      official page did not fully render per the offer file, so figures are cross-
+      referenced third-party/unconfirmed. NEEDS_VERIFICATION marker present.
+
+notes: >-
+  Drafted offline from data/offer_files/us-bank/shopper-cash-rewards.txt
+  (NEEDS_VERIFICATION; official page did not render) — all figures third-party/unconfirmed.
+  REGISTRY GAP (6% retailers): the cardholder picks TWO of ~20-24 eligible retailers each
+  quarter, sharing one combined $1,500/quarter 6% cap. Only Amazon, Walmart, and Target
+  exist as registry merchant keys and are modeled under a single shared_cap_id (the shared
+  cap bounds total 6% spend at $1,500 regardless of which are picked). Reported-eligible
+  retailers with NO registry key are omitted: Apple, Best Buy, Home Depot, Lowe's, Macy's,
+  Ikea, Ace Hardware, Anthropologie, Chewy.com, Disney, Kohl's, Nordstrom, Wayfair, and
+  others. The full retailer list itself needs verification against the live page.
+  REGISTRY GAP (3% everyday): "wholesale clubs" has no fitting category key and is dropped
+  from the choice options. foreign_transaction_pct (3%) is inferred, not confirmed. Intro
+  APR length and standard APR ignored per protocol.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

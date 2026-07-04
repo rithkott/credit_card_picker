@@ -1,0 +1,79 @@
+# Entry-tier metal Luxury Card (World Elite Mastercard); one file per tier — siblings: gold, black.
+id: titanium
+name: Mastercard Titanium Card
+issuer: luxury-card
+network: mastercard            # "World Elite Mastercard product"
+currency:
+  type: points
+  program: luxury_card_points
+base_rate: 1                   # "1 point/$1 on all other purchases"
+
+category_rewards:
+  - category: travel_flights
+    rate: 2                    # "2 points/$1 on airfare ... booked through LuxuryCardTravel.com"
+    portal_only: true
+    notes: >-
+      2X points apply only to airfare booked through the issuer's own
+      LuxuryCardTravel.com portal; airfare booked elsewhere earns the 1-point base
+      rate. Portal fares can exceed direct-booking prices.
+  - category: travel_hotels
+    rate: 2                    # "2 points/$1 on ... hotel reservations booked through LuxuryCardTravel.com"
+    portal_only: true
+    notes: >-
+      2X points apply only to hotel reservations booked through LuxuryCardTravel.com;
+      hotels booked elsewhere earn the 1-point base rate. Portal bookings also carry
+      the "$750/stay average" luxury-hotel amenity benefit (see card notes).
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus: null            # "No stated sign-up bonus."
+
+fees:
+  annual_fee_usd: 299         # "$299 annual fee ($149 for each Authorized User)"
+  foreign_transaction_pct: 0  # "0% foreign transaction fee."
+
+approval:
+  credit_tier: excellent
+  notes: >-
+    credit_tier estimated as 'excellent' from the card's premium metal / World Elite
+    Mastercard positioning and annual fee; the offer file does not state a credit
+    requirement or score cutoff. Inferred — NEEDS human verification.
+
+benefit_flags:
+  - lounge_access               # "Complimentary Priority Pass Select membership: 1,700+ lounges"
+  - concierge_service           # "24/7 Luxury Card Concierge service"
+  - cell_phone_protection       # "Cell phone protection: up to $1,000/year"
+  - metal_card                  # "metal cards issued under the Luxury Card brand"
+
+sources:
+  - url: https://www.luxurycard.com/
+    supports: [identity, currency, base_rate, category_rewards, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL is the source the offer file attributes its content to; NOT fetched this
+      session (the offer file reports luxurycard.com returned HTTP 403 during
+      research). All figures are third-party/aggregator-sourced and unconfirmed
+      against an official terms page — see offer file "Gaps / Not Found".
+
+notes: >-
+  Drafted offline from data/offer_files/luxury-card/mastercards.txt. The offer file's
+  "Gaps / Not Found" section states every figure comes from search-engine snippets and
+  aggregators (NerdWallet, Forbes Advisor, etc.), not a directly-fetched official page,
+  so all figures are third-party/unconfirmed — NEEDS human verification.
+  One of three sibling tiers (Titanium / Gold / Black); see data/cards/luxury-card/gold.yaml
+  and black.yaml. Points redeem at ~2% value toward airfare via LuxuryCardTravel.com
+  (optimistic path) and ~1% as statement-credit cash back on this tier (redemption-side;
+  base_rate stays the 1-point earn rate). Portal hotel bookings include a complimentary
+  luxury-property benefit averaging ~$750/stay (room upgrades, breakfast for two, Wi-Fi)
+  at 3,000+ properties — not modeled as a periodic credit because it is a per-stay,
+  portal-gated in-kind amenity with no fixed period or guaranteed cash value.
+  Mastercard Global Service emergency card replacement is referenced but no dollar fee
+  was found.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

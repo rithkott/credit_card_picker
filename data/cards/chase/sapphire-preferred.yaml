@@ -1,0 +1,119 @@
+# Mid-tier transferable-points travel card: 5x Chase Travel portal, 3x on dining/gas/streaming/online-grocery, $95 fee.
+id: sapphire-preferred
+name: Chase Sapphire Preferred
+issuer: chase
+network: visa                # NOT stated in offer file; Sapphire Preferred is a Visa Signature — inference, NEEDS human verification
+currency:
+  type: points               # Ultimate Rewards points, transferable to airline/hotel partners
+  program: chase_ur
+base_rate: 1                 # "1 point/$1: everything else"
+
+category_rewards:
+  - category: travel_other
+    rate: 5                  # "5 points/$1 on Chase Travel portal purchases"
+    portal_only: true
+    notes: >-
+      Chase Travel portal purchases of any travel type (flights, hotels, cars, cruises,
+      activities). Modeled on travel_other as the portal channel; direct flight/hotel
+      bookings earn 2x (see travel_flights/travel_hotels). Excludes bookings through
+      FROSCH/Valerie Wilson/Frosch International by Chase Travel. Portal prices may
+      exceed direct booking.
+  - category: travel_flights
+    rate: 2                  # "2 points/$1: travel category purchases not booked via Chase Travel portal"
+    notes: Direct (non-portal) airfare; the same spend booked through the Chase Travel portal earns 5x (see travel_other).
+  - category: travel_hotels
+    rate: 2                  # non-portal travel
+    notes: >-
+      Direct (non-portal) hotels earn 2x. "Vacation homes at top brands" earn 3x (a
+      narrow subset not separately modeled). Portal hotel bookings earn 5x (see
+      travel_other).
+  - category: dining
+    rate: 3                  # "3 points/$1: ... dining (incl. takeout/delivery)"
+  - category: gas
+    rate: 3                  # "3 points/$1: gas stations; EV charging" (gas category covers EV charging)
+  - category: streaming
+    rate: 3                  # "3 points/$1: ... top streaming services"
+  - category: groceries
+    rate: 3                  # "3 points/$1: online grocery (excludes Target, Walmart, wholesale clubs)"
+    notes: >-
+      ONLINE grocery only; excludes Target, Walmart, and wholesale clubs. In-store
+      grocery purchases earn the 1x base rate, not 3x.
+
+merchant_rewards:
+  - merchant: lyft
+    rate: 5                  # "5X points total on qualifying Lyft ... through 9/30/2027"
+    notes: >-
+      Limited-time through 9/30/2027 (excludes gift cards, car rentals, vehicle service
+      centers). Reverts to base earn after the promo; merchant_rewards has no expires
+      field, so the end date is noted here.
+
+credits:
+  - name: Annual Chase Travel Hotel Credit
+    amount_usd: 100           # "$100 Annual Chase Travel Hotel Credit ... up to $100/year"
+    period: annual
+    category: travel_hotels
+    realistic_capture_rate_note: >-
+      Automatic statement credit on the first $100/year of hotel purchases booked through
+      Chase Travel (year = account anniversary cycle). Easy full capture for anyone who
+      books at least one hotel through the portal; the first $100 of such hotel spend does
+      NOT also earn points.
+  - name: Global Entry / TSA PreCheck / NEXUS application fee credit
+    amount_usd: 120           # "one statement credit up to $120 every 4 years"
+    period: every_4_years
+    realistic_capture_rate_note: >-
+      Up to $120 once every 4 years for an application fee charged directly by
+      DHS/CBP/TSA or authorized enrollment providers (not travel agencies/third-party
+      services). Captured only by travelers who enroll in a trusted-traveler program.
+
+signup_bonus:
+  value:
+    points: 100000            # "100,000 points after spending $5,000 in first 3 months"
+  spend_requirement_usd: 5000
+  window_months: 3
+  notes: >-
+    Not available to current cardmembers or previous cardmembers who received a bonus for
+    this card. Allow 6-8 weeks to post.
+
+fees:
+  annual_fee_usd: 95          # NOT stated in offer file; Sapphire Preferred annual fee — inference, NEEDS human verification
+  foreign_transaction_pct: 0  # NOT stated in offer file; Sapphire Preferred has no FTF — inference, NEEDS human verification
+
+approval:
+  credit_tier: very_good
+  notes: >-
+    credit_tier estimated from the card's premium travel-card positioning; not stated in
+    the offer file. Chase 5/24 applies (Chase declines applicants with 5+ new cards in 24
+    months). NEEDS human verification.
+
+benefit_flags: []
+
+sources:
+  - url: https://creditcards.chase.com/travel-credit-cards/sapphire/preferred
+    supports: [identity, currency, base_rate, category_rewards, merchant_rewards, credits, signup_bonus, fees, approval]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in offer file and not fetched this session; figures transcribed from
+      data/offer_files/chase/sapphire-preferred.txt and unconfirmed against issuer terms.
+      NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/chase/sapphire-preferred.txt. No source URL was
+  on file; the cited page is the issuer's general product page (not fetched).
+  annual_fee_usd (95), foreign_transaction_pct (0), network (visa), and credit_tier are
+  NOT stated in the offer file and are best-estimate inferences — NEEDS human
+  verification. MODELING CHOICE: the 5x Chase Travel portal rate is placed on
+  travel_other (as the portal channel) with portal_only:true to avoid duplicate travel
+  categories; direct flights/hotels are modeled at the 2x non-portal rate. This
+  under-scores portal-booked flights/hotels — flagged for reviewer. The following are
+  NOTED, NOT MODELED, because they lack an issuer-stated fixed value or are promotional
+  in-kind perks: complimentary Apple TV (12+ mo, activate by 12/31/2026) with $7.50/mo
+  Apple One discount; complimentary DashPass (12+ mo, activate by 12/31/2027) with $10-off
+  monthly DoorDash non-restaurant order; 5X Peloton points on up to $5,000 equipment
+  (4/1/2025-12/31/2027, Peloton is not a registry merchant). "Vacation homes at top
+  brands" 3x is a narrow subset not separately modeled.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

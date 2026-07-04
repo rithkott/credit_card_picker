@@ -1,0 +1,101 @@
+# Bilt Card 2.0 mid tier — $95 AF Mastercard: housing points + 2x travel + a selectable
+# 3x dining/grocery category, plus a Bilt Travel Portal hotel credit. AI draft.
+id: bilt-obsidian
+name: Bilt Obsidian Card
+issuer: cardless
+network: mastercard
+currency:
+  type: points
+  program: bilt_points
+base_rate: 1                 # 1 point per $1 on all other eligible purchases
+
+category_rewards:
+  - category: travel_flights
+    rate: 2                  # "2 points/$1 (1 base + 1 bonus) on travel: airlines" (by Mastercard merchant code)
+  - category: travel_hotels
+    rate: 2                  # airlines/hotels/motels/resorts
+  - category: travel_other
+    rate: 2                  # cruise lines, car rental agencies
+    notes: Covers cruise lines and car rental agencies from the same 2x travel bucket.
+  - category: choice
+    rate: 3                  # "3 points/$1 (1 base + 2 bonus)" on a selectable category
+    choice:
+      options: [dining, groceries]
+      note: >-
+        Cardholder selects ONE bonus category — Dining (default) or Grocery. The non-selected
+        category earns the 1x base. Selection changeable once within 30 days of Account Open Date,
+        then locked for the calendar year (automatic model: user-selected, not auto-top-category).
+        The Grocery bonus is capped at $25,000 combined spend/calendar year (drops to 1x after cap);
+        Dining is uncapped. The cap is described here rather than structured as a `cap`, because it
+        applies only to the grocery variant, not dining — flagged for a human; the grocery variant
+        is therefore slightly overvalued above $25k/yr spend.
+
+merchant_rewards: []
+# Partner earning (Lyft, Bilt Dining, Bilt Travel Portal, Bilt Fitness, Metropolis parking,
+# Walgreens, Bilt Home Delivery) stacks with base rate but rates "vary by partner/merchant, set
+# in the Bilt app" — no numeric rate stated, unmodeled. See notes.
+
+credits:
+  - name: Bilt Travel Hotel Credit
+    amount_usd: 50           # "$50 per half-year (Jan-Jun / Jul-Dec)"; face value per period
+    period: semiannual
+    category: travel_hotels
+    requires_enrollment: true  # "must opt in at checkout"
+    realistic_capture_rate_note: >-
+      Captured only by users who book 2+ night hotel stays through the Bilt Travel Portal within
+      each half-year and opt in at checkout; does not roll over between halves and is forfeited if a
+      non-refundable booking is canceled. Portal-only + opt-in + 2-night-minimum + biannual-forfeit
+      mechanics mean most cardholders capture well under the full $100/yr face value.
+
+signup_bonus:
+  value:
+    usd: 200                 # "$200 Bilt Cash, credited on or about Account Open Date (no spend requirement)"
+  spend_requirement_usd: 0
+  window_months: 1           # nominal — credited at/around account open; offer file gives no window
+  notes: >-
+    $200 Bilt Cash credited at account opening with no spend requirement (approval-time credit,
+    modeled as a $0-spend bonus). Bilt Cash is cash-equivalent, valued at ~1cpp. Not available if
+    you currently/previously held or already received a Welcome Bonus for any Bilt Card 2.0.
+
+fees:
+  annual_fee_usd: 95
+  foreign_transaction_pct: 0   # INFERRED: no FTF language in the offer file — NEEDS human verification
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the mid-tier $95-annual-fee positioning; not stated in the offer
+    file — NEEDS human verification. Authorized User fee is $50 per AU added.
+
+benefit_flags: []
+
+notes: >-
+  AI draft from local offer file only; not re-fetched from the issuer this session — confidence low.
+  REWARD OPTIONS (housing vs everyday), same as all Bilt 2.0 tiers: cardholder picks ONE per billing
+  cycle. (1) Housing-only (default): Bilt Points auto-earned on Bilt Housing Payments at a variable
+  0x-1.25x based on the "Everyday Spend Ratio" (25-49%=0.5x, 50-74%=0.75x, 75-99%=1x, 100%+=1.25x;
+  250-point/cycle floor); no Bilt Cash on everyday spend. (2) Flexible Bilt Cash (UNMODELED): 4% back
+  in Bilt Cash on all Everyday Spend, no housing multiplier; every $3 Bilt Cash unlocks 100 housing
+  points (capped 1 pt/$1 of payment) — flagged for a human as it can change value materially. HOUSING
+  EARN OMITTED (up to 1.25x) because no housing/rent category key exists (registry gap). No transaction
+  fee to earn on housing under either option. NEEDS human verification: prior Bilt cards required 5
+  transactions/statement to earn; not stated in this offer file, so not modeled. Excluded from earning:
+  balance transfers, cash advances, prepaid/gift cards, P2P, crypto, fees/interest, lottery/gaming.
+  Issuer of record: Column N.A. (Member FDIC); servicer: Cardless Inc.; "issuer" set to "cardless" per
+  dataset convention.
+
+sources:
+  - url: https://www.biltrewards.com/terms
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Bilt Rewards Card Offer Terms (covers all three Bilt Card tiers), offer file last updated
+      April 30, 2026. URL carried over from offer file header; not re-fetched this session — the
+      accessed date reflects local offer-file review on 2026-07-04, not a live visit. Figures are
+      transcribed from a third-party terms sheet and are unconfirmed.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: claude-opus-4-8 (AI draft) — NEEDS human verification
+  confidence: low

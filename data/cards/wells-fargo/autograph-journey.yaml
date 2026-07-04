@@ -1,0 +1,94 @@
+# $95 travel points card — high hotel/airline earn plus a scoped $50 airline credit.
+id: autograph-journey
+name: Wells Fargo Autograph Journey
+issuer: wells-fargo
+network: visa                # "Autograph Journey Visa Card" (Visa Signature perk set)
+currency:
+  type: points
+  program: wells_fargo_rewards
+base_rate: 1                 # "1 Rewards Point per $1 on net purchases"
+
+category_rewards:
+  - category: travel_hotels
+    rate: 5                  # "unlimited 5X points on hotels"
+  - category: travel_flights
+    rate: 4                  # "4X points on airlines"
+  - category: travel_other
+    rate: 3                  # "3X points on other travel"
+  - category: dining
+    rate: 3                  # "3X points on ... restaurants"
+
+merchant_rewards: []
+
+credits:
+  - name: Annual airline purchase credit
+    amount_usd: 50           # "$50 statement credit each year for an airline purchase of at least $50"
+    period: annual
+    category: travel_flights
+    realistic_capture_rate_note: >-
+      Triggered by any single airline purchase of $50 or more (a scoped spend
+      trigger, NOT total card spend — so unlock_spend_usd is intentionally unset).
+      Automatically applied once per year. Frequent flyers capture it fully; someone
+      who never buys airfare on the card gets nothing. NEEDS human verification.
+
+signup_bonus:
+  value:
+    points: 60000            # "60,000 Rewards Points bonus"
+  spend_requirement_usd: 4000 # "at least $4,000 in net purchases ... within 3 months"
+  window_months: 3
+
+fees:
+  annual_fee_usd: 95         # "Annual Fee: $95"
+  foreign_transaction_pct: 0 # "Foreign Transaction Fee: None"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from this card's positioning as a $95 Visa Signature travel
+    rewards card; the offer file does not state a credit requirement. NEEDS human
+    verification.
+
+benefit_flags:
+  - cell_phone_protection
+  - car_rental_insurance
+  - visa_signature
+  - concierge
+  - trip_cancellation_insurance
+  - lost_baggage_reimbursement
+  - travel_accident_insurance
+
+sources:
+  - url: https://www.wellsfargo.com/credit-cards/autograph-journey-visa/terms/
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, fees, approval]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Terms/rates-and-fees URL carried over from the offer file header; not re-fetched
+      this session. Earn rates corroborated in the offer file by secondary sources
+      (CNBC Select, The Points Guy); third-party/unconfirmed per the NEEDS_VERIFICATION marker.
+  - url: https://www.wellsfargo.com/credit-cards/autograph-journey-visa/guide-to-benefits/
+    supports: [credits, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Guide-to-benefits URL carried over from the offer file header; not re-fetched this
+      session; third-party/unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/wells-fargo/autograph-journey.txt, which carries
+  a NEEDS_VERIFICATION marker — all figures are third-party/unconfirmed and need human
+  verification. The $50 airline credit is a scoped-spend-triggered statement credit
+  (fires on a single $50+ airline purchase), so it uses realistic_capture_rate_note
+  rather than unlock_spend_usd (which is total-card-spend only). Points transfer to
+  travel partners (per secondary sources: Choice Privileges, Flying Blue, Avianca,
+  British Airways, AerClub, Iberia, JetBlue, Virgin Atlantic); upside is modeled
+  globally in point-valuations.yaml. Reported relationship-tier variants exist — a
+  "Premier Autograph Visa Infinite" (Wells Fargo Premier clients, ~100k reported
+  welcome offer) and a "Private Bank By Invitation Visa Signature" — but per the offer
+  file's research these share this product's core rewards and lack their own public
+  rates-and-fees pages, so they are noted here rather than modeled as separate cards.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

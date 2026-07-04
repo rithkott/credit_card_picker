@@ -1,0 +1,75 @@
+# No-fee ThankYou card skewed to gas/groceries/AT&T bills, with a $1,000/cycle spend-triggered credit.
+id: att-points-plus
+name: AT&T Points Plus Card from Citi
+issuer: citi
+network: mastercard           # network not stated in offer file; Citi ThankYou cards are Mastercard — inferred
+currency:
+  type: points
+  program: citi_typ
+base_rate: 1                  # "1 point per $1 on all other purchases"
+
+category_rewards:
+  - category: gas
+    rate: 3                   # "3 points per $1 at gas and EV charging stations"
+    notes: >-
+      Must use gas/EV station MCC; excludes warehouse clubs, discount stores, and
+      convenience stores not coded as gas/EV.
+  - category: groceries
+    rate: 2                   # "2 points per $1 at grocery stores"
+    notes: >-
+      Supermarkets, grocery delivery, meat/seafood, dairy, bakeries, food/convenience
+      stores. Excludes general-merchandise/discount superstores, warehouse clubs,
+      candy/nut/confectionery stores.
+
+merchant_rewards: []
+
+credits:
+  - name: Recurring statement credit ($1,000/cycle)
+    amount_usd: 20           # "$20 per billing cycle when net new purchases reach $1,000+ in that cycle"
+    period: monthly
+    unlock_spend_usd: 1000
+    realistic_capture_rate_note: >-
+      $20 posts only in billing cycles where net new purchases (spend minus returns)
+      reach $1,000+. Captured only by cardholders who consistently run $1,000+/month
+      through the card; nothing in lighter-spend months.
+
+signup_bonus: null           # No dollar/point amount disclosed; source only references a "Bonus Offer" eligibility clause
+
+fees:
+  annual_fee_usd: 0           # "Annual Fee: None ($0)"
+  foreign_transaction_pct: 0  # "Foreign Transaction Fee: None"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's mainstream no-annual-fee positioning; not
+    stated in the offer file. Citi issues only one AT&T Points Plus account per person;
+    signup bonus blocked if you got a new-account bonus for this card in the past 48
+    months. NEEDS human verification.
+
+benefit_flags: []
+
+sources:
+  - url: https://www.citi.com/credit-cards/att-points-plus-card
+    supports: [identity, currency, base_rate, category_rewards, credits, fees, approval]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Citi product page; URL not in the offer file and NOT fetched this
+      session — figures unconfirmed. All values transcribed from
+      data/offer_files/citi/att-points-plus.txt. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/citi/att-points-plus.txt; all figures
+  unconfirmed. network (mastercard) is inferred — not stated — NEEDS human verification.
+  REGISTRY GAP / OMITTED REWARD: the "2 points per $1 on products/services purchased
+  directly from AT&T (incl. phone/internet bill payments)" rate is OMITTED — there is no
+  AT&T merchant key in merchants.yaml, and mapping it to the broad `utilities` category
+  would wrongly credit ALL utility/phone spend (the rate is AT&T-only). Needs an
+  `att` merchant key to model correctly. The AT&T AutoPay + paperless discount is
+  provided by AT&T (not a card benefit) and is not modeled.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

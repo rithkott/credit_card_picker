@@ -1,0 +1,82 @@
+# Lufthansa Miles & More co-brand: partner-airline-ticket earn omitted (no key); annual companion ticket, lounge vouchers, $89 AF.
+id: miles-and-more
+name: Miles & More World Elite Mastercard
+issuer: barclays
+network: mastercard             # "World Elite Mastercard" in the product name
+currency:
+  type: points
+  program: miles_and_more
+base_rate: 1                    # "1 mile/$1 on all other purchases"
+
+category_rewards: []
+  # OMITTED: "2 miles/$1 on Miles & More partner airline tickets" — program-partner-specific
+  # (Lufthansa Group / Star Alliance airlines), no merchant/partner key, and narrower than the
+  # broad travel_flights category (other airlines earn only base). Not force-fit. See notes.
+
+merchant_rewards: []
+
+credits:
+  - name: Lufthansa Business Lounge vouchers
+    amount_usd: 100             # curator estimate: 2 single-visit Business Lounge vouchers, ~$50 each
+    period: annual
+    kind: in_kind
+    realistic_capture_rate_note: >-
+      Two complimentary Lufthansa Business Lounge vouchers per year; captured only when flying
+      through an airport with an accessible Lufthansa Business Lounge. Estimated ~$50/visit
+      (typical day-pass equivalent), so ~$100/year — a rough curator estimate, NEEDS human
+      verification. In-kind haircut applies.
+    notes: >-
+      No issuer dollar value stated; $100/year is a curator estimate (2 vouchers x ~$50). A
+      reviewer may adjust or convert to a benefit_flag.
+
+signup_bonus:
+  value:
+    points: 50000              # "50,000 miles after $3,000 + paying the annual fee, within first 90 days"
+  spend_requirement_usd: 3000
+  window_months: 3             # offer states "first 90 days" (~3 months)
+  notes: >-
+    Also requires paying the annual fee in full within the first 90 days.
+
+fees:
+  annual_fee_usd: 89           # "Annual fee: $89 (waived for Senator/HON Circle Members)"
+  foreign_transaction_pct: 0   # "Foreign transaction fee: 0%" / "No foreign transaction fees"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's mainstream airline co-brand positioning; not stated in
+    the offer file. Requires a personal Miles & More service card number at application (free to
+    enroll). Annual fee waived for Senator/HON Circle members while status is maintained. NEEDS
+    human verification.
+
+benefit_flags:
+  - companion_certificate       # annual companion ticket after each anniversary (taxes/fees apply)
+  - lounge_access               # two Lufthansa Business Lounge vouchers annually
+  - world_elite_mastercard
+  - no_foreign_transaction_fee
+
+sources:
+  - url: https://www.barclaycardus.com/c/cards/miles-and-more-world-elite-mastercard
+    supports: [identity, currency, base_rate, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in the offer file and not fetched this session; canonical issuer product page.
+      All figures transcribed from data/offer_files/barclays/miles-and-more.txt and are
+      third-party/unconfirmed against issuer terms. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/barclays/miles-and-more.txt; all figures
+  third-party/unconfirmed, confidence low, NEEDS human verification. OMITTED reward (registry
+  gap): "2 miles/$1 on Miles & More partner airline tickets" — program-partner-specific
+  (Lufthansa Group / Star Alliance), no merchant/partner key and narrower than travel_flights;
+  a reviewer may decide whether to model it. Not dollar-valued: the annual Companion Ticket
+  (taxes/fees apply) is a companion_certificate benefit_flag. The two Lufthansa Business Lounge
+  vouchers are modeled as a rough in_kind credit estimate (see credits). Soft perk noted only:
+  once-a-year conversion of 5,000-25,000 miles into status/qualifying Points. credit_tier is an
+  estimate.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

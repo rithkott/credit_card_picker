@@ -1,0 +1,99 @@
+# Prime-gated Amazon co-brand: 5% at Amazon/Whole Foods/Chase Travel portal, 2% gas/transit/dining. Requires Amazon Prime.
+id: prime-visa
+name: Prime Visa
+issuer: chase
+network: visa                # NOT stated in offer file; the "Prime Visa" name implies Visa — inference, NEEDS human verification
+currency:
+  type: cash                 # earns fixed-value reward points (1 pt = $0.01, no transfer partners) — modeled as cash
+  program: cash
+base_rate: 1                 # "1% back: everything else"
+
+category_rewards:
+  - category: gas
+    rate: 2                  # "2% back: gas stations, local transit/commuting, restaurants"
+  - category: transit
+    rate: 2                  # "local transit/commuting"
+  - category: dining
+    rate: 2                  # "restaurants"
+  - category: travel_flights
+    rate: 5                  # "5% back (Prime) through Chase Travel portal" — Prime is a holding prerequisite, so 5% is the effective rate
+    portal_only: true
+    notes: Chase Travel portal only; not earned on direct bookings. 3% without Prime, but Prime is required to hold this card.
+  - category: travel_hotels
+    rate: 5
+    portal_only: true
+    notes: Chase Travel portal only; not earned on direct hotel bookings.
+  - category: travel_other
+    rate: 5
+    portal_only: true
+    notes: Chase Travel portal purchases (cars, cruises, activities); not earned on direct bookings.
+
+merchant_rewards:
+  - merchant: amazon
+    rate: 5                  # "5% back at Amazon.com ... with an eligible Prime membership" (required to hold this card)
+    notes: >-
+      5% at Amazon.com incl. digital downloads, gift cards, Amazon Fresh, Prime
+      subscriptions, third-party marketplace, participating Amazon stores. Excludes Amazon
+      Pay at other merchants and international Amazon sites. 3% without Prime, but Prime is
+      required to hold this card. Periodic "Prime Card Bonus" promos add extra % on
+      eligible Amazon.com purchases (noted, not modeled).
+  - merchant: whole_foods
+    rate: 5                  # 5% with Prime
+    notes: >-
+      5% at Whole Foods Market (US physical stores + wholefoodsmarket.com). Excludes WF
+      via third-party sites (Instacart/Shipt), online WF gift cards/tickets/classes,
+      certain third-party WF vendors, massage/Spa@Ink.
+
+credits: []
+
+signup_bonus: null           # "Amazon.com Gift Card awarded at approval" — amount NOT stated in the offer file; see notes
+
+required_membership:
+  name: Amazon Prime
+  annual_cost_usd: 139        # NOT stated in offer file; current annual Prime cost — inference, NEEDS human verification
+  note: >-
+    An eligible Amazon Prime membership is a prerequisite for holding this card and for
+    the 5% Amazon / Whole Foods / Chase Travel portal rate (3% without Prime). The
+    optimizer assumes the user already holds Prime; the ~$139/yr cost is a real expense to
+    weigh. annual_cost_usd is an inference (not in the offer file).
+
+fees:
+  annual_fee_usd: 0           # NOT stated in offer file; Prime Visa has no separate annual fee (Prime membership required) — inference, NEEDS human verification
+  foreign_transaction_pct: 0  # NOT stated in offer file; Prime Visa has no FTF — inference, NEEDS human verification
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's mainstream co-brand positioning; not stated in
+    the offer file. Requires an eligible Amazon Prime membership. Not available if you
+    currently hold an Amazon Visa or Prime Visa. Chase 5/24 likely applies. NEEDS human
+    verification.
+
+benefit_flags: []
+
+sources:
+  - url: https://creditcards.chase.com/amazon-rewards-credit-cards/prime-visa
+    supports: [identity, currency, base_rate, category_rewards, merchant_rewards, fees, approval, required_membership]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in offer file and not fetched this session; figures transcribed from
+      data/offer_files/chase/prime-visa.txt and unconfirmed against issuer terms. NEEDS
+      human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/chase/prime-visa.txt. No source URL was on file;
+  the cited page is the issuer's general product page (not fetched). This is the
+  Prime-gated sibling of the Amazon Visa (cross-reference:
+  data/cards/chase/amazon-visa.yaml). The 5% Amazon/Whole Foods/portal rate is modeled at
+  the full 5% with required_membership (Amazon Prime), per the guide's convention that
+  the optimizer assumes the paid membership is held. Points are fixed-value (1cpp, no
+  transfer partners), modeled as cash. SIGNUP BONUS OMITTED as a value: the offer file
+  states only that an "Amazon.com Gift Card [is] awarded at approval" with no dollar
+  amount. annual_fee_usd (0), foreign_transaction_pct (0), Prime cost (139), network
+  (visa), and credit_tier are NOT stated and are inferences — NEEDS human verification.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

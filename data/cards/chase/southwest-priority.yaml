@@ -1,0 +1,111 @@
+# Southwest Rapid Rewards Priority: top-tier Southwest co-brand; 4x Southwest, 7.5k anniversary points, free checked bag.
+id: southwest-priority
+name: Southwest Rapid Rewards Priority
+issuer: chase
+network: visa                   # NOT stated in the offer file — Southwest Priority is publicly a Visa Signature; NEEDS human verification
+currency:
+  type: points
+  program: southwest_rapid_rewards
+base_rate: 1                    # "1 point/$1 on all other purchases"
+
+category_rewards:
+  - category: travel_flights
+    rate: 4                      # "4 points/$1 on purchases made directly with Southwest Airlines"
+    notes: >-
+      Only purchases made directly with Southwest Airlines (flights, inflight, Southwest
+      gift cards, Getaways by Southwest packages; excludes Southwest Cruises/Charters/
+      Cargo). Narrower than the general travel_flights category — other airlines' tickets
+      earn only the 1x base rate.
+  - category: gas
+    rate: 2                      # "2 points/$1 on gas stations and dining" (no cap stated)
+  - category: dining
+    rate: 2                      # "2 points/$1 on gas stations and dining" (no cap stated)
+
+merchant_rewards:
+  - merchant: lyft
+    rate: 5                      # "5X points (4 additional) on qualifying Lyft app purchases through 12/31/2027"
+    notes: >-
+      Limited-time: 5X on qualifying Lyft app purchases through 12/31/2027 (excludes
+      gift cards, car rentals, vehicle service centers, misc fees). Reverts to base earn
+      after the promo; no expires field exists on merchant rewards so the end date is
+      noted here.
+
+credits:
+  - name: Anniversary bonus points
+    amount_points: 7500         # "7,500 bonus points each account anniversary year"
+    period: annual
+    realistic_capture_rate_note: >-
+      Automatic each account anniversary year while the account is open — full capture
+      for anyone who keeps the card.
+  - name: DashPass DoorDash quarterly credit
+    amount_usd: 10             # "Up to $10 off quarterly on DoorDash non-restaurant orders while enrolled"
+    period: quarterly
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Requires activating complimentary DashPass and one qualifying DoorDash
+      non-restaurant order each quarter (no rollover). Active DoorDash users only.
+  - name: Instacart monthly credit
+    amount_usd: 10             # "$10/month Instacart credit while Instacart+ active"
+    period: monthly
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Requires an active Instacart+ membership (3 months complimentary, then auto-renews
+      at $99/year) and one purchase of $10+ each month (no rollover). Only regular
+      Instacart users net ahead after the free window.
+
+signup_bonus:
+  value:
+    points: 60000            # "60,000 points after spending $2,000 in first 3 months"
+  spend_requirement_usd: 2000
+  window_months: 3
+  notes: >-
+    Not available to current cardmembers of any Southwest Rapid Rewards card or previous
+    cardmembers who received a bonus within the last 24 months (business/employee cards
+    excluded). Account must be open and not in default at fulfillment.
+
+fees:
+  annual_fee_usd: 149          # NOT stated in the offer file — best estimate from the card's public positioning as the top-tier Southwest card; NEEDS human verification
+  foreign_transaction_pct: 0   # inferred: airline co-brands typically carry no FTF, but the offer file states no FTF language; NEEDS human verification
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream airline
+    co-brand; not stated in the offer file. Chase 5/24 rule very likely applies — not
+    stated in the offer file. NEEDS human verification.
+
+benefit_flags:
+  - free_checked_bag
+  - no_change_fees
+  - no_blackout_dates
+  - companion_pass_qualifying_boost
+  - visa_signature
+
+sources:
+  - url: https://creditcards.chase.com/travel-credit-cards/southwest/priority
+    supports: [identity, currency, base_rate, category_rewards, merchant_rewards, credits, signup_bonus, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in the offer file and not fetched this session; this is the issuer's
+      general product page. All figures transcribed from
+      data/offer_files/chase/southwest-priority.txt and are unconfirmed against issuer
+      terms. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/chase/southwest-priority.txt. network (visa),
+  annual_fee_usd ($149) and foreign_transaction_pct (0) are NOT stated in the offer file
+  — estimates/inferences, NEEDS human verification. The offer file itself warns that its
+  source text referred to "Cardmembers/benefits" generically without confirming "Priority"
+  vs "Premier" — the annual fee and any Priority-specific benefits (e.g. the widely
+  advertised annual Southwest travel credit, NOT present in this offer file and therefore
+  NOT modeled) especially need human verification against the current product page.
+  OMITTED as structured value (noted, not dollar-valued): Companion Pass Qualifying Points
+  boost (10,000/calendar year), Tier Qualifying Points (2,500 per $5,000 spent), Group 5
+  boarding, seat selection, Extra Legroom upgrade, and the 25%-back inflight
+  drinks/WiFi statement credit (no annual cap stated).
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

@@ -1,0 +1,116 @@
+# SoFi's flat-rate fintech Mastercard: 2 pts/$1 (2% value) on everything, 3 pts/$1 on
+# SoFi Travel portal bookings, with a banking-relationship (Direct Deposit) rewards boost.
+# AI draft from a NEEDS_VERIFICATION offer file — every figure is third-party/unconfirmed.
+id: credit-card
+name: SoFi Unlimited 2% Credit Card
+issuer: sofi
+network: mastercard          # "Issued by SoFi Bank, N.A., pursuant to license by Mastercard International"
+currency:
+  type: points
+  program: sofi_points       # 1 pt = 1 cent redeemed INTO a SoFi account (cardholders have one)
+base_rate: 2                 # "2 points/$1 (base 2% cash back value) on all purchases" — no-relationship baseline
+
+category_rewards:
+  # "3 points/$1 (3% cash back value) on SoFi Travel portal purchases." SoFi Travel is a
+  # booking portal (flights/hotels/car rentals). Modeled across the three travel categories
+  # the portal serves, each flagged portal_only since the rate applies ONLY to portal bookings,
+  # not to travel bought directly. NEEDS human verification of the exact portal scope.
+  - category: travel_flights
+    rate: 3
+    portal_only: true
+    notes: >-
+      3 pts/$1 (3% value) only on flights booked through the SoFi Travel portal, not on
+      airfare bought directly. Portal pricing may differ from booking direct. Offer file line 14.
+  - category: travel_hotels
+    rate: 3
+    portal_only: true
+    notes: >-
+      3 pts/$1 (3% value) only on hotels booked through the SoFi Travel portal. Offer file line 14.
+  - category: travel_other
+    rate: 3
+    portal_only: true
+    notes: >-
+      3 pts/$1 (3% value) on other SoFi Travel portal bookings (e.g. car rentals). Offer file line 14.
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus: null
+# Signup bonus OMITTED / null: offer file line 10 reports CONFLICTING info — some secondary
+# sources cite "$200 cash rewards after $500 spend in first 3 months," others say the Unlimited
+# 2% Card has NO signup bonus. Could not confirm on an official SoFi page. Offer file explicitly
+# says "omit from scoring until confirmed." NEEDS human verification of the current public offer.
+
+fees:
+  annual_fee_usd: 0          # "$0" annual fee (offer file line 18) — stated consistently but NOT verified against the Schumer box; NEEDS human verification
+  foreign_transaction_pct: 0 # "$0" foreign transaction fee (offer file lines 20-21), stated explicitly but NOT verified against the primary pricing document; NEEDS human verification
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier is an INFERENCE — the offer file states no credit requirement. Estimated
+    "good" (~670+) from this being a mainstream no-annual-fee flat-rate Mastercard; SoFi
+    markets it broadly but underwriting for a 2% unlimited card generally expects a solid
+    profile. NEEDS human verification.
+
+relationship_boost:
+  program: SoFi Direct Deposit Rewards Boost
+  tiers:
+    - requirement: >-
+        qualifying Direct Deposit into a SoFi Checking or Savings account during each 30-day
+        evaluation period (can take up to 90 days for a new Direct Deposit to be recognized)
+      boost_pct: 10          # Offer file line 6: "10% cash back rewards rate boost (bringing the ~2% base rate to ~2.2%, and the 3% SoFi Travel rate to ~3.3%)"
+  note: >-
+    Direct-Deposit relationship boost, transcribed directly from offer file line 6: a 10%
+    boost to the rewards RATE (not +10 percentage points) for Credit Card members who receive
+    a qualifying Direct Deposit into SoFi Checking/Savings each 30-day period — raising the ~2%
+    base to ~2.2% and the 3% SoFi Travel rate to ~3.3%. Up to 90 days for a new Direct Deposit
+    to be recognized before the boost starts. Applies to both base and travel earn. NOT scored
+    in v1 — the modeled base_rate (2) is the no-relationship baseline. NEEDS human verification:
+    a separate legacy "SoFi Plus" membership boost (cited as up to ~10% / effectively ~5.5% on
+    non-air bookings, reportedly now $10/month as of 2026-03-30 per secondary sources) could not
+    be reconciled with this Direct-Deposit boost from official pages — whether they are the same,
+    successor, or stackable programs is unresolved.
+
+benefit_flags: []
+
+notes: >-
+  AI draft (claude-opus-4-8) converted OFFLINE from data/offer_files/sofi/credit-card.txt; nothing
+  was re-fetched this session, so confidence is low and every figure is third-party/unconfirmed.
+  The offer file carries multiple NEEDS_VERIFICATION markers.
+  IMPORTANT DISCREPANCY WITH TASK BRIEF: the conversion brief described the qualifying-Direct-Deposit
+  boost as raising the rate 2%->3% (a 50% boost). The actual offer file instead states the base is
+  2 pts/$1 (2%), the 3% figure is the SoFi TRAVEL PORTAL rate, and the Direct-Deposit boost is a 10%
+  rewards-rate boost (2%->2.2%). This file follows the offer file (boost_pct 10, 3% modeled as a
+  portal_only travel rate), per the "never invent / transcribe from the .txt" hard rule. A human
+  reviewer must confirm which is current.
+  REDEMPTION-VALUE CAVEAT (offer file lines 4-5, 32): points redeem at full 1 cent/point ONLY toward
+  an active SoFi account (Checking/Savings/Money/Invest/loan payoff/SoFi Travel) or as a statement
+  credit; multiple secondary sources claim statement-credit redemptions pay a LOWER rate (~1 cent per
+  2 points, ~1% effective) but this could NOT be confirmed (SoFi's own redemption-value support page
+  returned a 403 during research). The sofi_points registry floor of 1.0cpp assumes SoFi-account
+  redemption; the statement-credit penalty is unverified — NEEDS human verification before use as a
+  scoring input. Rewards may be delayed up to 7 business days after a transaction posts.
+  EXCLUSIONS (no points earned): fees/interest, balance transfers, cash advances, traveler's checks /
+  cash equivalents, prepaid-card purchase or reload, and reversed/returned transactions.
+  APR and late-fee terms are out of scope (no schema field).
+
+sources:
+  - url: https://www.sofi.com/credit-card/unlimited/
+    supports: [identity, currency, base_rate, category_rewards, fees, relationship_boost]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Official product page cited by the offer file (also sofi.com/credit-card/) as the source it
+      was drafted from; NOT re-fetched this session — the accessed date reflects local offer-file
+      review on 2026-07-04, not a live visit. All figures are transcribed from a third-party terms
+      sheet and are unconfirmed. The offer file records that SoFi's own redemption-value support
+      article returned a 403 and that annual fee / FTF were not verified verbatim against the
+      Schumer box; treat annual fee, FTF, the Direct-Deposit boost mechanics, and any signup bonus
+      as NEEDS human verification.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: claude-opus-4-8 (AI draft) — NEEDS human verification
+  confidence: low

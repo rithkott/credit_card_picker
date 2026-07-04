@@ -1,0 +1,67 @@
+# Flat 2% (1% at purchase + 1% at payment) ThankYou-points card, plus 5X Citi Travel portal.
+id: double-cash
+name: Citi Double Cash
+issuer: citi
+network: mastercard           # network not stated in offer file; Citi Double Cash is a Mastercard — inferred
+currency:
+  type: points
+  program: citi_typ
+base_rate: 2                 # "1 ThankYou point per $1 spent, plus 1 per $1 paid" = 2 pts/$ (2%) on paid-off spend
+
+category_rewards:
+  - category: travel_hotels
+    rate: 5                   # "5 total (3 additional) points/$1 on hotels ... via Citi Travel"
+    portal_only: true
+    notes: >-
+      Only hotels booked via Citi Travel (cititravel.com). The 5X already includes the
+      base 1% purchase + 1% payment plus 3 additional points. Portal-only.
+  - category: travel_other
+    rate: 5                   # "5 total ... car rentals and attractions ... via Citi Travel"
+    portal_only: true
+    notes: >-
+      Only car rentals and attractions booked via Citi Travel. Portal-only; 5X includes
+      the base purchase+payment points.
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus: null           # No specific bonus amount stated in source
+
+fees:
+  annual_fee_usd: 0           # "Annual Fee: None"
+  foreign_transaction_pct: 3  # "Foreign Transaction: 3% of each purchase transaction"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's mainstream flat-rate positioning; not stated in
+    the offer file. Bonus blocked if you got a new-account bonus for Double Cash, or
+    converted such an account, in the past 48 months. NEEDS human verification.
+
+benefit_flags: []
+
+sources:
+  - url: https://www.citi.com/credit-cards/citi-double-cash-credit-card
+    supports: [identity, currency, base_rate, category_rewards, fees, approval]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Citi product page; URL not in the offer file and NOT fetched this
+      session — figures unconfirmed. All values transcribed from
+      data/offer_files/citi/double-cash.txt. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/citi/double-cash.txt; all figures unconfirmed.
+  network (mastercard) is inferred — not stated — NEEDS human verification. base_rate 2 is
+  the "Double Cash" split: 1 point/$1 at purchase + 1 point/$1 when you pay the balance,
+  netting 2% back — but only on spend that is paid off (unpaid balances earn only the 1%
+  purchase point). Modeled as citi_typ points (the card now earns ThankYou points, cash-
+  redeemable at 10,000 pts = $100 = 1cpp). Missing a Minimum Payment Due suspends earning
+  for that cycle. Points don't earn on balance transfers, cash advances, Citi Flex, cash-
+  like transactions, gift-card loads, or P2P payments.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

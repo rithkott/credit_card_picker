@@ -1,0 +1,130 @@
+# Marriott Bonvoy Boundless: 6x at Marriott, combined 3x everyday cap, anniversary free night up to 35k.
+id: marriott-boundless
+name: Marriott Bonvoy Boundless
+issuer: chase
+network: visa                   # "May be issued as Visa Signature or Visa Platinum depending on underwriting"
+currency:
+  type: points
+  program: marriott_bonvoy
+base_rate: 2                    # "2 points/$1: everything else"
+
+category_rewards:
+  - category: travel_hotels
+    rate: 6                      # "6 points/$1 at hotels participating in Marriott Bonvoy" (card earn only; Marriott base earn posts separately)
+    notes: >-
+      6x applies to Marriott-brand hotel stays. This is the card's earn only — Marriott
+      program base points (10 base pts/$1 + Silver 10% bonus) post separately to the
+      Marriott account and are not included here.
+  - category: gas
+    rate: 3                      # "3 points/$1 total: gas + grocery + dining, combined, first $6,000/anniversary year; then 2x"
+    cap:
+      period: annual
+      max_spend_usd: 6000        # full combined pool, stated in full on each member entry
+      fallback_rate: 2
+      shared_cap_id: gas_grocery_dining
+    notes: >-
+      Combined $6,000/account-anniversary-year pool shared with groceries and dining;
+      combined spend above the cap earns 2 points/$1 (no maximum).
+  - category: groceries
+    rate: 3                      # same combined 3x line
+    cap:
+      period: annual
+      max_spend_usd: 6000
+      fallback_rate: 2
+      shared_cap_id: gas_grocery_dining
+    notes: >-
+      Combined $6,000/account-anniversary-year pool shared with gas and dining;
+      combined spend above the cap earns 2 points/$1.
+  - category: dining
+    rate: 3                      # same combined 3x line
+    cap:
+      period: annual
+      max_spend_usd: 6000
+      fallback_rate: 2
+      shared_cap_id: gas_grocery_dining
+    notes: >-
+      Combined $6,000/account-anniversary-year pool shared with gas and groceries;
+      combined spend above the cap earns 2 points/$1.
+
+merchant_rewards: []
+
+credits:
+  - name: Anniversary Free Night Award
+    amount_usd: 150             # in_kind: estimated value of a night up to the 35,000-point redemption ceiling
+    kind: in_kind
+    period: annual
+    category: travel_hotels
+    realistic_capture_rate_note: >-
+      Automatic each cardmember anniversary, valid 12 months, resort fees still apply.
+      Captured by anyone who takes one Marriott stay a year. Estimated at ~$150: the
+      award caps at a 35,000-point redemption ceiling and Marriott points realistically
+      redeem near 0.6-0.9 cents (~$210-315 at the ceiling), haircut toward $150 for
+      the ceiling not always being reachable, resort fees, and availability friction.
+  - name: Airline purchase credit
+    amount_usd: 50             # "$50 statement credit per half-year period after spending $250+ directly with airlines each half"
+    period: semiannual
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $50 per half-year (up to $100/year) after $250+ in direct airline spend that half;
+      the $250 airline trigger is scoped spend (not total card spend), and existing
+      cardmembers must activate. Captured only by cardholders who buy airfare directly
+      each half and enroll; terms/dates differ for existing vs new cardmembers.
+  - name: DashPass DoorDash quarterly credit
+    amount_usd: 10             # "$10 off quarterly on one DoorDash non-restaurant order while enrolled"
+    period: quarterly
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Requires activating complimentary DashPass and one qualifying DoorDash
+      non-restaurant order each quarter (no rollover). Active DoorDash users only.
+
+signup_bonus:
+  value:
+    points: 125000           # "125,000 bonus points after spending $3,000 in first 3 months"
+  spend_requirement_usd: 3000
+  window_months: 3
+  notes: >-
+    The public offer also includes 1 Free Night Award (redemption level up to 50,000
+    points, 12-month expiry) after the same $3,000/3-month spend — an in-kind item that
+    cannot be expressed in the points/usd bonus value, so it is noted here unscored
+    (estimated cash value ~$200-350, not modeled). Account must stay open 6+ months or
+    points may be clawed back. Extensive Marriott/Amex cross-product exclusions apply.
+
+fees:
+  annual_fee_usd: 95           # NOT stated in the offer file — best estimate from the card's public positioning; NEEDS human verification
+  foreign_transaction_pct: 0   # inferred: hotel co-brands typically carry no FTF, but the offer file states no FTF language; NEEDS human verification
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream hotel
+    co-brand; not stated in the offer file. Chase 5/24 rule very likely applies — not
+    stated in the offer file. NEEDS human verification.
+
+benefit_flags:
+  - complimentary_elite_status
+  - concierge
+
+sources:
+  - url: https://creditcards.chase.com/travel-credit-cards/marriott-bonvoy/boundless
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in the offer file and not fetched this session; this is the issuer's
+      general product page. All figures transcribed from
+      data/offer_files/chase/marriott-boundless.txt and are unconfirmed against issuer
+      terms. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/chase/marriott-boundless.txt. network (visa —
+  issues as Visa Signature or Visa Platinum by underwriting), annual_fee_usd ($95) and
+  foreign_transaction_pct (0) are NOT stated in the offer file — estimates/inferences,
+  NEEDS human verification. The Anniversary Free Night value ($150) is a curator
+  estimate, not a marketing figure (see its capture note). 15 Elite Night Credits at
+  account opening (+1 per $5,000 spent), automatic Silver Elite status, and the Path to
+  Gold with $35,000 spend are recorded as benefit_flags / this note, never dollar-valued.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

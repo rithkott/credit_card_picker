@@ -1,0 +1,114 @@
+# Premium ThankYou card: heavy Citi Travel portal rates, dining, lounge access, $595 fee, deep credits.
+id: strata-elite
+name: Citi Strata Elite
+issuer: citi
+network: mastercard           # network not stated in offer file; Citi Strata Elite is a Mastercard — inferred
+currency:
+  type: points
+  program: citi_typ
+base_rate: 1.5               # "1.5 points per $1 on everything else"
+
+category_rewards:
+  - category: travel_hotels
+    rate: 12                  # "12 points per $1 on hotels ... booked through Citi Travel"
+    portal_only: true
+    notes: >-
+      Only hotels booked through Citi Travel (cititravel.com or phone). Portal-only. No
+      points on the portion of a hotel purchase offset by the $300 Annual Hotel Benefit.
+  - category: travel_other
+    rate: 12                  # "12 points per $1 on ... car rentals, and attractions ... Citi Travel"
+    portal_only: true
+    notes: Car rentals and attractions booked through Citi Travel. Portal-only.
+  - category: travel_flights
+    rate: 6                   # "6 points per $1 on air travel booked through Citi Travel"
+    portal_only: true
+    notes: Only air travel booked through Citi Travel. Portal-only.
+  - category: dining
+    rate: 3                   # "3 points per $1 at restaurants ... outside Citi Nights" (unconditional baseline)
+    notes: >-
+      3X on restaurants incl. delivery (baseline). Rises to 6X during "Citi Nights" —
+      purchases authorized Fri 6PM-Sat 6AM ET and Sat 6PM-Sun 6AM ET — a time-of-week
+      boost that can't be modeled structurally, so the 3X baseline is used (see notes).
+      Excludes bakeries, caterers, restaurants inside another business (hotels, stores,
+      stadiums, grocery stores, warehouse clubs).
+
+merchant_rewards: []
+
+credits:
+  - name: Annual hotel benefit (Citi Travel)
+    amount_usd: 300          # "Up to $300/year hotel benefit via Citi Travel"
+    period: annual
+    category: travel_hotels
+    realistic_capture_rate_note: >-
+      Applies to 2+ night stays booked/prepaid through Citi Travel; unused portion carries
+      within the same calendar year; portal-only (Citi Travel prices can exceed direct).
+      High capture for cardholders who book any qualifying hotel through the portal yearly;
+      zero otherwise.
+  - name: Splurge Credit
+    amount_usd: 200          # "Up to $200/year Splurge Credit"
+    period: annual
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Cardholder activates up to 2 merchants (citi.com/splurgecredit); credits post on
+      purchases at the activated merchant(s) up to $200/year. Special carve-outs for Live
+      Nation/Ticketmaster (US venues, direct only) and American Airlines. Moderate capture
+      for those who set it to a merchant they spend at.
+  - name: Blacklane chauffeur credit
+    amount_usd: 100          # "Up to $200/year: up to $100 Jan-Jun and up to $100 Jul-Dec"
+    period: semiannual
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Up to $100 per half-year (Jan-Jun, Jul-Dec) on direct Blacklane app/site bookings;
+      unused portion carries within the half. Captured only by cardholders who use
+      Blacklane chauffeur service; worthless otherwise.
+  - name: Global Entry / TSA PreCheck fee credit
+    amount_usd: 120
+    period: every_4_years
+    realistic_capture_rate_note: >-
+      One credit every 4 years toward whichever of Global Entry / TSA PreCheck is charged
+      first. Only captured by travelers who apply/renew.
+
+signup_bonus: null           # No public signup bonus dollar/point amount was present in this source file
+
+fees:
+  annual_fee_usd: 595         # "Annual Fee: $595 ($75 per Authorized User)"
+  foreign_transaction_pct: 0  # "Foreign Transaction Fee: None"
+
+approval:
+  credit_tier: excellent
+  notes: >-
+    credit_tier estimated from the card's premium positioning ($595 fee, Priority Pass +
+    Admirals passes); not stated in the offer file. Signup bonus blocked if you got a
+    Strata Elite new-account bonus, or converted such a card, in the past 48 months. Must
+    keep an open AAdvantage account to use the Admirals Club passes. NEEDS human verification.
+
+benefit_flags:
+  - lounge_access             # Priority Pass Select membership + Admirals Club "Strata Elite" passes
+  - primary_rental_insurance  # MasterRental primary outside the renter's home country
+
+sources:
+  - url: https://www.citi.com/credit-cards/citi-strata-elite-credit-card
+    supports: [identity, currency, base_rate, category_rewards, credits, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Citi product page; URL not in the offer file and NOT fetched this
+      session — figures unconfirmed. All values transcribed from
+      data/offer_files/citi/strata-elite.txt. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/citi/strata-elite.txt; all figures unconfirmed.
+  network (mastercard) is inferred — not stated — NEEDS human verification. Dining earns
+  6X during "Citi Nights" (weekend-night authorization window) but is modeled at its 3X
+  baseline (time-of-week condition can't be scored). OMITTED as credits: the Citigold /
+  Citigold Private Client banking-relationship credits ($595 yr1 + $145/yr, or $145/yr) —
+  they are gated on holding a qualifying Citi deposit account and are relationship-boost
+  style perks not scored in v1. The Reserve / Hotel Collection per-stay hotel perks
+  (~$100 experience credit, breakfast, upgrades) are per-booking, portal-only, and not
+  modeled as periodic credits. Priority Pass, Admirals passes, and primary MasterRental
+  recorded as flags.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

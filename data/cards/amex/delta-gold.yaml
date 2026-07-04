@@ -1,0 +1,124 @@
+# Mid Delta co-brand: 2x supermarkets/dining/Delta, first-bag-free, $150 AF (waived yr 1).
+id: delta-gold
+name: Delta SkyMiles Gold American Express Card
+issuer: amex
+network: amex
+currency:
+  type: points
+  program: delta_skymiles
+base_rate: 1                 # "1 mile per dollar on eligible purchases"
+
+category_rewards:
+  - category: groceries
+    rate: 2                  # "2x miles at U.S. supermarkets"
+    notes: >-
+      US supermarkets only; superstores, convenience stores, warehouse clubs, and
+      meal-kit delivery are NOT treated as supermarkets.
+  - category: dining
+    rate: 2                  # "2x miles at restaurants worldwide"
+    notes: >-
+      Restaurants worldwide. Excludes restaurants inside another establishment,
+      non-US third-party delivery, bars, nightclubs, cafeterias, convenience stores.
+
+merchant_rewards: []
+
+credits:
+  - name: Delta Flight Credit
+    amount_usd: 200          # "$200 Delta Flight Credit ... if $10,000+ ... in a calendar year"
+    period: annual
+    category: travel_flights
+    unlock_spend_usd: 10000  # requires $10,000 in eligible purchases in a calendar year
+    realistic_capture_rate_note: >-
+      Only issued after $10,000 in card spend in a calendar year, then usable only
+      as a Delta eCredit toward a Delta-marketed flight (expires 1 year from
+      issuance, one per calendar year, not valid for bag/change/upgrade fees).
+      Near full value for regular Delta flyers who hit the spend gate; $0 otherwise.
+  - name: Rideshare Credit
+    amount_usd: 10           # "up to $10/month statement credit"
+    period: monthly
+    category: transit
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $10/month on US Uber/Lyft/Curb/Alto rides, enrollment required; monthly
+      forfeit. Only available starting 12 months after account opening (immediate if
+      transferring from Platinum/Reserve). Excludes delivery, bikeshare, scooter,
+      car rental, transit passes, memberships.
+  - name: Delta Stays Credit
+    amount_usd: 100          # "up to $100/year"
+    period: annual
+    category: travel_hotels
+    realistic_capture_rate_note: >-
+      $100/yr on prepaid hotel/vacation-rental bookings via the Delta Stays platform
+      (delta.com/stays) only; excludes cancellation/property/resort fees. Captured
+      only by cardholders who book lodging through Delta Stays.
+  - name: 20% Back on In-Flight Purchases
+    amount_usd: 15           # uncapped % rebate; nominal realistic annual figure
+    period: annual
+    realistic_capture_rate_note: >-
+      20% statement credit on Delta in-flight food/beverage (automatic). No cap;
+      value depends on in-flight spend, typically small — modeled at ~$15/yr.
+  - name: American Express Venue Collection Concessions Credit
+    amount_usd: 25
+    period: annual
+    category: entertainment
+    requires_enrollment: true
+    expires: "2026-12-31"
+    realistic_capture_rate_note: >-
+      10% back (up to $250/yr) on Venue Collection concessions, enrollment required;
+      most cardholders capture a small fraction — modeled at ~$25.
+
+signup_bonus:
+  value:
+    points: 70000            # "70,000 miles after $3,000 ... first 6 months"
+  spend_requirement_usd: 3000
+  window_months: 6
+  tiers:
+    - value:
+        points: 20000        # "additional 20,000 miles (90,000 total) after $5,000 total"
+      spend_requirement_usd: 5000
+  limited_time: true
+  expires: "2026-07-15"
+  notes: >-
+    Limited-time offer ending 07/15/2026 (11:59pm MST per the offer file). The
+    standard evergreen bonus is not stated in the offer file — flag for verification.
+
+fees:
+  annual_fee_usd: 150        # "$0 intro for first year, then $150"
+  first_year_waived: true
+  foreign_transaction_pct: 0 # "Foreign Transaction Fee: None"
+
+approval:
+  credit_tier: very_good
+  notes: >-
+    credit_tier is an inference from the card's mid-tier premium positioning; not
+    stated in the offer file — NEEDS human verification. Amex welcome-offer
+    eligibility is once-per-lifetime and also blocked if you have/had this Card,
+    Delta SkyMiles Platinum, or Reserve Amex cards (or previous versions).
+
+benefit_flags:
+  - no_foreign_transaction_fee
+  - free_checked_bag
+  - no_blackout_dates
+  - car_rental_insurance
+  - extended_warranty
+
+sources:
+  - url: https://www.americanexpress.com/us/credit-cards/card/delta-skymiles-gold/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Amex product page. URL not in offer file and not fetched this
+      session; figures transcribed from the local offer file and unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/amex/delta-gold.txt; all figures unconfirmed
+  pending human verification. OMITTED: the "2x miles on Delta purchases" earn — no
+  `delta` merchant key in data/meta/merchants.yaml, and mapping it to travel_flights
+  would overstate it for non-Delta flights (registry gap flagged). First checked bag
+  free and Zone 5 priority boarding on Delta flights.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

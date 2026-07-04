@@ -1,0 +1,77 @@
+# Bilt Card 2.0 entry tier — $0 AF Mastercard whose headline value is Bilt Points on
+# housing payments (rent/mortgage/HOA/utilities) with no transaction fee. AI draft.
+id: bilt-blue
+name: Bilt Blue Card
+issuer: cardless
+network: mastercard
+currency:
+  type: points
+  program: bilt_points
+base_rate: 1                 # 1 point per $1 on all other eligible purchases (Housing-only option)
+
+category_rewards: []
+# Housing-payment earn (up to 1.25x on rent/mortgage/HOA/utilities/property tax) is OMITTED:
+# no housing/rent key exists in data/meta/categories.yaml. See notes + report registry gap.
+
+merchant_rewards: []
+# Partner earning (Lyft, Bilt Dining, Bilt Travel Portal, Bilt Fitness, Metropolis parking,
+# Walgreens, Bilt Home Delivery) exists but rates "vary by partner/merchant, set in the Bilt app"
+# — no numeric rate stated, so unmodeled. See notes.
+
+credits: []
+
+signup_bonus:
+  value:
+    usd: 100                 # "$100 Bilt Cash, credited on or about Account Open Date (no spend requirement)"
+  spend_requirement_usd: 0   # approval-time credit, no spend needed
+  window_months: 1           # nominal — credited at/around account open; offer file gives no window
+  notes: >-
+    $100 Bilt Cash credited at account opening with no spend requirement (approval-time credit,
+    modeled as a $0-spend bonus). Bilt Cash is cash-equivalent, valued at ~1cpp. Not available if
+    you currently hold, previously held, or already received a Welcome Bonus for any Bilt Card 2.0
+    (Blue/Obsidian/Palladium).
+
+fees:
+  annual_fee_usd: 0
+  foreign_transaction_pct: 0   # INFERRED: no FTF language in the offer file — NEEDS human verification
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from this being an entry-level, no-annual-fee card; not stated in the
+    offer file — NEEDS human verification.
+
+benefit_flags: []
+
+notes: >-
+  AI draft from local offer file only; not re-fetched from the issuer this session — confidence low.
+  REWARD OPTIONS: cardholder picks ONE per billing cycle (changeable within a 7-day window, then
+  locked). (1) Housing-only (default, modeled here): Bilt Points auto-earned on Bilt Housing Payments
+  at a variable 0x-1.25x based on "Everyday Spend Ratio" (Everyday Spend / Housing Payment): 25-49%=0.5x,
+  50-74%=0.75x, 75-99%=1x, 100%+=1.25x, with a 250-point/cycle floor; 1x on all other eligible purchases;
+  no Bilt Cash on everyday spend. (2) Flexible Bilt Cash option (UNMODELED): 4% back in Bilt Cash on all
+  Everyday Spend, no housing multiplier; redeem every $3 Bilt Cash to unlock 100 housing points (capped at
+  1 pt/$1 of the payment). The 4% option could materially change value for low-housing users — flagged for
+  a human. HOUSING EARN OMITTED because no housing/rent category key exists (registry gap). No transaction
+  fee to earn rewards on housing under either option. NEEDS human verification: prior-generation Bilt cards
+  required 5 transactions/statement to earn — this offer file does not state such a requirement, so it is
+  not modeled; confirm whether it applies to Bilt 2.0. Excluded from earning: balance transfers, cash
+  advances, prepaid/gift cards, P2P (Venmo/PayPal/Cash App/Zelle), crypto, fees/interest, lottery/gaming.
+  Issuer of record: Column N.A. (Member FDIC); servicer: Cardless Inc.; "issuer" field set to "cardless"
+  per dataset convention.
+
+sources:
+  - url: https://www.biltrewards.com/terms
+    supports: [identity, currency, base_rate, signup_bonus, fees]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Bilt Rewards Card Offer Terms (covers all three Bilt Card tiers), offer file last updated
+      April 30, 2026. URL carried over from offer file header; not re-fetched this session — the
+      accessed date reflects local offer-file review on 2026-07-04, not a live visit. Figures are
+      transcribed from a third-party terms sheet and are unconfirmed.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: claude-opus-4-8 (AI draft) — NEEDS human verification
+  confidence: low

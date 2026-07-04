@@ -1,0 +1,78 @@
+# Instacart co-brand: 5% at Instacart (OMITTED — no registry merchant), 5% Chase Travel portal, 2% gas/dining/streaming.
+id: instacart-mastercard
+name: Instacart Mastercard
+issuer: chase
+network: mastercard          # "Instacart Mastercard" — stated in the card name
+currency:
+  type: cash                 # earns fixed-value reward points (1 pt = $0.01, no transfer partners) — modeled as cash
+  program: cash
+base_rate: 1                 # "1% Cash Back: everything else"
+
+category_rewards:
+  - category: gas
+    rate: 2                  # "2% Cash Back: gas stations; dining ...; select streaming"
+  - category: dining
+    rate: 2                  # "dining (incl. Instacart-powered-by-Uber-Eats restaurant orders, takeout, delivery)"
+  - category: streaming
+    rate: 2                  # "select streaming services"
+  - category: travel_flights
+    rate: 5                  # "5% Cash Back through Chase Travel portal"
+    portal_only: true
+    notes: Chase Travel portal only.
+  - category: travel_hotels
+    rate: 5
+    portal_only: true
+    notes: Chase Travel portal only.
+  - category: travel_other
+    rate: 5
+    portal_only: true
+    notes: Chase Travel portal purchases (cars, cruises, activities, etc.).
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus: null           # "Instacart Credit awarded automatically upon approval" — amount NOT stated in the offer file; see notes
+
+fees:
+  annual_fee_usd: 0           # NOT stated in offer file; the Instacart Mastercard has no annual fee — inference, NEEDS human verification
+  foreign_transaction_pct: 3  # NOT stated in offer file — inference, NEEDS human verification
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's mainstream co-brand positioning; not stated in
+    the offer file. Not available if you currently hold this card or received a cash-back
+    new-cardmember bonus in the past 24 months. Chase 5/24 likely applies. NEEDS human
+    verification.
+
+benefit_flags: []
+
+sources:
+  - url: https://creditcards.chase.com/cash-back-credit-cards/instacart
+    supports: [identity, currency, base_rate, category_rewards, fees, approval]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in offer file and not fetched this session; figures transcribed from
+      data/offer_files/chase/instacart-mastercard.txt and unconfirmed against issuer
+      terms. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/chase/instacart-mastercard.txt. No source URL was
+  on file; the cited page is the issuer's general product page (not fetched). REGISTRY
+  GAP / OMITTED REWARD: the card's headline "5% Cash Back on Instacart.com/app purchases
+  (first $6,000/year, then 1%)" is OMITTED because there is no 'instacart' key in
+  data/meta/merchants.yaml and no category genuinely fits a single grocery-delivery
+  platform (mapping it to 'groceries' would wrongly widen it to all grocery spend). Per
+  the conversion protocol's no-forced-fit rule, it is dropped and flagged for a human to
+  add an 'instacart' merchant (would need cap: annual, max_spend_usd 6000, fallback_rate
+  1). SIGNUP BONUS OMITTED as a value: the offer file states an "Instacart Credit awarded
+  automatically upon approval" with no dollar amount. Points are fixed-value (1cpp),
+  modeled as cash. annual_fee_usd (0), foreign_transaction_pct (3), and credit_tier are
+  NOT stated and are inferences — NEEDS human verification.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

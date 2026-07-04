@@ -1,0 +1,66 @@
+# Credit-building card with NO rewards — page explicitly states "No Annual Fees or Rewards".
+id: capital-one-platinum
+name: Capital One Platinum
+issuer: capital-one
+network: mastercard          # NOT stated in offer file — inferred (Platinum is a Mastercard product); NEEDS human verification
+currency:
+  type: cash
+  program: cash
+base_rate: 0                 # "No Annual Fees or Rewards" — earns nothing; this is a credit-building card
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus: null            # "None disclosed on either page"
+
+fees:
+  annual_fee_usd: 0            # "No Annual Fees" (confirmed via direct page fetch)
+  foreign_transaction_pct: 0   # "you don't have to pay foreign transaction fees when you use your card outside the U.S." (confirmed via direct page fetch)
+
+approval:
+  credit_tier: fair            # "Fair credit (FICO 580-669 per the Capital One 'all about' page)"
+  estimated_min_score: 580
+  notes: >-
+    Fair credit (FICO 580-669) stated on Capital One's "all about Platinum" page. Unsecured
+    card (no security deposit); applicants with lower scores may be directed to the Platinum
+    Secured card instead. Automatically considered for a credit-limit increase in as little
+    as six months.
+
+benefit_flags:
+  - no_foreign_transaction_fee
+  - zero_fraud_liability
+  - virtual_card_numbers
+
+sources:
+  - url: https://www.capitalone.com/credit-cards/platinum/
+    supports: [identity, currency, base_rate, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session. "No
+      Annual Fees or Rewards", $0 annual fee, no FTF, and the fair-credit positioning were
+      confirmed via the offer file's direct page fetch; APR/fee figures (out of scope) came
+      from secondary sources.
+  - url: https://www.capitalone.com/learn-grow/money-management/all-about-platinum-card/
+    supports: [approval]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session. Source for
+      the FICO 580-669 fair-credit range.
+
+notes: >-
+  Drafted offline from data/offer_files/capital-one/platinum.txt (NEEDS_VERIFICATION
+  marker). This is a credit-building card with NO rewards program — base_rate is 0 and
+  there are no category/merchant rewards, credits, or signup bonus. network (mastercard)
+  is an inference, not stated in the offer file. Annual fee, no-FTF, and the fair-credit
+  range were confirmed by the offer file's direct page fetch; APR/cash-advance figures are
+  out of scope for the value model.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

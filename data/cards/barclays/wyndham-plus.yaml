@@ -1,0 +1,97 @@
+# Wyndham Rewards co-brand (Plus tier): Wyndham points; 4x dining/groceries/travel, brand hotel earn omitted; DIAMOND status, $95 AF.
+id: wyndham-plus
+name: Wyndham Rewards Earner Plus Card
+issuer: barclays
+network: visa                   # "Visa Signature"
+currency:
+  type: points
+  program: wyndham_rewards
+base_rate: 1                    # "1 point/$1 on all other purchases (excludes Vacation Club down payments)"
+
+category_rewards:
+  # OMITTED: "6 points/$1 at Hotels by Wyndham" — brand-specific with no `wyndham` merchant key;
+  # not force-fit onto travel_hotels. See notes / registry gap.
+  - category: dining
+    rate: 4                      # "4 points/$1 on eligible dining, grocery store, and travel purchases"
+  - category: groceries
+    rate: 4                      # same 4x tier
+    notes: Excludes Target and Walmart (stated in the offer file).
+  - category: travel_flights
+    rate: 4                      # same broad "travel" 4x tier
+  - category: travel_hotels
+    rate: 4                      # same broad "travel" 4x tier (non-Wyndham hotels)
+  - category: travel_other
+    rate: 4                      # same broad "travel" 4x tier
+
+merchant_rewards: []
+
+credits:
+  - name: Anniversary bonus points
+    amount_points: 15000        # "15,000 bonus points each anniversary year after annual fee payment"
+    period: annual
+    realistic_capture_rate_note: >-
+      15,000 Wyndham points each anniversary after the annual fee posts (up to ~2 free nights);
+      captured by every renewing cardholder. Valued via the wyndham_rewards program.
+  - name: Free night after 5 nights stayed
+    amount_usd: 105             # curator estimate: up to 15,000 Wyndham pts x 0.7cpp floor
+    period: annual
+    kind: in_kind
+    realistic_capture_rate_note: >-
+      Non-spend trigger: 1 free night (up to 15,000 points) after 5+ paid nights stayed in a
+      calendar year — unlock_spend_usd intentionally unset (not a card-spend threshold).
+      Captured only by cardholders who complete 5+ Wyndham stays; in-kind haircut applies.
+    notes: >-
+      $105 = 15,000 points x 0.7cpp (wyndham_rewards floor) — a curator estimate of the free
+      night's value.
+
+signup_bonus:
+  value:
+    points: 45000              # "45,000 bonus points after $1,000 in first 90 days"
+  spend_requirement_usd: 1000
+  window_months: 3             # offer states "first 90 days"
+  notes: >-
+    Standard first tranche only. A second tranche of 55,000 bonus points requires $500 at Hotels
+    by Wyndham within the first 180 days — scoped to a specific merchant and a different window,
+    so it is NOT modeled as a tier (per the conversion protocol). Headline "up to 100,000
+    points (up to 13 free nights)".
+
+fees:
+  annual_fee_usd: 95           # "Annual fee: $95"
+  foreign_transaction_pct: 0   # "Foreign transaction fee: 0%" / "No foreign transaction fees"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's mainstream co-brand positioning; not stated in the
+    offer file. NEEDS human verification.
+
+benefit_flags:
+  - complimentary_elite_status  # Wyndham Rewards DIAMOND first year, PLATINUM after
+  - visa_signature
+  - no_foreign_transaction_fee
+  - zero_fraud_liability
+
+sources:
+  - url: https://www.barclaycardus.com/c/cards/wyndham-rewards-earner-plus-card
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in the offer file and not fetched this session; canonical issuer product page.
+      All figures transcribed from data/offer_files/barclays/wyndham-plus.txt and are
+      third-party/unconfirmed against issuer terms. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/barclays/wyndham-plus.txt; all figures
+  third-party/unconfirmed, confidence low, NEEDS human verification. OMITTED reward (registry
+  gap): "6 points/$1 at Hotels by Wyndham" — brand-specific with no `wyndham` merchant key; a
+  reviewer may add a `wyndham` merchant and model it. Groceries 4x excludes Target/Walmart. Not
+  dollar-valued: DIAMOND (first year) / PLATINUM (after) elite status is a benefit_flag. Soft
+  perks noted only: redeem 10% fewer points on free nights (redemption-side); cardmember booking
+  discount. Sibling card: data/cards/barclays/wyndham-earner.yaml (Premier, $395). credit_tier is
+  an estimate.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

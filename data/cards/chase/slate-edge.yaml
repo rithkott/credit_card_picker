@@ -1,0 +1,65 @@
+# No-annual-fee credit-building card with no rewards program; included for completeness (DashPass perk only).
+id: slate-edge
+name: Chase Slate Edge
+issuer: chase
+network: visa                # NOT stated in offer file; Slate Edge is a Visa — inference, NEEDS human verification
+currency:
+  type: cash                 # no rewards program on this card; 'cash' is the identity currency and base_rate is 0
+  program: cash
+base_rate: 0                 # "No stated rewards-earning program (this is a credit-building card; not a cash-back/points earner per this disclosure)"
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits:
+  - name: DashPass DoorDash quarterly credit
+    amount_usd: 10            # "$10 off quarterly on one DoorDash non-restaurant order (subtotal only), while enrolled in DashPass"
+    period: quarterly
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Requires activating the complimentary 6-month DashPass (activation window
+      2/1/2025-12/31/2027, requires setting the card as default payment; then auto-renews
+      at the then-current monthly rate) and placing one qualifying DoorDash non-restaurant
+      order each quarter (no rollover). Captured only by active DoorDash users who enroll.
+
+signup_bonus: null           # no signup bonus stated in the offer file
+
+fees:
+  annual_fee_usd: 0           # NOT stated in offer file; Slate Edge is a no-annual-fee card — inference, NEEDS human verification
+  foreign_transaction_pct: 3  # NOT stated in offer file — inference, NEEDS human verification
+
+approval:
+  credit_tier: fair
+  notes: >-
+    credit_tier estimated from the card's positioning as a credit-building card (it
+    bundles a VantageScore 3.0-based credit-score-improvement educational resource, not a
+    monetary benefit); not stated in the offer file. Chase 5/24 may apply. NEEDS human
+    verification.
+
+benefit_flags:
+  - free_credit_score
+
+sources:
+  - url: https://creditcards.chase.com/no-annual-fee-credit-cards/slate-edge
+    supports: [identity, currency, base_rate, credits, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in offer file and not fetched this session; figures transcribed from
+      data/offer_files/chase/slate-edge.txt and unconfirmed against issuer terms. NEEDS
+      human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/chase/slate-edge.txt. No source URL was on file;
+  the cited page is the issuer's general product page (not fetched). This card has NO
+  rewards program per the offer file, so base_rate is 0 and currency is the identity
+  'cash' program. annual_fee_usd (0), foreign_transaction_pct (3), network (visa), and
+  credit_tier (fair) are NOT stated in the offer file and are best-estimate inferences —
+  NEEDS human verification. The card's VantageScore-based credit-score educational tool
+  is an informational feature (free_credit_score flag), not a monetary benefit.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

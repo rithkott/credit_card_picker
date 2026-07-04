@@ -1,0 +1,81 @@
+# Entry Disney co-brand: flat 1% in Disney Rewards Dollars, Disney merch/dining discounts, gift-card signup.
+id: disney-visa
+name: Disney Visa
+issuer: chase
+network: visa                # "Disney Visa" — stated in the card name
+currency:
+  type: points               # Disney Rewards Dollars, redeemable only toward Disney (1 Reward Dollar = $1; registry values the unit at 1cpp so rate N = N% back)
+  program: disney_rewards
+base_rate: 1                 # "1% on all purchases (flat rate — no elevated categories on this base tier)"
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits:
+  - name: DashPass DoorDash quarterly credit
+    amount_usd: 10            # "$10 off quarterly on one DoorDash non-restaurant order while enrolled"
+    period: quarterly
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Requires activating the complimentary 12-month DashPass (activation window
+      2/1/2025-12/31/2027, then auto-renews at the then-current monthly rate) and placing
+      one qualifying DoorDash non-restaurant order each quarter (no rollover). Captured
+      only by active DoorDash users who enroll.
+
+signup_bonus:
+  value:
+    usd: 100                  # "$100 Disney Gift Card eGift, awarded automatically at approval"
+  spend_requirement_usd: 0    # gift card is awarded at approval, no spend required
+  window_months: 3
+  tiers:
+    - value:
+        usd: 50               # "$50 statement credit after spending $500 in first 3 months"
+      spend_requirement_usd: 500
+  notes: >-
+    Base tranche is the $100 Disney Gift Card awarded at approval (no spend required; a
+    Disney Gift Card usable at Disney parks/cruise/stores, valued at face). The tier is a
+    $50 statement credit after $500 spend in the first 3 months. Account must stay open 6+
+    months or the gift card offer may be cancelled. Not available to current cardmembers
+    or those who got a bonus for this card in the last 24 months. Allow up to 8 weeks.
+
+fees:
+  annual_fee_usd: 0           # NOT stated in offer file; the base Disney Visa has no annual fee — inference, NEEDS human verification
+  foreign_transaction_pct: 3  # NOT stated in offer file — inference, NEEDS human verification
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's mainstream co-brand positioning; not stated in
+    the offer file. Chase 5/24 likely applies. NEEDS human verification.
+
+benefit_flags:
+  - special_financing
+
+sources:
+  - url: https://creditcards.chase.com/cash-back-credit-cards/disney/visa
+    supports: [identity, currency, base_rate, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in offer file and not fetched this session; figures transcribed from
+      data/offer_files/chase/disney-visa.txt and unconfirmed against issuer terms. NEEDS
+      human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/chase/disney-visa.txt. No source URL was on file;
+  the cited page is the issuer's general product page (not fetched). Earns Disney Rewards
+  Dollars (redeemable only toward Disney), program disney_rewards. NOTED, NOT MODELED
+  (discounts/perks with no fixed earn value): special vacation financing (special_financing
+  flag); 10% off select merchandise at Disney Store/Outlet + DisneyStore.com; 10% off
+  select merchandise at parks/resorts/Disney Cruise Line; table-service dining discounts at
+  a specific restaurant list (blackout dates); discounted guided tours/recreation;
+  cardmember PhotoPass opportunities. Rewards Dollars redemption mechanics for the base
+  card are not detailed in the offer file (Pay Yourself Back applies to higher Disney Visa
+  tiers) — flagged for verification. annual_fee_usd (0), foreign_transaction_pct (3), and
+  credit_tier are NOT stated and are inferences — NEEDS human verification.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

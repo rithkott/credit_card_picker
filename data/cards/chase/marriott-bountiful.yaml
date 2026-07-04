@@ -1,0 +1,110 @@
+# Marriott Bonvoy Bountiful: mid-tier Marriott co-brand; 6x Marriott, combined 4x grocery+dining, Gold status, free night at $15k.
+id: marriott-bountiful
+name: Marriott Bonvoy Bountiful
+issuer: chase
+network: visa                   # NOT stated in the offer file — Marriott Bountiful is publicly a Visa Signature; NEEDS human verification
+currency:
+  type: points
+  program: marriott_bonvoy
+base_rate: 2                    # "2 points/$1: everything else"
+
+category_rewards:
+  - category: travel_hotels
+    rate: 6                      # "6 points/$1 at hotels participating in Marriott Bonvoy" (card earn only; Marriott base earn posts separately)
+    notes: >-
+      6x applies to Marriott-brand hotel stays. This is the card's earn only — Marriott
+      program base points (10 base pts/$1 + Gold 25% bonus) post separately to the
+      Marriott account and are not included here.
+  - category: groceries
+    rate: 4                      # "4 points/$1 total: grocery + dining, combined, first $6,000/anniversary year; then 2x"
+    cap:
+      period: annual
+      max_spend_usd: 6000        # full combined pool, stated in full on each member entry
+      fallback_rate: 2
+      shared_cap_id: grocery_dining
+    notes: >-
+      Combined $6,000/account-anniversary-year pool shared with dining; combined spend
+      above the cap earns 2 points/$1 (no maximum).
+  - category: dining
+    rate: 4                      # same combined 4x line
+    cap:
+      period: annual
+      max_spend_usd: 6000
+      fallback_rate: 2
+      shared_cap_id: grocery_dining
+    notes: >-
+      Combined $6,000/account-anniversary-year pool shared with groceries; combined
+      spend above the cap earns 2 points/$1.
+
+merchant_rewards: []
+
+credits:
+  - name: Free Night Award ($15k spend)
+    amount_usd: 200             # in_kind: estimated value of a night up to the 50,000-point redemption ceiling
+    kind: in_kind
+    period: annual
+    category: travel_hotels
+    unlock_spend_usd: 15000     # "each calendar year after $15,000 in purchases"
+    realistic_capture_rate_note: >-
+      Earned each calendar year only after $15,000 of card spend; valid 12 months,
+      resort fees still apply. Estimated at ~$200: caps at a 50,000-point redemption
+      ceiling and Marriott points realistically redeem near 0.6-0.9 cents (~$300-450 at
+      the ceiling), haircut toward $200 for the spend gate, ceiling reachability, resort
+      fees, and availability. Captured only by heavy spenders who take a Marriott stay.
+  - name: DashPass DoorDash quarterly credit
+    amount_usd: 10             # "$10 off quarterly on one DoorDash non-restaurant order while enrolled"
+    period: quarterly
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Requires activating complimentary DashPass and one qualifying DoorDash
+      non-restaurant order each quarter (no rollover). Active DoorDash users only.
+
+signup_bonus:
+  value:
+    points: 85000            # "85,000 bonus points after spending $4,000 in first 3 months"
+  spend_requirement_usd: 4000
+  window_months: 3
+  notes: >-
+    Account must stay open 6+ months or points may be clawed back. Marriott/Amex
+    cross-product exclusions apply (see offer file).
+
+fees:
+  annual_fee_usd: 250          # NOT stated in the offer file — best estimate from the card's public positioning as a premium Marriott co-brand; NEEDS human verification
+  foreign_transaction_pct: 0   # inferred: hotel co-brands typically carry no FTF, but the offer file states no FTF language; NEEDS human verification
+
+approval:
+  credit_tier: very_good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a premium ($250-fee)
+    hotel co-brand; not stated in the offer file. Chase 5/24 rule very likely applies —
+    not stated in the offer file. NEEDS human verification.
+
+benefit_flags:
+  - complimentary_elite_status
+  - concierge
+
+sources:
+  - url: https://creditcards.chase.com/travel-credit-cards/marriott-bonvoy/bountiful
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in the offer file and not fetched this session; this is the issuer's
+      general product page. All figures transcribed from
+      data/offer_files/chase/marriott-bountiful.txt and are unconfirmed against issuer
+      terms. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/chase/marriott-bountiful.txt. network (visa),
+  annual_fee_usd ($250) and foreign_transaction_pct (0) are NOT stated in the offer file
+  — estimates/inferences, NEEDS human verification. The Free Night Award value ($200) is
+  a curator estimate, not a marketing figure (see its capture note). OMITTED as
+  structured value (noted, not modeled): the "1K Stay Bonus" of 1,000 bonus points per
+  eligible paid-night stay is activity-based (per night stayed, not per dollar), so it is
+  not a spend rate or fixed credit. Automatic Gold Elite status and 15 Elite Night
+  Credits at account opening are benefit_flags / this note, never dollar-valued.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

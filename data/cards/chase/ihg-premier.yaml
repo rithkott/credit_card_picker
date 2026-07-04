@@ -1,0 +1,140 @@
+# IHG One Rewards Premier: 10x at IHG hotels, anniversary free night, automatic Platinum status.
+id: ihg-premier
+name: IHG One Rewards Premier
+issuer: chase
+network: mastercard             # NOT stated in the offer file — IHG Premier is a World Elite Mastercard by public positioning; NEEDS human verification
+currency:
+  type: points
+  program: ihg_one_rewards
+base_rate: 3                    # "3 points/$1: everything else"
+
+category_rewards:
+  - category: travel_hotels
+    rate: 10                     # "10 points/$1 at hotels participating in IHG One Rewards" (card-attributable earn only; IHG base earn posts separately to the IHG account)
+    notes: >-
+      10x applies to IHG-brand hotel stays (the card's co-brand). Modeled at the
+      co-brand rate; non-IHG hotels earn only the 5x general-travel rate but cannot be
+      split by brand within the travel_hotels category. This is the card's earn only —
+      IHG program base points (10 base pts/$1 at most brands + Platinum 60% bonus) post
+      separately to the IHG account and are not included here.
+  - category: travel_flights
+    rate: 5                      # "5 points/$1: travel (excluding IHG hotel stays)"
+    notes: Part of the card's broad 5x "travel" category (excludes IHG hotel stays, which earn 10x).
+  - category: travel_other
+    rate: 5                      # broad "travel" 5x (car rental, trains, cruises, etc.)
+    notes: Part of the card's broad 5x "travel" category (excludes IHG hotel stays, which earn 10x).
+  - category: gas
+    rate: 5                      # "5 points/$1: gas stations"
+  - category: dining
+    rate: 5                      # "5 points/$1: dining (incl. takeout/delivery)"
+
+merchant_rewards: []
+
+credits:
+  - name: Anniversary Free Night
+    amount_usd: 150             # in_kind: estimated value of a redemption up to the 40,000-point ceiling
+    kind: in_kind
+    period: annual
+    category: travel_hotels
+    realistic_capture_rate_note: >-
+      Automatic each cardmember anniversary, valid 12 months; captured by anyone who
+      takes one IHG stay a year. Estimated at ~$150: the award tops out at a 40,000-point
+      redemption ceiling and IHG points realistically redeem near 0.4-0.5 cents each
+      (~$160-200 at the ceiling), haircut toward $150 for the ceiling not always being
+      reachable and blackout/availability friction. Marketing "worth up to $X" ignored.
+  - name: Anniversary statement credit ($20k spend)
+    amount_usd: 100             # "$100 statement credit ... each calendar year with $20,000+ spend"
+    period: annual
+    unlock_spend_usd: 20000     # requires $20,000 total card spend in the calendar year
+    realistic_capture_rate_note: >-
+      Pays only after $20,000 of card spend in a calendar year; captured only by heavy
+      spenders. Paired with a 10,000-point bonus at the same threshold (separate entry).
+  - name: Anniversary bonus points ($20k spend)
+    amount_points: 10000        # "10,000 bonus points ... each calendar year with $20,000+ spend"
+    period: annual
+    unlock_spend_usd: 20000
+    realistic_capture_rate_note: >-
+      Pays only after $20,000 of card spend in a calendar year; captured only by heavy
+      spenders. Paired with the $100 statement credit at the same threshold.
+  - name: United TravelBank deposit
+    amount_usd: 25             # "$25 deposit twice yearly (Jan and July) into linked United MileagePlus account"
+    period: semiannual
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $25 into a linked United MileagePlus TravelBank account each January and July
+      after a one-time registration; each deposit expires ~6 months after crediting.
+      Captured only by United flyers who register and spend the TravelBank cash before
+      it expires; worthless to non-United travelers.
+  - name: Global Entry / TSA PreCheck / NEXUS fee credit
+    amount_usd: 120            # "one statement credit up to $120 every 4 years"
+    period: every_4_years
+    realistic_capture_rate_note: >-
+      One statement credit up to $120 per 4-year cycle covering a trusted-traveler
+      application fee. Captured only by travelers who apply/renew.
+  - name: DashPass DoorDash quarterly credit
+    amount_usd: 10            # "$10 off quarterly on one DoorDash non-restaurant order while enrolled"
+    period: quarterly
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Requires activating complimentary DashPass and one qualifying DoorDash
+      non-restaurant order each quarter (no rollover). Active DoorDash users only.
+  - name: Instacart monthly credit
+    amount_usd: 10            # "$10/month Instacart credit while active"
+    period: monthly
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Requires an active Instacart+ membership (3 months complimentary, then auto-renews
+      at $99/year) and a qualifying purchase each month (no rollover). After the free
+      window the $99/year membership is a real cost; only regular Instacart users net ahead.
+
+signup_bonus:
+  value:
+    points: 140000            # "140,000 bonus points after spending $3,000 in first 3 months"
+  spend_requirement_usd: 3000
+  window_months: 3
+  notes: >-
+    Standard offer transcribed from the offer file. A separate 10,000-point bonus for
+    adding an authorized user in the first 3 months (once per account) is not modeled as
+    signup value — it requires an authorized user rather than primary-cardholder spend.
+    Not available to current cardmembers of any personal IHG One Rewards card or previous
+    cardmembers who received a bonus within the last 24 months.
+
+fees:
+  annual_fee_usd: 99           # NOT stated in the offer file — best estimate from the card's public positioning; NEEDS human verification
+  foreign_transaction_pct: 0   # inferred: hotel co-brands typically carry no FTF, but the offer file states no FTF language; NEEDS human verification
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream hotel
+    co-brand; not stated in the offer file. Chase 5/24 rule very likely applies — not
+    stated in the offer file. NEEDS human verification.
+
+benefit_flags:
+  - complimentary_elite_status
+  - fourth_night_free_award
+
+sources:
+  - url: https://creditcards.chase.com/travel-credit-cards/ihg/premier
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in the offer file and not fetched this session; this is the issuer's
+      general product page. All figures transcribed from
+      data/offer_files/chase/ihg-premier.txt and are unconfirmed against issuer terms.
+      NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/chase/ihg-premier.txt. network (mastercard),
+  annual_fee_usd ($99) and foreign_transaction_pct (0) are NOT stated in the offer file
+  — estimates/inferences, NEEDS human verification. The Anniversary Free Night value
+  ($150) is a curator estimate, not a marketing figure (see its capture note).
+  Automatic Platinum Elite status (Diamond with $40,000 spend), the 4th-reward-night-free
+  benefit, 20%-off points purchases, and early sale access are recorded as benefit_flags
+  / this note, never dollar-valued.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

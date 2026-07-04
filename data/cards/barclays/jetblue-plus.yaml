@@ -1,0 +1,87 @@
+# JetBlue co-brand (mid tier): TrueBlue points; 2x dining + groceries, brand JetBlue earn omitted; free checked bag, $99 AF.
+id: jetblue-plus
+name: JetBlue Plus Card
+issuer: barclays
+network: mastercard             # "JetBlue Plus World Elite Mastercard"
+currency:
+  type: points
+  program: jetblue_trueblue
+base_rate: 1                    # "1 point/$1 on all other purchases"
+
+category_rewards:
+  # OMITTED: "6 points/$1 on eligible JetBlue purchases" — brand-specific with no `jetblue`
+  # merchant key; not force-fit onto travel_flights. See notes / registry gap.
+  - category: dining
+    rate: 2                      # "2 points/$1 at restaurants and eligible grocery stores"
+  - category: groceries
+    rate: 2                      # same 2x tier (eligible grocery stores)
+    notes: >-
+      "Eligible grocery stores" — superstores/warehouse clubs may be excluded (not stated).
+      NEEDS human verification.
+
+merchant_rewards: []
+
+credits:
+  - name: Anniversary bonus points
+    amount_points: 5000         # "5,000 bonus points each year after account anniversary"
+    period: annual
+    realistic_capture_rate_note: >-
+      Automatic 5,000 TrueBlue points each year after the account anniversary; captured by every
+      cardholder who keeps the card open. Valued via the card's TrueBlue program.
+  - name: JetBlue Vacations statement credit
+    amount_usd: 100             # "$100 statement credit after a JetBlue Vacations package of $100+ (limit one/year)"
+    period: annual
+    realistic_capture_rate_note: >-
+      Scoped trigger: requires buying a JetBlue Vacations package of $100+ (limit one per year) —
+      NOT total card spend, so unlock_spend_usd is intentionally unset. Captured only by
+      cardholders who book a JetBlue Vacations package; worthless otherwise.
+
+signup_bonus:
+  value:
+    points: 60000              # "60,000 bonus points after $1,000 + paying the annual fee, within first 90 days"
+  spend_requirement_usd: 1000
+  window_months: 3             # offer states "first 90 days" (~3 months)
+  notes: >-
+    Also requires paying the annual fee in full within the first 90 days.
+
+fees:
+  annual_fee_usd: 99           # "Annual fee: $99"
+  foreign_transaction_pct: 0   # "Foreign transaction fee: 0%" / "No foreign transaction fees"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's mainstream co-brand positioning; not stated in the
+    offer file. NEEDS human verification.
+
+benefit_flags:
+  - free_checked_bag            # free first checked bag for cardmember + up to 3 companions
+  - no_blackout_dates
+  - complimentary_elite_status  # points toward Mosaic status
+  - no_foreign_transaction_fee
+  - zero_fraud_liability
+
+sources:
+  - url: https://www.barclaycardus.com/c/cards/jetblue-plus-card
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in the offer file and not fetched this session; canonical issuer product page.
+      All figures transcribed from data/offer_files/barclays/jetblue-plus.txt and are
+      third-party/unconfirmed against issuer terms. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/barclays/jetblue-plus.txt; all figures
+  third-party/unconfirmed, confidence low, NEEDS human verification. OMITTED reward (registry
+  gap): "6 points/$1 on eligible JetBlue purchases" — brand-specific with no `jetblue` merchant
+  key; a reviewer may add a `jetblue` merchant and model it. Soft/redemption perks noted only:
+  50% inflight savings (percentage rebate, no stated cap); 10% of points back on JetBlue award
+  flights (redemption-side); Mosaic status progress; points pooling; Cash + Points. Sibling
+  cards: data/cards/barclays/jetblue.yaml (no fee) and jetblue-premier.yaml ($499). credit_tier
+  is an estimate.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

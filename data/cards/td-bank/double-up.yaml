@@ -1,0 +1,69 @@
+# Flat 2% cash-back Visa (TD Rewards points redeemed at 1cpp for statement credit / deposit).
+id: double-up
+name: TD Double Up Visa Credit Card
+issuer: td-bank
+network: visa
+currency:
+  type: cash                  # points redeem at exactly 1cpp for cash back (statement credit / deposit) — modeled as cash
+  program: cash
+base_rate: 2                  # "2 Points for each $1" x $0.01/Point = 2% cash back on all eligible purchases, no caps
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus:
+  value:
+    usd: 200                  # "20,000 Bonus Points, equal to a $200 statement credit"
+  spend_requirement_usd: 1500 # "spend $1,500 in total Purchases ... within 90 days"
+  window_months: 3            # 90 days from account opening ≈ 3 months
+  notes: >-
+    One-Time Bonus Offer; not available if you open in response to a different TD offer
+    or previously received a bonus on any TD account. Bonus posts 6-8 weeks after the
+    spend requirement is met, account open and in good standing.
+
+fees:
+  annual_fee_usd: 0           # "Annual Fee: None ($0)."
+  foreign_transaction_pct: 3  # "Foreign Transaction fee: 3% of each transaction, in U.S. dollars."
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream no-annual-fee
+    flat-rate cash-back Visa (not secured/student); the offer file does not state a credit
+    requirement (minimum credit line $500+). TD credit cards are only available to
+    residents of TD Bank's East Coast retail-branch footprint (specific state list not
+    confirmed from an official page). NEEDS human verification.
+
+benefit_flags:
+  - zero_fraud_liability       # "Visa Zero Liability protection"
+  - cell_phone_protection      # referenced on official product page; full terms not located in fetched agreement
+
+sources:
+  - url: https://www.td.com/us/en/personal-banking/credit-cards/double-up-credit-card
+    supports: [identity, currency, base_rate, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical TD Double Up product page; URL not in the offer file and NOT fetched this
+      session — figures unconfirmed. Values transcribed from
+      data/offer_files/td-bank/double-up.txt (source doc "TD Double Up Important Credit
+      Card Terms and Conditions", April 2026). NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/td-bank/double-up.txt; all figures unconfirmed.
+  CURRENCY MODELING: the card earns "TD Rewards" Points at 2 Points/$1, redeemable at a
+  fixed 1 Point = $0.01 for Cash Back (statement credit or deposit to a US TD checking/
+  savings account) once 2,500+ Points accrue. Because the points cash out at exactly 1cpp,
+  the card is economically flat 2% cash back and is modeled as a cash card (program: cash),
+  matching the "cash for cash cards" convention — no TD-points program key is needed in
+  point-valuations.yaml. Points do not expire while the account is open and in good
+  standing; no earning cap. Cell phone protection requires paying the monthly mobile bill
+  with the card (full benefit terms not located in the fetched agreement).
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

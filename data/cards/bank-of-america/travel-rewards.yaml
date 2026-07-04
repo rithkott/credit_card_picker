@@ -1,0 +1,79 @@
+# No-annual-fee flat-rate travel points card; earns bofa_travel_rewards points redeemable as travel eraser.
+id: travel-rewards
+name: Travel Rewards
+issuer: bank-of-america
+network: visa                # not stated in offer file — BofA consumer cards are Visa; inferred. NEEDS human verification.
+currency:
+  type: points
+  program: bofa_travel_rewards
+base_rate: 1.5              # "Unlimited 1.5 points for every $1 spent on all purchases"
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus:
+  value:
+    points: 25000          # "25,000 online bonus points (a $250 value)"
+  spend_requirement_usd: 1000   # "after making at least $1,000 in purchases"
+  window_months: 3         # "in the first 90 days of account opening"
+
+fees:
+  annual_fee_usd: 0        # "Annual Fee: $0"
+  foreign_transaction_pct: 0   # "No foreign transaction fees"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream
+    no-annual-fee travel rewards card; the offer file does not state a credit
+    requirement. NEEDS human verification.
+
+relationship_boost:
+  program: Bank of America Preferred Rewards
+  tiers:
+    - tier_name: Gold
+      requirement: Gold Preferred Rewards tier (eligible BofA/Merrill relationship)
+      boost_pct: 25
+    - tier_name: Platinum
+      requirement: Platinum Preferred Rewards tier (eligible BofA/Merrill relationship)
+      boost_pct: 50
+    - tier_name: Platinum Honors
+      requirement: Platinum Honors Preferred Rewards tier (eligible BofA/Merrill relationship)
+      boost_pct: 75
+  note: >-
+    Offer file states a "25%-75% boost on purchases based on Bank of America/Merrill
+    relationship tier (Gold/Platinum/Platinum Honors)". The 25% (Gold) and 75%
+    (Platinum Honors) endpoints are transcribed; the 50% Platinum middle tier is the
+    standard BofA structure but is not itemized in the offer file. Qualifying balance
+    thresholds are not stated in the offer file, so they are expressed as requirement
+    text rather than invented min_balance figures. NEEDS human verification of tiers
+    and thresholds. Not scored in v1 — base_rate is the no-relationship baseline.
+
+benefit_flags:
+  - zero_fraud_liability
+
+sources:
+  - url: https://www.bankofamerica.com/credit-cards/products/travel-rewards-credit-card/
+    supports: [identity, currency, base_rate, signup_bonus, fees, approval, relationship_boost, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session.
+      Figures transcribed from the local offer file only.
+
+notes: >-
+  Drafted offline from data/offer_files/bank-of-america/travel-rewards.txt (no
+  NEEDS_VERIFICATION marker on that file, but confidence is low because nothing was
+  re-fetched this session). Points redeem as a statement credit against travel/dining
+  purchases (no blackout dates); the bofa_travel_rewards program valuation reflects
+  the poor cash/gift-card floor. Card has a 0% intro APR for 15 billing cycles
+  (purchases + balance transfers in first 60 days), not modeled by the value engine.
+  Network inferred as Visa (not stated in the offer file) — NEEDS human verification.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

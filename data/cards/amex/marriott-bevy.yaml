@@ -1,0 +1,112 @@
+# Mid Marriott co-brand: 2x base, 4x dining+supermarkets (combined $15k/yr cap), annual free night; $250 AF.
+id: marriott-bevy
+name: Marriott Bonvoy Bevy American Express Card
+issuer: amex
+network: amex
+currency:
+  type: points
+  program: marriott_bonvoy
+base_rate: 2                 # "Base: 2 points/$"
+
+category_rewards:
+  - category: dining
+    rate: 4                  # "4 points/$ (2 additional) at restaurants worldwide ... first $15,000/year combined"
+    cap:
+      period: annual
+      max_spend_usd: 15000     # combined pool shared with groceries; full pool stated on both
+      fallback_rate: 2
+      shared_cap_id: dining_groceries
+    notes: >-
+      Restaurants worldwide. Excludes nightclubs; restaurants inside another
+      establishment (hotel/casino) may not qualify. The $15,000/yr cap is a single
+      pool shared with US supermarkets (see the groceries entry); combined spend above
+      $15,000 reverts to 2x.
+  - category: groceries
+    rate: 4                  # "4 points/$ ... U.S. supermarkets ... first $15,000/year combined"
+    cap:
+      period: annual
+      max_spend_usd: 15000     # same shared pool, stated in full
+      fallback_rate: 2
+      shared_cap_id: dining_groceries
+    notes: >-
+      US supermarkets only; excludes superstores, convenience stores, warehouse clubs,
+      meal-kit delivery. Cap is the single $15,000/yr pool shared with dining.
+
+merchant_rewards: []
+
+credits:
+  - name: American Express Venue Collection Concessions Credit
+    amount_usd: 25           # 10% back up to $250/yr; realistic fraction of the cap
+    period: annual
+    category: entertainment
+    requires_enrollment: true
+    expires: "2026-12-31"
+    realistic_capture_rate_note: >-
+      10% back (up to $250/yr) on Venue Collection concessions, enrollment required;
+      realistic capture is a small fraction — modeled at ~$25.
+  - name: Annual Free Night Award
+    kind: in_kind
+    amount_usd: 300          # estimated value of a <=50,000-point Marriott night at ~0.6cpp floor
+    period: annual
+    category: travel_hotels
+    unlock_spend_usd: 15000  # "Free Night Award after $15,000 in eligible spend in a calendar year"
+    realistic_capture_rate_note: >-
+      Free night (redemption level <=50,000 points) after $15,000 in card spend in a
+      calendar year; can add up to 25,000 purchased points to expand value; expires 1
+      year from issuance. Estimated at ~$300 (50k Bonvoy points at ~0.6cpp floor); the
+      model applies both the spend gate and an in-kind capture haircut.
+
+signup_bonus:
+  value:
+    points: 85000            # "85,000 after $5,000 spend in first 6 months"
+  spend_requirement_usd: 5000
+  window_months: 6
+  tiers:
+    - value:
+        points: 50000        # "additional 50,000 after a further $2,000 spend (total $7,000)"
+      spend_requirement_usd: 7000
+  notes: >-
+    No stated end date in the offer file. Eligibility excludes holders of the Marriott
+    Bonvoy Brilliant and several Chase-issued Marriott/Ritz-Carlton cards within
+    lookback windows (see approval.notes).
+
+fees:
+  annual_fee_usd: 250        # "Annual Fee: $250"
+  foreign_transaction_pct: 0 # "Foreign Transaction Fee: None"
+
+approval:
+  credit_tier: very_good
+  notes: >-
+    credit_tier is an inference from the card's mid-tier premium positioning; not
+    stated in the offer file — NEEDS human verification. Amex welcome-offer
+    eligibility blocked if you have/had this Card or the Marriott Bonvoy Brilliant, and
+    also blocked by holding/recently receiving bonuses on several Chase-issued Marriott/
+    Ritz-Carlton cards (Bountiful, Boundless, Rewards Premier Plus/Premier, Bonvoy,
+    Rewards, Bold, business variants) within 30/90/24-month lookback windows.
+
+benefit_flags:
+  - no_foreign_transaction_fee
+  - elite_status
+  - trip_cancellation_insurance
+
+sources:
+  - url: https://www.americanexpress.com/us/credit-cards/card/marriott-bonvoy-bevy/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Amex product page. URL not in offer file and not fetched this
+      session; figures transcribed from the local offer file and unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/amex/marriott-bevy.txt; all figures
+  unconfirmed pending human verification. OMITTED: the "6x at Marriott Bonvoy
+  properties" earn — no `marriott` merchant key in data/meta/merchants.yaml; mapping
+  it to travel_hotels would overstate it for non-Marriott stays (registry gap
+  flagged). Complimentary Gold Elite status and 15 Elite Night Credits are
+  elite-status benefits, not modeled as value.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

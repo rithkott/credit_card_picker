@@ -1,0 +1,99 @@
+# Air Canada Aeroplan co-brand: 3x on Air Canada + groceries + dining; elite-status fast track and monthly spend bonus.
+id: aeroplan
+name: Aeroplan
+issuer: chase
+network: mastercard             # NOT stated in the offer file — Chase Aeroplan is a World Elite Mastercard by public positioning; NEEDS human verification
+currency:
+  type: points
+  program: aeroplan
+base_rate: 1                    # "1 point/$1: everything else"
+
+category_rewards:
+  - category: travel_flights
+    rate: 3                      # "3 points/$1 on purchases made directly with Air Canada"
+    notes: >-
+      Only purchases made directly with Air Canada (excludes gift cards, car rentals,
+      hotel bookings and other third-party partner products via aircanada.com, onboard
+      WiFi, and tickets booked via travel agencies/discount sites/vacation clubs/tour
+      operators/non-airline packages). Narrower than the general travel_flights
+      category — other airlines' tickets earn only the 1x base rate. Modeled at the
+      co-brand rate; cannot split airline within the category.
+  - category: groceries
+    rate: 3                      # "3 points/$1: grocery stores"
+  - category: dining
+    rate: 3                      # "3 points/$1: dining (incl. takeout/delivery)"
+
+merchant_rewards: []
+
+credits:
+  - name: Global Entry / TSA PreCheck / NEXUS fee credit
+    amount_usd: 120             # "one statement credit up to $120 every 4 years"
+    period: every_4_years
+    realistic_capture_rate_note: >-
+      One statement credit up to $120 per 4-year cycle covering a Global Entry/TSA
+      PreCheck/NEXUS application fee. Captured only by travelers who apply/renew;
+      worthless to those who never enroll.
+  - name: DashPass DoorDash quarterly credit
+    amount_usd: 10             # "$10 off quarterly on one DoorDash non-restaurant order while enrolled"
+    period: quarterly
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Requires activating complimentary DashPass (12 months free 2/1/2025-12/31/2027,
+      then auto-renews) and one qualifying DoorDash non-restaurant order each quarter
+      (no rollover). Captured only by active DoorDash users; worthless otherwise.
+
+signup_bonus:
+  value:
+    points: 60000              # "60,000 bonus points after spending $3,000 in first 3 months"
+  spend_requirement_usd: 3000
+  window_months: 3
+  notes: >-
+    Not available to current cardmembers of this card or previous cardmembers who
+    received a bonus for this card within the last 24 months. Allow 6-8 weeks to post.
+
+fees:
+  annual_fee_usd: 95            # NOT stated in the offer file — best estimate from the card's public positioning; NEEDS human verification
+  foreign_transaction_pct: 0    # inferred: airline co-brands typically carry no FTF, but the offer file states no FTF language; NEEDS human verification
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream airline
+    co-brand; not stated in the offer file. Chase 5/24 rule very likely applies — not
+    stated in the offer file. NEEDS human verification.
+
+benefit_flags:
+  - free_checked_bag
+  - complimentary_elite_status
+  - concierge
+
+sources:
+  - url: https://creditcards.chase.com/travel-credit-cards/aeroplan
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in the offer file and not fetched this session; this is the issuer's
+      general product page. All figures transcribed from
+      data/offer_files/chase/aeroplan.txt and are unconfirmed against issuer terms.
+      NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/chase/aeroplan.txt. network (mastercard),
+  annual_fee_usd ($95) and foreign_transaction_pct (0) are NOT stated in the offer
+  file — estimates/inferences, NEEDS human verification. OMITTED as structured value
+  (noted, not modeled): the "500 bonus points per $2,000 spent per calendar month, up
+  to $6,000/month (max 1,500 points/month)" is a spend-proportional bonus (~0.25
+  pts/$1 on the first $6,000/month), not a fixed credit and not a clean multiplier, so
+  it is described here rather than distorting base_rate — a reviewer may fold it in.
+  Aeroplan 25K status (account-open year + following year; requalify with $15,000
+  spend) and 35K status (with $75,000 spend), plus Status Qualifying Credits (5,000
+  automatic/year, up to 20,000 more at spend thresholds, 25,000 combined cap), are
+  recorded as complimentary_elite_status + this note, never dollar-valued. Free first
+  checked bag is a benefit_flag. Redemption-side perks (preferred Aeroplan award
+  pricing, Pay Yourself Back, 10% Ultimate Rewards transfer bonus) are noted only.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

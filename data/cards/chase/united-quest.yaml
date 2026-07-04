@@ -1,0 +1,135 @@
+# United Quest: premium United co-brand; 4x United, 2x dining/streaming/travel, $200 TravelBank + several credits.
+id: united-quest
+name: United Quest
+issuer: chase
+network: visa                   # NOT stated in the offer file — United Quest is publicly a Visa Signature; NEEDS human verification
+currency:
+  type: points
+  program: united_mileageplus
+base_rate: 1                    # "1 mile/$1 base rate"
+
+category_rewards:
+  - category: travel_flights
+    rate: 4                      # "4 miles/$1: airline tickets and other purchases made directly with United"
+    notes: >-
+      4x applies to purchases made directly with United (tickets, seat upgrades, Economy
+      Plus, inflight food/beverage/WiFi, baggage/other fees) and United Card Events from
+      Chase. Modeled at the co-brand rate; other airlines' tickets fall under the card's
+      general 2x travel category (see travel_other) rather than this line.
+  - category: dining
+    rate: 2                      # "2 miles/$1: dining (incl. takeout/delivery)"
+  - category: streaming
+    rate: 2                      # "2 miles/$1: select streaming services"
+    notes: Select streaming services only (issuer-defined list).
+  - category: travel_hotels
+    rate: 2                      # "2 miles/$1: travel category (excludes United purchases earning 4x)"
+    notes: >-
+      Part of the card's broad 2x "travel" category. Hotel purchases at Renowned Hotels
+      and Resorts booked via Chase Travel earn 5x (portal-only) — that niche portal rate
+      is noted in the card notes rather than modeled as a second travel_hotels entry.
+  - category: travel_other
+    rate: 2                      # broad "travel" 2x (car rental, trains, cruises, non-United airfare, etc.)
+    notes: Part of the card's broad 2x "travel" category (excludes United purchases earning 4x).
+
+merchant_rewards: []
+
+credits:
+  - name: United TravelBank credit
+    amount_usd: 200             # "$200 annual United TravelBank cash credit, auto-added at cardmember anniversary"
+    period: annual
+    realistic_capture_rate_note: >-
+      $200 of TravelBank cash auto-added each cardmember anniversary (no spend gate);
+      usable toward United airfare, expires per TravelBank terms. Near-full capture for
+      anyone who flies United at least once a year; worthless to non-United travelers.
+  - name: Renowned Hotels credit
+    amount_usd: 150             # "Up to $150/year Renowned Hotels and Resorts statement credit"
+    period: annual
+    realistic_capture_rate_note: >-
+      Up to $150/year on Renowned Hotels and Resorts bookings (via Chase Travel).
+      Scoped to that portal/program — captured only by those who book qualifying luxury
+      stays that way.
+  - name: Rideshare credit
+    amount_usd: 100             # "Up to $100/year rideshare statement credit ($8/month Jan-Nov, $12 in December)"
+    period: annual
+    realistic_capture_rate_note: >-
+      $8/month Jan-Nov and $12 in December, up to $100/year in rideshare statement
+      credits. Captured only by regular rideshare users; monthly amounts don't roll over.
+  - name: Avis/Budget credit
+    amount_usd: 80             # "Up to $80/year Avis/Budget statement credit ($40 each on first two qualifying rentals)"
+    period: annual
+    realistic_capture_rate_note: >-
+      $40 each on the first two qualifying Avis/Budget rentals via cars.united.com with
+      discount codes, up to $80/year. Scoped to that booking channel — car renters only.
+  - name: JSX credit
+    amount_usd: 150            # "$150/year JSX statement credit"
+    period: annual
+    realistic_capture_rate_note: >-
+      $150/year toward JSX (a semi-private carrier serving limited routes). Captured only
+      by the small set of flyers with JSX access; near-zero for most cardholders.
+  - name: Global Entry / TSA PreCheck / NEXUS fee credit
+    amount_usd: 120            # "one statement credit up to $120 every 4 years"
+    period: every_4_years
+    realistic_capture_rate_note: >-
+      One statement credit up to $120 per 4-year cycle covering a trusted-traveler
+      application fee. Captured only by travelers who apply/renew.
+  - name: Instacart monthly credit
+    amount_usd: 10            # "$10 + $5 monthly Instacart credits while active"
+    period: monthly
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Offer file states $10 + $5 monthly Instacart credits while an Instacart+ membership
+      is active (3 months complimentary, then 50% off through 12/31/2027, then full
+      price). Modeled conservatively at the $10 monthly credit; the additional $5 is not
+      separately modeled. Only regular Instacart users net ahead after the free window.
+
+signup_bonus:
+  value:
+    points: 60000            # "60,000 bonus miles after spending $4,000 in first 3 months"
+  spend_requirement_usd: 4000
+  window_months: 3
+  notes: >-
+    Bonus miles don't count toward Premier status. The offer also grants 500 additional
+    PQP after the same $4,000/3-month spend (status-qualifying, not redeemable) and a
+    10,000-mile authorized-user bonus — neither is modeled as signup value. Not available
+    to current/recent (24-month) cardmembers.
+
+fees:
+  annual_fee_usd: 350          # NOT stated in the offer file — best estimate from the card's public positioning as a premium co-brand; NEEDS human verification
+  foreign_transaction_pct: 0   # inferred: airline co-brands typically carry no FTF, but the offer file states no FTF language; NEEDS human verification
+
+approval:
+  credit_tier: very_good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a premium ($350-fee)
+    airline co-brand; not stated in the offer file. Chase 5/24 rule very likely applies —
+    not stated in the offer file. NEEDS human verification.
+
+benefit_flags:
+  - free_checked_bag
+  - visa_signature
+
+sources:
+  - url: https://creditcards.chase.com/travel-credit-cards/united/quest
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in the offer file and not fetched this session; this is the issuer's
+      general product page. All figures transcribed from
+      data/offer_files/chase/united-quest.txt and are unconfirmed against issuer terms.
+      NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/chase/united-quest.txt. network (visa),
+  annual_fee_usd ($350) and foreign_transaction_pct (0) are NOT stated in the offer file
+  — estimates/inferences, NEEDS human verification. The 5x on Renowned Hotels via Chase
+  Travel is portal-only and niche — noted here rather than modeled as a second
+  travel_hotels entry. OMITTED as structured value (noted, not modeled): the two
+  10,000-mile award-flight discounts (anniversary + one per $20,000 spend, redemption-side),
+  2 global Economy Plus upgrades after $40,000 spend (in-kind, no reliable value), PQP
+  earn, priority boarding, and the 25%-back inflight statement credit (no annual cap).
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

@@ -1,0 +1,102 @@
+# Elan white-label cash card: choose-your-own 5% (two categories, enroll each cycle,
+# combined $2k/qtr cap) + a chosen 2% everyday category, 1% on everything else.
+# Distributed by many credit unions/community banks; terms can vary by institution.
+id: max-cash-preferred
+name: Max Cash Preferred
+issuer: elan
+network: visa                  # "Visa Signature Max Cash Preferred variant" (offer file, Earn Rates note); a World Mastercard version also exists — see notes. network is a single enum, visa chosen as the variant the category list is sourced from.
+currency:
+  type: cash
+  program: cash
+base_rate: 1                   # "1% cash back, unlimited, on all other eligible purchases" (offer file, Earn Rates). Also the effective rate when categories are NOT enrolled.
+
+category_rewards:
+  # The 5% reward is the single modeled `choice` entry (validator/optimizer allow at
+  # most one choice reward per card). requires_enrollment: true because unenrolled
+  # spend earns only the 1% base_rate (offer file, Earn Rates, last two bullets).
+  - category: choice
+    rate: 5                     # "5% cash back on the first $2,000 in combined eligible purchases per calendar quarter" (offer file, Earn Rates bullet 1)
+    requires_enrollment: true   # "Cardmember must actively enroll ... if a cardmember does not enroll, all purchases default to earning no more than 1%" (offer file, Earn Rates last bullet)
+    cap:
+      period: quarterly
+      max_spend_usd: 2000       # "first $2,000 in combined eligible purchases per calendar quarter" — full combined pool across BOTH chosen 5% categories
+      fallback_rate: 1          # "Once the $2,000 quarterly combined cap ... is exceeded, additional spend in those categories earns 1%" (offer file, Earn Rates)
+    choice:
+      options: [streaming, dining, utilities, entertainment]
+      note: >-
+        The cardholder actively selects and enrolls TWO categories (each cycle, via the
+        Rewards Center) from Elan's 9-item list; both share ONE combined $2,000/quarter 5%
+        pool. The optimizer models a single selectable 5% slot (at most one choice reward is
+        supported per card), so it will understate a user who fills both 5% slots — a known
+        modeling limitation. Registry mappings are IMPERFECT and were interpreted from prose:
+        streaming ← "TV, internet & streaming services" (a bundle; streaming is the closest
+        key, wider than issuer intent on TV/internet); dining ← "fast food" ONLY (narrower
+        than all restaurants); utilities ← covers both "cell phone providers" and "home
+        utilities"; entertainment ← covers both "entertainment" and "recreation". Issuer 5%
+        options with NO registry key were OMITTED: department stores, furniture stores,
+        electronics stores. NEEDS human verification of the exact enrollable category list.
+
+merchant_rewards: []
+
+credits: []
+
+# NOT MODELED: a SECOND selectable reward — 2% cash back, unlimited, on one everyday
+# category the cardholder chooses from {Grocery Stores + Grocery Delivery (→ groceries);
+# Restaurants + Fast Food (→ dining); EV Charging & Gas Stations + Ground Transportation
+# (→ gas, but the option also bundles transit/ground transportation)} — also requires
+# enrollment (offer file, Earn Rates bullet 2). The schema/optimizer allow only ONE choice
+# reward per card, which the 5% reward occupies, so this 2% choice cannot be structured
+# without either hardcoding one option (misrepresenting the user's pick) or emitting three
+# always-on 2% categories (over-counting, since only one is earned). It is described here
+# instead and is a real understatement of the card's value. NEEDS human verification.
+
+signup_bonus: null             # Offer file cites a ~$150 bonus but states the spend threshold and timeframe are NOT confirmed on an official page. spend_requirement_usd + window_months are schema-required together and cannot be filled without inventing them (protocol Step 1/6), so the bonus is omitted rather than fabricated. See notes.
+
+fees:
+  annual_fee_usd: 0            # "$0 (no annual fee)" (offer file, Annual Fee)
+  foreign_transaction_pct: 3   # INFERRED — offer file says a fee "around 2-3%" applies but is "not independently confirmed". Recorded as the worst-case 3%; NEEDS human verification (see notes).
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier ESTIMATED — the offer file does not state a required score. Elan positions
+    Max Cash Preferred as a mainstream no-annual-fee rewards card, so 'good' (~670+) is
+    inferred from that positioning, NOT read from the source. NEEDS human verification. This
+    card is white-labeled through many credit unions and community banks; eligibility,
+    promotional bonus, exact APRs, and some fees vary by the specific distributing
+    institution — confirm against that institution's Schumer box.
+
+benefit_flags: []
+
+notes: >-
+  DATA PROVENANCE: drafted offline from a third-party terms transcription
+  (data/offer_files/elan/max-cash-preferred.txt) whose own text flags multiple figures as
+  unconfirmed/NEEDS verification; no figure was re-fetched from an issuer page this session,
+  so all figures are third-party/unconfirmed and confidence is low. No exact source URL is on
+  file for this offer sheet (none in the offer file header or docs/needs-verification-links.md)
+  — the source below is the general Elan Financial Services issuer domain, NOT a fetched
+  pricing/terms page, and the real per-institution Schumer box still needs to be located and
+  cited. KEY CAVEATS: (1) a second selectable 2% everyday category (groceries / dining / gas)
+  is NOT modeled — see the comment above category_rewards; the card is worth more than the
+  YAML expresses. (2) foreign_transaction_pct is an inference from a "2-3%" range, recorded as
+  3%. (3) ~$150 signup bonus omitted (unknown spend/window). (4) A World Mastercard variant of
+  this card exists alongside the modeled Visa Signature variant; the exact enrollable category
+  list may differ slightly between them. All of the above NEEDS human verification.
+
+sources:
+  - url: https://www.elanfinancialservices.com/
+    supports: [identity, currency, base_rate, category_rewards, fees, approval]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      General Elan Financial Services issuer domain — used because NO exact product/terms URL
+      is on file for this offer sheet (the offer file references "Elan's cardmember benefits
+      page" without a link, and docs/needs-verification-links.md has no Elan entry). This URL
+      was NOT fetched this session and is NOT the pricing/terms/Schumer-box page; `accessed`
+      reflects the date the local offline transcription was read, not a live fetch. All figures
+      are transcribed from a third-party terms sheet and are unconfirmed against any issuer page.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

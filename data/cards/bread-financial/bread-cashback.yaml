@@ -1,0 +1,64 @@
+# Flat 2% cash-back Amex-network card issued by Comenity Capital Bank (Bread Financial);
+# no annual fee, no categories, no caps — a simple everywhere-2% catch-all card.
+id: bread-cashback
+name: Bread Cashback American Express Card
+issuer: bread-financial
+network: amex
+currency:
+  type: cash
+  program: cash
+base_rate: 2                 # "Unlimited 2% cash back on purchases" (offer file, Earn Rates)
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus: null           # offer file: "No welcome/signup bonus found on official pages"
+
+fees:
+  annual_fee_usd: 0          # offer file, Annual Fee: "None / $0"
+  foreign_transaction_pct: 0 # offer file, Foreign Transaction Fee: "None"
+
+approval:
+  credit_tier: good          # INFERRED — not stated in offer file; typical for a no-AF flat-2% Amex-network card
+  notes: >-
+    credit_tier estimated from the card's positioning (no-annual-fee, flat 2% cash back, Comenity
+    Capital Bank underwriting); the offer file does not state a recommended credit range — NEEDS
+    human verification.
+
+benefit_flags:
+  - amex_offers                # offer file, Credits/Perks: "Amex Offers"
+  - car_rental_insurance       # "Car Rental Loss & Damage Insurance, up to $50,000 per rental"
+  - purchase_protection        # "Retail/Purchase Protection, up to $1,000 per loss / $50,000 annual max"
+  - zero_fraud_liability       # "Zero Fraud Liability"
+  - id_theft_insurance         # "ID Theft Insurance, up to $2,500 per person"
+
+notes: >-
+  Rewards program is provided by Comenity Capital Bank; terms may change at any time. Cash back is
+  redeemable as statement credit or direct deposit, does not expire while the account is open, and
+  has no stated minimum redemption threshold (offer file, Redemption). Additional network perks not
+  modeled as benefit_flags: Special Ticket Access (presale/reserved tickets) and Emergency
+  Assistance. Promotional bonus cash back via Amex Offers may carry its own per-offer caps that were
+  not detailed on the pages reviewed. Issuer naming differs across official sources (breadfinancial.com
+  says "Comenity Bank, a Bread Financial company"; the Schumer Box/CFPB filings say "Comenity Capital
+  Bank, Salt Lake City, UT") — the latter is treated as authoritative. All figures are third-party
+  and unconfirmed this session (offline conversion from the terms sheet) — NEEDS human verification.
+  No deep-link source URL was on file for this offer sheet beyond the referenced Amex network path;
+  the original issuer product/rates page should be located and cited at verification time.
+
+sources:
+  - url: https://www.americanexpress.com/network/breadfinancial
+    supports: [identity, currency, base_rate, fees, benefit_flags, signup_bonus]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL path referenced in the offer file body (Signup Bonus line), not a header URL; not
+      re-fetched this session — figures are third-party/unconfirmed and the accessed date reflects
+      the offline conversion date, not a live fetch. NEEDS human verification.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

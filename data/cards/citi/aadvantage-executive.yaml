@@ -1,0 +1,116 @@
+# Top-tier AA co-brand: Admirals Club membership, AA/portal accelerators, $595 fee, AAdvantage miles.
+id: aadvantage-executive
+name: Citi / AAdvantage Executive World Elite Mastercard
+issuer: citi
+network: mastercard           # "World Elite Mastercard" stated in the card title
+currency:
+  type: points
+  program: aa_advantage
+base_rate: 1                  # "1 AAdvantage mile per $1 on general purchases"
+
+category_rewards:
+  - category: travel_flights
+    rate: 4                   # "4X miles on eligible American Airlines purchases"
+    notes: >-
+      Only AA purchases billed by American Airlines as merchant of record (excludes
+      AAdvantage status boost/renewal and AA Cargo) — NARROWER than the general
+      travel_flights category, which covers all airlines. Increases to 5X on AA
+      purchases for the rest of the calendar year once this card's spend reaches
+      $150,000 in that calendar year; that spend-progressive boost is not modeled
+      (lowest tier shown per curation conventions) — see card notes.
+  - category: travel_hotels
+    rate: 10                  # "10X miles on hotels booked through aadvantagehotels.com"
+    portal_only: true
+    notes: >-
+      Only hotels booked through aadvantagehotels.com (excludes AA Vacations and
+      "Reserve Now, Pay Later"). Portal-only.
+  - category: travel_other
+    rate: 10                  # "10X miles on car rentals booked through aadvantagecars.com"
+    portal_only: true
+    notes: >-
+      Only car rentals booked through aadvantagecars.com with US/Mexico/Canada point
+      of sale (excludes Payless and AA Vacations). Portal-only.
+
+merchant_rewards: []
+
+credits:
+  - name: Lyft credit
+    amount_usd: 10            # "$10 credit after 3 Lyft rides paid with the card in a calendar month"
+    period: monthly
+    category: transit
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Requires 3 Lyft rides paid with the card in the same calendar month (max one
+      $10 credit/month; digital-wallet/virtual-card payments don't qualify; credits
+      expire 30 days after issuance). Captured only by frequent Lyft riders; worthless
+      otherwise.
+  - name: Grubhub credit
+    amount_usd: 10            # "Up to $10 per monthly billing statement"
+    period: monthly
+    category: dining
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Up to $10/statement on grubhub.com/seamless.com and their apps (campus dining
+      and gift cards excluded), no minimum spend. Captured only by regular Grubhub/
+      Seamless users.
+  - name: Avis / Budget prepaid car rental credit
+    amount_usd: 120          # "Up to $120/year Avis or Budget prepaid car rental statement credit"
+    period: annual
+    category: travel_other
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Only for prepaid bookings made directly via Avis.com/Budget.com (third-party/
+      travel-agency bookings excluded). Captured only by cardholders who rent from
+      Avis/Budget and prepay directly.
+  - name: Global Entry / TSA PreCheck fee credit
+    amount_usd: 120          # "one statement credit up to $120 every 4 years"
+    period: every_4_years
+    realistic_capture_rate_note: >-
+      One credit every 4 years toward whichever of Global Entry / TSA PreCheck is
+      charged first. Only captured by travelers who apply/renew.
+
+signup_bonus: null           # No public signup bonus terms were present in this source file
+
+fees:
+  annual_fee_usd: 595         # "Annual Fee: $595 ($175 per Authorized User ...)"
+  foreign_transaction_pct: 0  # "Foreign Transaction Fee: None"
+
+approval:
+  credit_tier: excellent
+  notes: >-
+    credit_tier estimated from the card's premium positioning ($595 fee, lounge
+    membership); not stated in the offer file. Requires an open AAdvantage membership
+    (account can be closed if membership deactivates). New-account bonus miles blocked
+    if you got one on a Citi/AAdvantage Executive account, or converted such a card,
+    in the past 48 months. NEEDS human verification.
+
+benefit_flags:
+  - lounge_access             # Admirals Club full membership for primary cardmember
+  - free_checked_bag          # first checked bag free, domestic AA, up to 8 companions
+  - priority_boarding         # priority check-in/security/boarding (Group 4)
+
+sources:
+  - url: https://www.citi.com/credit-cards/citi-aadvantage-executive-world-elite-mastercard
+    supports: [identity, currency, base_rate, category_rewards, credits, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Citi product page; URL not in the offer file and NOT fetched this
+      session — figures unconfirmed. All values transcribed from
+      data/offer_files/citi/aadvantage-executive.txt. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/citi/aadvantage-executive.txt; all figures
+  unconfirmed against issuer terms. The 4X AA rate rises to 5X after $150k/calendar-year
+  spend on the card — a spend-progressive boost modeled at its base (4X) per curation
+  conventions. Status-qualifying Loyalty Points (1 per base mile, plus up to 20,000/yr
+  at 50k/90k thresholds) are NOT redeemable and are not scored. The 25% inflight food/
+  beverage savings is OMITTED as a credit: it is an uncapped percentage rebate with no
+  stated annual ceiling, so any dollar value would be invented. Admirals Club membership,
+  first-checked-bag, priority boarding, and travel protection are recorded as
+  benefit_flags/notes, not dollar-valued.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

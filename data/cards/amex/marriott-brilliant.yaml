@@ -1,0 +1,125 @@
+# Top Marriott co-brand: 2x base, 3x airfare/dining, $300 dining credit, annual free night; $650 AF.
+id: marriott-brilliant
+name: Marriott Bonvoy Brilliant American Express Card
+issuer: amex
+network: amex
+currency:
+  type: points
+  program: marriott_bonvoy
+base_rate: 2                 # "Base: 2 points/$"
+
+category_rewards:
+  - category: travel_flights
+    rate: 3                  # "3 points/$ (1 additional) on scheduled-airline airfare"
+    notes: Scheduled-airline airfare; excludes charter/private jet.
+  - category: dining
+    rate: 3                  # "3 points/$ ... worldwide restaurants"
+    notes: >-
+      Restaurants worldwide; excludes nightclubs, convenience/grocery/supermarkets;
+      restaurants inside another establishment (hotel/casino) may not qualify.
+
+merchant_rewards: []
+
+credits:
+  - name: Brilliant Dining Credit
+    amount_usd: 25           # "up to $25/month ($300/year)"
+    period: monthly
+    category: dining
+    realistic_capture_rate_note: >-
+      $25/month ($300/yr) on worldwide restaurant purchases; does not roll over.
+      Excludes gift cards/merchandise and non-restaurant merchants (bars, nightclubs,
+      grocery, cafeterias, caterers, breweries, bakeries, meeting venues, restaurants
+      inside another establishment). Easy to capture for anyone who dines out monthly.
+  - name: Marriott Property Credit (Ritz-Carlton / St. Regis)
+    amount_usd: 100          # "up to $100 per booking"
+    period: annual
+    category: travel_hotels
+    realistic_capture_rate_note: >-
+      Up to $100 per booking at Ritz-Carlton/St. Regis, only via the specific "$100
+      Property Credit, Luxury Credit Card Rate" (2-night min), for on-property dining/
+      spa/recreation; forfeited if unused during the stay. Per-booking face, modeled as
+      ~$100/yr since most cardholders make at most one such booking; $0 otherwise.
+  - name: Global Entry or TSA PreCheck Fee Credit
+    amount_usd: 120
+    period: every_4_years
+    category: travel_other
+    realistic_capture_rate_note: >-
+      One credit every 4 years, up to $120 (Global Entry) or $85 (TSA PreCheck).
+      Modeled at the $120 ceiling; captured once per renewal cycle by enrollees.
+  - name: American Express Venue Collection Concessions Credit
+    amount_usd: 25
+    period: annual
+    category: entertainment
+    requires_enrollment: true
+    expires: "2026-12-31"
+    realistic_capture_rate_note: >-
+      10% back (up to $250/yr) on Venue Collection concessions, enrollment required;
+      realistic capture is a small fraction — modeled at ~$25.
+  - name: Annual Free Night Award
+    kind: in_kind
+    amount_usd: 400          # estimated value of a <=85,000-point Marriott night
+    period: annual
+    category: travel_hotels
+    realistic_capture_rate_note: >-
+      Free night each year after renewal (redemption level <=85,000 points; can add up
+      to 25,000 purchased points); expires 1 year from issuance. Estimated ~$400 (85k
+      Bonvoy points near the ~0.6cpp floor and up); model applies an in-kind capture
+      haircut.
+
+signup_bonus:
+  value:
+    points: 100000           # "100,000 after $6,000 spend in first 6 months"
+  spend_requirement_usd: 6000
+  window_months: 6
+  tiers:
+    - value:
+        points: 50000        # "additional 50,000 after a further $2,000 spend (total $8,000)"
+      spend_requirement_usd: 8000
+  notes: >-
+    No stated end date in the offer file. Eligibility excludes holders of this Card,
+    the Starwood Preferred Guest Amex Luxury Card, and certain Chase-issued Ritz-
+    Carlton/Marriott Bonvoy cards within lookback windows (see approval.notes).
+
+fees:
+  annual_fee_usd: 650        # "Annual Fee: $650"
+  foreign_transaction_pct: 0 # "Foreign Transaction Fee: None"
+
+approval:
+  credit_tier: excellent
+  notes: >-
+    credit_tier is an inference from the card's top-tier premium underwriting; not
+    stated in the offer file — NEEDS human verification. Amex welcome-offer
+    eligibility blocked if you have/had this Card or the SPG Amex Luxury Card, and by
+    holding/recently receiving bonuses on Chase-issued Ritz-Carlton/Marriott Bonvoy
+    cards (Bountiful, Boundless, Bold) within 30/90/24-month lookback windows.
+
+benefit_flags:
+  - no_foreign_transaction_fee
+  - lounge_access
+  - elite_status
+  - cell_phone_protection
+  - trip_cancellation_insurance
+  - concierge_service
+
+sources:
+  - url: https://www.americanexpress.com/us/credit-cards/card/marriott-bonvoy-brilliant/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Amex product page. URL not in offer file and not fetched this
+      session; figures transcribed from the local offer file and unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/amex/marriott-brilliant.txt; all figures
+  unconfirmed pending human verification. OMITTED: the "6x at Marriott Bonvoy
+  properties" earn — no `marriott` merchant key in data/meta/merchants.yaml; mapping
+  it to travel_hotels would overstate it for non-Marriott stays (registry gap
+  flagged). Complimentary Platinum Elite status, 25 Elite Night Credits, Priority Pass
+  Select, and the $60k-spend Earned Choice Award are elite/status benefits not modeled
+  as value.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

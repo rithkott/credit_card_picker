@@ -1,0 +1,95 @@
+# $95 ThankYou travel card: 3x on travel/dining/groceries/gas + 10x Citi Travel portal.
+id: strata-premier
+name: Citi Strata Premier
+issuer: citi
+network: mastercard           # network not stated in offer file; Citi Strata Premier is a Mastercard — inferred
+currency:
+  type: points
+  program: citi_typ
+base_rate: 1                 # "1 point/$1 on all other purchases"
+
+category_rewards:
+  - category: travel_hotels
+    rate: 10                  # "10 total points/$1 on hotel ... bookings via the Citi Travel site"
+    portal_only: true
+    notes: >-
+      Hotels booked through Citi Travel (cititravel.com). Portal-only. Hotels booked
+      direct earn 3X (separate entry below).
+  - category: travel_other
+    rate: 10                  # "10 total points/$1 on ... car rental, and attraction bookings via Citi Travel"
+    portal_only: true
+    notes: Car rentals and attractions booked through Citi Travel. Portal-only.
+  - category: travel_hotels
+    rate: 3                   # "3 points/$1 on ... hotel purchases not booked through Citi Travel"
+    notes: >-
+      Hotels booked direct (not via Citi Travel) — the non-portal 3X rate. Two
+      travel_hotels entries exist: 10X portal-only and this 3X direct.
+  - category: travel_flights
+    rate: 3                   # "3 points/$1 on air travel ... not booked through Citi Travel"
+    notes: Air travel (airlines direct or travel agencies).
+  - category: dining
+    rate: 3                   # "3 points/$1 at restaurants"
+    notes: >-
+      Excludes bakeries, caterers, and restaurants inside another business (hotel, store,
+      stadium, grocery store, warehouse club).
+  - category: groceries
+    rate: 3                   # "3 points/$1 at supermarkets"
+    notes: >-
+      Supermarket MCC only; excludes discount superstores, convenience stores, drugstores,
+      warehouse clubs, specialty food markets, bakeries, candy/nut stores, meal-kit delivery.
+  - category: gas
+    rate: 3                   # "3 points/$1 at gas stations and EV charging"
+    notes: >-
+      Excludes warehouse clubs, discount/department stores, and convenience stores not
+      coded as gas/EV.
+
+merchant_rewards: []
+
+credits:
+  - name: Annual hotel benefit (Citi Travel)
+    amount_usd: 100          # "$100 off a single hotel stay of $500+ ... booked via Citi Travel"
+    period: annual
+    category: travel_hotels
+    realistic_capture_rate_note: >-
+      Once per calendar year, $100 off a single $500+ hotel stay booked and prepaid via
+      Citi Travel (portal-only; points not earned on the discounted portion). Captured only
+      by cardholders who book a qualifying $500+ hotel stay through the portal each year.
+
+signup_bonus: null           # No specific bonus amount stated in source
+
+fees:
+  annual_fee_usd: 95          # "Annual Fee: $95"
+  foreign_transaction_pct: 0  # "Foreign Transaction: None"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's mainstream $95 travel-card positioning; not
+    stated in the offer file. Bonus blocked if you got a Citi Premier / Strata Premier
+    new-account bonus, or converted such a card, in the past 48 months. NEEDS human
+    verification.
+
+benefit_flags: []
+
+sources:
+  - url: https://www.citi.com/credit-cards/citi-strata-premier-credit-card
+    supports: [identity, currency, base_rate, category_rewards, credits, fees, approval]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Citi product page; URL not in the offer file and NOT fetched this
+      session — figures unconfirmed. All values transcribed from
+      data/offer_files/citi/strata-premier.txt. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/citi/strata-premier.txt; all figures unconfirmed.
+  network (mastercard) is inferred — not stated — NEEDS human verification. Hotels are
+  modeled with two entries: 10X portal-only (Citi Travel) and 3X direct. The Reserve /
+  Hotel Collection per-stay hotel perks (experience credit, breakfast, upgrades) are
+  per-booking portal-only benefits, not modeled as periodic credits. Travel protection is
+  secondary-only, noted not flagged.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

@@ -1,0 +1,102 @@
+# Bilt Card 2.0 premium tier — $495 AF Mastercard World Legend: flat 2x everywhere + housing
+# points, Priority Pass lounge access, annual Bilt Cash + travel-portal hotel credits. AI draft.
+id: bilt-palladium
+name: Bilt Palladium Card
+issuer: cardless
+network: mastercard
+currency:
+  type: points
+  program: bilt_points
+base_rate: 2                 # "2 points/$1 on all other eligible purchases (flat rate, no category restrictions)"
+
+category_rewards: []
+# Housing-payment earn (up to 1.25x) OMITTED: no housing/rent key in data/meta/categories.yaml.
+# All non-housing spend earns the flat 2x base_rate, so no category entries are needed.
+
+merchant_rewards: []
+# Partner earning (Lyft, Bilt Dining, Bilt Travel Portal, Bilt Fitness, Metropolis parking,
+# Walgreens, Bilt Home Delivery) stacks with base rate; rates "vary by partner/merchant, set in
+# the Bilt app" — no numeric rate stated, unmodeled. See notes.
+
+credits:
+  - name: Annual Bilt Cash Credit
+    amount_usd: 200          # "$200 Bilt Cash annually, auto-credited on Account Open Date and each Jan 1"
+    period: annual
+    realistic_capture_rate_note: >-
+      Auto-credited each Jan 1 (and at account open) while the account is open and in good standing;
+      no enrollment or spend required, so near-100% capture for any active cardholder. Only lost if the
+      account is not in good standing on the credit date (no proration in that case).
+  - name: Bilt Travel Hotel Credit
+    amount_usd: 200          # "$200 per half-year (Jan-Jun / Jul-Dec)"; face value per period
+    period: semiannual
+    category: travel_hotels
+    requires_enrollment: true  # "must opt in at checkout"
+    realistic_capture_rate_note: >-
+      Captured only by users who book 2+ night hotel stays through the Bilt Travel Portal each half-year
+      and opt in at checkout; does not roll over between halves and is forfeited if a non-refundable
+      booking is canceled. Portal-only + opt-in + 2-night-minimum + biannual-forfeit mechanics mean most
+      cardholders capture less than the full $400/yr face value.
+
+signup_bonus:
+  value:
+    usd: 300                 # "$300 Bilt Cash credited immediately at account opening regardless of spend"
+  spend_requirement_usd: 0   # the $300 component requires no spend
+  window_months: 3           # ~90 days for the spend-gated tier (97 days for accounts opened 2/7/2026)
+  tiers:
+    - value:
+        points: 50000        # "50,000 points ... after $4,000 Everyday Spend within 90 days"
+      spend_requirement_usd: 4000
+  notes: >-
+    Bonus modeled as two tranches within the same ~90-day window: $300 Bilt Cash credited immediately
+    at account opening (no spend, base value), PLUS 50,000 points after $4,000 Everyday Spend (tier).
+    ALSO grants Bilt Gold Elite Status (unscored, see benefit_flags) lasting through Jan 15 of the
+    second following year — not represented as a bonus value. Window is 90 days (97 days for accounts
+    opened 2/7/2026); offer file gives a relative window, so window_months is approximate. Not available
+    if you currently/previously held or already received a Welcome Bonus for any Bilt Card 2.0.
+
+fees:
+  annual_fee_usd: 495
+  foreign_transaction_pct: 0   # INFERRED: no FTF language in the offer file — NEEDS human verification
+
+approval:
+  credit_tier: excellent
+  notes: >-
+    credit_tier estimated from the premium $495-annual-fee, Mastercard World Legend positioning; not
+    stated in the offer file — NEEDS human verification. Authorized User fee is $95 per AU added.
+
+benefit_flags:
+  - lounge_access             # Priority Pass: cardholder + up to 2 guests/visit ($35/guest beyond two)
+  - elite_status             # Bilt Gold Elite Status granted via the welcome offer
+
+notes: >-
+  AI draft from local offer file only; not re-fetched from the issuer this session — confidence low.
+  REWARD OPTIONS (housing vs everyday), same as all Bilt 2.0 tiers: cardholder picks ONE per billing
+  cycle. (1) Housing-only (default): Bilt Points auto-earned on Bilt Housing Payments at a variable
+  0x-1.25x based on the "Everyday Spend Ratio" (25-49%=0.5x, 50-74%=0.75x, 75-99%=1x, 100%+=1.25x;
+  250-point/cycle floor); no Bilt Cash on everyday spend. (2) Flexible Bilt Cash (UNMODELED): 4% back
+  in Bilt Cash on all Everyday Spend, no housing multiplier; every $3 Bilt Cash unlocks 100 housing
+  points (capped 1 pt/$1 of payment). HOUSING EARN OMITTED (up to 1.25x) because no housing/rent
+  category key exists (registry gap). No transaction fee to earn on housing under either option. NEEDS
+  human verification: prior Bilt cards required 5 transactions/statement to earn; not stated in this
+  offer file, so not modeled. PRIORITY PASS lounge access (1,200+ lounges) recorded as a benefit_flag;
+  the offer file's "worth $469 a year" is issuer marketing, not transcribed as a credit value. Bilt Gold
+  Elite Status recorded as a benefit_flag per dataset convention (no invented dollar value). Excluded from
+  earning: balance transfers, cash advances, prepaid/gift cards, P2P, crypto, fees/interest, lottery/gaming.
+  Issuer of record: Column N.A. (Member FDIC); servicer: Cardless Inc.; network Mastercard World Legend;
+  "issuer" set to "cardless" per dataset convention.
+
+sources:
+  - url: https://www.biltrewards.com/terms
+    supports: [identity, currency, base_rate, credits, signup_bonus, fees, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Bilt Rewards Card Offer Terms (covers all three Bilt Card tiers), offer file last updated
+      April 30, 2026. URL carried over from offer file header; not re-fetched this session — the
+      accessed date reflects local offer-file review on 2026-07-04, not a live visit. Figures are
+      transcribed from a third-party terms sheet and are unconfirmed.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: claude-opus-4-8 (AI draft) — NEEDS human verification
+  confidence: low

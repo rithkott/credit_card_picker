@@ -1,0 +1,69 @@
+# Store-only Macy's Card: Star Rewards points (modeled at Silver 2x), first-purchase discount.
+id: macys
+name: Macy's Card
+issuer: citi
+network: mastercard           # PLACEHOLDER — private-label store card, network not stated; see notes
+currency:
+  type: points
+  program: macys_star_money
+base_rate: 2                 # Silver tier (new cardholder): "2 points per $1" (1,000 pts = $10 Star Money = 1cpp)
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus:
+  value:
+    usd: 100                  # "capped at a combined $100 in total savings"
+  spend_requirement_usd: 334  # ~$334 online at 30% off reaches the $100 cap ($100 / 0.30)
+  window_months: 1            # valid the day of approval and the following day
+  notes: >-
+    New immediately-approved cardholders get 20% off in-store and 30% off on macys.com,
+    day-of-approval and the next day, capped at $100 combined savings. Value assumes the
+    $100 cap is reached; spend_requirement_usd 334 is the online (30%) spend to max it.
+    Applicants requiring additional review don't get the discount. Excludes services,
+    Apple, smart watches/jewelry, gift cards, restaurants, gourmet food/wine, etc.
+
+fees:
+  annual_fee_usd: 0           # "No annual fee"
+  foreign_transaction_pct: 0  # not stated; domestic closed-loop store card — inferred 0, NEEDS human verification
+
+approval:
+  credit_tier: fair
+  notes: >-
+    credit_tier estimated from typical store-card underwriting; not stated in the offer
+    file. NEEDS human verification.
+
+benefit_flags:
+  - special_financing         # deferred-interest promos on furniture/mattresses (retroactive-interest trap)
+
+sources:
+  - url: https://www.macys.com/cms/creditservice/thankyou/index.ognc
+    supports: [identity, currency, base_rate, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Macy's credit page; URL not in the offer file and NOT fetched this
+      session (source file notes macys.com pages returned HTTP 403) — figures unconfirmed.
+      Values transcribed from data/offer_files/citi/macys.txt. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/citi/macys.txt; all figures unconfirmed. This is
+  the STORE-ONLY Macy's Card (usable at Macy's, Macy's Backstage, macys.com only), NOT the
+  Macy's American Express. REGISTRY / MODELING GAP: this is a closed-loop card but
+  merchants.yaml has no `macys` key, so the `closed_loop` block CANNOT be expressed — as
+  modeled, base_rate 2 would be wrongly earnable everywhere. A reviewer must add a `macys`
+  merchant key + closed_loop block. network is a PLACEHOLDER (private-label; not stated).
+  STAR REWARDS LADDER (spend-progressive): Bronze 1x / Silver 2x (new-cardholder starting
+  tier, modeled here) / Gold 3x (after $500-$1,199/yr) / Platinum 5x (after $1,200+/yr);
+  per curation conventions only the lowest tier a new cardholder gets is the rate, ladder
+  noted here. Star Money expires 30 days from issuance — a redemption/breakage risk the
+  flat macys_star_money 1.0cpp valuation does not fully haircut. Deferred-interest financing
+  is out of scope (special_financing flag).
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

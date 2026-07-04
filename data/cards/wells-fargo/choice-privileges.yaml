@@ -1,0 +1,83 @@
+# No-annual-fee Choice Hotels co-brand — everyday 3X plus (omitted) brand-hotel earn.
+id: choice-privileges
+name: Wells Fargo Choice Privileges Mastercard
+issuer: wells-fargo
+network: mastercard          # "Choice Privileges Mastercard" (World Elite Mastercard benefits)
+currency:
+  type: points
+  program: choice_privileges
+base_rate: 1                 # "1X points on other purchases"
+
+category_rewards:
+  - category: gas
+    rate: 3                  # "3X points at gas stations, grocery stores, home improvement stores, and phone plan services"
+  - category: groceries
+    rate: 3                  # same 3X tier ("grocery stores")
+  - category: utilities
+    rate: 3                  # "phone plan services" → utilities (Utilities & phone)
+    notes: >-
+      Covers "phone plan services" only, per the offer file — not utilities broadly.
+      Mapped to the utilities key for lack of a phone-specific key; narrower than this
+      category. NEEDS human verification.
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus:
+  value:
+    points: 60000            # "60,000 bonus points" (current 2026 offer per corroborating sources)
+  spend_requirement_usd: 1000 # "when you spend $1,000 in purchases in the first 3 months"
+  window_months: 3
+
+fees:
+  annual_fee_usd: 0          # "Annual Fee: None"
+  foreign_transaction_pct: 0 # "Foreign Transaction Fee: None"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from this card's positioning as a mainstream no-annual-fee
+    hotel co-brand (World Elite Mastercard); the offer file does not state a credit
+    requirement. NEEDS human verification.
+
+benefit_flags:
+  - cell_phone_protection
+  - complimentary_elite_status
+  - world_elite_mastercard
+  - zero_fraud_liability
+
+sources:
+  - url: https://creditcards.wellsfargo.com/choice-hotel-privileges-mastercard
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Product URL carried over from the offer file header; not re-fetched this session.
+      Signup figure had a rendering artifact in the offer file (old "40,000" concatenated
+      with current "60,000"); 60,000/$1,000 taken as current per corroborating sources.
+      Third-party/unconfirmed per the NEEDS_VERIFICATION marker.
+  - url: https://www.wellsfargo.com/credit-cards/agreements/choice-agreement/
+    supports: [fees]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Agreement/rates-and-fees page carried over from the offer file header; not
+      re-fetched this session; third-party/unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/wells-fargo/choice-privileges.txt, which carries
+  a NEEDS_VERIFICATION marker — all figures are third-party/unconfirmed and need human
+  verification. OMITTED REWARDS: (1) "5X points on stays at participating Choice Hotels
+  properties and Choice Privileges point purchases" — brand-specific earn with no
+  merchant key in data/meta/merchants.yaml (no Choice Hotels key), so omitted rather
+  than force-fit onto travel_hotels; (2) the "home improvement stores" portion of the
+  3X tier — no matching category key exists, so it is dropped from the modeled 3X set.
+  Both gaps are listed for a reviewer / possible registry additions. Card also grants
+  automatic Gold Elite status (10% bonus points on qualifying stays) and 10 Elite
+  Qualifying Nights/year (benefit_flags + note, not modeled as earn).
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

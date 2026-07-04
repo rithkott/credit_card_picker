@@ -1,0 +1,70 @@
+# Royal Caribbean Group cruise co-brand (no AF); earns mycruise_points redeemable only for cruise rewards.
+id: royal-one
+name: Royal ONE Visa Signature
+issuer: bank-of-america
+network: visa                 # "Visa Signature"
+currency:
+  type: points
+  program: mycruise_points
+base_rate: 1                  # "1 point per $1 on all other purchases"
+
+category_rewards:
+  - category: groceries
+    rate: 2                   # "2 points per $1 on grocery, gas, and EV charging stations"
+  - category: gas
+    rate: 2                   # same 2x tier; gas + EV charging
+
+merchant_rewards: []          # "3 points on Royal Caribbean/Celebrity/Silversea purchases" omitted — no cruise-line merchant key; see notes / registry gap.
+
+credits:
+  - name: Anniversary cruise discount
+    kind: in_kind
+    amount_usd: 100          # "$100 cruise discount after spending $10,000 in the anniversary year"
+    period: annual
+    unlock_spend_usd: 10000  # "after spending $10,000 in the anniversary year"
+    realistic_capture_rate_note: >-
+      A $100 cruise discount that unlocks only after $10,000 of anniversary-year spend, and is
+      redeemable only against a cruise booking. Captured by cardholders who both hit the spend
+      threshold and sail; near-zero otherwise. in_kind because it is cruise-restricted, not cash.
+
+signup_bonus:
+  value:
+    points: 45000            # "45,000 bonus points, redeemable for $450 in onboard credit or cruise discounts"
+  spend_requirement_usd: 2000 # "after spending $2,000 on purchases within the first 90 days"
+  window_months: 3
+
+fees:
+  annual_fee_usd: 0           # "$0"
+  foreign_transaction_pct: 0  # "None"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream no-annual-fee cruise
+    co-brand card; the offer file does not state a credit requirement. NEEDS human verification.
+
+benefit_flags:
+  - no_foreign_transaction_fee
+
+sources:
+  - url: https://www.bankofamerica.com/credit-cards/products/royal-one-credit-card/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session. Figures transcribed
+      from the local offer file only (no NEEDS_VERIFICATION marker on this file).
+
+notes: >-
+  Drafted offline from data/offer_files/bank-of-america/royal-one.txt (no NEEDS_VERIFICATION marker,
+  but confidence is low because nothing was re-fetched this session). No-AF tier launched Mar 2026
+  alongside Royal ONE Plus (sibling card: royal-one-plus.yaml); covers Royal Caribbean, Celebrity
+  Cruises, and Silversea. REGISTRY GAP: "3 points on Royal Caribbean/Celebrity/Silversea purchases"
+  is a merchant-specific rate with no cruise-line key in data/meta/merchants.yaml — omitted rather
+  than force-fit. mycruise_points redeem ONLY for cruise rewards (onboard credit / cruise discount)
+  at 1cpp, minimum 5,000 points for $50.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

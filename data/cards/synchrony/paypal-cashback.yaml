@@ -1,0 +1,58 @@
+# Open-loop payment-channel card: 3% via the PayPal account, 1.5% everywhere else. PayPal account required.
+id: paypal-cashback
+name: PayPal Cashback Mastercard
+issuer: synchrony
+network: mastercard
+currency:
+  type: cash                  # "Cash Rewards" transferred to the PayPal account at 1:1; cash-equivalent.
+  program: cash
+base_rate: 1.5                # "Each Eligible Purchase everywhere else that Mastercard is accepted will earn 1.5% Cash Rewards." The 3% PayPal-channel rate cannot be modeled — see notes (registry gap).
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus: null            # "Not found on any official page" — no welcome bonus disclosed.
+
+fees:
+  annual_fee_usd: 0           # "Annual Fee: None" — official Synchrony combined agreement + PayPal marketing page.
+  foreign_transaction_pct: 3  # "3% of each transaction" made in a foreign currency or outside the U.S. — official Rates and Fees Table.
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier NOT stated in the offer file — estimated. The agreement notes "a limited number of
+    applicants are expected to receive Account Types 1 and 2," i.e. most approved applicants land in the
+    highest-APR Type 3 tier, suggesting fairly broad/accessible underwriting; ~good is a rough estimate,
+    NEEDS human verification. Requires an active PayPal account in good standing to apply, earn, and redeem.
+
+benefit_flags:
+  - special_financing
+
+sources:
+  - url: https://www.synchronybankterms.com/syfterms/html/PayPalCashbackApplyTerms_combo.htm
+    supports: [identity, currency, base_rate, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL listed in the offer file's "Sources used" (official Synchrony combined credit card agreement,
+      rates/fees as of 1/1/2026); NOT fetched this session. Rewards structure from the Synchrony rewards
+      terms page per the offer file. Figures are third-party/unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/synchrony/paypal-cashback.txt; figures unconfirmed. REGISTRY GAP:
+  the headline 3% earn applies to Eligible Purchases made "through your PayPal account" (online checkout via
+  PayPal, or sending money to other PayPal users) — a payment-channel reward that the curation guide models
+  as a merchant_rewards entry on the channel's merchant key, but merchants.yaml has no "paypal" key, so the
+  3% rate is OMITTED and the card is modeled at its 1.5% base_rate only. A reviewer should add a "paypal"
+  merchant key (payment channel) and then add a merchant_rewards entry at rate 3. This materially undercounts
+  value for heavy PayPal users. Documents cover both the PayPal Cashback Mastercard and PayPal Cashback World
+  Mastercard, which share rewards/rates terms. Special promotional financing may be offered (retroactive-
+  interest trap on unpaid promo balances). Legacy "PayPal Extras Mastercard" (flat 2% + eBay) is superseded.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

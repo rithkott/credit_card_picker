@@ -1,0 +1,102 @@
+# No-fee ThankYou card: 3x groceries/transit/gas + a quarterly self-select category, 2x dining.
+id: strata
+name: Citi Strata
+issuer: citi
+network: mastercard           # network not stated in offer file; Citi Strata is a Mastercard — inferred
+currency:
+  type: points
+  program: citi_typ
+base_rate: 1                 # "1 point per $1 on everything else"
+
+category_rewards:
+  - category: travel_hotels
+    rate: 5                   # "5 points per $1 on hotels ... booked through Citi Travel"
+    portal_only: true
+    notes: >-
+      Hotels booked through Citi Travel (cititravel.com or phone). Portal-only. No points
+      on cancelled bookings.
+  - category: travel_other
+    rate: 5                   # "5 points per $1 on ... car rentals, and attractions ... Citi Travel"
+    portal_only: true
+    notes: Car rentals and attractions booked through Citi Travel. Portal-only.
+  - category: groceries
+    rate: 3                   # "3 points per $1 at supermarkets"
+    notes: >-
+      Supermarket MCC only; excludes discount superstores, dairy/convenience stores,
+      drugstores, warehouse clubs, specialty vendors, bakeries, candy/nut stores, meal-kit
+      delivery, and online supermarkets not using the supermarket MCC.
+  - category: transit
+    rate: 3                   # "3 points per $1 on Select Transit ... and Gas Stations"
+    notes: >-
+      "Select Transit": car rentals, ferries, commuter rail, subway, taxi/limo/car service,
+      passenger rail, tolls, parking, buses, RV rentals, EV charging. Excludes bike/scooter
+      rentals, auto clubs/insurance. Same 3X line also covers gas stations (see gas entry).
+  - category: gas
+    rate: 3                   # same "Select Transit ... and Gas Stations" 3X line
+    notes: >-
+      Gas stations, part of the same 3X "Select Transit + Gas" line. Excludes warehouse
+      clubs, superstores, discount/department stores, and convenience stores not using the
+      gas-station MCC. Not a shared cap — both transit and gas are uncapped 3X.
+  - category: choice
+    rate: 3                   # "3 points per $1 in one Self-Select Category chosen by the cardholder"
+    choice:
+      options: [streaming, entertainment]
+      note: >-
+        Cardholder self-selects one category (default: Select Streaming Services until
+        changed; changeable once per calendar quarter). The eligible options are Fitness
+        Clubs, Select Streaming Services, Live Entertainment, Cosmetic Stores/Barber
+        Shops/Hair Salons, and Pet Supply Stores — only Streaming (`streaming`) and Live
+        Entertainment (`entertainment`) map to registry keys; Fitness Clubs, Cosmetic/
+        Barber/Salon, and Pet Supply Stores are OMITTED for lack of a category key.
+    notes: >-
+      Select Streaming covers only named providers (Netflix, Spotify, Disney+, Hulu, HBO
+      Max, YouTube Premium/TV, etc.); Live Entertainment covers concerts/live sports/theater/
+      amusement parks (excludes movie theaters, museums, tourist attractions).
+  - category: dining
+    rate: 2                   # "2 points per $1 at restaurants"
+    notes: >-
+      Cafes, bars, lounges, fast food, delivery, takeout. Excludes bakeries, caterers, and
+      restaurants inside another business (hotels, stores, stadiums, grocery/warehouse clubs).
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus: null           # No public signup bonus dollar/point amount was present in this source file
+
+fees:
+  annual_fee_usd: 0           # "Annual Fee: None ($0)"
+  foreign_transaction_pct: 3  # "Foreign Transaction Fee: 3% of each purchase transaction in U.S. dollars"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's mainstream no-annual-fee positioning; not stated
+    in the offer file. Signup bonus blocked if you got a new-account bonus for Citi Strata /
+    Strata Student / Rewards+ / Rewards+ Student, or converted such a card, in the past 48
+    months. NEEDS human verification.
+
+benefit_flags: []
+
+sources:
+  - url: https://www.citi.com/credit-cards/citi-strata-credit-card
+    supports: [identity, currency, base_rate, category_rewards, fees, approval]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Citi product page; URL not in the offer file and NOT fetched this
+      session — figures unconfirmed. All values transcribed from
+      data/offer_files/citi/strata.txt. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/citi/strata.txt; all figures unconfirmed. network
+  (mastercard) is inferred — not stated — NEEDS human verification. The Self-Select Category
+  is modeled as a `choice` reward. REGISTRY GAP: three of the five self-select options —
+  Fitness Clubs, Cosmetic Stores/Barber Shops/Hair Salons, and Pet Supply Stores — have no
+  categories.yaml key and are OMITTED from choice.options (only streaming + entertainment
+  are modeled). The default self-select category is Select Streaming Services.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

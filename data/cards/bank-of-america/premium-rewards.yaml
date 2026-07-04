@@ -1,0 +1,96 @@
+# Mid-tier travel points card ($95 AF); earns bofa_premium_rewards points (flat 1cpp). Preferred Rewards boosts up to 75%.
+id: premium-rewards
+name: Premium Rewards
+issuer: bank-of-america
+network: visa                 # "Visa Signature" (offer file references Visa Signature Luxury Hotel Collection)
+currency:
+  type: points
+  program: bofa_premium_rewards
+base_rate: 1.5               # "1.5 points per $1 on all other purchases"
+
+category_rewards:
+  - category: travel_flights
+    rate: 2                   # "2 points for every $1 spent on travel and dining purchases"
+  - category: travel_hotels
+    rate: 2                   # same travel+dining 2x tier
+  - category: travel_other
+    rate: 2                   # same travel+dining 2x tier
+  - category: dining
+    rate: 2                   # same travel+dining 2x tier
+
+merchant_rewards: []
+
+credits:
+  - name: Airline Incidental Statement Credit
+    amount_usd: 100          # "Up to $100 in Airline Incidental Statement Credits annually"
+    period: annual
+    realistic_capture_rate_note: >-
+      Reimburses qualifying airline incidentals (seat upgrades, baggage fees, in-flight services,
+      lounge fees) up to $100/year. Airfare itself usually does NOT qualify; captured by cardholders
+      who incur incidental fees on a coded airline, partial or zero for those who don't.
+  - name: Airport Security Statement Credit (TSA PreCheck / Global Entry)
+    amount_usd: 100          # "Up to $100 ... for TSA PreCheck or Global Entry application fees, every four years"
+    period: every_4_years
+    realistic_capture_rate_note: >-
+      Reimburses the TSA PreCheck (~$78) or Global Entry ($120) application fee once per 4-year
+      cycle. Captured by anyone who applies; otherwise unused.
+
+signup_bonus:
+  value:
+    points: 60000            # "60,000 online bonus points — a $600 value"
+  spend_requirement_usd: 4000 # "after making at least $4,000 in purchases in the first 90 days"
+  window_months: 3
+
+fees:
+  annual_fee_usd: 95          # "$95 (not waived first year)"
+  foreign_transaction_pct: 0  # "No foreign transaction fees"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream mid-tier travel
+    card; the offer file does not state a credit requirement. NEEDS human verification.
+
+relationship_boost:
+  program: Bank of America Preferred Rewards
+  tiers:
+    - tier_name: Gold
+      requirement: Gold Preferred Rewards tier (eligible BofA/Merrill relationship)
+      boost_pct: 25
+    - tier_name: Platinum
+      requirement: Platinum Preferred Rewards tier (eligible BofA/Merrill relationship)
+      boost_pct: 50
+    - tier_name: Platinum Honors
+      requirement: Platinum Honors Preferred Rewards tier (eligible BofA/Merrill relationship)
+      boost_pct: 75
+  note: >-
+    Offer file: "eligible cardholders earn a bonus (25%-75%) on points based on Bank of
+    America/Merrill relationship tier — at Platinum Honors, 2x travel/dining effectively becomes
+    ~3.5x and 1.5x base becomes ~2.62x." Endpoints 25% (Gold) / 75% (Platinum Honors) transcribed;
+    50% (Platinum) is the standard middle tier. Balance thresholds not stated — expressed as
+    requirement text. Not scored in v1 — rates above are the no-relationship baseline.
+
+benefit_flags:
+  - no_foreign_transaction_fee
+  - concierge_service
+
+sources:
+  - url: https://www.bankofamerica.com/credit-cards/products/premium-rewards-credit-card/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, relationship_boost, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session. Figures transcribed
+      from the local offer file only (no NEEDS_VERIFICATION marker on this file).
+
+notes: >-
+  Drafted offline from data/offer_files/bank-of-america/premium-rewards.txt (no NEEDS_VERIFICATION
+  marker, but confidence is low because nothing was re-fetched this session). The broad "travel"
+  2x tier is expanded across travel_flights, travel_hotels, and travel_other. bofa_premium_rewards
+  points redeem at a flat 1cpp (cash/statement credit/Merrill deposit/gift cards). Network inferred
+  as Visa Signature from the offer file's Luxury Hotel Collection reference — NEEDS human verification.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

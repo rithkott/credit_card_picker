@@ -1,0 +1,124 @@
+# Premium travel card: flat 2x Miles + high Cap One Travel portal rates, $395 fee, lounge access.
+id: venture-x
+name: Capital One Venture X Rewards
+issuer: capital-one
+network: visa                 # "Visa Infinite" stated in offer file
+currency:
+  type: points
+  program: capital_one_miles
+base_rate: 2                  # "unlimited 2X miles on all transactions"
+
+category_rewards:
+  - category: travel_hotels
+    rate: 10                  # "10X miles on hotels ... booked through Capital One Travel"
+    portal_only: true
+    notes: >-
+      Applies only to hotels booked through Capital One Travel (issuer portal) — not
+      to hotel spend booked directly. Vacation rentals booked via Capital One Travel
+      earn only 5X (not 10X); that lower rate is not separately modeled because there
+      is no distinct vacation-rental category key — see card notes. NEEDS human verification.
+  - category: travel_other
+    rate: 10                  # "10X miles on ... rental cars" via Capital One Travel
+    portal_only: true
+    notes: >-
+      Rental cars booked through Capital One Travel only. NEEDS human verification.
+  - category: travel_flights
+    rate: 5                   # "5X miles on flights ... booked through Capital One Travel"
+    portal_only: true
+    notes: >-
+      Flights booked through Capital One Travel only (not direct-with-airline spend).
+      Vacation rentals also earn 5X via the portal but are not separately modeled
+      (no vacation-rental category key). NEEDS human verification.
+  - category: entertainment
+    rate: 5                   # "Capital One Entertainment purchases: 5X miles per dollar"
+    portal_only: true
+    notes: >-
+      Applies only to purchases made through the Capital One Entertainment platform
+      (event/ticket marketplace), NOT to general entertainment spend. portal_only is
+      used to flag the issuer-platform scoping. NEEDS human verification.
+
+merchant_rewards: []
+
+credits:
+  - name: Capital One Travel credit
+    amount_usd: 300
+    period: annual
+    realistic_capture_rate_note: >-
+      Redeemable ONLY on bookings made through the Capital One Travel portal, where
+      prices can exceed direct-booking rates. High capture for cardholders who book
+      any travel through the portal each year; zero for those who never use it.
+    notes: >-
+      "$300 annual Capital One Travel credit" — Capital One Travel portal only. NEEDS
+      human verification.
+  - name: Anniversary bonus miles
+    amount_points: 10000
+    period: annual
+    realistic_capture_rate_note: >-
+      Deposited automatically each account anniversary; essentially full capture, no
+      enrollment or spend needed. Valued via the card's capital_one_miles program.
+    notes: >-
+      "10,000 bonus miles every year, starting on the first anniversary." NEEDS human
+      verification.
+  - name: Global Entry / TSA PreCheck fee credit
+    amount_usd: 120
+    period: every_4_years
+    realistic_capture_rate_note: >-
+      One statement credit per account every four years toward a Global Entry or TSA
+      PreCheck application fee. Only captured by travelers who apply/renew; worthless
+      to those who don't.
+    notes: >-
+      "up to $120 statement credit ... one credit per account every four years." NEEDS
+      human verification.
+
+signup_bonus:
+  value:
+    points: 75000
+  spend_requirement_usd: 4000
+  window_months: 3
+  notes: >-
+    "75,000 bonus miles when you spend $4,000 within three months." Applicants
+    ineligible if they received a Venture X bonus within the prior 48 months. Figures
+    third-party/unconfirmed per the offer file's NEEDS_VERIFICATION marker.
+
+fees:
+  annual_fee_usd: 395         # "Annual Fee: $395"
+  foreign_transaction_pct: 0  # "Foreign Transaction Fees: None"
+
+approval:
+  credit_tier: excellent      # "Credit Level Required: Excellent" (stated on page)
+
+benefit_flags:
+  - lounge_access
+  - cell_phone_protection
+  - trip_cancellation_insurance
+  - extended_warranty
+  - auto_rental_cdw
+  - concierge
+  - no_foreign_transaction_fee
+
+sources:
+  - url: https://www.capitalone.com/credit-cards/venture-x/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session; figures
+      third-party/unconfirmed. Offer file carries a NEEDS_VERIFICATION marker and notes
+      the rates & fees disclosure PDF could not be parsed, so APR/Schumer-box fees were
+      not confirmed against the legal disclosure.
+
+notes: >-
+  Drafted offline from data/offer_files/capital-one/venture-x.txt (NEEDS_VERIFICATION
+  marker) — all figures third-party/unconfirmed. Portal rates (10X hotels/rental cars,
+  5X flights) apply ONLY through Capital One Travel; vacation rentals earn 5X via the
+  portal but are omitted for lack of a distinct category key. The Capital One
+  Entertainment 5X is platform-scoped (flagged portal_only). Per-stay Premier
+  Collection ($100 experience credit + breakfast) and Lifestyle Collection ($50) credits
+  and the up-to-$50 price-drop protection are not modeled as periodic credits (they are
+  per-booking, not per-period) — see offer file. Miles do not expire for the life of the
+  account.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

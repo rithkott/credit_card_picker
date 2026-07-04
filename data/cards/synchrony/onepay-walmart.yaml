@@ -1,0 +1,59 @@
+# Closed-loop, Walmart-only private-label card: no rewards. Soft-decline fallback within the OnePay/Walmart program.
+id: onepay-walmart
+name: OnePay Walmart Spend Card
+issuer: synchrony
+network: mastercard            # PLACEHOLDER: network-less private-label card (usable ONLY at Walmart). Schema forces a network enum; mastercard is a flagged stand-in. See notes.
+currency:
+  type: cash                  # No rewards currency exists; cash placeholder with base_rate 0.
+  program: cash
+base_rate: 0                  # "This card does not earn any cash back, points, or rewards of any kind" (official help center + agreement).
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus: null            # "None found" — no welcome bonus in any official source, consistent with a no-rewards product.
+
+fees:
+  annual_fee_usd: 0           # "There is no annual fee for either the CashRewards Card or the Walmart Spend Card."
+  foreign_transaction_pct: 0  # No FTF clause; card is Walmart-only/domestic so FTF is moot — inferred, NEEDS human verification (offer file notes the "no FTF" statement is absent from this card's own agreement).
+
+approval:
+  credit_tier: fair
+  notes: >-
+    credit_tier NOT stated in the offer file — estimated. Secondary coverage positions this card as the
+    fallback "for shoppers who don't qualify for the Mastercard version," implying more lenient
+    underwriting, so ~fair is a reasonable estimate; NEEDS human verification. Requires a OnePay account
+    (free fintech account) in good standing to apply and hold — if the linked OnePay account closes, this
+    card closes too.
+
+closed_loop:
+  merchants: [walmart]
+  note: >-
+    Usable only "for purchases from Walmart" (in-store and online) per the official Account Agreement.
+    Private-label, no card network, no cash advances.
+
+benefit_flags: []
+
+sources:
+  - url: https://www.synchronybankterms.com/syfterms/pdf/OnePay_Spend_Card_Account_Agreement_and_Pricing_Addendum.pdf
+    supports: [identity, currency, base_rate, fees, approval, closed_loop]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL listed in the offer file's "Sources used" (official Synchrony account agreement, dated 3/2026);
+      NOT fetched this session. Figures are third-party/unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/synchrony/onepay-walmart.txt; figures unconfirmed. This is the
+  closed-loop, no-rewards half of the OnePay/Walmart program (sibling: data/cards/synchrony/onepay-walmart-mastercard.yaml,
+  the open-loop CashRewards World Mastercard that earns 1.5-5%). base_rate 0 because the card earns nothing.
+  The offer file notes retail private-label cards often run special-financing promotions, but none were found
+  for this card, so no special_financing flag is set.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

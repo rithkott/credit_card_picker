@@ -1,0 +1,107 @@
+# No-annual-fee travel card: 4-5X on travel + gas/EV, Priority Pass, and a trusted-traveler credit.
+id: altitude-connect
+name: U.S. Bank Altitude Connect Visa Signature
+issuer: us-bank
+network: visa
+currency:
+  type: points
+  program: us_bank_points        # Altitude points redeem at a flat ~1cpp
+base_rate: 1                      # "1X point per $1 on all other eligible purchases"
+
+category_rewards:
+  # 5X on prepaid hotel + car rental booked through the U.S. Bank Rewards Travel Center (portal).
+  - category: travel_hotels
+    rate: 5
+    portal_only: true
+    notes: >-
+      5X only on PREPAID hotel reservations booked through the U.S. Bank Rewards
+      Travel Center. Hotels booked directly earn the 4X travel rate below.
+  - category: travel_other
+    rate: 5
+    portal_only: true
+    notes: >-
+      5X only on PREPAID car rental reservations booked through the U.S. Bank
+      Rewards Travel Center. Car rentals booked directly earn 4X.
+  # 4X on travel booked outside the portal (airlines, hotels, car rentals, etc.).
+  - category: travel_flights
+    rate: 4
+    notes: 4X on airline/other travel purchases outside the Rewards Travel Center portal.
+  - category: travel_hotels
+    rate: 4
+    notes: 4X on hotels booked directly (outside the portal); 5X via the portal (see above).
+  - category: travel_other
+    rate: 4
+    notes: 4X on other travel (car rentals, trains, cruises) booked directly; 5X via the portal.
+  - category: gas
+    rate: 4
+    cap:
+      period: quarterly
+      max_spend_usd: 1000         # "first $1,000 in combined spend per quarter" (gas + EV charging), then 1X
+      fallback_rate: 1
+    notes: >-
+      4X at gas and EV charging stations on the first $1,000 combined per quarter,
+      then 1X. Registry `gas` category already covers EV charging.
+  - category: dining
+    rate: 2                       # "2X on dining, streaming services, and grocery stores"
+  - category: streaming
+    rate: 2
+  - category: groceries
+    rate: 2
+    notes: Grocery stores/supermarkets; excludes discount stores/supercenters and wholesale clubs.
+
+merchant_rewards: []
+
+credits:
+  - name: Global Entry / TSA PreCheck application fee credit
+    amount_usd: 100               # ESTIMATED: offer file says "covers the application fee" but states no dollar amount
+    period: every_4_years
+    realistic_capture_rate_note: >-
+      Only captured by travelers who apply/renew Global Entry ($100) or TSA PreCheck
+      (~$85) during the ~4-5 year cycle; worthless to everyone else. Dollar value is
+      estimated from the published Global Entry application fee — the offer file does
+      not state an amount. NEEDS human verification of the exact credited fee.
+
+signup_bonus:
+  value:
+    points: 20000                 # "20,000 bonus points after spending $1,000 in Net Purchases within the first 90 days"
+  spend_requirement_usd: 1000
+  window_months: 3
+
+fees:
+  annual_fee_usd: 0               # offer file: "$0 (personal card)" — notes a since-removed prior $95 fee
+  foreign_transaction_pct: 0      # "no foreign transaction fees" — explicitly stated
+
+approval:
+  credit_tier: very_good
+  notes: >-
+    credit_tier estimated from the card's Visa Signature travel-card positioning
+    (Priority Pass, travel protections); the offer file states no credit requirement.
+    NEEDS human verification.
+
+benefit_flags:
+  - visa_signature
+  - lounge_access                 # complimentary Priority Pass Select membership
+  - no_foreign_transaction_fee
+  - trip_cancellation_insurance   # trip cancellation/interruption + travel delay reimbursement
+
+sources:
+  - url: https://www.usbank.com/credit-cards/altitude-connect-visa-signature-credit-card.html
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header / docs/needs-verification-links.md;
+      not re-fetched this session. Figures are third-party/unconfirmed per the offer
+      file's NEEDS_VERIFICATION marker.
+
+notes: >-
+  Drafted offline from data/offer_files/us-bank/altitude-connect.txt, which carries a
+  NEEDS_VERIFICATION marker — all figures third-party/unconfirmed. GigSky global data
+  and ExtendPay installment plans are noted here but not modeled (no scoring surface).
+  Post-cap gas rate (1X) is stated in the offer file; portal-vs-direct travel rates are
+  modeled as separate entries because the optimizer treats portal_only rewards differently.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

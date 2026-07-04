@@ -1,0 +1,123 @@
+# United Explorer: mainstream United co-brand; 3x United, 2x dining/hotels, free checked bag, several travel credits.
+id: united-explorer
+name: United Explorer
+issuer: chase
+network: visa                   # NOT stated in the offer file — United Explorer is publicly a Visa Signature; NEEDS human verification
+currency:
+  type: points
+  program: united_mileageplus
+base_rate: 1                    # "1 mile/$1 base rate"
+
+category_rewards:
+  - category: travel_flights
+    rate: 3                      # "3 miles/$1 ... airline tickets and other purchases made directly with United"
+    notes: >-
+      3x applies to purchases made directly with United (tickets, seat upgrades, Economy
+      Plus, inflight food/beverage/WiFi, baggage/other fees) and United Card Events from
+      Chase; excludes United Cruises, MileagePlus X, DIRECTV, Merchandise Awards, and
+      discount-site/third-party-package tickets. Narrower than the general travel_flights
+      category — other airlines' tickets earn only the 1x base rate.
+  - category: dining
+    rate: 2                      # "2 miles/$1: dining (incl. takeout/delivery)"
+  - category: travel_hotels
+    rate: 2                      # "2 miles/$1: hotel accommodations purchased directly with the hotel"
+    notes: Only hotel accommodations purchased directly with the hotel.
+
+merchant_rewards: []
+
+credits:
+  - name: United TravelBank credit ($10k spend)
+    amount_usd: 100             # "$100 annual TravelBank cash credit after $10,000 calendar-year spend"
+    period: annual
+    unlock_spend_usd: 10000
+    realistic_capture_rate_note: >-
+      $100 of TravelBank cash (usable toward United airfare) once per year, only after
+      $10,000 of card spend in a calendar year; TravelBank cash expires 12 months after
+      issue. Captured by United flyers who reach the spend gate and use the cash in time.
+  - name: United Hotels credit
+    amount_usd: 100             # "Up to $100/year United Hotels statement credit ($50 each on first two prepaid $50+ stays via Pay Now)"
+    period: annual
+    realistic_capture_rate_note: >-
+      $50 each on the first two prepaid ($50+) United Hotels "Pay Now" bookings, up to
+      $100/year. Scoped to the United Hotels booking channel — captured only by those who
+      book hotels that specific way; worthless otherwise.
+  - name: Rideshare credit
+    amount_usd: 60             # "Up to $60/year rideshare statement credit ($5/month, enrollment required)"
+    period: annual
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $5/month (up to $60/year) in rideshare statement credits, enrollment required,
+      through ~9/30/2027 (offer file flags to re-check the end date). Captured only by
+      regular rideshare users who enroll and use it monthly (no rollover).
+  - name: Avis/Budget credit
+    amount_usd: 50             # "Up to $50/year Avis/Budget statement credit ($25 each on first two qualifying rentals)"
+    period: annual
+    realistic_capture_rate_note: >-
+      $25 each on the first two qualifying Avis/Budget rentals via cars.united.com with
+      discount codes, up to $50/year. Scoped to that booking channel — captured only by
+      car renters who book that way.
+  - name: JSX credit
+    amount_usd: 100            # "$100/year JSX statement credit"
+    period: annual
+    realistic_capture_rate_note: >-
+      $100/year toward JSX (a semi-private hop-on-jet carrier serving limited routes).
+      Captured only by the small set of flyers with access to JSX routes; near-zero for
+      most cardholders.
+  - name: Global Entry / TSA PreCheck / NEXUS fee credit
+    amount_usd: 120            # "one statement credit up to $120 every 4 years"
+    period: every_4_years
+    realistic_capture_rate_note: >-
+      One statement credit up to $120 per 4-year cycle covering a trusted-traveler
+      application fee. Captured only by travelers who apply/renew.
+
+signup_bonus:
+  value:
+    points: 50000            # "50,000 bonus miles after spending $3,000 in first 3 months"
+  spend_requirement_usd: 3000
+  window_months: 3
+  notes: >-
+    Bonus miles don't count toward Premier status. A separate 10,000-mile bonus for
+    adding an authorized user in the first 3 months is not modeled as signup value. Not
+    available to current/recent (24-month) cardmembers.
+
+fees:
+  annual_fee_usd: 95           # NOT stated in the offer file — best estimate from the card's public positioning (the first year is commonly waived, but that is not stated here); NEEDS human verification
+  foreign_transaction_pct: 0   # inferred: airline co-brands typically carry no FTF, but the offer file states no FTF language; NEEDS human verification
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream airline
+    co-brand; not stated in the offer file. Chase 5/24 rule very likely applies — not
+    stated in the offer file. NEEDS human verification.
+
+benefit_flags:
+  - free_checked_bag
+  - lounge_access
+  - visa_signature
+
+sources:
+  - url: https://creditcards.chase.com/travel-credit-cards/united/explorer
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in the offer file and not fetched this session; this is the issuer's
+      general product page. All figures transcribed from
+      data/offer_files/chase/united-explorer.txt and are unconfirmed against issuer
+      terms. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/chase/united-explorer.txt. network (visa),
+  annual_fee_usd ($95) and foreign_transaction_pct (0) are NOT stated in the offer file
+  — estimates/inferences, NEEDS human verification (the first year is commonly waived on
+  this product, but the offer file does not state it, so first_year_waived is not set).
+  lounge_access reflects two one-time United Club passes deposited annually (not full
+  membership). OMITTED as structured value (noted, not modeled): the award-flight-pricing
+  discount (10-15% fewer miles, redemption-side), priority boarding, PQP earn (1 per $20,
+  status-only), and the 25%-back inflight statement credit (no annual cap stated).
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

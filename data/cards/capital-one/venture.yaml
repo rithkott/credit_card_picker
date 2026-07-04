@@ -1,0 +1,101 @@
+# Mid-tier travel card: flat 2X Miles + 5X Capital One Travel portal rates, $95 fee.
+id: venture
+name: Capital One Venture Rewards
+issuer: capital-one
+network: visa                 # NOT stated in offer file — inferred (Venture is a Visa Signature product); NEEDS human verification
+currency:
+  type: points
+  program: capital_one_miles
+base_rate: 2                  # "unlimited 2X miles per dollar on every purchase"
+
+category_rewards:
+  - category: travel_hotels
+    rate: 5                   # "5X miles on hotels ... booked through Capital One Travel"
+    portal_only: true
+    notes: >-
+      Applies only to hotels booked through Capital One Travel (issuer portal), not to
+      hotel spend booked directly. Vacation rentals booked via Capital One Travel also
+      earn 5X but are not separately modeled (no vacation-rental category key). NEEDS
+      human verification.
+  - category: travel_other
+    rate: 5                   # "5X miles on ... rental cars booked through Capital One Travel"
+    portal_only: true
+    notes: >-
+      Rental cars booked through Capital One Travel only. NEEDS human verification.
+  - category: entertainment
+    rate: 5                   # "Capital One Entertainment platform tickets: 5X miles per dollar"
+    portal_only: true
+    notes: >-
+      Applies ONLY to purchases made through the Capital One Entertainment platform
+      (issuer ticket marketplace), NOT to general entertainment spend. portal_only flags
+      the issuer-platform scoping. Judgment call: mapped onto the broad `entertainment`
+      category to mirror the house style in venture-x.yaml; a reviewer may prefer to omit
+      it pending a dedicated Capital One Entertainment key. NEEDS human verification.
+
+merchant_rewards: []
+
+credits:
+  - name: Global Entry / TSA PreCheck fee credit
+    amount_usd: 120
+    period: every_4_years
+    realistic_capture_rate_note: >-
+      Statement credit toward a Global Entry or TSA PreCheck application fee — only
+      captured by travelers who apply/renew; worthless to those who don't.
+    notes: >-
+      "Global Entry/TSA PreCheck: up to a $120 statement credit." The offer file does not
+      state the cadence; every_4_years inferred from the standard Global Entry 4-year
+      renewal cycle. NEEDS human verification.
+
+signup_bonus:
+  value:
+    points: 75000
+  spend_requirement_usd: 4000
+  window_months: 3
+  notes: >-
+    "Earn 75,000 bonus miles once you spend $4,000 on purchases within the first 3 months
+    from account opening." Figures third-party/unconfirmed per the offer file's
+    NEEDS_VERIFICATION marker.
+
+fees:
+  annual_fee_usd: 95           # "Annual Fee: $95"
+  foreign_transaction_pct: 0   # "Foreign Transaction Fees: None"
+
+approval:
+  credit_tier: excellent
+  notes: >-
+    credit_tier NOT stated in the offer file — inferred from Capital One's public
+    positioning of Venture as a strong-credit travel card (its sibling VentureOne offer
+    file states "Excellent"). NEEDS human verification.
+
+benefit_flags:
+  - auto_rental_cdw
+  - extended_warranty
+  - travel_accident_insurance
+  - no_foreign_transaction_fee
+  - zero_fraud_liability
+
+sources:
+  - url: https://www.capitalone.com/credit-cards/venture/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session; figures
+      third-party/unconfirmed. Offer file carries a NEEDS_VERIFICATION marker and notes
+      the rates & fees Schumer-box PDF could not be located/parsed, so APR/legal-disclosure
+      fees were not confirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/capital-one/venture.txt (NEEDS_VERIFICATION
+  marker) — all figures third-party/unconfirmed. network (visa) and approval.credit_tier
+  are inferences, not stated in the offer file. 5X hotels/rental cars apply ONLY through
+  Capital One Travel; vacation rentals earn 5X via the portal but are omitted for lack of
+  a distinct category key. Capital One Entertainment 5X is platform-scoped (flagged
+  portal_only) — see the reward's notes. The Lifestyle Collection $50-per-stay experience
+  credit is not modeled as a periodic credit (it is per-booking, not per-period). Miles do
+  not expire for the life of the account.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

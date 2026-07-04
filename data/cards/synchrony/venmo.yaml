@@ -1,0 +1,79 @@
+# Open-loop Visa: automatic 3% on your top spend category each cycle, 2% second, 1% else. Venmo account required.
+id: venmo
+name: Venmo Credit Card
+issuer: synchrony
+network: visa
+currency:
+  type: cash                  # Cash back denominated directly in dollars, auto-transferred to the Venmo balance; no points step.
+  program: cash
+base_rate: 1                  # "1% on all other Eligible Purchases," plus 1% on P2P transfers classified as purchases.
+
+category_rewards:
+  - category: choice
+    rate: 3                   # 3% on the cardholder's "Top Spend Category" — the eligible category with the highest spend that billing cycle (automatic, no selection).
+    choice:
+      options:
+        - dining
+        - travel_flights
+        - travel_hotels
+        - travel_other
+        - utilities
+        - drugstores
+        - groceries
+        - gas
+        - transit
+        - entertainment
+      note: >-
+        Automatic (not user-selected): each billing cycle the eligible category with the highest dollar
+        spend earns 3%. Venmo defines 8 MCC-based categories; mapped here to canonical keys — Dining &
+        Nightlife -> dining; Travel (airlines/hotels/cruises, one combined Venmo category) -> travel_flights
+        /travel_hotels/travel_other; Bills & Utilities -> utilities; Health & Beauty -> drugstores; Grocery
+        (incl. wholesale clubs) -> groceries; Gas -> gas; Transportation (ground transit, rental cars, tolls,
+        parking) -> transit; Entertainment -> entertainment. Mappings are approximate (Venmo's Travel and
+        Health & Beauty span more than one of our keys). The separate 2% "Second Top Spend Category" tier is
+        NOT modeled here — see notes.
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus: null            # No standing public welcome bonus on official pages. Secondary sources reference targeted, in-app-only offers ($100; "triple cash back for 6 months") that could not be confirmed — not a public offer, so null.
+
+fees:
+  annual_fee_usd: 0           # "Annual Fee: None" — CFPB agreement + venmo.com.
+  foreign_transaction_pct: 0  # "We will not charge you a foreign transaction fee" — CFPB agreement.
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier NOT stated in the offer file — estimated. Visa Signature product but issued by Synchrony
+    with three account-type pricing tiers, historically accessible; ~good is a rough estimate, NEEDS human
+    verification. Requires an open Venmo account in good standing that has existed at least 30 days before
+    application; closing the Venmo account closes the card. Minimum credit limit $250.
+
+benefit_flags: []
+
+sources:
+  - url: https://www.synchronycredit.com/gecrbterms/html/RewardsTerms.htm
+    supports: [identity, currency, base_rate, category_rewards, fees, approval]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL listed in the offer file's "Sources used" (official Venmo/Synchrony Rewards Terms, doc WF7572459AGW,
+      8/2020 REV 4/2024); NOT fetched this session. Fees/approval from the CFPB agreement + venmo.com per the
+      offer file. Figures are third-party/unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/synchrony/venmo.txt; figures unconfirmed. JUDGMENT CALL: Venmo pays
+  3% on the top spend category AND 2% on the second-highest category each cycle. The schema's `choice`
+  reward models one automatically-selected top category (the 3% tier); the 2% second-category tier has no
+  clean representation (the optimizer expands `choice` into one category per variant) and is left UNMODELED
+  here, which undercounts value — a reviewer may want a second-tier modeling convention. Category assignment
+  is strictly MCC-based; digital-wallet / third-party-processor purchases that don't transmit an MCC earn only
+  1%. No earning cap today, though Synchrony reserves the right to add one. Cash back can optionally be routed
+  to crypto purchases (0% crypto transaction fee). Also issued as a "Venmo Visa Signature" tier.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

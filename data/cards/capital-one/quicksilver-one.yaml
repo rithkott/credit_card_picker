@@ -1,0 +1,51 @@
+# Credit-building flat cash card: 1.5% on everything, $39 fee, fair-credit underwriting.
+id: quicksilver-one
+name: Capital One QuicksilverOne Cash Rewards
+issuer: capital-one
+network: mastercard          # NOT stated in offer file — inferred (QuicksilverOne is a Mastercard product); NEEDS human verification
+currency:
+  type: cash
+  program: cash
+base_rate: 1.5               # "unlimited 1.5% cash back on every purchase" (confirmed via direct page fetch)
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus: null            # "No sign-up bonus (per secondary-source aggregation)"
+
+fees:
+  annual_fee_usd: 39           # "Annual Fee: $39" (per secondary-source aggregation)
+  foreign_transaction_pct: 0   # "Foreign Transaction Fees: $0 (per secondary-source aggregation, verify)"
+
+approval:
+  credit_tier: fair            # "Credit Level Required: Fair (designed for building/average credit)"
+  notes: >-
+    Marketed as a credit-building card ("build credit with responsible use") with a
+    no-impact pre-approval check. Fair tier stated in the offer file (direct page fetch).
+
+benefit_flags: []
+
+sources:
+  - url: https://www.capitalone.com/credit-cards/quicksilverone/
+    supports: [identity, currency, base_rate, signup_bonus, fees, approval]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session. Base rate
+      and credit tier confirmed via the offer file's direct page fetch; annual fee and FTF
+      came from a WebSearch aggregation of secondary sources — third-party/unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/capital-one/quicksilver-one.txt
+  (NEEDS_VERIFICATION marker). network (mastercard) is an inference, not stated in the
+  offer file. Annual fee ($39) and the $0 FTF are from secondary sources per the offer
+  file; the 1.5% base rate and fair credit tier were the only items the direct page fetch
+  confirmed. No promotional/intro APR on this card.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

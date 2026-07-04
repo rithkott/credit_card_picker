@@ -1,0 +1,89 @@
+# Truist Enjoy Cash, "1.5% Flat Rewards" apply-time election variant (flat 1.5% on
+# everything, no caps). Sibling of enjoy-cash-3-2-1 — one product, two mutually exclusive
+# reward schemes chosen at application and unchangeable afterward.
+id: enjoy-cash-1-5-flat
+name: Truist Enjoy Cash (1.5% Flat Rewards)
+issuer: truist
+network: visa                # "Visa Zero Liability protection" — offer file Perks section
+currency:
+  type: cash
+  program: cash
+base_rate: 1.5               # "1.5% Cash Rewards on all Eligible Purchases, no limit ($0.015 per $1.00)"
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus: null            # No welcome/signup bonus found on the official product page or disclosures (offer file "Signup Bonus" + Gaps sections)
+
+fees:
+  annual_fee_usd: 0           # "No annual fee ('None')"
+  foreign_transaction_pct: 0  # "Foreign Transaction Fee - None"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier is an inference — the offer file states no credit score or income
+    requirement (see its Gaps section). Estimated 'good' from this card's public
+    positioning as a mainstream no-annual-fee cash rewards card (not secured/student).
+    NEEDS human verification.
+
+relationship_boost:
+  program: Truist Loyalty Cash Bonus
+  tiers:
+    # Baseline for any eligible Truist Personal Deposit Account holder (no wealth relationship)
+    - { requirement: "electronic-deposit redemption into any eligible Truist Personal Deposit Account (personal checking/savings/money market)", boost_pct: 10 }
+    # Truist Marquee Checking
+    - { tier_name: "Marquee Checking", requirement: "Truist Marquee Checking account, redemption e-deposited into an eligible Truist Personal Deposit Account", boost_pct: 50 }
+    # Truist One Checking, leveled by highest Portfolio value across prior 3 months
+    - { tier_name: "One Checking Level 1", requirement: "Truist One Checking", min_balance_usd: 0, boost_pct: 10 }
+    - { tier_name: "One Checking Level 2", requirement: "Truist One Checking", min_balance_usd: 10000, boost_pct: 20 }
+    - { tier_name: "One Checking Level 3", requirement: "Truist One Checking", min_balance_usd: 25000, boost_pct: 30 }
+    - { tier_name: "One Checking Level 4", requirement: "Truist One Checking", min_balance_usd: 50000, boost_pct: 40 }
+    - { tier_name: "One Checking Level Premier", requirement: "Truist One Checking", min_balance_usd: 100000, boost_pct: 50 }
+    # Dimension / Signature Advantage / Asset Management, by highest Portfolio value across prior 3 months
+    - { tier_name: "Dimension/Signature Advantage/Asset Mgmt <$25k", requirement: "Truist Dimension, Signature Advantage, or Asset Management Account", min_balance_usd: 0, boost_pct: 10 }
+    - { tier_name: "Dimension/Signature Advantage/Asset Mgmt $25k-$100k", requirement: "Truist Dimension, Signature Advantage, or Asset Management Account", min_balance_usd: 25000, boost_pct: 25 }
+    - { tier_name: "Dimension/Signature Advantage/Asset Mgmt $100k+", requirement: "Truist Dimension, Signature Advantage, or Asset Management Account", min_balance_usd: 100000, boost_pct: 50 }
+  note: >-
+    Redemption-time boost, not an earn boost: the Loyalty Cash Bonus is added to a cash
+    reward redemption only when it is electronically deposited into an eligible Truist
+    Personal Deposit Account (statement credit, mailed check, and non-Truist deposits get
+    no bonus, so the true no-relationship baseline is 0%). Tiers are keyed by account type
+    and, for One Checking / Dimension / Signature Advantage / Asset Management, by highest
+    "Portfolio" balance over the prior 3 months (min_balance_usd is the floor of each
+    stated band). The highest applicable percentage is used; the rate updates by the 5th
+    business day monthly and is not retroactive. Not scored in v1 — the optimizer models
+    the no-relationship baseline.
+
+benefit_flags:
+  - zero_fraud_liability      # "Visa Zero Liability protection against unauthorized card use"
+
+sources:
+  - url: https://www.truist.com/credit-cards/enjoy-cash
+    supports: [identity, currency, base_rate, signup_bonus, fees, approval, relationship_boost, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Truist product page for Enjoy Cash; NOT fetched this session (offline
+      conversion). Exact URL path is unconfirmed. All figures transcribed from the local
+      offer file data/offer_files/truist/enjoy-cash.txt, which was itself compiled partly
+      from a secondary aggregator summary (APR margin range) — treat as third-party /
+      unconfirmed pending human verification against the live issuer page.
+
+notes: >-
+  Drafted offline from data/offer_files/truist/enjoy-cash.txt. This is the "1.5% Flat
+  Rewards" apply-time election; the sibling variant is truist/enjoy-cash-3-2-1 (3% gas /
+  2% grocery / 2% utilities with a shared $1,000/month cap). The reward scheme is chosen
+  at application and cannot be changed afterward, so the two are modeled as separate cards.
+  No signup bonus was found on the reviewed issuer pages/disclosures (offer file could not
+  confirm one exists as a certainty, only that none is advertised). Cash Rewards expire at
+  the end of the month five years from issuance. All figures NEEDS human verification
+  against the live Truist page.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

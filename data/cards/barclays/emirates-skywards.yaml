@@ -1,0 +1,74 @@
+# Emirates Skywards co-brand (standard tier): Skywards Miles on Emirates + broad travel; Silver status, $99 AF.
+id: emirates-skywards
+name: Emirates Skywards Rewards World Elite Mastercard
+issuer: barclays
+network: mastercard             # "World Elite Mastercard" in the product name
+currency:
+  type: points
+  program: emirates_skywards
+base_rate: 1                    # "1 Skywards Mile/$1 on all other purchases"
+
+category_rewards:
+  # OMITTED: "3 Skywards Miles/$1 on emirates.com or at the Emirates Sales office" — brand-specific
+  # earn with no `emirates` merchant key. Not force-fit onto travel_flights. See notes / registry gap.
+  - category: travel_flights
+    rate: 2                      # "2 Skywards Miles/$1 on eligible travel purchases" (broad travel)
+    notes: >-
+      "Eligible travel purchases" — the issuer's broad travel definition; modeled across the
+      three travel sub-categories at 2x. Exact merchant-category scope not stated. NEEDS human
+      verification.
+  - category: travel_hotels
+    rate: 2                      # same broad "eligible travel purchases" 2x
+  - category: travel_other
+    rate: 2                      # same broad "eligible travel purchases" 2x
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus:
+  value:
+    points: 40000              # "40,000 bonus Skywards Miles after $3,000 in first 90 days"
+  spend_requirement_usd: 3000
+  window_months: 3             # offer states "first 90 days" (~3 months)
+
+fees:
+  annual_fee_usd: 99           # "Annual fee: $99"
+  foreign_transaction_pct: 0   # "Foreign transaction fee: 0%" / "No foreign transaction fees"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's mainstream co-brand positioning; not stated in the
+    offer file. NEEDS human verification.
+
+benefit_flags:
+  - complimentary_elite_status  # Emirates Skywards Silver first year
+  - world_elite_mastercard
+  - no_foreign_transaction_fee
+  - free_fico_score
+  - zero_fraud_liability
+
+sources:
+  - url: https://www.barclaycardus.com/c/cards/emirates-skywards-rewards-world-elite-mastercard
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in the offer file and not fetched this session; canonical issuer product page.
+      All figures transcribed from data/offer_files/barclays/emirates-skywards.txt and are
+      third-party/unconfirmed against issuer terms. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/barclays/emirates-skywards.txt; all figures
+  third-party/unconfirmed, confidence low, NEEDS human verification. OMITTED reward (registry
+  gap): "3 Skywards Miles/$1 on emirates.com / Emirates Sales office" — brand-specific with no
+  `emirates` merchant key; a reviewer may add an `emirates` merchant and model it. Not
+  dollar-valued: Emirates Skywards Silver tier (first year; retained by $20,000/year spend) is
+  an elite-status grant. Soft perks noted only: 25% savings when buying/gifting miles; miles
+  never expire while account open. credit_tier is an estimate.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

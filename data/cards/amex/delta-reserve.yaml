@@ -1,0 +1,133 @@
+# Top Delta co-brand: 3x Delta, Sky Club access, companion cert, $650 AF.
+id: delta-reserve
+name: Delta SkyMiles Reserve American Express Card
+issuer: amex
+network: amex
+currency:
+  type: points
+  program: delta_skymiles
+base_rate: 1                 # "1x mile per $1 on eligible purchases (base rate)"
+
+category_rewards: []
+# The only elevated earn is 3x on Delta purchases (merchant-of-record), which has no
+# `delta` merchant key in the registry and is omitted (see notes). Everything else is 1x.
+
+merchant_rewards: []
+
+credits:
+  - name: Resy Credit
+    amount_usd: 20           # "up to $20/month statement credit"
+    period: monthly
+    category: dining
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $20/month at Resy-bookable US restaurants (direct, Resy.com/app, or Resy Pay),
+      enrollment required; monthly forfeit. Captured by frequent Resy diners; excludes
+      delivery/catering, gift cards, third-party-processed event sales.
+  - name: 20% Back on In-Flight Purchases
+    amount_usd: 15
+    period: annual
+    realistic_capture_rate_note: >-
+      20% statement credit on Delta in-flight food/beverage (automatic); uncapped but
+      typically small — modeled at ~$15/yr.
+  - name: Rideshare Credit
+    amount_usd: 10
+    period: monthly
+    category: transit
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $10/month on US Uber/Lyft/Curb/Alto rides, enrollment required; monthly forfeit.
+      Excludes delivery, bikeshare, scooter, car rental, transit, memberships.
+  - name: Delta Stays Credit
+    amount_usd: 200          # "up to $200/calendar year"
+    period: annual
+    category: travel_hotels
+    realistic_capture_rate_note: >-
+      $200/yr on new prepaid Delta Stays bookings (delta.com/stays) only; excludes
+      cancellation/property/resort fees and Delta Vacations. Captured only by Delta
+      Stays bookers.
+  - name: Global Entry or TSA PreCheck Fee Credit
+    amount_usd: 120
+    period: every_4_years
+    category: travel_other
+    realistic_capture_rate_note: >-
+      One credit every 4 years, up to $120 (Global Entry) or $85 (TSA PreCheck).
+      Modeled at the $120 ceiling; captured once per renewal cycle by enrollees.
+  - name: Delta Companion Certificate
+    kind: in_kind
+    amount_usd: 350          # estimated net value of a Delta Main/Comfort/Premium Select/First round-trip companion ticket
+    period: annual
+    category: travel_flights
+    realistic_capture_rate_note: >-
+      One round-trip companion ticket/year (up through First class) to a US/Mexico/
+      Caribbean/Central America list, holder pays taxes/fees (up to $80 domestic, $250
+      intl); excludes Delta One/Basic Economy. Real value only for those who fly a
+      second passenger yearly; $350 is a conservative estimate reflecting the higher
+      eligible cabins vs the Platinum cert, model applies a further haircut.
+  - name: American Express Venue Collection Concessions Credit
+    amount_usd: 25
+    period: annual
+    category: entertainment
+    requires_enrollment: true
+    expires: "2026-12-31"
+    realistic_capture_rate_note: >-
+      10% back (up to $250/yr) on Venue Collection concessions, enrollment required;
+      realistic capture is a small fraction — modeled at ~$25.
+
+signup_bonus:
+  value:
+    points: 100000           # "100,000 miles after $6,000 spend in first 6 months"
+  spend_requirement_usd: 6000
+  window_months: 6
+  tiers:
+    - value:
+        points: 25000        # "additional 25,000 miles after additional $3,000 (total $9,000)"
+      spend_requirement_usd: 9000
+  expires: "2026-07-15"
+  notes: >-
+    Offer ends 07/15/2026 per the offer file ("public offer — check for renewal").
+    Standard evergreen bonus not stated in the offer file.
+
+fees:
+  annual_fee_usd: 650        # "Annual Fee: $650 (Additional Card: $175)"
+  foreign_transaction_pct: 0 # "Foreign Transaction Fee: None"
+
+approval:
+  credit_tier: excellent
+  notes: >-
+    credit_tier is an inference from the card's top-tier premium underwriting; not
+    stated in the offer file — NEEDS human verification. Amex welcome-offer
+    eligibility is once-per-lifetime and subject to general Amex history-based rules.
+
+benefit_flags:
+  - no_foreign_transaction_fee
+  - lounge_access
+  - free_checked_bag
+  - cell_phone_protection
+  - trip_cancellation_insurance
+  - no_blackout_dates
+  - car_rental_insurance
+  - extended_warranty
+
+sources:
+  - url: https://www.americanexpress.com/us/credit-cards/card/delta-skymiles-reserve/
+    supports: [identity, currency, base_rate, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Amex product page. URL not in offer file and not fetched this
+      session; figures transcribed from the local offer file and unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/amex/delta-reserve.txt; all figures
+  unconfirmed pending human verification. OMITTED: the "3x miles on Delta purchases"
+  earn — no `delta` merchant key in data/meta/merchants.yaml; it is the card's only
+  elevated category, so category_rewards is empty (registry gap flagged). Delta Sky
+  Club access (15 visits/yr, unlimited above $75k spend), Centurion Lounge access,
+  and MQD Boost/Headstart are not modeled (elite/lounge benefits, not redeemable
+  cash value).
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

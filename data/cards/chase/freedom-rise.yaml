@@ -1,0 +1,85 @@
+# Starter no-annual-fee card for applicants with no prior credit history: flat 1.5% on UR points.
+id: freedom-rise
+name: Chase Freedom Rise
+issuer: chase
+network: visa                # NOT stated in offer file; Freedom Rise is a Visa — inference, NEEDS human verification
+currency:
+  type: points               # earns Ultimate Rewards points (1 pt = $0.01)
+  program: chase_ur
+base_rate: 1.5               # "1.5% Cash Back on all purchases (base rate)"
+
+category_rewards: []
+
+merchant_rewards:
+  - merchant: lyft
+    rate: 2                  # "2% cash back total (0.5% additional) on qualifying Lyft ... through 9/30/2027"
+    notes: >-
+      Limited-time through 9/30/2027 (excludes gift cards, car rentals, vehicle service
+      centers). Reverts to base earn after the promo; merchant_rewards has no expires
+      field, so the end date is noted here.
+
+credits:
+  - name: DashPass DoorDash quarterly credit
+    amount_usd: 10            # "$10 off quarterly on one DoorDash non-restaurant order while enrolled"
+    period: quarterly
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Requires activating the complimentary 6-month DashPass (activation window
+      2/1/2025-12/31/2027, then auto-renews at the then-current rate) and placing one
+      qualifying DoorDash non-restaurant order each quarter (no rollover). Captured only
+      by active DoorDash users who enroll; worthless otherwise.
+
+signup_bonus:
+  value:
+    usd: 25                   # "$25 statement credit after enrolling in automatic payments in first 3 months and staying enrolled 90+ consecutive days"
+  spend_requirement_usd: 0    # enrollment-gated, not spend-gated
+  window_months: 3
+  notes: >-
+    The $25 is enrollment-gated, not spend-gated: requires enrolling in autopay within
+    the first 3 months and staying enrolled 90+ consecutive days (allow 6-8 weeks to
+    post). SEPARATELY, the card offers an intro elevated rate of 3% total on dining
+    (incl. takeout/delivery) for the first 6 months or until $6,000 in dining spend,
+    whichever comes first — this year-one intro boost is described here rather than as a
+    permanent category reward (the standing dining rate is the 1.5% base). Not available
+    to current cardmembers or those who got a bonus for this card in the last 24 months.
+
+fees:
+  annual_fee_usd: 0           # NOT stated in offer file; Freedom Rise is a no-annual-fee card — inference, NEEDS human verification
+  foreign_transaction_pct: 3  # NOT stated in offer file — inference, NEEDS human verification
+
+approval:
+  credit_tier: building
+  notes: >-
+    "Aimed at applicants with no prior credit card history (including as authorized
+    user)" — mapped to the 'building' tier (accepts thin/no-history files) though the
+    card is unsecured; not a stated FICO cutoff. Approval odds improve with a Chase
+    checking/savings account of combined balance >=$250 opened before applying and
+    funded within 4 days (not a guarantee). Chase 5/24 likely applies. NEEDS human
+    verification.
+
+benefit_flags:
+  - free_credit_score
+
+sources:
+  - url: https://creditcards.chase.com/cash-back-credit-cards/freedom/rise
+    supports: [identity, currency, base_rate, merchant_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in offer file and not fetched this session; figures transcribed from
+      data/offer_files/chase/freedom-rise.txt and unconfirmed against issuer terms.
+      NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/chase/freedom-rise.txt. No source URL was on
+  file; the cited page is the issuer's general product page (not fetched). annual_fee_usd
+  (0), foreign_transaction_pct (3), network (visa), and credit_tier (building) are NOT
+  stated in the offer file and are best-estimate inferences — NEEDS human verification.
+  The intro 3% dining offer (first 6 months / $6,000) is year-one only and is described
+  in signup_bonus.notes rather than modeled as a permanent dining category. Amazon
+  Shop-with-Points values points at only $0.008 each, noted but not modeled.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

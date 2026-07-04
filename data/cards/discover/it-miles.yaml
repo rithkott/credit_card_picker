@@ -1,0 +1,58 @@
+# Flat 1.5x-Miles no-annual-fee travel card; Miles cash out at 1cpp, first-year Match.
+id: it-miles
+name: Discover it Miles
+issuer: discover
+network: discover
+currency:
+  type: points
+  program: discover_cashback  # Miles cash out at 100 Miles = $1 (1cpp), same fixed value as the cashback program
+base_rate: 1.5                # "Unlimited 1.5x Miles on every purchase"
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus:
+  first_year_match: true      # "Discover automatically matches all Miles earned at the end of the first year"
+
+fees:
+  annual_fee_usd: 0           # "Annual fee: None"
+  foreign_transaction_pct: 0  # "Foreign transaction fee: None"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream
+    no-annual-fee travel rewards card (not secured/student); the offer file does not
+    state a credit requirement. NEEDS human verification.
+
+benefit_flags:
+  - zero_fraud_liability
+  - free_fico_score
+
+sources:
+  - url: https://www.discover.com/credit-cards/travel/
+    supports: [identity, currency, base_rate, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session.
+      Rate figures are third-party/unconfirmed per the offer file's
+      NEEDS_VERIFICATION marker (live page is JS-rendered and exposed only
+      placeholder "x%" tokens).
+
+notes: >-
+  Drafted offline from data/offer_files/discover/it-miles.txt; the offer file carries
+  a NEEDS_VERIFICATION marker, so all figures are third-party/unconfirmed. Rewards are
+  branded "Miles" (not cashback), but redeem at 100 Miles = $1 as a statement credit
+  toward travel purchases (airfare, hotels, rideshares, gas, restaurants) or as
+  cash/PayPal — i.e. a fixed 1 cent per Mile with no transfer-partner upside, which is
+  why currency.program reuses the existing discover_cashback valuation rather than a
+  new Miles program key. Miles never expire for the life of the account.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

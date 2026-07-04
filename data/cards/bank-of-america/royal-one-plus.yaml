@@ -1,0 +1,86 @@
+# Royal Caribbean Group cruise co-brand ($99 AF); earns mycruise_points redeemable only for cruise rewards.
+id: royal-one-plus
+name: Royal ONE Plus Visa Signature
+issuer: bank-of-america
+network: visa                 # "Visa Signature"
+currency:
+  type: points
+  program: mycruise_points
+base_rate: 1                  # "1 point per $1 on all other purchases"
+
+category_rewards:
+  - category: travel_flights
+    rate: 2                   # "2 points per $1 on eligible airline, hotel, dining, gas, grocery, and EV charging"
+  - category: travel_hotels
+    rate: 2                   # same 2x tier
+  - category: dining
+    rate: 2                   # same 2x tier
+  - category: gas
+    rate: 2                   # same 2x tier; gas + EV charging
+  - category: groceries
+    rate: 2                   # same 2x tier
+
+merchant_rewards: []          # "4 points on Royal Caribbean/Celebrity/Silversea purchases" omitted — no cruise-line merchant key; see notes / registry gap.
+
+credits:
+  - name: Anniversary Reward
+    amount_usd: 200          # "$200 anniversary reward after qualifying annual spend"
+    period: annual
+    realistic_capture_rate_note: >-
+      A $200 reward on the account anniversary contingent on an unspecified "qualifying annual
+      spend" threshold (amount not stated in the offer file, so no unlock_spend_usd is set).
+      Captured only by cardholders who meet that threshold; the value is cruise-redemption flavored.
+    notes: >-
+      Offer file states "$200 anniversary reward after qualifying annual spend" without naming the
+      spend requirement. Redemption is cruise-related (onboard credit / cruise discount), not cash.
+      NEEDS human verification of the spend threshold.
+  - name: Airport Security Statement Credit (TSA PreCheck / Global Entry)
+    amount_usd: 120          # "up to $120 TSA PreCheck/Global Entry credit every four years"
+    period: every_4_years
+    realistic_capture_rate_note: >-
+      Reimburses the TSA PreCheck (~$78) or Global Entry ($120) application fee once per 4-year
+      cycle. Captured by anyone who applies; otherwise unused.
+
+signup_bonus:
+  value:
+    points: 70000            # "70,000 bonus points ($700 value)"
+  spend_requirement_usd: 3000 # "after spending $3,000 on purchases within the first 90 days"
+  window_months: 3
+
+fees:
+  annual_fee_usd: 99          # "$99"
+  foreign_transaction_pct: 0  # "no foreign transaction fees"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream cruise co-brand
+    card; the offer file does not state a credit requirement. NEEDS human verification.
+
+benefit_flags:
+  - no_foreign_transaction_fee
+
+sources:
+  - url: https://www.bankofamerica.com/credit-cards/products/royal-one-plus-credit-card/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; NOT independently fetched (offer file states the
+      dedicated page was found via search but not fetched). Figures are third-party/aggregated and
+      unconfirmed per the file's NEEDS_VERIFICATION marker.
+
+notes: >-
+  Drafted offline from data/offer_files/bank-of-america/royal-one-plus.txt, which carries a
+  NEEDS_VERIFICATION marker (source aggregated from press materials + third-party reporting; the
+  dedicated page was not independently fetched), so all figures are third-party/unconfirmed. Launched
+  Mar 2026 alongside the no-AF Royal ONE (sibling card: royal-one.yaml); covers Royal Caribbean,
+  Celebrity Cruises, and Silversea. REGISTRY GAP: "4 points on Royal Caribbean/Celebrity/Silversea
+  purchases" is a merchant-specific rate with no cruise-line key in data/meta/merchants.yaml — omitted
+  rather than force-fit. mycruise_points redeem ONLY for cruise rewards (onboard credit / cruise
+  discount) at 1cpp, minimum 5,000 points for $50.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

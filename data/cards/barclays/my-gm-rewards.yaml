@@ -1,0 +1,65 @@
+# GM Rewards co-brand: GM-locked points; 3x on all non-GM spend (base), brand GM earn omitted; no annual fee.
+id: my-gm-rewards
+name: GM Rewards Mastercard
+issuer: barclays
+network: mastercard             # "GM Rewards Mastercard"
+currency:
+  type: points
+  program: gm_rewards
+base_rate: 3                    # "3x points/$1 on all other purchases, including groceries, gas, restaurants, and travel"
+
+category_rewards: []
+  # Everything except GM purchases earns a flat 3x, so it lives in base_rate — no separate
+  # category entries needed. OMITTED: "7x on eligible GM purchases" (the "up to 10x" headline is
+  # 7x card + up-to-3x GM Rewards membership; only the 7x is card-attributable) — brand-specific
+  # with no `gm` merchant key. See notes / registry gap.
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus:
+  value:
+    points: 30000              # "30,000 bonus points after $1,000 in first 90 days"
+  spend_requirement_usd: 1000
+  window_months: 3             # offer states "first 90 days" (~3 months)
+
+fees:
+  annual_fee_usd: 0            # "Annual fee: $0" / "No annual fee"
+  foreign_transaction_pct: 3   # "Foreign transaction fee: 3%"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's mainstream no-annual-fee co-brand positioning; not
+    stated in the offer file. NEEDS human verification.
+
+benefit_flags:
+  - zero_fraud_liability
+  - free_fico_score
+
+sources:
+  - url: https://www.barclaycardus.com/c/cards/gm-rewards-mastercard
+    supports: [identity, currency, base_rate, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in the offer file and not fetched this session; canonical issuer product page.
+      All figures transcribed from data/offer_files/barclays/my-gm-rewards.txt and are
+      third-party/unconfirmed against issuer terms. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/barclays/my-gm-rewards.txt; all figures
+  third-party/unconfirmed, confidence low, NEEDS human verification. base_rate is 3 because the
+  card earns "3x on all other purchases, including groceries, gas, restaurants, and travel" — a
+  flat non-GM rate, so no per-category entries are needed. OMITTED reward (registry gap): the
+  card-attributable 7x on eligible GM purchases (the "up to 10x" headline bundles up-to-3x GM
+  Rewards membership earn, which is not card-attributable) — brand-specific with no `gm` merchant
+  key; a reviewer may add a `gm` merchant and model 7x. GM Rewards points are redeemable only
+  toward GM vehicles/service/accessories/GM Financial; valued via the gm_rewards program (whose
+  registry entry itself flags redemption caps for human verification). credit_tier is an estimate.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

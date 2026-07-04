@@ -1,0 +1,53 @@
+# No-rewards 0% intro APR / balance-transfer card. In the dataset for completeness; earns nothing.
+id: bankamericard
+name: BankAmericard
+issuer: bank-of-america
+network: visa                 # not stated in offer file — BofA consumer cards are Visa; inferred. NEEDS human verification.
+currency:
+  type: cash
+  program: cash
+base_rate: 0                  # "Rewards: None — this is a low-interest/balance-transfer focused card, not a rewards card."
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus: null            # no signup bonus (not a rewards card)
+
+fees:
+  annual_fee_usd: 0           # "$0"
+  foreign_transaction_pct: 3  # NOT stated in offer file ("Not stated on the fetched product page"). Inferred as BofA's standard non-travel FTF of 3% — NEEDS human verification.
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream 0%-intro/
+    balance-transfer card; the offer file does not state a credit requirement. NEEDS human verification.
+
+benefit_flags:
+  - zero_fraud_liability
+
+sources:
+  - url: https://www.bankofamerica.com/credit-cards/products/bankamericard-credit-card/
+    supports: [identity, currency, base_rate, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session. The offer file
+      carries a NEEDS_VERIFICATION marker — figures are third-party/secondary and unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/bank-of-america/bankamericard.txt, which carries a
+  NEEDS_VERIFICATION marker, so all figures are third-party/unconfirmed. This is a no-rewards card:
+  base_rate is 0. Its value proposition is financing — a 0% intro APR for 21 billing cycles on
+  purchases and on balance transfers made within 60 days (5% balance-transfer fee), with no penalty
+  APR — none of which the reward-value model scores. foreign_transaction_pct was NOT stated in the
+  offer file and is inferred at BofA's standard 3% — NEEDS human verification. Network inferred as
+  Visa (not stated) — NEEDS human verification.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

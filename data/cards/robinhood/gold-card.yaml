@@ -1,0 +1,92 @@
+# Fintech flat-rate card: 3% (3 pts/$1) on everything, gated behind PAID Robinhood Gold; points cash out 1cpp into a Robinhood brokerage account.
+id: gold-card
+name: Robinhood Gold Card
+issuer: robinhood
+network: visa                # "issued by Coastal Community Bank, pursuant to a license from Visa U.S.A. Inc." (offer file line 31)
+currency:
+  type: points
+  program: robinhood_points   # 1 pt = $0.01 deposited into the linked Robinhood brokerage account (offer file line 25)
+base_rate: 3                  # 3 pts/$1 (= 3% back) on all eligible purchases, contingent on active PAID Gold subscription (offer file line 15). No non-Gold rate exists — Gold is a prerequisite to hold the card; see required_membership.
+
+category_rewards:
+  # Up to 5 pts/$1 on Robinhood travel-portal bookings (offer file line 16). Portal covers all travel
+  # types, so mapped to all three travel keys. THIRD-PARTY reported / NEEDS human verification — not
+  # confirmed on Robinhood's own card page during research.
+  - category: travel_flights
+    rate: 5
+    portal_only: true
+    notes: >-
+      5 pts/$1 only on travel booked through Robinhood's own travel portal. Per third-party reporting;
+      not independently confirmed on the primary official Robinhood card page — NEEDS human verification.
+  - category: travel_hotels
+    rate: 5
+    portal_only: true
+    notes: >-
+      5 pts/$1 only on travel booked through Robinhood's own travel portal. Per third-party reporting;
+      not independently confirmed on the primary official Robinhood card page — NEEDS human verification.
+  - category: travel_other
+    rate: 5
+    portal_only: true
+    notes: >-
+      5 pts/$1 only on travel booked through Robinhood's own travel portal. Per third-party reporting;
+      not independently confirmed on the primary official Robinhood card page — NEEDS human verification.
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus: null            # "No signup/welcome bonus found on official Robinhood pages" (offer file line 12)
+
+fees:
+  annual_fee_usd: 0           # $0 on the card itself (offer file line 19); the $50/yr Gold membership is a separate mandatory cost — see required_membership
+  foreign_transaction_pct: 0  # "No foreign transaction fee (per official Robinhood card terms)" (offer file line 22)
+
+approval:
+  credit_tier: good           # INFERRED — not stated in the offer file. Invite/waitlist metal card requiring a funded brokerage account and paid Gold membership; estimated at good-tier underwriting. NEEDS human verification.
+  notes: >-
+    credit_tier is an inference, not stated in the offer file — estimated from the card's invite-only
+    positioning and brokerage/paid-membership prerequisites. NEEDS human verification. Card is invite-only
+    via robinhood.com/creditcard/waitlist as of mid-2026; not open enrollment. Only the primary cardholder
+    is eligible (not authorized users).
+
+required_membership:
+  name: Robinhood Gold
+  annual_cost_usd: 50         # cheapest qualifying tier: $50/year (vs $5/month = $60/yr) (offer file line 4)
+  note: >-
+    A PAID, active Robinhood Gold subscription ($5/month or $50/year) is a mandatory prerequisite to
+    hold the card and to earn its 3 pts/$1 rate — the card itself has no 30-day free trial. This is an
+    ongoing cost separate from the $0 card annual fee; a cardholder unwilling to pay for Gold cannot
+    obtain the advertised earn rate economically. Not scored in v1.
+
+benefit_flags: []
+
+sources:
+  - url: https://robinhood.com/creditcard
+    supports: [identity, currency, base_rate, category_rewards, fees, approval, required_membership, signup_bonus]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Robinhood Gold Card product page. NOT re-fetched this session — all figures transcribed from the
+      local offer file (data/offer_files/robinhood/gold-card.txt), which is itself third-party/unconfirmed
+      and carries NEEDS_VERIFICATION markers (5x travel-portal rate and statement-credit redemption rate
+      unconfirmed). The offer file records no header URL; this is the canonical product page it references
+      (waitlist path robinhood.com/creditcard/waitlist appears in the file). Human must verify against
+      issuer terms.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low
+
+# No source URL was recorded in the offer file header; the cited product page was NOT fetched this
+# session. The 5 pts/$1 travel-portal rate and the sub-1cpp statement-credit redemption rate are
+# third-party/unconfirmed per the offer file. Redemption upside noted but unscored: cash deposited into
+# the brokerage account could earn ~3.35% APY via Robinhood's High-Yield Cash Program for Gold members
+# (variable). All figures need human verification against Robinhood's own card terms and the Rewards
+# Program Rules document.
+notes: >-
+  Flat 3% (3 pts/$1) fintech card gated behind paid Robinhood Gold. NEEDS human verification: figures are
+  transcribed from a third-party offer file with no header URL, not from issuer terms. The 5 pts/$1
+  travel-portal rate is third-party-reported and unconfirmed. Points redeem at 1cpp deposited into a
+  Robinhood brokerage account; statement-credit redemption is worth less than 1cpp (exact rate
+  unconfirmed). Available only to the primary cardholder (no authorized users); invite/waitlist only.

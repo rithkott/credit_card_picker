@@ -1,0 +1,141 @@
+# Foodie MR card: 4x dining (cap $50k/yr) + 4x US supermarkets (cap $25k/yr), 3x flights, $325 AF.
+id: gold
+name: American Express Gold Card
+issuer: amex
+network: amex
+currency:
+  type: points
+  program: amex_mr
+base_rate: 1                 # "base 1x"
+
+category_rewards:
+  - category: travel_hotels
+    rate: 5                  # "5x points ... on prepaid hotels booked through American Express Travel"
+    portal_only: true
+    notes: Prepaid hotels booked through American Express Travel only.
+  - category: dining
+    rate: 4                  # "4x ... on restaurants worldwide, capped at $50,000/calendar year, then 1x"
+    cap:
+      period: annual
+      max_spend_usd: 50000
+      fallback_rate: 1
+    notes: >-
+      Restaurants worldwide. Excludes restaurants inside another establishment,
+      event tickets, non-US third-party delivery, bars/nightclubs/cafeterias/
+      caterers/breweries/bakeries.
+  - category: groceries
+    rate: 4                  # "4x ... on US supermarkets, capped at $25,000/calendar year, then 1x"
+    cap:
+      period: annual
+      max_spend_usd: 25000
+      fallback_rate: 1
+    notes: >-
+      US supermarkets only. Excludes superstores, convenience stores, warehouse
+      clubs, meal-kit delivery.
+  - category: travel_flights
+    rate: 3                  # "3x ... on scheduled-airline airfare booked directly or via Amex Travel/app"
+    notes: Scheduled-airline airfare booked directly or via Amex Travel; excludes charter/private jet.
+  - category: travel_other
+    rate: 2                  # "2x ... prepaid car rentals and cruise reservations via AmexTravel.com/app"
+    portal_only: true
+    notes: >-
+      2x on prepaid car rentals and cruise reservations via Amex Travel, and on
+      other Amex Travel portal purchases generally (1 base + 1 bonus). Does not stack
+      with the category bonuses above.
+
+merchant_rewards: []
+
+credits:
+  - name: Resy Credit
+    amount_usd: 50           # "up to $50 semiannual statement credit (Jan-Jun, Jul-Dec)"
+    period: semiannual
+    category: dining
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $50 twice a year ($100/yr) at Resy-bookable US restaurants; enrollment required;
+      does not roll over between halves. Captured by people who dine at Resy
+      restaurants; excludes delivery/catering, gift cards, Resy software.
+  - name: Dining Credit
+    amount_usd: 10           # "up to $10/month statement credit"
+    period: monthly
+    category: dining
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $10/month at Grubhub/Seamless, Buffalo Wild Wings, Five Guys, The Cheesecake
+      Factory, and Wonder only; enrollment required; monthly forfeit. Goldbelly and
+      Wine.com removed as partners 7/1/2026. Captured by users of those specific
+      partners.
+  - name: Uber Cash
+    amount_usd: 10           # "$10/month in Uber Cash (US only)"
+    period: monthly
+    category: transit
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $10/month in Uber Cash (US), requires the card added as an Uber payment method;
+      usable on Uber rides and Uber Eats; expires monthly, no rollover. Captured by
+      regular Uber/Uber Eats users only.
+  - name: Dunkin' Credit
+    amount_usd: 7            # "up to $7/month statement credit at US Dunkin' locations"
+    period: monthly
+    category: dining
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $7/month at US Dunkin' locations; enrollment required; monthly forfeit. Excludes
+      gift cards, delivery apps, and Dunkin' products at other retailers. Only worth
+      it to regular Dunkin' customers.
+  - name: American Express Venue Collection Concessions Credit
+    amount_usd: 25
+    period: annual
+    category: entertainment
+    requires_enrollment: true
+    expires: "2026-12-31"
+    realistic_capture_rate_note: >-
+      10% back (up to $250/yr) on Venue Collection concessions, enrollment required;
+      realistic capture is a small fraction — modeled at ~$25.
+
+signup_bonus:
+  value:
+    points: 100000           # "Up to 100,000 Membership Rewards points after $8,000 spend in first 6 months"
+  spend_requirement_usd: 8000
+  window_months: 6
+  notes: >-
+    Offer file states "up to 100,000"; exact welcome amount disclosed at approval and
+    may be lower. Standard evergreen bonus not separately stated.
+
+fees:
+  annual_fee_usd: 325        # "Annual Fee: $325"
+  foreign_transaction_pct: 0 # "Foreign Transaction Fee: None"
+
+approval:
+  credit_tier: very_good
+  notes: >-
+    credit_tier is an inference from the card's premium underwriting; not stated in
+    the offer file — NEEDS human verification. Amex welcome-offer eligibility is
+    once-per-lifetime and also blocked if you have/had this Card, Premier Rewards
+    Gold, Platinum, Platinum Schwab, or Platinum Morgan Stanley cards.
+
+benefit_flags:
+  - no_foreign_transaction_fee
+  - car_rental_insurance
+  - extended_warranty
+  - purchase_protection
+  - trip_cancellation_insurance
+
+sources:
+  - url: https://www.americanexpress.com/us/credit-cards/card/gold-card/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Amex product page. URL not in offer file and not fetched this
+      session; figures transcribed from the local offer file and unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/amex/gold.txt; all figures unconfirmed
+  pending human verification. The 2x general Amex Travel portal earn is folded into
+  the travel_other entry and does not stack with the airfare/hotel bonuses.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

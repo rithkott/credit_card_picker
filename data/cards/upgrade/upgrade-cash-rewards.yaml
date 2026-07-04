@@ -1,0 +1,81 @@
+# Hybrid card/installment-loan fintech product: flat 1.5% "cash back when you pay it back", $0 annual fee.
+id: upgrade-cash-rewards
+name: Upgrade Cash Rewards Visa
+issuer: upgrade
+network: visa                # "Visa Signature benefits" + "Issued by Cross River Bank ... license from Visa"
+currency:
+  type: cash
+  program: cash
+base_rate: 1.5              # "Earn 1.5% unlimited cash back everyday on every purchase when you pay it back"
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus: null
+# The only bonus in the offer file is a $200 bonus tied to opening a companion Rewards
+# Checking Preferred account and making 3 debit transactions — it is gated on a separate
+# banking product, not card spend, so per the curation guide it is NOT modeled as the card's
+# signup_bonus (which would misrepresent it as spend-earnable). Described in top-level notes.
+
+fees:
+  annual_fee_usd: 0          # "Annual fee: $0 (no annual fee)"
+  foreign_transaction_pct: 3 # "Foreign transaction fee: up to 3% per transaction" — recorded at the stated ceiling
+
+approval:
+  credit_tier: fair          # INFERRED — see notes
+  notes: >-
+    credit_tier NOT stated in the offer file — estimated as 'fair' from Upgrade's public
+    positioning (broad-acceptance fintech lender, personal-loan-style underwriting, APR range
+    14.99%-29.99%). NEEDS human verification. Underwriting is unusual: the product issues a
+    series of closed-end installment loans rather than open revolving credit, and the approved
+    line does not replenish automatically as balances are repaid. Issued by Cross River Bank.
+
+benefit_flags:
+  - visa_signature
+  - extended_warranty
+  - price_protection
+  - roadside_dispatch
+  - travel_emergency_assistance
+  - zero_fraud_liability
+
+sources:
+  - url: https://www.upgrade.com/cards/cash-rewards/
+    supports: [identity, currency, base_rate, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Upgrade product page; NOT fetched this session — URL is the best-guess
+      official page for this product (offer file carried no source URL in its header).
+      All figures transcribed from the local offer file, which itself cites Upgrade's
+      official product page / Help Center as third-party/unconfirmed. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/upgrade/cash-rewards.txt; confidence low, all figures
+  unconfirmed against a live issuer page.
+  STRUCTURE: The Upgrade Card is a hybrid credit-card / installment-loan product — each billing
+  cycle's purchases are converted into a fixed-rate, fixed-term closed-end loan (example from the
+  offer file: "$1,000 purchase, 36-month term, 19.99% APR = $37.55/month") rather than an
+  open-ended revolving balance. Interest accrues from the time of purchase. The approved line does
+  not replenish automatically as balances are repaid.
+  CASH BACK MECHANIC: The 1.5% is earned "when you pay it back" — rewards accrue on repaid
+  balances "with certain limitations applying" (the offer file could not find the exact limitations
+  or the redemption threshold/timing; rewards "automatically redeem for statement credits" per a
+  secondary source). A cardholder who pays their balance in full still earns 1.5% on all purchases,
+  so it is modeled as a normal flat base_rate per docs/curation-guide.md's repayment-contingent
+  earn convention.
+  $200 CHECKING BONUS (unscored): A $200 bonus is available when the cardholder also opens a
+  Rewards Checking Preferred account and makes 3 debit-card transactions. It is gated on a separate
+  banking product rather than card spend, so it is not structured as signup_bonus.
+  OTHER FEES: Late payment up to $29; balance transfer up to 5%; foreign transaction up to 3%
+  (recorded); ATM withdrawal fees may apply and increase the finance charge/APR.
+  PRODUCT DISAMBIGUATION: Some third-party sources describe a "2% everyday / 1% everything else"
+  structure — that is Upgrade's Visa DEBIT card, a different product, and was deliberately excluded
+  to avoid conflating products.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

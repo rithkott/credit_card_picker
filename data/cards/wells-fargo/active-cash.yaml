@@ -1,0 +1,66 @@
+# Flagship flat-rate 2% cash card — no categories, no annual fee.
+id: active-cash
+name: Wells Fargo Active Cash
+issuer: wells-fargo
+network: visa                # inferred from "Visa Signature Benefits" perk line in the offer file
+currency:
+  type: cash
+  program: cash
+base_rate: 2                 # "Unlimited 2% cash rewards on purchases, no categories to track"
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus:
+  value:
+    usd: 200                 # "$200 cash rewards bonus"
+  spend_requirement_usd: 500 # "when you spend $500 in purchases in the first 3 months"
+  window_months: 3
+
+fees:
+  annual_fee_usd: 0          # "Annual Fee: None"
+  foreign_transaction_pct: 3 # "Foreign Transaction Fee: 3% of each transaction converted to U.S. dollars"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from this card's public positioning as a mainstream
+    no-annual-fee flat-rate cash card (Visa Signature underwriting); the offer file
+    does not state a credit requirement. NEEDS human verification.
+
+benefit_flags:
+  - cell_phone_protection
+  - car_rental_insurance
+  - visa_signature
+  - zero_fraud_liability
+  - free_fico_score
+
+sources:
+  - url: https://creditcards.wellsfargo.com/active-cash-credit-card/
+    supports: [identity, currency, base_rate, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session.
+      Figures are third-party/unconfirmed per the offer file's NEEDS_VERIFICATION marker.
+  - url: https://www.wellsfargo.com/credit-cards/agreements/active-cash-agreement/
+    supports: [fees]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Agreement/rates-and-fees page carried over from the offer file header; not
+      re-fetched this session; third-party/unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/wells-fargo/active-cash.txt, which carries a
+  NEEDS_VERIFICATION marker — every figure is third-party/unconfirmed and needs human
+  verification against issuer terms. Cash rewards don't expire while the account is open.
+  network inferred (offer file names "Visa Signature Benefits" but no explicit network line).
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

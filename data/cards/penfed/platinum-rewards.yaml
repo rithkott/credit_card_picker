@@ -1,0 +1,90 @@
+# No-annual-fee points card from a free-to-join credit union: 5X gas at the pump, 3X
+# groceries / dining / streaming, 1X everything else.
+id: platinum-rewards
+name: Platinum Rewards Visa Signature
+issuer: penfed
+network: visa
+currency:
+  type: points
+  program: penfed_points
+base_rate: 1                   # "1 point/$1 on everything else"
+
+category_rewards:
+  - category: gas
+    rate: 5                    # "5 points/$1 on gas paid at the pump"
+    notes: >-
+      Applies to gas "paid at the pump". No spending cap was found in available sources,
+      but the official terms PDF could not be fetched to confirm the absence — NEEDS human
+      verification.
+  - category: groceries
+    rate: 3                    # "3 points/$1 at supermarkets"
+    notes: No cap found in sources; terms PDF could not be fetched to confirm.
+  - category: dining
+    rate: 3                    # "3 points/$1 at restaurants"
+    notes: No cap found in sources; terms PDF could not be fetched to confirm.
+  - category: streaming
+    rate: 3                    # "3 points/$1 on cable/streaming services"
+    notes: >-
+      PenFed's category is "cable/streaming services" — mapped to the streaming key; it also
+      covers cable TV, which is slightly broader than our streaming label. No cap found.
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus:
+  value:
+    points: 15000             # "15,000 bonus points after spending $1,500 within 90 days"
+  spend_requirement_usd: 1500
+  window_months: 3
+  notes: >-
+    Per search-indexed penfed.org content; not confirmed by a direct read of the application
+    page. The 90-day window is a relative period, not a fixed calendar end date, so no
+    `expires` is set. NEEDS human verification.
+
+fees:
+  annual_fee_usd: 0            # "$0 (no annual fee)"
+  foreign_transaction_pct: 0   # "$0 (none)"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from this card's positioning as a mainstream no-annual-fee Visa
+    Signature rewards card; not stated in the offer file — NEEDS human verification. PenFed
+    Credit Union membership is required but is free and open to the general public (open a
+    PenFed savings account with a $5 minimum deposit); no military/government affiliation and,
+    per current sources, no donation required.
+
+benefit_flags: []
+
+sources:
+  - url: https://www.penfed.org/credit-cards/platinum-rewards-visa
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, fees, approval]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical product page; NOT fetched this session (offer file reports penfed.org fetches
+      were blocked by an Akamai "Access Denied" wall). Figures are third-party / search-indexed
+      plus a SuperMoney aggregator cross-check — unconfirmed, treat as low confidence.
+  - url: https://www.penfed.org/credit-cards/rewards-center
+    supports: [currency]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Redemption ("Rewards Center") page referenced in the offer file header; NOT fetched this
+      session. Points reportedly expire 5 years from the end of the earn month.
+
+notes: >-
+  Drafted offline from data/offer_files/penfed/platinum-rewards.txt, which reports that direct
+  fetches to penfed.org were blocked (Akamai "Access Denied"); every figure comes from
+  search-indexed synthesis plus a SuperMoney aggregator cross-check, so all figures are
+  third-party/unconfirmed. NEEDS human verification. Per-category spending caps were not found
+  in any source (but the terms PDF could not be fetched to confirm none exist). Points redeem
+  through PenFed's own Rewards Center (travel, merchandise, gift cards; no transfer partners
+  found) and reportedly expire 5 years from the end of the month earned. Standard purchase APR
+  reported as a flat 17.99% variable.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

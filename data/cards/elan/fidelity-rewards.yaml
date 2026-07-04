@@ -1,0 +1,67 @@
+# Flat-2% Visa Signature whose points redeem at 1cpp into a Fidelity account —
+# effectively unlimited 2% cash back for Fidelity customers, no annual fee.
+id: fidelity-rewards
+name: Fidelity Rewards Visa Signature
+issuer: elan
+network: visa
+currency:
+  type: points
+  program: fidelity_rewards   # 2 pts/$ redeem at 1cpp into an eligible Fidelity account
+base_rate: 2                  # "2 points per dollar on all eligible net purchases" (offer file, Earn Rates)
+
+category_rewards: []
+merchant_rewards: []
+credits: []
+
+# No standard/ongoing public signup bonus confirmed. Offer file cites an unconfirmed
+# third-party $150-after-$1,000-in-90-days targeted promo, explicitly flagged as
+# unverified and channel-specific — omitted per protocol (do not record targeted offers).
+signup_bonus: null
+
+fees:
+  annual_fee_usd: 0           # "no annual fee" (offer file, Annual Fee)
+  foreign_transaction_pct: 0  # "no foreign transaction fee" (offer file, Foreign Transaction Fee)
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated — the offer file does not state a required score. Visa Signature
+    underwriting typically expects good-to-excellent credit; estimated as 'good' from that
+    positioning, NOT read from the source. NEEDS human verification. Elan Financial Services is
+    the issuer/creditor and makes all approval decisions; Fidelity is not involved and cannot
+    guarantee approval for existing Fidelity customers. Cardholder must have or open an eligible
+    Fidelity account to direct point redemptions to (nonretirement brokerage, CMA, IRAs,
+    Fidelity Charitable, HSA, 529, or Fidelity Go).
+
+benefit_flags: []
+
+notes: >-
+  Points are worth 1 cent each when deposited into an eligible Fidelity account (2,500-point /
+  $25 minimum redemption; optional monthly auto-redemption once the minimum is met), which makes
+  the effective earn a flat, uncapped 2% cash back for that redemption path — this is why
+  base_rate is 2 against the fidelity_rewards program. Alternate redemption paths (travel,
+  merchandise, gift cards, statement credit) redeem at LOWER, unverified values not captured here.
+  DATA PROVENANCE: drafted offline from a third-party terms transcription (data/offer_files/elan/
+  fidelity-rewards.txt); no figure re-fetched from an issuer page this session. No exact issuer
+  deep-link was on file — the source below is the general Fidelity Rewards product domain named
+  by the offer file, not a fetched pricing/terms page, so it needs to be located and cited.
+  Guide-to-Benefits protections (Visa Signature purchase protection, extended warranty, travel/
+  rental insurance, roadside assistance) were not extractable in the research pass and are omitted
+  rather than guessed — NEEDS human verification. All figures third-party/unconfirmed.
+
+sources:
+  - url: https://www.fidelityrewards.com/
+    supports: [identity, currency, base_rate, fees]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL is the general Fidelity Rewards product domain referenced by the offer file (lines 9,
+      20); it was NOT re-fetched this session and is not the exact pricing/terms page. `accessed`
+      reflects the date the local offline transcription was read, not a live fetch of this URL.
+      Figures are transcribed from a third-party terms sheet and are unconfirmed against any
+      issuer page.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: claude-opus-4-8 (AI draft) — NEEDS human verification
+  confidence: low

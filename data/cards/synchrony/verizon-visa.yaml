@@ -1,0 +1,76 @@
+# Open-loop Visa co-brand: 4% groceries/gas/dining in Verizon Dollars, 1% else. Verizon account required.
+id: verizon-visa
+name: Verizon Visa Card
+issuer: synchrony
+network: visa
+currency:
+  type: points                # Earns "Verizon Dollars" (1 Verizon Dollar = $1 toward Verizon bill/devices/statement credit).
+  program: verizon_dollars    # Existing key in point-valuations.yaml (floor 1.0cpp, near-cash for Verizon customers).
+base_rate: 1                  # "1% Verizon Dollars on all other purchases" (and 1% on Verizon bill payments).
+
+category_rewards:
+  - category: groceries
+    rate: 4                   # "4% Verizon Dollars on grocery store purchases."
+  - category: gas
+    rate: 4                   # "4% Verizon Dollars on gas stations and EV charging station purchases."
+  - category: dining
+    rate: 4                   # "4% Verizon Dollars on restaurants, including takeout and delivery."
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus:
+  value:
+    usd: 50                   # "$50 statement credit when you open an account and make a purchase in the first 90 days."
+  spend_requirement_usd: 0    # First tranche just requires "make a purchase" — nominal, modeled as 0. See notes.
+  window_months: 3            # "first 90 days"
+  tiers:
+    - value:
+        usd: 100              # "Additional $100 statement credit when you spend $1,500 in the first 90 days" (total up to $150).
+      spend_requirement_usd: 1500
+  limited_time: true          # Offer file: "Limited time offer; only one per account." No calendar expiry stated, so `expires` is omitted.
+  notes: >-
+    Two-part welcome offer within the same 90-day window: $50 after the first purchase, plus $100 more
+    after $1,500 total spend ($150 total). First tranche's spend_requirement is nominal ($0 = "make a
+    purchase"). No stated end date, so `expires` is omitted; offer-currency NEEDS human verification.
+
+fees:
+  annual_fee_usd: 0           # "No annual fee" (verizon.com marketing + FAQ).
+  foreign_transaction_pct: 0  # "No foreign transaction fees" (marketing + FAQ + CFPB agreement).
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier NOT stated in the offer file — estimated. Visa Signature co-brand issued by Synchrony with
+    three creditworthiness-based APR tiers; ~good is a rough estimate, NEEDS human verification. Requires a
+    linked Verizon Wireless or Fios account; cancelling that account immediately forfeits Verizon Dollars.
+
+benefit_flags:
+  - special_financing
+
+sources:
+  - url: https://www.verizon.com/support/verizon-visa-card-rewards-legal/
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL listed in the offer file's "Sources used" (official Verizon Rewards Program Terms); NOT fetched
+      this session. Signup/fees also from verizon.com marketing + FAQ + CFPB agreement per the offer file.
+      Figures are third-party/unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/synchrony/verizon-visa.txt; figures unconfirmed. OMITTED REWARDS:
+  "4% on Verizon purchases (excludes bill payment)" is Verizon-merchant-specific, but merchants.yaml has no
+  "verizon" key, so it is dropped (registry gap — a reviewer could add a verizon merchant key). "1% on Verizon
+  Wireless/Fios bill payments" equals the base_rate, so it isn't modeled separately. Verizon Dollars redeem
+  only toward Verizon (statement credit, bill, devices) and forfeit after 24 months inactivity or on account
+  closure/cancellation — captured by the verizon_dollars program valuation. NOT modeled as credits: the "up
+  to $10/month/line Auto Pay discount" is a Verizon service discount tied to Auto Pay (not card-exclusive),
+  and the 0% device financing (36 months) is special financing (special_financing flag). Visa Signature perks
+  (concierge, Luxury Hotel Collection, Troon Golf, etc.) not scored.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

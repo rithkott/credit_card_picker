@@ -1,0 +1,100 @@
+# Mid Hilton co-brand: 3x base, 6x dining/supermarkets/gas, 4x online retail; $150 AF (Hilton 12x omitted).
+id: hilton-surpass
+name: Hilton Honors American Express Surpass Card
+issuer: amex
+network: amex
+currency:
+  type: points
+  program: hilton_honors
+base_rate: 3                 # "Base: 3 points/$ on eligible purchases"
+
+category_rewards:
+  - category: dining
+    rate: 6                  # "6 points/$ (3 additional) at U.S. restaurants"
+    notes: >-
+      US restaurants only (physically in the US); excludes nightclubs, convenience/
+      grocery stores, and restaurants inside another establishment (hotel/casino).
+  - category: groceries
+    rate: 6                  # "6 points/$ ... U.S. supermarkets"
+    notes: US supermarkets; excludes superstores and warehouse clubs.
+  - category: gas
+    rate: 6                  # "6 points/$ ... U.S. gas stations"
+    notes: US gas stations; excludes superstores and warehouse clubs.
+  - category: online_shopping
+    rate: 4                  # "4 points/$ (1 additional) on eligible online retail purchases"
+    notes: >-
+      Online retail from US merchants selling physical goods, purchased online
+      (in-app/browser, not in-store mobile wallet). Excludes restaurants,
+      supermarkets, gas, auto dealers, and travel/entertainment/services.
+
+merchant_rewards: []
+
+credits:
+  - name: Hilton Statement Credit
+    amount_usd: 50           # "up to $50/quarter ($200/year)"
+    period: quarterly
+    category: travel_hotels
+    realistic_capture_rate_note: >-
+      $50/quarter on purchases made directly with a Hilton portfolio property
+      (bookings + room-charged incidentals via Hilton-direct channel only, not OTAs).
+      Easy for regular Hilton-direct guests; useless for OTA bookers or non-Hilton
+      stays.
+  - name: American Express Venue Collection Concessions Credit
+    amount_usd: 25
+    period: annual
+    category: entertainment
+    requires_enrollment: true
+    expires: "2026-12-31"
+    realistic_capture_rate_note: >-
+      10% back (up to $250/yr) on Venue Collection concessions, enrollment required;
+      realistic capture is a small fraction — modeled at ~$25.
+
+signup_bonus:
+  value:
+    points: 130000           # "130,000 Hilton Honors Bonus Points after $3,000 spend in first 6 months"
+  spend_requirement_usd: 3000
+  window_months: 6
+  expires: "2026-07-29"
+  notes: >-
+    Offer ends 07/29/2026 per the offer file. Bonus points don't count toward elite
+    qualification. Standard evergreen bonus not separately stated.
+
+fees:
+  annual_fee_usd: 150        # "$0 intro for first year, then $150"
+  first_year_waived: true
+  foreign_transaction_pct: 0 # "Foreign Transaction Fee: None"
+
+approval:
+  credit_tier: very_good
+  notes: >-
+    credit_tier is an inference from the card's mid-tier premium positioning; not
+    stated in the offer file — NEEDS human verification. Amex welcome-offer
+    eligibility is once-per-lifetime (blocked if you have/had this Card or the Hilton
+    Honors Amex Ascend Card or prior versions). Complimentary Hilton Gold status;
+    Diamond status above $40,000 calendar-year spend.
+
+benefit_flags:
+  - no_foreign_transaction_fee
+  - elite_status
+
+sources:
+  - url: https://www.americanexpress.com/us/credit-cards/card/hilton-honors-surpass/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Amex product page. URL not in offer file and not fetched this
+      session; figures transcribed from the local offer file and unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/amex/hilton-surpass.txt; all figures
+  unconfirmed pending human verification. OMITTED: the "12x at Hilton portfolio
+  properties" earn — no `hilton` merchant key in data/meta/merchants.yaml; mapping it
+  to travel_hotels would overstate it for non-Hilton stays (registry gap flagged).
+  Free Night Reward after $15,000 calendar-year spend is an in-kind benefit not
+  modeled here (spend-gated, brand-locked) — noted for the reviewer.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

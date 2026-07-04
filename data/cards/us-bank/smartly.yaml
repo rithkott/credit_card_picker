@@ -1,0 +1,74 @@
+# Flat 2% cash card whose rate scales up to 4% with a U.S. Bank Smartly banking relationship.
+id: smartly
+name: U.S. Bank Smartly Visa Signature
+issuer: us-bank
+network: visa
+currency:
+  type: cash
+  program: cash
+base_rate: 2                      # "unlimited 2% cash back on every purchase, no cap" — no-relationship baseline
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus: null                # offer file: no welcome/signup bonus
+
+fees:
+  annual_fee_usd: 0               # "Annual Fee: $0"
+  foreign_transaction_pct: 3      # INFERRED from third-party sources; not confirmed on the official page
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's mainstream flat-rate Visa Signature
+    positioning; the offer file states no credit requirement. NEEDS human verification.
+
+relationship_boost:
+  program: U.S. Bank Smartly Rewards
+  tiers:
+    - tier_name: "$10,000+ combined balance"
+      min_balance_usd: 10000
+      boost_pct: 25               # 2.5% total = 2% + 0.5% → 0.5/2 = 25% more
+    - tier_name: "$50,000+ combined balance"
+      min_balance_usd: 50000
+      boost_pct: 50               # 3% total = 2% + 1% → 1/2 = 50% more
+    - tier_name: "$100,000+ combined balance"
+      min_balance_usd: 100000
+      boost_pct: 100              # 4% total = 2% + 2% → 2/2 = 100% more
+  note: >-
+    Requires a U.S. Bank Smartly Checking account plus the stated combined balance across
+    eligible U.S. Bank deposit/investment accounts, checked each billing cycle. The bonus
+    (elevated-tier portion above base 2%) applies to at most $10,000 in eligible Net
+    Purchases per billing cycle — spend above that earns base 2%. Full advertised tier
+    rates apply only when rewards are redeemed into an eligible U.S. Bank deposit account.
+    Thresholds changed before (min raised from $5,000 to $10,000, ~April 2025) — NEEDS
+    human verification. Not scored in v1; base_rate stays the no-relationship 2% baseline.
+
+benefit_flags:
+  - visa_signature
+
+sources:
+  - url: https://www.usbank.com/credit-cards/bank-smartly-visa-signature-credit-card.html
+    supports: [identity, currency, base_rate, fees, approval, relationship_boost, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header / docs/needs-verification-links.md;
+      not re-fetched this session. Figures are third-party/unconfirmed per the offer
+      file's NEEDS_VERIFICATION marker.
+
+notes: >-
+  Drafted offline from data/offer_files/us-bank/smartly.txt (NEEDS_VERIFICATION) — all
+  figures third-party/unconfirmed. base_rate is the 2% a customer with no Smartly banking
+  relationship earns; the 2.5%/3%/4% tiers are recorded in relationship_boost (unscored in
+  v1). Boost percentages are computed from the stated total rates (0.5/2=25%, 1/2=50%,
+  2/2=100%). foreign_transaction_pct (3%) is inferred from third-party sources. ExtendPay
+  and merchant-offers marketplace noted but not modeled. APR ignored per protocol.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

@@ -1,0 +1,108 @@
+# Choose-your-own-3%-category cash card with a combined 3%+2% quarterly cap shared with groceries/warehouse clubs.
+id: customized-cash
+name: Customized Cash Rewards
+issuer: bank-of-america
+network: visa                 # not stated in offer file — BofA consumer cards are Visa; inferred. NEEDS human verification.
+currency:
+  type: cash
+  program: cash
+base_rate: 1                  # "Unlimited 1% cash back on all other purchases"
+
+category_rewards:
+  - category: choice
+    rate: 3                   # ongoing 3% in the chosen category (offer file: 6% first year, 3% thereafter — evergreen rate modeled)
+    choice:
+      options: [gas, online_shopping, dining, travel_other, drugstores]
+      note: >-
+        Cardholder selects ONE 3% category and may change it once per calendar month. Offer file
+        options: "gas and EV charging, online shopping, dining, travel, drug stores, or home
+        improvement." Mapped: gas+EV→gas, online shopping→online_shopping, dining→dining, drug
+        stores→drugstores, travel→travel_other (approximation of the issuer's generic "travel").
+        "Home improvement" is omitted — no registry key exists for it.
+    cap:
+      period: quarterly
+      max_spend_usd: 2500     # full combined pool, stated in full on every member entry
+      fallback_rate: 1
+      shared_cap_id: choice_grocery
+    notes: >-
+      The 3% (choice) and 2% (groceries/warehouse clubs) rates share ONE combined $2,500/quarter
+      spend pool; spend above the pool earns 1%. Offer file: "6% and 2% rates apply to the first
+      $2,500 in combined purchases each quarter ... once the quarterly cap is reached, those
+      purchases earn 1%." The 6% first-year promo rate is noted at card level; 3% is the ongoing rate.
+  - category: groceries
+    rate: 2                   # "Automatic 2% cash back at grocery stores and wholesale clubs"
+    cap:
+      period: quarterly
+      max_spend_usd: 2500     # same combined pool, stated in full
+      fallback_rate: 1
+      shared_cap_id: choice_grocery
+    notes: >-
+      Automatic (no selection). Covers grocery stores and wholesale/warehouse clubs. Shares the
+      single $2,500/quarter combined pool with the 3% choice category (see the choice entry);
+      combined spend above $2,500 earns 1% for the rest of the quarter.
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus:
+  value:
+    usd: 200                 # "$200 online cash rewards bonus"
+  spend_requirement_usd: 1000 # "after making at least $1,000 in purchases in the first 90 days"
+  window_months: 3
+
+fees:
+  annual_fee_usd: 0           # "$0"
+  foreign_transaction_pct: 3  # NOT on official page; offer file: "third-party aggregators report 3%". Inferred/unconfirmed — NEEDS human verification.
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's public positioning as a mainstream no-annual-fee cash
+    card; the offer file does not state a credit requirement. NEEDS human verification.
+
+relationship_boost:
+  program: Bank of America Preferred Rewards
+  tiers:
+    - tier_name: Gold
+      requirement: Gold Preferred Rewards tier (eligible BofA/Merrill relationship)
+      boost_pct: 25
+    - tier_name: Platinum
+      requirement: Platinum Preferred Rewards tier (eligible BofA/Merrill relationship)
+      boost_pct: 50
+    - tier_name: Platinum Honors
+      requirement: Platinum Honors Preferred Rewards tier (eligible BofA/Merrill relationship)
+      boost_pct: 75
+  note: >-
+    Offer file: "eligible cardholders can earn a 25%-75% bonus on cash back based on Bank of
+    America/Merrill relationship tier (Gold/Platinum/Platinum Honors)." 25% (Gold) and 75%
+    (Platinum Honors) endpoints transcribed; 50% (Platinum) is the standard middle tier, not
+    itemized in the offer file. Qualifying balance thresholds not stated — expressed as
+    requirement text, not invented figures. Not scored in v1 — rates above are the no-relationship
+    baseline. NEEDS human verification.
+
+benefit_flags:
+  - zero_fraud_liability
+
+sources:
+  - url: https://www.bankofamerica.com/credit-cards/products/cash-back-credit-card/
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, fees, approval, relationship_boost, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header; not re-fetched this session. The offer file
+      carries a NEEDS_VERIFICATION marker — figures are third-party/secondary and unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/bank-of-america/customized-cash.txt, which carries a
+  NEEDS_VERIFICATION marker, so all figures are third-party/unconfirmed. The 3% choice rate is
+  currently promoted at 6% for the first year (then 3%); the ongoing 3% is modeled as the evergreen
+  rate per the curation guide. REGISTRY GAP: the "home improvement" choice option has no registry
+  key and was dropped from the options list; the issuer's generic "travel" option is approximated
+  as travel_other. foreign_transaction_pct not on the official page (third-party reports 3%) and is
+  flagged unconfirmed. Network inferred as Visa (not stated) — NEEDS human verification.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

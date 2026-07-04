@@ -1,0 +1,112 @@
+# JetBlue co-brand (premium tier): TrueBlue points; 2x dining + groceries; $300 travel credit, lounge access, companion-pass spend credits, $499 AF.
+id: jetblue-premier
+name: JetBlue Premier Card
+issuer: barclays
+network: mastercard             # "JetBlue Premier World Elite Mastercard"
+currency:
+  type: points
+  program: jetblue_trueblue
+base_rate: 1                    # "1 point/$1 on all other purchases"
+
+category_rewards:
+  # OMITTED: "6 points/$1 on eligible JetBlue purchases" — brand-specific with no `jetblue`
+  # merchant key; not force-fit onto travel_flights. See notes / registry gap.
+  - category: dining
+    rate: 2                      # "2 points/$1 at restaurants and eligible grocery stores"
+  - category: groceries
+    rate: 2                      # same 2x tier (eligible grocery stores)
+    notes: >-
+      "Eligible grocery stores" — superstores/warehouse clubs may be excluded (not stated).
+      NEEDS human verification.
+
+merchant_rewards: []
+
+credits:
+  - name: TrueBlue Travel statement credit
+    amount_usd: 300             # "Up to $300/calendar year in statement credits on TrueBlue Travel purchases"
+    period: annual
+    category: travel_flights
+    realistic_capture_rate_note: >-
+      Up to $300/calendar year automatically credited against eligible TrueBlue Travel
+      purchases. Easily captured by anyone who spends $300+/year on JetBlue/TrueBlue travel;
+      worthless to non-JetBlue flyers.
+  - name: Anniversary bonus points
+    amount_points: 5000         # "5,000 bonus points each year after account anniversary"
+    period: annual
+    realistic_capture_rate_note: >-
+      Automatic 5,000 TrueBlue points each year after the account anniversary; captured by every
+      cardholder who keeps the card open.
+  - name: Global Entry / TSA PreCheck fee credit
+    amount_usd: 120             # "up to $120 every 4 years"
+    period: every_4_years
+    realistic_capture_rate_note: >-
+      One statement credit up to $120 per 4-year cycle for a Global Entry/TSA PreCheck fee.
+      Captured only by travelers who apply/renew.
+  - name: Companion Pass credit — first tranche
+    amount_usd: 500             # "$500 credit after $15,000 in eligible net purchases in a calendar year"
+    period: annual
+    unlock_spend_usd: 15000     # total card spend in the calendar year (whole-card threshold)
+    realistic_capture_rate_note: >-
+      One-time $500 statement credit once $15,000 in total net purchases posts in a calendar
+      year; reached only by fairly heavy spenders. Marketed as offsetting a JetBlue Companion
+      Pass.
+  - name: Companion Pass credit — second tranche
+    amount_usd: 1500            # "additional one-time $1,500 credit after $75,000 net purchases (incl. the initial $15,000)"
+    period: annual
+    unlock_spend_usd: 75000     # cumulative total card spend in the calendar year
+    realistic_capture_rate_note: >-
+      Additional one-time $1,500 statement credit once cumulative total net purchases reach
+      $75,000 in the same calendar year; reachable only by very high spenders.
+
+signup_bonus:
+  value:
+    points: 100000             # "100,000 bonus points after $5,000 + paying the annual fee, within first 90 days"
+  spend_requirement_usd: 5000
+  window_months: 3             # offer states "first 90 days" (~3 months)
+  notes: >-
+    Also requires paying the annual fee in full within the first 90 days.
+
+fees:
+  annual_fee_usd: 499          # "Annual fee: $499 ($150 for each authorized user)"
+  foreign_transaction_pct: 0   # "Foreign transaction fee: 0%" / "No foreign transaction fees"
+
+approval:
+  credit_tier: excellent
+  notes: >-
+    credit_tier estimated from the card's premium ($499 AF, World Elite) positioning; not stated
+    in the offer file. Authorized users cost $150 each. NEEDS human verification.
+
+benefit_flags:
+  - lounge_access               # Priority Pass + BlueHouse (eligible fares)
+  - free_checked_bag            # free first checked bag for cardmember + up to 3 companions
+  - complimentary_elite_status  # Mosaic status progress + 25-tile annual bonus
+  - no_blackout_dates
+  - priority_boarding           # Group 3
+  - no_foreign_transaction_fee
+  - zero_fraud_liability
+
+sources:
+  - url: https://www.barclaycardus.com/c/cards/jetblue-premier-card
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in the offer file and not fetched this session; canonical issuer product page.
+      All figures transcribed from data/offer_files/barclays/jetblue-premier.txt and are
+      third-party/unconfirmed against issuer terms. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/barclays/jetblue-premier.txt; all figures
+  third-party/unconfirmed, confidence low, NEEDS human verification. OMITTED reward (registry
+  gap): "6 points/$1 on eligible JetBlue purchases" — brand-specific with no `jetblue` merchant
+  key; a reviewer may add a `jetblue` merchant and model it. The two Companion Pass credits are
+  modeled as spend-unlocked statement credits (total-card-spend thresholds $15k and $75k in a
+  calendar year); the $1,500 tranche's $75,000 is cumulative (includes the initial $15,000).
+  Soft/redemption perks noted only: 50% inflight savings; 15% of points back on award flights;
+  Cash + Points. Sibling cards: jetblue.yaml (no fee), jetblue-plus.yaml ($99). credit_tier is
+  an estimate.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

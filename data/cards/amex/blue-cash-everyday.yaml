@@ -1,0 +1,118 @@
+# No-annual-fee everyday cash card: 3% at US supermarkets, US online retail, and US gas (each capped $6k/yr).
+id: blue-cash-everyday
+name: Blue Cash Everyday Card from American Express
+issuer: amex
+network: amex
+currency:
+  type: cash
+  program: cash
+base_rate: 1                 # "1% cash back on all other eligible purchases"
+
+category_rewards:
+  - category: groceries
+    rate: 3                  # "3% ... U.S. supermarkets ... first $6,000/year, then 1%"
+    cap:
+      period: annual
+      max_spend_usd: 6000
+      fallback_rate: 1
+    notes: >-
+      US supermarkets only. Superstores, convenience stores, warehouse clubs, and
+      meal-kit delivery services are NOT treated as supermarkets by Amex.
+  - category: online_shopping
+    rate: 3                  # "3% ... U.S. online retail purchases, first $6,000/year, then 1%"
+    cap:
+      period: annual
+      max_spend_usd: 6000
+      fallback_rate: 1
+    notes: >-
+      US online retail only: website/app purchase of physical goods from a US
+      merchant paid online. Excludes phone/mail orders, in-store pickup, buy-now-
+      pay-later, and restaurants/supermarkets/gas/auto/travel/entertainment/services.
+  - category: gas
+    rate: 3                  # "3% ... gas station purchases in the U.S., first $6,000/year, then 1%"
+    cap:
+      period: annual
+      max_spend_usd: 6000
+      fallback_rate: 1
+    notes: >-
+      US gas stations only. Superstores, supermarkets, and warehouse clubs that
+      sell gasoline are NOT treated as gas stations.
+
+merchant_rewards: []
+
+credits:
+  - name: Home Chef Credit
+    amount_usd: 15           # "up to $15/month statement credit ... ($180/year max)"
+    period: monthly
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Only captured by active Home Chef meal-kit subscribers who buy online at
+      homechef.com and enroll via the Amex Benefit Dashboard; monthly forfeit (does
+      not roll over). Worth ~$180/yr to a subscriber, $0 to everyone else.
+    notes: Excludes kitchenware, individual meal kits, and gift cards.
+  - name: Disney Streaming Credit
+    amount_usd: 7            # "up to $7/month ... ($84/year max)"
+    period: monthly
+    category: streaming
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Only captured if you pay for Disney+, Hulu, or ESPN directly and enroll; one
+      $7 credit per month even on annual plans; monthly forfeit. Excludes
+      third-party/device-store billing and cable bundles.
+  - name: American Express Venue Collection Concessions Credit
+    amount_usd: 25           # 10% back up to $250/yr; modeled at a realistic fraction of the cap
+    period: annual
+    category: entertainment
+    requires_enrollment: true
+    expires: "2026-12-31"
+    realistic_capture_rate_note: >-
+      10% back (up to $250/yr) on food & beverage concessions at participating
+      Venue Collection stadiums/arenas, enrollment required. Most cardholders attend
+      few or no such events, so realistic capture is a small fraction of the $250
+      cap — modeled at ~$25. Excludes third-party resellers/delivery.
+
+signup_bonus:
+  value:
+    usd: 200                 # "As high as $200 cash back"
+  spend_requirement_usd: 2000
+  window_months: 6
+  notes: >-
+    Offer file states "as high as $200"; exact eligible amount is disclosed after
+    application/before acceptance and may be lower. Once-per-lifetime style
+    eligibility (see approval.notes).
+
+fees:
+  annual_fee_usd: 0          # "Annual Fee: $0"
+  foreign_transaction_pct: 2.7  # "2.7% ... after conversion to US dollars"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier is an inference from the card's positioning as a mainstream
+    no-annual-fee cash card; not stated in the offer file — NEEDS human
+    verification. Amex welcome-offer eligibility is once-per-lifetime and also
+    blocked if you have/had the Cash Magnet, Blue Cash Preferred, or the Morgan
+    Stanley Blue Cash Preferred (or previous versions).
+
+benefit_flags:
+  - purchase_protection
+  - car_rental_insurance
+
+sources:
+  - url: https://www.americanexpress.com/us/credit-cards/card/blue-cash-everyday/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Amex product page. URL not in offer file and not fetched this
+      session; figures transcribed from the local offer file and unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/amex/blue-cash-everyday.txt; all figures
+  unconfirmed pending human verification. Redemption is statement credit or at
+  Amazon.com checkout, no minimum.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

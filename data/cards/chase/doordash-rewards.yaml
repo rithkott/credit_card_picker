@@ -1,0 +1,84 @@
+# DoorDash co-brand: 4% DoorDash (OMITTED — no registry merchant), 3% dining, 2% grocery, complimentary DashPass.
+id: doordash-rewards
+name: DoorDash Rewards Mastercard
+issuer: chase
+network: mastercard          # "DoorDash Rewards Mastercard" — stated in the card name
+currency:
+  type: cash                 # earns fixed-value reward points (1 pt = $0.01, no transfer partners) — modeled as cash
+  program: cash
+base_rate: 1                 # "1% Cash Back: everything else"
+
+category_rewards:
+  - category: dining
+    rate: 3                  # "3% Cash Back: dining, purchased directly from a restaurant"
+    notes: Dining purchased directly from a restaurant (DoorDash/Caviar orders earn the omitted 4% rate — see notes).
+  - category: groceries
+    rate: 2                  # "2% Cash Back: grocery stores"
+
+merchant_rewards: []
+
+credits:
+  - name: DoorDash monthly 10%-off order credit
+    amount_usd: 15            # "10% off (up to $15/month) one Convenience/Grocery/Alcohol/Retail/DashMart order per month on DoorDash ... through 12/31/2026"
+    period: monthly
+    expires: "2026-12-31"
+    realistic_capture_rate_note: >-
+      10% off one qualifying DoorDash (not Caviar) Convenience/Grocery/Alcohol/Retail/
+      DashMart order per month, capped at $15/month, through 12/31/2026. Face value shown
+      is the monthly cap; actual capture depends on placing a ~$150 qualifying order each
+      month (no rollover) — realistic capture is a fraction of $15 for most users.
+  - name: DashPass complimentary membership
+    amount_usd: 96            # in-kind estimate: ~$96/yr DashPass annual plan value, waived for the primary + 1 authorized user
+    kind: in_kind
+    period: annual
+    realistic_capture_rate_note: >-
+      12 months of complimentary DashPass for the primary cardmember (auto-activated on
+      approval) + up to 1 authorized user; renews for another 12 months in any Anniversary
+      Year with $10,000+ card spend, otherwise auto-enrolls in the paid DashPass Annual
+      Plan. Value estimated at the ~$96/yr annual-plan price; captured only by regular
+      DoorDash users (waived delivery fees + reduced service fees). amount_usd is a
+      curator estimate (issuer states no dollar value) — NEEDS human verification.
+
+signup_bonus: null           # no traditional signup bonus stated; the DashPass benefit is modeled as a credit above
+
+fees:
+  annual_fee_usd: 0           # NOT stated in offer file; the DoorDash Rewards Mastercard has no annual fee — inference, NEEDS human verification
+  foreign_transaction_pct: 3  # NOT stated in offer file — inference, NEEDS human verification
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's mainstream co-brand positioning; not stated in
+    the offer file. Chase 5/24 likely applies. NEEDS human verification.
+
+benefit_flags:
+  - cell_phone_protection
+  - concierge
+
+sources:
+  - url: https://creditcards.chase.com/cash-back-credit-cards/doordash
+    supports: [identity, currency, base_rate, category_rewards, credits, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in offer file and not fetched this session; figures transcribed from
+      data/offer_files/chase/doordash-rewards.txt and unconfirmed against issuer terms.
+      NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/chase/doordash-rewards.txt. No source URL was on
+  file; the cited page is the issuer's general product page (not fetched). REGISTRY GAP /
+  OMITTED REWARD: the card's headline "4% Cash Back on purchases directly through
+  doordash.com/trycaviar.com or their apps" is OMITTED because there is no 'doordash' key
+  in data/meta/merchants.yaml and no category fits a single delivery platform. Per the
+  no-forced-fit rule it is dropped and flagged for a human to add a 'doordash' merchant.
+  The DashPass Anniversary Benefit ($10,000 spend renews it) is described in the DashPass
+  credit note rather than as a spend-unlock. Points are fixed-value (1cpp), modeled as
+  cash. annual_fee_usd (0), foreign_transaction_pct (3), and credit_tier are NOT stated
+  and are inferences; the DashPass in-kind value ($96) is a curator estimate — all NEED
+  human verification.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

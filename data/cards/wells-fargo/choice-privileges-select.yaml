@@ -1,0 +1,105 @@
+# $95 premium Choice Hotels co-brand — higher everyday 5X, anniversary points, Global Entry credit.
+id: choice-privileges-select
+name: Wells Fargo Choice Privileges Select World Elite Mastercard
+issuer: wells-fargo
+network: mastercard          # "Choice Privileges Select World Elite Mastercard"
+currency:
+  type: points
+  program: choice_privileges
+base_rate: 1                 # "1X points on other purchases"
+
+category_rewards:
+  - category: gas
+    rate: 5                  # "5X points on gas stations, grocery stores, home improvement stores, and phone plan services"
+  - category: groceries
+    rate: 5                  # same 5X tier ("grocery stores")
+  - category: utilities
+    rate: 5                  # "phone plan services" → utilities (Utilities & phone)
+    notes: >-
+      Covers "phone plan services" only, per the offer file — not utilities broadly.
+      Mapped to the utilities key for lack of a phone-specific key; narrower than this
+      category. NEEDS human verification.
+
+merchant_rewards: []
+
+credits:
+  - name: Anniversary bonus points
+    amount_points: 30000     # "30,000 bonus points every account anniversary year"
+    period: annual
+    realistic_capture_rate_note: >-
+      Automatically deposited each account anniversary — captured by essentially all
+      cardholders who keep the account open past the anniversary. Worth roughly 3 Choice
+      reward nights per the product page's framing. NEEDS human verification.
+  - name: Trusted Traveler (Global Entry / TSA PreCheck) fee credit
+    amount_usd: 120          # "Up to $120 statement credit for Trusted Traveler Program fees ... every 4 years"
+    period: every_4_years
+    category: travel_other
+    realistic_capture_rate_note: >-
+      Reimburses Global Entry ($100) or TSA PreCheck (~$78) application fees once every
+      4 years. Captured only by travelers who actually apply/renew; worthless to
+      everyone else. NEEDS human verification.
+
+signup_bonus:
+  value:
+    points: 60000            # "60,000 bonus points"
+  spend_requirement_usd: 3000 # "when you spend $3,000 in purchases in the first 3 months"
+  window_months: 3
+
+fees:
+  annual_fee_usd: 95         # "Annual Fee: $95"
+  foreign_transaction_pct: 0 # "Foreign Transaction Fee: $0"
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from this card's positioning as a $95 premium hotel co-brand
+    (World Elite Mastercard); the offer file does not state a credit requirement. Not
+    eligible if you opened a Choice Privileges card within the last 15 months or
+    currently hold an open Choice Privileges account (per product page). NEEDS human
+    verification.
+
+benefit_flags:
+  - cell_phone_protection
+  - complimentary_elite_status
+  - world_elite_mastercard
+  - car_rental_insurance
+  - trip_cancellation_insurance
+  - lost_baggage_reimbursement
+  - travel_accident_insurance
+
+sources:
+  - url: https://creditcards.wellsfargo.com/choice-hotels-privileges-select-mastercard
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Product URL carried over from the offer file header; not re-fetched this session.
+      Fees were not isolated to an official agreement page in the offer file (cross-
+      corroborated across secondary sources). Third-party/unconfirmed per the
+      NEEDS_VERIFICATION marker.
+  - url: https://www.wellsfargo.com/credit-cards/choice-select/guide-to-benefits/
+    supports: [credits, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Guide-to-benefits URL carried over from the offer file header; not re-fetched this
+      session; third-party/unconfirmed.
+
+notes: >-
+  Drafted offline from data/offer_files/wells-fargo/choice-privileges-select.txt, which
+  carries a NEEDS_VERIFICATION marker — all figures are third-party/unconfirmed and need
+  human verification (the offer file notes fees were cross-corroborated across secondary
+  sources rather than isolated to an official agreement page). OMITTED REWARDS: (1) "10X
+  points on stays at participating Choice Hotels properties and Choice Privileges point
+  purchases" — brand-specific earn with no merchant key in data/meta/merchants.yaml, so
+  omitted rather than force-fit onto travel_hotels; (2) the "home improvement stores"
+  portion of the 5X tier — no matching category key exists, so dropped from the modeled
+  5X set. Both gaps are listed for a reviewer / possible registry additions. Card also
+  grants automatic Platinum Elite status (25% bonus points) and 20 Elite Qualifying
+  Nights/year (benefit_flags + note, not modeled as earn). Sibling of the no-annual-fee
+  wells-fargo/choice-privileges card.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

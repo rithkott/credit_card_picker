@@ -1,0 +1,97 @@
+# Mid-tier Disney co-brand: 5% Disney+ bundle, 2% Disney/gas/grocery/dining, Pay Yourself Back to Disney.
+id: disney-premier
+name: Disney Premier Visa
+issuer: chase
+network: visa                # "Disney Premier Visa" — stated in the card name
+currency:
+  type: points               # Disney Rewards Dollars (registry values the unit at 1cpp, so rate N = N% back)
+  program: disney_rewards
+base_rate: 1                 # "1%: everything else"
+
+category_rewards:
+  - category: streaming
+    rate: 5                  # "5% total on Disney+/Hulu/ESPN+ subscriptions and add-ons purchased directly"
+    notes: >-
+      Applies ONLY to Disney+/Hulu/ESPN+ subscriptions/add-ons purchased directly at
+      DisneyPlus.com, Hulu.com, or plus.espn.com (not via third-party device/platform
+      unless redirected, not as part of a bundle). NARROWER than the general streaming
+      category — other streaming services (Netflix, Spotify, etc.) earn only the 1% base.
+  - category: gas
+    rate: 2                  # "2% total: ... gas stations"
+  - category: groceries
+    rate: 2                  # "2% total: ... grocery stores"
+  - category: dining
+    rate: 2                  # "2% total: ... dining (incl. takeout/delivery)"
+
+merchant_rewards: []
+
+credits:
+  - name: DashPass DoorDash quarterly credit
+    amount_usd: 10            # "$10 off quarterly on one DoorDash non-restaurant order while enrolled"
+    period: quarterly
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Requires activating the complimentary 12-month DashPass (activation window
+      2/1/2025-12/31/2027, then auto-renews at the then-current monthly rate) and placing
+      one qualifying DoorDash non-restaurant order each quarter (no rollover). Captured
+      only by active DoorDash users who enroll.
+
+signup_bonus:
+  value:
+    usd: 200                  # "$200 Disney Gift Card eGift, awarded automatically at approval"
+  spend_requirement_usd: 0
+  window_months: 3
+  tiers:
+    - value:
+        usd: 100              # "$100 statement credit after spending $500 in first 3 months"
+      spend_requirement_usd: 500
+  notes: >-
+    Base tranche is the $200 Disney Gift Card awarded at approval (no spend required,
+    valued at face). The tier is a $100 statement credit after $500 spend in the first 3
+    months. Account must stay open 6+ months or the gift card offer may be cancelled. Not
+    available to current cardmembers or those who got a bonus for this card in the last 24
+    months. Allow up to 8 weeks.
+
+fees:
+  annual_fee_usd: 49          # NOT stated in offer file; Disney Premier annual fee — inference, NEEDS human verification
+  foreign_transaction_pct: 3  # NOT stated in offer file — inference, NEEDS human verification
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's mainstream co-brand positioning; not stated in
+    the offer file. Chase 5/24 likely applies. NEEDS human verification.
+
+benefit_flags:
+  - special_financing
+
+sources:
+  - url: https://creditcards.chase.com/cash-back-credit-cards/disney/premier
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in offer file and not fetched this session; figures transcribed from
+      data/offer_files/chase/disney-premier.txt and unconfirmed against issuer terms.
+      NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/chase/disney-premier.txt. No source URL was on
+  file; the cited page is the issuer's general product page (not fetched). Earns Disney
+  Rewards Dollars, program disney_rewards; Pay Yourself Back redeems them 1:1 for
+  statement credit on Disney parks/resorts/stores, Disney+/Hulu/ESPN+, and airline
+  purchases within 90 days. REGISTRY GAP / OMITTED REWARD: "2% total on US Disney
+  Locations" is OMITTED because there is no 'disney' merchant key and no category fits
+  Disney parks/resorts/stores collectively; per the no-forced-fit rule it is dropped and
+  flagged (Disney-location spend earns the 1% base in this model). JUDGMENT CALL: the 5%
+  Disney+/Hulu/ESPN+ rate is modeled on the full streaming category with a narrowing note
+  — it only applies to those three services, so it may over-score users with other
+  streaming spend. NOTED, NOT MODELED: special vacation financing (flag); Disney
+  merchandise/dining/tour discounts; PhotoPass. annual_fee_usd (49),
+  foreign_transaction_pct (3), and credit_tier are NOT stated and are inferences — NEEDS
+  human verification.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

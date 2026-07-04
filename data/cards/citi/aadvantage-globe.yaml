@@ -1,0 +1,138 @@
+# Mid-tier AA co-brand: AA/portal + dining/transit accelerators, companion cert, $350 fee, AAdvantage miles.
+id: aadvantage-globe
+name: Citi / AAdvantage Globe Mastercard
+issuer: citi
+network: mastercard           # "Mastercard®" stated in the card title
+currency:
+  type: points
+  program: aa_advantage
+base_rate: 1                  # "1 AAdvantage mile per $1"
+
+category_rewards:
+  - category: travel_flights
+    rate: 3                   # "3X miles on eligible American Airlines purchases"
+    notes: >-
+      Only AA purchases billed by AA as merchant of record (excludes AAdvantage status
+      boost/renewal and AA Cargo) — narrower than the general travel_flights category.
+      Admirals Club food/beverage earns 3X under this AA rate.
+  - category: travel_hotels
+    rate: 6                   # "6X miles on hotels booked through aadvantagehotels.com"
+    portal_only: true
+    notes: >-
+      Only hotels booked through aadvantagehotels.com (excludes AA Vacations and
+      "Reserve Now, Pay Later"). Portal-only.
+  - category: dining
+    rate: 2                   # "2X miles at restaurants"
+    notes: >-
+      Restaurants incl. cafes, bars, lounges, fast food, delivery, takeout. Excludes
+      supercenters, warehouse clubs, discount stores, restaurants inside department
+      stores, bowling alleys, golf/country clubs, convenience stores, movie theaters,
+      caterers, meal-kit delivery.
+  - category: transit
+    rate: 2                   # "2X miles on Rides and Rails"
+    notes: >-
+      "Rides and Rails": ferries, commuter rail, subway, taxi/limo/rideshare,
+      passenger rail, tolls, parking, buses. Excludes charter/tour buses, car-rental
+      agencies, RV rentals.
+
+merchant_rewards: []
+
+credits:
+  - name: AA inflight purchase credit
+    amount_usd: 100          # "Up to $100/year statement credit on AA inflight purchases"
+    period: annual
+    realistic_capture_rate_note: >-
+      Up to $100/year on American Airlines inflight purchases (domestic AA/American
+      Eagle-operated flights only; excludes codeshares). Captured only by cardholders
+      who buy inflight food/beverage/wifi; annual ceiling rarely fully used.
+  - name: American Airlines Companion Certificate
+    amount_usd: 100          # in-kind; estimated value of a $99-companion-fare certificate
+    kind: in_kind
+    period: annual
+    realistic_capture_rate_note: >-
+      $99 domestic economy companion fare (plus taxes/fees), issued annually after
+      renewal; 48-contiguous-states travel only, not valid on oneworld carriers or AA
+      codeshares. Only valuable to cardholders who book a qualifying paid domestic AA
+      trip with a companion; substantial redemption friction.
+    notes: >-
+      in_kind value estimated at ~$100: a companion flies for $99 + taxes where a paid
+      domestic economy ticket typically runs $150-300, so net savings roughly offset by
+      the $99 fare — conservative estimate, not an issuer-stated value.
+  - name: Admirals Club Globe Passes
+    amount_usd: 100          # in-kind; 4 digital day-passes/year, conservatively valued
+    kind: in_kind
+    period: annual
+    realistic_capture_rate_note: >-
+      Four digital Admirals Club "Globe Passes"/year (each admits cardmember + up to 3
+      adults for 24 hours); unused passes forfeit at year end and require a same-day
+      AA/oneworld/Alaska boarding pass. Most cardholders use only one or two; valued
+      conservatively.
+    notes: >-
+      in_kind value estimated at ~$100/year: an Admirals Club day pass has ~$79 face
+      value but most of the four passes go unused and access is gated to travel days —
+      conservative annual estimate, not an issuer-stated value.
+  - name: Turo credit
+    amount_usd: 240          # "Up to $240/year on Turo: $30/trip up to 8 trips"
+    period: annual
+    category: travel_other
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $30 statement credit per completed Turo trip, up to 8 trips/year, direct turo.com/
+      app bookings with the card linked to the Turo account (digital-wallet payments
+      excluded). Captured only by regular Turo renters.
+  - name: Splurge Credit
+    amount_usd: 100          # "Up to $100/year Splurge Credit"
+    period: annual
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Cardholder activates up to 2 merchants (citi.com/splurgecredit); credits post on
+      purchases at the activated merchant(s) up to $100/year total. Activation is
+      time-of-purchase sensitive and the merchant list changes; moderate capture.
+  - name: Global Entry / TSA PreCheck fee credit
+    amount_usd: 120
+    period: every_4_years
+    realistic_capture_rate_note: >-
+      One credit every 4 years toward whichever of Global Entry / TSA PreCheck is
+      charged first. Only captured by travelers who apply/renew.
+
+signup_bonus: null           # No public signup bonus terms were present in this source file
+
+fees:
+  annual_fee_usd: 350         # "Annual Fee: $350"
+  foreign_transaction_pct: 0  # "Foreign Transaction Fee: None"
+
+approval:
+  credit_tier: very_good
+  notes: >-
+    credit_tier estimated from the card's mid-premium positioning ($350 fee); not stated
+    in the offer file. Requires an open AAdvantage membership. New-account bonus miles
+    blocked if you got one on a Globe account, or converted such a card, in the past
+    48 months. NEEDS human verification.
+
+benefit_flags:
+  - free_checked_bag          # first checked bag free (Authorized Users excluded, implying primary gets it)
+  - preferred_boarding        # boards after priority boarding, before rest of economy (Group 5)
+
+sources:
+  - url: https://www.citi.com/credit-cards/citi-aadvantage-globe-mastercard
+    supports: [identity, currency, base_rate, category_rewards, credits, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Citi product page; URL not in the offer file and NOT fetched this
+      session — figures unconfirmed. All values transcribed from
+      data/offer_files/citi/aadvantage-globe.txt. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/citi/aadvantage-globe.txt; all figures
+  unconfirmed. Status-qualifying Loyalty Points (1 per base mile, plus Flight Streak
+  5,000/4 segments up to 15,000/yr) are NOT redeemable and are not scored. The 25%
+  inflight food/beverage savings is OMITTED (uncapped percentage rebate — separate from
+  the capped $100 inflight credit above, which is modeled). Companion Certificate and
+  Admirals Globe Passes are in_kind with conservative curator-estimated values, NOT
+  issuer figures. Preferred boarding and travel protection recorded as flags/notes.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

@@ -1,0 +1,72 @@
+# Navy Federal cashRewards (standard tier): flat 1.5% cash on everything, no annual fee.
+# Sibling variant of cash-rewards-plus (2% flat) — tier is set by approved credit limit.
+id: cash-rewards
+name: cashRewards
+issuer: navy-federal
+network: visa                 # see notes: network not explicitly stated in the offer file
+currency:
+  type: cash
+  program: cash
+base_rate: 1.5               # "Approved credit limit under $5,000: standard cashRewards, unlimited 1.5% cash back on all purchases"
+
+category_rewards: []
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus:
+  value:
+    usd: 250                 # "$250 bonus cash"
+  spend_requirement_usd: 2500  # "after spending $2,500 in purchases"
+  window_months: 3           # "within 90 days of account opening" (≈3 months)
+  notes: >-
+    Spend window is stated as 90 days, recorded as 3 months. Eligible purchases
+    exclude fees, interest, balance transfers, gambling, cash advances, and
+    cash-equivalent transactions.
+
+fees:
+  annual_fee_usd: 0          # "Annual Fee: $0"
+  foreign_transaction_pct: 0 # "Foreign Transaction Fee: $0"
+
+approval:
+  credit_tier: good
+  notes: >-
+    Navy Federal Credit Union membership is required to hold this card, but membership
+    is FREE for qualifying military/DoD/Coast Guard members, veterans/retirees, DoD
+    civilian/contractor personnel, and their family/household members — it is an
+    eligibility restriction, not a paid prerequisite. credit_tier is an inference:
+    the offer file does not state a credit requirement; the standard (non-Plus) tier
+    is issued when the approved credit limit is under $5,000, suggesting a mid-range
+    profile. NEEDS human verification.
+
+benefit_flags:
+  - zero_fraud_liability     # "Zero Liability policy"
+
+sources:
+  - url: https://www.navyfederal.org/credit-cards/cash-rewards.html
+    supports: [identity, currency, base_rate, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical NFCU product page; NOT fetched this session (drafted offline from
+      the local offer file). Figures are third-party/unconfirmed — the offer file
+      itself flags that NFCU's dedicated rewards/redemption page was not directly
+      fetchable during the research that produced it.
+
+notes: >-
+  Drafted offline from data/offer_files/navy-federal/cash-rewards.txt; all figures
+  are third-party/unconfirmed, so confidence is low. This is the STANDARD cashRewards
+  tier (1.5% flat), issued when the approved credit limit is under $5,000; the 2%
+  variant is the sibling file cash-rewards-plus.yaml, issued at limits of $5,000+.
+  A separate cashRewards Secured card (1% back) is a different product not modeled here.
+  Network is NOT explicitly stated in the offer file — cashRewards is historically
+  issued on both Visa and Mastercard; recorded as visa, but NEEDS human verification.
+  Cash back does not expire while the account is open and has no accrual cap. Exact
+  redemption mechanics (statement credit vs. deposit vs. gift cards) were not confirmed
+  in the sources behind the offer file.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

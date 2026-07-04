@@ -1,0 +1,91 @@
+# Emirates Skywards co-brand (premium tier): Skywards Miles on Emirates + broad travel; Gold status, Priority Pass, $499 AF.
+id: emirates-premier
+name: Emirates Skywards Premium World Elite Mastercard
+issuer: barclays
+network: mastercard             # "World Elite Mastercard" in the product name
+currency:
+  type: points
+  program: emirates_skywards
+base_rate: 1                    # "1 Skywards Mile/$1 on all other purchases"
+
+category_rewards:
+  # OMITTED: "3 Skywards Miles/$1 on eligible Emirates purchases" — brand-specific earn with
+  # no `emirates` merchant key in data/meta/merchants.yaml. Per the conversion directive, not
+  # force-fit onto travel_flights (that would widen it to all airlines). See notes / registry gap.
+  - category: travel_flights
+    rate: 2                      # "2 Skywards Miles/$1 on eligible travel purchases" (broad travel)
+    notes: >-
+      "Eligible travel purchases" — the issuer's broad travel definition. Modeled across the
+      three travel sub-categories at 2x; exact merchant-category-code scope not stated in the
+      offer file. NEEDS human verification.
+  - category: travel_hotels
+    rate: 2                      # same broad "eligible travel purchases" 2x
+  - category: travel_other
+    rate: 2                      # same broad "eligible travel purchases" 2x
+
+merchant_rewards: []
+
+credits:
+  - name: Global Entry / TSA PreCheck fee credit
+    amount_usd: 120             # "up to $120, every 5 years"
+    period: every_5_years
+    realistic_capture_rate_note: >-
+      One statement credit up to $120 per 5-year cycle for a Global Entry/TSA PreCheck
+      application fee. Captured only by travelers who apply/renew; worthless to those who never
+      enroll.
+  - name: Anniversary bonus Skywards Miles
+    amount_points: 10000        # "10,000 anniversary bonus Skywards Miles after spending $30,000 each cardmembership year"
+    period: annual
+    unlock_spend_usd: 30000     # total card spend per cardmembership year (whole-card threshold)
+    realistic_capture_rate_note: >-
+      Requires $30,000 of total card spend in the cardmembership year; captured only by heavy
+      spenders. Valued via the card's Emirates Skywards program.
+
+signup_bonus:
+  value:
+    points: 50000              # "50,000 bonus Skywards Miles after $3,000 in first 90 days"
+  spend_requirement_usd: 3000
+  window_months: 3             # offer states "first 90 days" (~3 months)
+
+fees:
+  annual_fee_usd: 499          # "Annual fee: $499"
+  foreign_transaction_pct: 0   # "Foreign transaction fee: 0%" / "No foreign transaction fees"
+
+approval:
+  credit_tier: excellent
+  notes: >-
+    credit_tier estimated from the card's premium ($499 AF, World Elite) positioning; not stated
+    in the offer file. NEEDS human verification.
+
+benefit_flags:
+  - lounge_access               # Priority Pass Select, unlimited, primary + guests
+  - complimentary_elite_status  # Emirates Skywards Gold first year
+  - world_elite_mastercard
+  - no_foreign_transaction_fee
+  - free_fico_score
+  - zero_fraud_liability
+
+sources:
+  - url: https://www.barclaycardus.com/c/cards/emirates-skywards-premium-world-elite-mastercard
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL not in the offer file and not fetched this session; canonical issuer product page.
+      All figures transcribed from data/offer_files/barclays/emirates-premier.txt and are
+      third-party/unconfirmed against issuer terms. NEEDS human verification.
+
+notes: >-
+  Drafted offline from data/offer_files/barclays/emirates-premier.txt; all figures
+  third-party/unconfirmed, confidence low, NEEDS human verification. OMITTED reward (registry
+  gap): "3 Skywards Miles/$1 on eligible Emirates purchases" — brand-specific with no `emirates`
+  merchant key; a reviewer may add an `emirates` merchant to data/meta/merchants.yaml and model
+  it. Not dollar-valued: Emirates Skywards Gold tier (first year; retained by $40,000/year spend)
+  is a benefit_flag/elite-status grant, not a credit. Redemption/soft perks noted only: 25%
+  savings when buying/gifting miles; miles never expire while account open. credit_tier is an
+  estimate.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

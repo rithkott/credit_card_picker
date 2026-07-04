@@ -1,0 +1,80 @@
+# No-annual-fee everyday card: 4X dining (capped), 2X groceries/gas/streaming, plus a streaming credit.
+id: altitude-go
+name: U.S. Bank Altitude Go Visa Signature
+issuer: us-bank
+network: visa
+currency:
+  type: points
+  program: us_bank_points        # Altitude points redeem at a flat ~1cpp
+base_rate: 1                      # "1X point per $1 on all other eligible Net Purchases"
+
+category_rewards:
+  - category: dining
+    rate: 4                       # "4X (1 base + 3 bonus) on dining, fast food, and bars"
+    cap:
+      period: quarterly
+      max_spend_usd: 2000         # "first $2,000 in combined purchases per quarter", then 1X
+      fallback_rate: 1
+    notes: >-
+      4X on dining, fast-food restaurants, and bars on the first $2,000 combined per
+      quarter. Post-cap rate (1X) is consistent with U.S. Bank's other quarterly-cap
+      cards but was not explicitly restated on the fetched page — NEEDS verification.
+  - category: groceries
+    rate: 2                       # "2X at grocery stores/supermarkets, gas/EV"
+  - category: gas
+    rate: 2                       # 2X at gas and EV charging stations (registry `gas` covers EV)
+  - category: streaming
+    rate: 2                       # "2X on qualifying streaming service purchases"
+
+merchant_rewards: []
+
+credits:
+  - name: Annual streaming statement credit
+    amount_usd: 15                # "$15 automatic statement credit per 12-month period"
+    period: annual
+    category: streaming
+    realistic_capture_rate_note: >-
+      Requires 11 consecutive calendar months of eligible streaming purchases (Netflix,
+      Hulu, Apple Music, etc.) before the $15 posts; captured by consistent streaming
+      subscribers, forfeited by anyone with a gap. Trigger is streaming-specific spend,
+      not total card spend, so unlock_spend_usd is intentionally unset.
+
+signup_bonus:
+  value:
+    points: 20000                 # "20,000 bonus points after spending $1,000 in Net Purchases within the first 90 days"
+  spend_requirement_usd: 1000
+  window_months: 3
+
+fees:
+  annual_fee_usd: 0               # "Annual Fee: $0"
+  foreign_transaction_pct: 0      # INFERRED — offer file says not disclosed; Altitude family typically charges none
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's mainstream no-annual-fee Visa Signature
+    positioning; the offer file states no credit requirement. NEEDS human verification.
+
+benefit_flags:
+  - visa_signature
+
+sources:
+  - url: https://www.usbank.com/credit-cards/altitude-go-visa-signature-credit-card.html
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, fees, approval, benefit_flags]
+    accessed: "2026-07-04"
+    added_by: claude-opus-4-8
+    note: >-
+      URL carried over from the offer file header / docs/needs-verification-links.md;
+      not re-fetched this session. Figures are third-party/unconfirmed per the offer
+      file's NEEDS_VERIFICATION marker.
+
+notes: >-
+  Drafted offline from data/offer_files/us-bank/altitude-go.txt, which carries a
+  NEEDS_VERIFICATION marker — all figures third-party/unconfirmed. foreign_transaction_pct
+  is INFERRED as 0 (offer file says it was "not disclosed" on the fetched page); NEEDS
+  human verification. ExtendPay and Real-Time Rewards are noted but not modeled.
+
+verification:
+  last_verified_date: "2026-07-04"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low
