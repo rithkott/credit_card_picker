@@ -1,12 +1,11 @@
 Shopper Cash Rewards Visa Signature (U.S. Bank)
 
+NOTE ON SOURCE QUALITY: the official usbank.com product/offers pages are JS-rendered and did not return full verbatim terms via automated fetch; figures below are cross-referenced from WebSearch snippets of the official page plus third-party reviews (Upgraded Points, NerdWallet, Bankrate, Clark.com) and need verification against the live Cardmember Agreement / rates-and-fees disclosure before curation reaches confidence: high.
+
 Fees
-- Annual Fee: $0 for the first year; $95 thereafter (per third-party sources — the JS-rendered official usbank.com product/offers pages did not return the fee text directly via fetch, so this figure should be double-checked against the current Cardmember Agreement / rates-and-fees disclosure at approval).
+- Annual Fee: $0 for the first year; $95 thereafter (per third-party sources — double-check against the current Cardmember Agreement / rates-and-fees disclosure at approval).
 - Balance Transfer Fee: 5% of each transfer amount, $5 minimum (consistent with other U.S. Bank consumer cards; not independently confirmed on this card's page).
 - Foreign Transaction Fee: not confirmed in fetched content — verify.
-
-Signup Bonus
-- $250 one-time cash back bonus after spending $2,000 in Net Purchases within 120 days of account opening (per official usbank.com search-indexed content).
 
 Earn Rates — quarterly choose-your-own-retailers mechanic
 - 6% cash back on the first $1,500 in combined eligible purchases each quarter across TWO retailers the cardholder chooses each quarter. Reported eligible retailer list (per third-party review, not independently verified against the live page which did not fully render): Amazon.com, Apple, Target, Walmart, Best Buy, Home Depot, Lowe's, Macy's, Ikea, Ace Hardware, Anthropologie, Chewy.com, Disney, Kohl's, Nordstrom, Wayfair, and others — roughly 20-24 total options. NEEDS verification against the live/current retailer list.
@@ -14,15 +13,15 @@ Earn Rates — quarterly choose-your-own-retailers mechanic
 - 5.5% cash back on hotel and car reservations booked through the U.S. Bank Rewards Travel Center (per third-party review).
 - 1.5% cash back on all other eligible purchases (uncapped base rate).
 
+Signup Bonus
+- $250 one-time cash back bonus after spending $2,000 in Net Purchases within 120 days of account opening (per official usbank.com search-indexed content).
+
 APR
 - Intro APR: 0% on purchases and balance transfers for an initial period (length not confirmed in fetched content for this specific card — other U.S. Bank cards in this tier run 12 or 15 billing cycles).
 - Standard variable APR thereafter: reported as roughly 18.24%-28.74% depending on source; not independently confirmed via official page fetch — verify at application.
 
 Redemption
-- Redeemable as statement credit, direct deposit to a U.S. Bank checking/savings account, rewards card, or merchant gift cards.
-
-Notes on data quality
-- The official U.S. Bank product page (https://www.usbank.com/credit-cards/shopper-cash-rewards-visa-signature-credit-card.html) and offers page returned mostly navigation chrome / unrendered JS content when fetched — this card's page appears to be JS-rendered and did not yield full verbatim terms via automated fetch. Figures above are cross-referenced from WebSearch snippets of the official page plus third-party reviews (Upgraded Points, NerdWallet, Bankrate, Clark.com) and should be treated as needing verification against the live Cardmember Agreement / rates-and-fees disclosure before curation reaches confidence: high.
+- Statement credit, direct deposit to a U.S. Bank checking/savings account, rewards card, or merchant gift cards.
 
 Source pages
 - https://www.usbank.com/credit-cards/shopper-cash-rewards-visa-signature-credit-card.html (official product page — did not fully render)
@@ -31,3 +30,5 @@ Source pages
 - Cross-referenced: upgradedpoints.com, nerdwallet.com, bankrate.com, clark.com, financebuzz.com, forbes.com reviews.
 
 Issued by U.S. Bank National Association.
+
+NEEDS_VERIFICATION: contains figures from third-party/secondary sources and/or could not be fully parsed from the official page or PDF disclosure — re-check against issuer terms before curating to confidence: high.

@@ -5,14 +5,14 @@ Fees
 - Balance Transfer Fee: 5% of each transfer amount, $5 minimum.
 - Foreign Transaction Fee: not disclosed in fetched official content (need to verify — Altitude family cards typically do not charge one, but this was not explicitly confirmed for Go on the page fetched).
 
-Signup Bonus
-- 20,000 bonus points after spending $1,000 in Net Purchases within the first 90 days of account opening.
-
 Earn Rates
 - 4X points (1 base + 3 bonus) per $1 on dining, fast-food restaurants, and bars — on the first $2,000 in combined purchases per quarter in this category; presumably drops to 1X after the cap (cap mechanic confirmed, post-cap rate not explicitly restated on page but consistent with U.S. Bank's other quarterly-cap cards).
 - 2X points (1 base + 1 bonus) per $1 at grocery stores/supermarkets, gas stations/EV charging stations.
 - 2X points (1 base + 1 bonus) per $1 on qualifying streaming service purchases.
 - 1X point per $1 on all other eligible Net Purchases.
+
+Signup Bonus
+- 20,000 bonus points after spending $1,000 in Net Purchases within the first 90 days of account opening.
 
 Credits / Perks
 - $15 automatic statement credit per 12-month period after 11 consecutive calendar months of eligible streaming service purchases (e.g. Netflix, Hulu, Apple Music), applied within 2 billing cycles following the qualifying period, account must be in good standing.
@@ -31,3 +31,5 @@ Source pages
 - https://www.usbank.com/credit-cards/altitude-go-visa-signature-credit-card.html (official product page)
 
 Issued by U.S. Bank National Association.
+
+NEEDS_VERIFICATION: contains figures from third-party/secondary sources and/or could not be fully parsed from the official page or PDF disclosure — re-check against issuer terms before curating to confidence: high.

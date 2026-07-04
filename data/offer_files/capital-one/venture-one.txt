@@ -8,38 +8,37 @@ interactive elements/links not captured in the fetch). NEEDS human verification 
 against Capital One's own page/Schumer box before finalizing card data.
 
 === Capital One VentureOne Rewards Credit Card ===
+Issuer: Capital One, N.A.
 
+--- Fees ---
 Annual Fee: $0
+APR (per secondary sources, verify):
+- 0% introductory APR on purchases and balance transfers for the first 15 months.
+- After intro period: 18.49% - 28.49% variable APR.
+Foreign Transaction Fees: None
 
-Welcome / Signup Bonus (per secondary sources, verify):
-"20,000 bonus miles (a $200 travel value) after spending $500 in the first 3 months."
-
-Rewards Structure (per secondary sources, verify):
+--- Earn Rates --- (per secondary sources, verify)
 - Base rate: unlimited 1.25 miles per dollar on every purchase, every day.
 - Elevated rate: unlimited 5 miles per dollar on hotels, vacation rentals, and rental cars booked
   through Capital One Travel.
 
-APR (per secondary sources, verify):
-- 0% introductory APR on purchases and balance transfers for the first 15 months.
-- After intro period: 18.49% - 28.49% variable APR.
+--- Signup Bonus --- (per secondary sources, verify)
+"20,000 bonus miles (a $200 travel value) after spending $500 in the first 3 months."
 
-Foreign Transaction Fees: None ("no foreign transaction fees").
-
-Travel Benefits (confirmed via direct WebFetch of capitalone.com/credit-cards/ventureone/):
+--- Credits ---
 - Free price drop protection: up to $50 travel credit if a booked flight's price drops within
-  10 days.
+  10 days. (confirmed via direct WebFetch)
+
+--- Notable Perks ---
 - Price matching guarantee for flights, hotels, and rental cars within 24 hours of booking.
-- Option to cancel a flight up to 3 hours before departure for a refund.
-- Price watch alerts for flight monitoring.
-- Access to Capital One Travel booking portal.
+  (confirmed via direct WebFetch)
+- Option to cancel a flight up to 3 hours before departure for a refund. (confirmed via direct
+  WebFetch)
+- Price watch alerts for flight monitoring. (confirmed via direct WebFetch)
+- Redemption (per secondary sources, verify): 1 cent per mile as a statement credit for travel
+  purchases made in the last 90 days; transferable to 15+ airline and hotel loyalty programs.
 
-Redemption Options (per secondary sources, verify):
-Miles redeemable at 1 cent per mile as a statement credit for travel purchases made in the last
-90 days. Miles can also be transferred to 15+ airline and hotel loyalty programs.
-
+--- Approval ---
 Credit Level Required: Excellent (per direct page fetch).
 
-Customer Rating shown on page: 4.5 stars based on 6,709 reviews, 90% would recommend (marketing
-page metadata, not a card term).
-
-Issuer: Capital One, N.A.
+NEEDS_VERIFICATION: contains figures from third-party/secondary sources and/or could not be fully parsed from the official page or PDF disclosure — re-check against issuer terms before curating to confidence: high.

@@ -6,32 +6,32 @@ money.usnews.com, wallethub.com, nerdwallet.com. NEEDS human verification of exa
 against Capital One's page/Schumer box before finalizing card data.
 
 === Capital One QuicksilverOne Cash Rewards Credit Card ===
+Issuer: Capital One, N.A.
 
+--- Fees ---
 Annual Fee: $39 (per secondary-source aggregation, verify)
-
-Credit Level Required: Fair (designed for building/average credit; confirmed via direct page
-fetch).
-
-Rewards Structure:
-- Unlimited 1.5% cash back on every purchase (confirmed via direct page fetch).
-
-Welcome / Signup Bonus: No sign-up bonus (per secondary-source aggregation).
-
 APR (per secondary-source aggregation, verify):
 Standard APR for purchases, balance transfers, and cash advances: 28.99% variable. No
 introductory/promo APR offer on this card.
-
-Balance Transfer Fee (per secondary-source aggregation, verify):
-$0 at the standard transfer APR; 4% of each transferred balance if done at a promotional APR
-that Capital One may offer.
-
+Balance Transfer Fee (per secondary-source aggregation, verify): $0 at the standard transfer
+APR; 4% of each transferred balance if done at a promotional APR that Capital One may offer.
 Foreign Transaction Fees: $0 (per secondary-source aggregation, verify).
 
-Customer Rating shown on page: 4.6 stars based on 10,352 reviews, 92% would recommend
-(marketing page metadata, not a card term). Review breakdown: 5-star 76%, 4-star 16%, 3-star 4%,
-2-star 2%, 1-star 2%.
+--- Earn Rates ---
+- Unlimited 1.5% cash back on every purchase (confirmed via direct page fetch).
 
-Other notes: Page offers pre-approval check with no credit-score impact; positioned as a
-credit-building card ("build credit with responsible use").
+--- Signup Bonus ---
+No sign-up bonus (per secondary-source aggregation).
 
-Issuer: Capital One, N.A.
+--- Credits ---
+None.
+
+--- Notable Perks ---
+- Positioned as a credit-building card ("build credit with responsible use"); pre-approval check
+  with no credit-score impact.
+
+--- Approval ---
+Credit Level Required: Fair (designed for building/average credit; confirmed via direct page
+fetch).
+
+NEEDS_VERIFICATION: contains figures from third-party/secondary sources and/or could not be fully parsed from the official page or PDF disclosure — re-check against issuer terms before curating to confidence: high.

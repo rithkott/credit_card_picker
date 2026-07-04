@@ -2,32 +2,31 @@ Wells Fargo Choice Privileges® Mastercard®
 Source pages: https://creditcards.wellsfargo.com/choice-hotel-privileges-mastercard ; https://www.wellsfargo.com/credit-cards/agreements/choice-agreement/
 Captured: 2026-07-04
 
-MARKETING / PRODUCT PAGE CONTENT
+EARN RATES
+- 5X points on stays at participating Choice Hotels® properties and Choice Privileges point purchases.
+- 3X points at gas stations, grocery stores, home improvement stores, and phone plan services.
+- 1X points on other purchases.
 
-- Annual Fee: "$0 Annual Fee"
-- Welcome Bonus: "Earn 60,000 bonus points when you spend $1,000 in purchases in the first 3 months" — redeemable for up to 7 reward nights at select Choice Hotels® properties. (Note: fetched page rendering showed both an old "40,000" and current "60,000" figure concatenated as a rendering artifact — 60,000/$1,000-in-3-months is the figure corroborated by U.S. News, uscreditcardguide.com, and Doctor of Credit as the current 2026 offer; flag for confirmation against a second fetch/screenshot before finalizing YAML.)
-- Rewards Rates:
-  - 5X points on stays at participating Choice Hotels® properties and Choice Privileges point purchases.
-  - 3X points at gas stations, grocery stores, home improvement stores, and phone plan services.
-  - 1X points on other purchases.
-- Key Benefits:
-  - Automatic Gold Elite membership with 10% bonus points on qualifying stays.
-  - 10 Elite Qualifying Nights credited annually.
-  - "Milestone Rewards" feature — bonus points or gift cards throughout the year.
-  - Up to $800 of cell phone protection ($25 deductible).
-  - No foreign transaction fees.
-  - Mastercard® World Elite benefits.
+SIGNUP BONUS
+- 60,000 bonus points when you spend $1,000 in purchases in the first 3 months — redeemable for up to 7 reward nights at select Choice Hotels® properties. (Note: fetched page rendering showed both an old "40,000" and current "60,000" figure concatenated as a rendering artifact — 60,000/$1,000-in-3-months is the figure corroborated by U.S. News, uscreditcardguide.com, and Doctor of Credit as the current 2026 offer; flag for confirmation against a second fetch/screenshot before finalizing YAML.)
 
-RATES & FEES DISCLOSURE (from agreement page)
+FEES (RATES & FEES DISCLOSURE, from agreement page)
+- Annual Fee: None
+- APR for Purchases: Prime Rate + 12.99% to Prime Rate + 21.74%, variable, based on creditworthiness.
+- APR for Balance Transfers: Prime Rate + 12.99% to Prime Rate + 21.74%, variable, based on creditworthiness.
+- APR for Cash Advances: Prime Rate + 22.74%, variable.
+- Balance Transfer Fee: 5% for each balance transfer, minimum $5.
+- Cash Advance Fee: Either $10 or 5% of the amount of each cash advance, whichever is greater.
+- Foreign Transaction Fee: None.
+- Late Payment Fee: Up to $40.
+- Minimum Interest Charge: If charged, no less than $1.00.
 
-- APR for Purchases: "Prime Rate + 12.99% to Prime Rate + 21.74%" (variable, based on creditworthiness)
-- APR for Balance Transfers: "Prime Rate + 12.99% to Prime Rate + 21.74%" (variable, based on creditworthiness)
-- APR for Cash Advances: "Prime Rate + 22.74%" (variable)
-- Annual Fee: "None"
-- Balance Transfer Fee: "5% for each balance transfer, with a minimum of $5"
-- Cash Advance Fee: "Either $10 or 5% of the amount of each cash advance, whichever is greater"
-- Foreign Transaction Fee: "None"
-- Late Payment Fee: "Up to $40"
-- Minimum Interest Charge: "If you are charged interest, the charge will be no less than $1.00"
+NOTABLE PERKS
+- Automatic Gold Elite membership with 10% bonus points on qualifying stays.
+- 10 Elite Qualifying Nights credited annually.
+- "Milestone Rewards" feature — bonus points or gift cards throughout the year.
+- Up to $800 of cell phone protection ($25 deductible).
+- Mastercard® World Elite benefits.
+- Automatic Choice Privileges Gold Elite status confirmed on official product page. Conversion note (per secondary source "Choice Privileges® Mastercard® Conversion FAQs" found at sites.wf.com/choice-conversion-faq/ — not independently fetched in this pass) suggests this card may involve conversions from a prior product; recommend checking that FAQ page during the curation/verification pass if conversion mechanics matter for existing-cardholder modeling.
 
-Automatic Choice Privileges Gold Elite status confirmed on official product page. Conversion note (per secondary source "Choice Privileges® Mastercard® Conversion FAQs" found at sites.wf.com/choice-conversion-faq/ — not independently fetched in this pass) suggests this card may involve conversions from a prior product; recommend checking that FAQ page during the curation/verification pass if conversion mechanics matter for existing-cardholder modeling.
+NEEDS_VERIFICATION: contains figures from third-party/secondary sources and/or could not be fully parsed from the official page or PDF disclosure — re-check against issuer terms before curating to confidence: high.

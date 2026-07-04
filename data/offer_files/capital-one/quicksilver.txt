@@ -7,35 +7,36 @@ verification of exact APR/annual-fee figures against Capital One's page/Schumer 
 finalizing card data.
 
 === Capital One Quicksilver Cash Rewards Credit Card ===
+Issuer: Capital One, N.A.
 
+--- Fees ---
 Annual Fee: $0 (per secondary-source aggregation, verify)
+APR (per secondary-source aggregation, verify):
+0% intro APR for 15 months on purchases and balance transfers; 18.49% - 28.49% variable APR
+after that.
 
-Welcome / Signup Bonus:
-"Earn unlimited 1.5% cash back on every purchase. Plus, earn a $200 cash bonus." Per secondary
-sources, the spend requirement is "$500 within 3 months of opening your account" (verify exact
-wording against Capital One's page). Existing or previous cardmembers are not eligible if they
-received a new cardmember bonus for this product in the past 48 months.
-
-Rewards Structure:
+--- Earn Rates ---
 - Base rate: unlimited 1.5% cash back on every purchase, no category restrictions.
 - Per secondary-source aggregation (verify): 5% cash back on hotels, vacation rentals, and
   rental cars booked through Capital One Travel; 5% cash back on Capital One Entertainment
   purchases.
 
-APR (per secondary-source aggregation, verify):
-0% intro APR for 15 months on purchases and balance transfers; 18.49% - 28.49% variable APR
-after that.
+--- Signup Bonus ---
+"$200 cash bonus." Per secondary sources, the spend requirement is "$500 within 3 months of
+opening your account" (verify exact wording against Capital One's page). Existing or previous
+cardmembers are not eligible if they received a new cardmember bonus for this product in the
+past 48 months.
 
-Credit Level Required: Excellent.
-
-Travel Benefits (confirmed via direct page fetch):
+--- Credits ---
 - Price drop protection (up to $50 travel credit if a booked flight's price drops within 10
-  days).
+  days). (confirmed via direct page fetch)
+
+--- Notable Perks --- (confirmed via direct page fetch)
 - Price match guarantee for flights, hotels, and rental cars (within 24 hours of booking).
 - Cancel for any reason option (cancel a flight up to 3 hours before departure).
 - Price watch alerts (24/7 flight price monitoring).
 
-Customer Rating shown on page: 4.5 stars based on 6,517 reviews, 90% would recommend
-(marketing page metadata, not a card term).
+--- Approval ---
+Credit Level Required: Excellent.
 
-Issuer: Capital One, N.A.
+NEEDS_VERIFICATION: contains figures from third-party/secondary sources and/or could not be fully parsed from the official page or PDF disclosure — re-check against issuer terms before curating to confidence: high.

@@ -33,3 +33,5 @@ Other Benefits
 - BofA Rewards™ / Preferred Rewards program: eligible cardholders can earn a 25%-75% bonus on cash back based on Bank of America/Merrill relationship tier (Gold/Platinum/Platinum Honors).
 
 Issued by Bank of America, N.A.
+
+NEEDS_VERIFICATION: contains figures from third-party/secondary sources and/or could not be fully parsed from the official page or PDF disclosure — re-check against issuer terms before curating to confidence: high.

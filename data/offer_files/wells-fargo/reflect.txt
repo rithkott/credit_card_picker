@@ -2,30 +2,23 @@ Wells Fargo Reflect® Visa Credit Card
 Source pages: https://creditcards.wellsfargo.com/reflect-visa-credit-card ; https://www.wellsfargo.com/credit-cards/reflect-visa/terms/ ; https://www.wellsfargo.com/credit-cards/reflect-visa/guide-to-benefits/
 Captured: 2026-07-04
 
-MARKETING / PRODUCT PAGE CONTENT
-
-- Annual Fee: "$0 Annual Fee"
-- Intro APR: "0% intro APR for 21 months from account opening on purchases and qualifying balance transfers" (balance transfers must be made within 120 days from account opening to qualify for the intro rate). Up to 14 days to post a balance transfer.
-- Standard APR after intro period: 17.49%, 23.99%, or 28.24% variable.
+EARN RATES
 - No rewards program on this card (it is a 0% APR / balance-transfer focused product).
-- Awards cited on page: 2026 recognition from U.S. News, Fool Money, CompareCredit, and FinanceBuzz for balance transfer and low-interest categories; also cited elsewhere as "Best Balance Transfer Credit Card," "Best 0% Intro APR Credit Card," "Best Overall Credit Card for Best Rates" (U.S. News, Money.com, NerdWallet, WalletHub, The Ascent/Motley Fool).
-- Eligibility restriction (from product page text): may not be eligible for introductory APR/fees/rewards bonus offers "if you have the Wells Fargo Reflect Visa® or opened one within the last 48 months from the date of this application."
 
-RATES & FEES DISCLOSURE (from terms page)
+FEES (RATES & FEES DISCLOSURE, from terms page)
+- Annual Fee: None
+- APR for Purchases: 0% introductory APR for 21 months from date of account opening. After that, 17.49%, 23.99%, or 28.24% variable.
+- APR for Balance Transfers: 0% introductory APR for 21 months from date of account opening (balance transfers must be made within 120 days from account opening to qualify; up to 14 days to post a transfer). After that, 17.49%, 23.99%, or 28.24% variable.
+- APR for Cash Advances: 29.49%.
+- Balance Transfer Fee: 5% for each balance transfer, minimum $5.
+- Cash Advance Fee: Either $10 or 5% of the amount of each advance, whichever is greater.
+- Foreign Transaction Fee: 3% of each transaction converted to U.S. dollars.
+- Late Payment Fee: Up to $40.
+- Minimum Interest Charge: If charged, no less than $1.00.
+- No grace period on balance transfers — interest accrues immediately upon posting (per product page); standard purchase grace period applies if paid in full by due date.
+- Eligibility restriction (from product page text): may not be eligible for introductory APR/fees/rewards bonus offers if the applicant has the Wells Fargo Reflect Visa® or opened one within the last 48 months from the date of application.
 
-- APR for Purchases: "0% introductory APR for 21 months from date of account opening. After that, your APR will be 17.49%, 23.99%, or 28.24%"
-- APR for Balance Transfers: "0% introductory APR for 21 months from date of account opening. After that, your APR will be 17.49%, 23.99%, or 28.24%"
-- APR for Cash Advances: "29.49%"
-- Annual Fee: "None"
-- Balance Transfer Fee: "5% for each balance transfer, with a minimum of $5"
-- Cash Advance Fee: "Either $10 or 5% of the amount of each advance, whichever is greater"
-- Foreign Transaction Fee: "3% of each transaction converted to U.S. dollars"
-- Late Payment Fee: "Up to $40"
-- Minimum Interest Charge: "If you are charged interest, the charge will be no less than $1.00"
-- Note: no grace period on balance transfers — interest accrues immediately upon posting (per product page); standard purchase grace period applies if paid in full by due date.
-
-KEY BENEFITS (from guide to benefits / product page)
-
+NOTABLE PERKS (guide to benefits / product page)
 - Cellular Telephone Protection: up to $600 coverage against damage/theft with $25 deductible (requires paying monthly wireless bill with card).
 - Roadside Dispatch®: 24/7 pay-per-use emergency towing assistance, no membership required.
 - My Wells Fargo Deals: personalized merchant offers with cash back.

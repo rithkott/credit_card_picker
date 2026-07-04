@@ -1,51 +1,27 @@
-Bilt Blue Card (Cardless / Bilt Rewards)
+Bilt Blue Card (Cardless / Column N.A.) — official Bilt Rewards Card Offer Terms, last updated April 30, 2026
+Source: biltrewards.com/terms (Bilt Rewards Card Offer Terms, covers all three Bilt Card tiers)
 
-Sources fetched:
-- https://newsroom.biltrewards.com/meetbiltcard2.0
-- https://upgradedpoints.com/news/bilt-new-credit-card-details/ (also https://upgradedpoints.com/credit-cards/reviews/bilt-blue-card/)
-- https://onemileatatime.com/reviews/credit-cards/bilt-credit-card/
-- https://onemileatatime.com/news/bilt-cardless-credit-cards/
-- https://www.nerdwallet.com/credit-cards/news/bilt-launches-blue-obsidian-palladium (403 on fetch, title/summary only via search)
-- https://www.biltrewards.com/terms/bilt-card-offer-terms (PDF; only partially machine-readable, see note at bottom)
-- Background/launch context: https://roamingcactus.com/news/bilt-rewards-20-2026 ; https://www.joinkudos.com/blog/bilt-card-2-0-major-changes-coming-in-2026-with-three-new-cardless-credit-cards ; https://thepointsguy.com/news/bilt-cards-2-0-rumors/ ; https://www.cnbc.com/select/bilt-mastercard-transition-timeline-what-to-know/
+Fees
+Annual Fee: $0.
+No Authorized User fee (AU fee only applies to Obsidian/Palladium tiers).
 
-Product name: Bilt Blue Card (entry-level / no-annual-fee tier of "Bilt Card 2.0" three-card lineup)
-Card network/tier: World Elite Mastercard
-Issuer: Column N.A., Member FDIC, pursuant to license from Mastercard International Incorporated. Cardless Inc. is the servicer of the Bilt Cards.
-Program: Bilt Rewards
-Launch: Bilt Card 2.0 lineup launched Feb 7, 2026, replacing the single Wells Fargo-issued Bilt Mastercard (Wells Fargo Bilt cardholders were auto-converted; legacy WF Bilt product effectively sunset — see Wells Fargo Autograph note in backlog).
+Rewards Options (cardholder picks one, can change after an initial 7-day selection window, then locked for the Billing Cycle)
+- Housing-only Option: earn Bilt Points automatically on Bilt Housing Payments (rent/mortgage, HOA dues, utilities, property taxes, etc. paid via Bilt App) at a variable 0X–1.25X multiplier based on your "Everyday Spend Ratio" (Everyday Spend ÷ Housing Payment that Billing Cycle): 25-49% ratio = 0.5X, 50-74% = 0.75X, 75-99% = 1X, 100%+ = 1.25X. Minimum floor of 250 points/cycle even below the 25% threshold. No Bilt Cash earned on everyday spend under this option. No cap on housing points.
+- Flexible Bilt Cash Option: earn 4% back in Bilt Cash on all Everyday Spend (non-housing purchases); no points multiplier on housing. Redeem Bilt Cash to unlock points on housing payments: every $3 Bilt Cash unlocks 100 points, capped at 1 point per $1 of the payment.
+- No transaction fee to earn rewards on housing payments under either option.
+- Default option if none selected: Housing-only.
 
-Annual Fee
-- $0 ("no annual fee")
-- $0 annual fee for authorized users
+Earn Rates (Bilt Blue Card)
+- Up to 1.25 points per $1 on Bilt Housing Payments (per Rewards Option above).
+- 1 point per $1 on all other eligible purchases.
+- Excluded from earning (not "Eligible Purchases"): balance transfers, cash advances, prepaid/gift cards, person-to-person payments (Venmo/PayPal/Cash App/Zelle), cryptocurrency, fees/interest, lottery/gaming/betting transactions.
 
-Signup / Welcome Offer
-- "$100 of Bilt Cash when you apply and get approved" (per Upgraded Points / newsroom summary)
-- Newsroom phrasing: "$100 in Bilt Cash on account opening"
+Signup Bonus
+$100 Bilt Cash, credited on or about Account Open Date (no spend requirement). Not available if you currently hold, previously held, or already received a Welcome Bonus for any Bilt Card 2.0 (Blue/Obsidian/Palladium).
 
-Earn Rates
-- 1x points on everyday (non-housing) purchases
-- 4% back in Bilt Cash on everyday spend (stacks with the 1x points — i.e., "1x points plus 4% back in Bilt Cash on everyday spending")
-- Up to 1x points on rent and mortgage payments, paid through Bilt, with no transaction fee — earned via a separate credit line from everyday purchases (per Upgraded Points reporting on the mechanic; unlimited, capped at 1x)
+Redemption
+Points redeemable as a statement credit toward the card's principal balance (min. 1,000 points per redemption; max per redemption = principal balance or $100,000-equivalent, whichever is less). Statement credits do not count toward minimum payment due.
 
-Rent / Mortgage No-Fee Mechanic (central Bilt value prop, applies across all three cards)
-- Rent and mortgage payments made through Bilt do not incur the transaction fee that would normally apply to paying rent by credit card.
-- Housing payments run through a "separate credit line" from everyday spend (per Upgraded Points).
-- Point-earning on housing payments is capped at up to 1x points and is funded by redeeming accumulated Bilt Cash: "Redeeming $3 of Bilt Cash unlocks 100 points on housing payments" (Upgraded Points quote). Example given: a $2,000 mortgage payment earning the full 1x points requires $60 of Bilt Cash, which in turn requires roughly $1,500 of everyday card spending (at the 4% Bilt Cash back rate).
-- Support-article phrasing of the same mechanic: "For every $30 in Bilt Cash earned, you can unlock 1,000 Bilt Points when you make rent or mortgage payments." (Note: the $30/1,000-points and $3/100-points ratios from different sources are consistent — both express $0.03 of Bilt Cash per 1 point.)
+Partner earning (stacks with base 1X on top of partner-specific bonus points, all tiers): Lyft rideshare, Bilt Dining (participating restaurants), Bilt Travel Portal bookings, Bilt Fitness classes, Metropolis parking, Walgreens pharmacy purchases, Bilt Home Delivery. Rates vary by partner/merchant, set in the Bilt app.
 
-Bilt Cash
-- Earned at 4% back on everyday spend across all three cards.
-- Expires annually on Dec 31, with a maximum of $100 of Bilt Cash allowed to roll into the next year (per Upgraded Points).
-- Used both as a statement-credit-like reward and as the "fuel" to unlock housing-payment points (see mechanic above).
-
-Other Benefits
-- World Elite Mastercard benefits (cardnetwork-level benefits; specific inclusions not itemized in fetched sources for the Blue tier specifically)
-- No foreign transaction fees
-
-Not confirmed / not found in fetched sources for this tier
-- Specific purchase APR, penalty APR, and late-fee dollar figures (Schumer box) — the official terms PDF at biltrewards.com/terms/bilt-card-offer-terms could not be fully machine-read (compressed PDF streams); only partial text extracted, confirming three tiers exist and linking to per-card cardholder agreements, but not surfacing exact APR/fee tables.
-- Detailed insurance benefits (trip delay, baggage delay, purchase protection, extended warranty) for this specific tier were not itemized in the fetched sources; Obsidian/Palladium sources mention "Trip Delay Insurance" and "purchase protection" for the paid tiers specifically, but Blue-tier inclusion is unconfirmed.
-- Exact minimum-spend requirement (if any) for the $100 Bilt Cash welcome offer was not stated in fetched sources (contrast with Palladium, which explicitly requires $4,000 spend in 90 days).
-
-NEEDS human verification: confirm exact APR/fees from full cardholder agreement PDF and/or biltrewards.com card page before marking confidence: high.
+Issuer: Column N.A., Member FDIC. Servicer: Cardless Inc. Network: Mastercard.

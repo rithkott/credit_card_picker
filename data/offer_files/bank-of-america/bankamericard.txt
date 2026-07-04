@@ -29,3 +29,5 @@ Other Benefits
 Positioning: Marketed explicitly as a "low interest" card intended to help cardholders save money on interest and pay down balances faster, rather than earn rewards or cash back.
 
 Issued by Bank of America, N.A.
+
+NEEDS_VERIFICATION: contains figures from third-party/secondary sources and/or could not be fully parsed from the official page or PDF disclosure — re-check against issuer terms before curating to confidence: high.

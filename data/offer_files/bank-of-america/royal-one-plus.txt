@@ -19,3 +19,5 @@ Other Benefits: Priority suite boarding for Royal Caribbean, Celebrity Cruises, 
 Redemption: Points can only be redeemed for cruise-related rewards (onboard credit, cruise discounts). Points valued at 1 cent each; minimum redemption 5,000 points for $50 of credit/discount.
 
 Issued by Bank of America, N.A.
+
+NEEDS_VERIFICATION: contains figures from third-party/secondary sources and/or could not be fully parsed from the official page or PDF disclosure — re-check against issuer terms before curating to confidence: high.

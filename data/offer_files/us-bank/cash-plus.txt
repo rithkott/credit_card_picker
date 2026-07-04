@@ -5,31 +5,33 @@ Fees
 - Foreign Transaction Fee: 3% (per some third-party sources; not stated on official product page).
 - Balance Transfer Fee: 5% of each transfer amount, $5 minimum.
 
-Signup Bonus
-- $250 cash back (increased from a prior $200 offer) after eligible Net Purchases totaling $1,000 or more within 90 days of account opening. (Some third-party reviews cite a 120-day window and/or the older $200 amount — 90 days / $250 is what the current official usbank.com product page states; verify at approval since offers change.)
-
 Earn Rates — quarterly choose-your-own-categories mechanic
-- 5% cash back on the first $2,000 in combined eligible Net Purchases each quarter across TWO categories the cardholder chooses themselves each quarter ("Choose and activate your Cash+ Categories"). Purchases in the chosen 5% categories beyond the $2,000 quarterly combined cap drop to 1%.
+- 5% cash back on the first $2,000 in combined eligible Net Purchases each quarter across TWO categories the cardholder chooses themselves each quarter ("Choose and activate your Cash+ Categories"). Beyond the $2,000 quarterly combined cap, chosen-category spend drops to 1%.
 - Selectable 5% categories (choose 2 per quarter): cell phone providers; department stores; electronics stores; fast food; furniture stores; ground transportation; gyms/fitness centers; home utility bills; movie theaters; sporting goods stores; select clothing stores; TV/internet/streaming services.
 - 2% cash back on ONE everyday category selected each quarter from: gas stations/EV charging stations, grocery stores, or restaurants (excludes discount stores/supercenters and wholesale clubs).
-- 1% cash back on all other eligible purchases (this is also the fallback rate on 5%-category spend if categories aren't selected/activated for the quarter).
+- 1% cash back on all other eligible purchases — also the fallback rate on 5%-category spend if categories aren't selected/activated for the quarter.
 - Additional 4% (5% total) cash back on prepaid air, hotel, and car reservations booked through the U.S. Bank Rewards Travel Center.
-- Category selection/activation must be done each quarter; if a cardholder does not choose categories, purchases earn the base 1% only.
+- Category selection/activation is required each quarter; uncategorized purchases earn base 1% only.
+
+Signup Bonus
+- $250 cash back (increased from a prior $200 offer) after eligible Net Purchases totaling $1,000 or more within 90 days of account opening. Some third-party reviews cite a 120-day window and/or the older $200 amount — 90 days / $250 is what the current official usbank.com product page states; verify at approval since offers change.
+
+Credits / Perks
+- ExtendPay installment plans (0% fee within first 60 days per some cards in this family; confirm terms for Cash+ specifically).
+- Real-Time Rewards (redeem points instantly at checkout with participating merchants).
+- Cash-back deals / merchant offers marketplace.
 
 APR
 - 0% intro APR on purchases and balance transfers for the first 15 billing cycles.
 - Standard variable APR thereafter: approx. 17.49%–27.99% (range varies slightly by source; official page does not display the exact figure in fetched content — confirm at application).
 
 Redemption
-- Redeemable as statement credit, deposit into an eligible U.S. Bank checking/savings account, or a rewards card. Maximum Cash Rewards value applies to redemptions for statement credit or U.S. Bank account deposit.
-
-Other Benefits
-- ExtendPay installment plans (0% fee within first 60 days per some cards in this family; confirm terms for Cash+ specifically).
-- Real-Time Rewards (redeem points instantly at checkout with participating merchants).
-- Cash-back deals / merchant offers marketplace.
+- Statement credit, deposit into an eligible U.S. Bank checking/savings account, or a rewards card. Maximum Cash Rewards value applies to redemptions for statement credit or U.S. Bank account deposit.
 
 Source pages
 - https://www.usbank.com/credit-cards/cash-plus-visa-signature-credit-card.html (official product page)
 - Cross-referenced against: https://upgradedpoints.com/credit-cards/reviews/us-bank-cash-plus/ , WalletHub, NerdWallet, U.S. News reviews for APR range and bonus-amount history.
 
 Issued by U.S. Bank National Association.
+
+NEEDS_VERIFICATION: contains figures from third-party/secondary sources and/or could not be fully parsed from the official page or PDF disclosure — re-check against issuer terms before curating to confidence: high.

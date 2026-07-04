@@ -1,55 +1,34 @@
-Bilt Palladium Card (Cardless / Bilt Rewards)
+Bilt Palladium Card (Cardless / Column N.A.) — official Bilt Rewards Card Offer Terms, last updated April 30, 2026
+Source: biltrewards.com/terms (Bilt Rewards Card Offer Terms, covers all three Bilt Card tiers)
 
-Sources fetched:
-- https://newsroom.biltrewards.com/meetbiltcard2.0
-- https://upgradedpoints.com/news/bilt-new-credit-card-details/
-- https://onemileatatime.com/reviews/credit-cards/bilt-credit-card/
-- https://onemileatatime.com/news/bilt-cardless-credit-cards/
-- https://www.nerdwallet.com/credit-cards/news/bilt-launches-blue-obsidian-palladium (403 on direct fetch; title confirms "Bilt Launches Blue, Obsidian, Palladium")
-- https://www.biltrewards.com/terms/bilt-card-offer-terms (PDF; only partially machine-readable, see note at bottom)
-- Background/launch context: https://roamingcactus.com/news/bilt-rewards-20-2026 ; https://www.joinkudos.com/blog/bilt-card-2-0-major-changes-coming-in-2026-with-three-new-cardless-credit-cards ; https://thepointsguy.com/news/bilt-cards-2-0-rumors/ ; https://www.cnbc.com/select/bilt-mastercard-transition-timeline-what-to-know/ ; https://upgradedpoints.com/news/new-bilt-cards-launch-february-2026/ ; https://thriftytraveler.com/news/credit-card/bilt-card-2-0-timeline/
+Fees
+Annual Fee: $495.
+Authorized User Fee: $95 per Authorized User added to the account.
 
-Product name: Bilt Palladium Card (premium/top tier of "Bilt Card 2.0" three-card lineup)
-Card network/tier: World Legend Mastercard (per Upgraded Points: "World Legend Mastercard benefits" — this is Mastercard's tier above World Elite, used for super-premium products)
-Issuer: Column N.A., Member FDIC, pursuant to license from Mastercard International Incorporated. Cardless Inc. is the servicer of the Bilt Cards.
-Program: Bilt Rewards
-Launch: Bilt Card 2.0 lineup launched Feb 7, 2026, replacing the single Wells Fargo-issued Bilt Mastercard.
+Rewards Options (cardholder picks one, can change after an initial 7-day selection window, then locked for the Billing Cycle)
+- Housing-only Option: earn Bilt Points automatically on Bilt Housing Payments (rent/mortgage, HOA dues, utilities, property taxes, etc. paid via Bilt App) at a variable 0X–1.25X multiplier based on your "Everyday Spend Ratio" (Everyday Spend ÷ Housing Payment that Billing Cycle): 25-49% ratio = 0.5X, 50-74% = 0.75X, 75-99% = 1X, 100%+ = 1.25X. Minimum floor of 250 points/cycle even below the 25% threshold. No Bilt Cash earned on everyday spend under this option. No cap on housing points.
+- Flexible Bilt Cash Option: earn 4% back in Bilt Cash on all Everyday Spend (non-housing purchases); no points multiplier on housing. Redeem Bilt Cash to unlock points on housing payments: every $3 Bilt Cash unlocks 100 points, capped at 1 point per $1 of the payment.
+- No transaction fee to earn rewards on housing payments under either option.
+- Default option if none selected: Housing-only.
 
-Annual Fee
-- $495
-- $95 annual fee for authorized users
+Earn Rates (Bilt Palladium Card)
+- Up to 1.25 points per $1 on Bilt Housing Payments (per Rewards Option above).
+- 2 points per $1 on all other eligible purchases (flat rate, no category restrictions).
+- Excluded from earning: balance transfers, cash advances, prepaid/gift cards, person-to-person payments, cryptocurrency, fees/interest, lottery/gaming/betting transactions.
 
-Signup / Welcome Offer
-- "Earn 50,000 points after spending $4,000 on non-housing expenses in the first 90 days + Gold elite status" (Upgraded Points)
-- Plus "$300 Bilt Cash when you apply and get approved" (Upgraded Points)
-- Newsroom phrasing: "50,000-point sign-up bonus + Gold Status (after qualifying spend)" and "$300 in Bilt Cash on account opening"
+Signup Bonus
+50,000 points + Bilt Gold Elite Status after $4,000 Everyday Spend within 90 days of Account Open Date (97 days for accounts opened 2/7/2026), PLUS $300 Bilt Cash credited immediately at account opening regardless of spend. Gold Elite Status lasts through Jan 15 of the second following year. Not available if you currently hold, previously held, or already received a Welcome Bonus for any Bilt Card 2.0 (Blue/Obsidian/Palladium).
 
-Earn Rates
-- 2x points on everyday (non-housing) spend, plus 4% back in Bilt Cash — Upgraded Points: "Earn 2x points plus 4% back in Bilt Cash on everyday spending"
-- Up to 1x points on rent and mortgage payments, no transaction fee (same mechanic as other tiers — see below)
+Credits
+- $200 Bilt Cash annually, auto-credited on Account Open Date and each Jan 1 thereafter while account is open/in good standing (no proration if not in good standing on the credit date).
+- $400 Bilt Travel Hotel Credit: $200 per half-year (Jan-Jun / Jul-Dec) toward hotel bookings of 2+ nights made through the Bilt Travel Portal; must opt in at checkout; does not roll over between halves; forfeited if a non-refundable booking is canceled.
 
-Rent / Mortgage No-Fee Mechanic (central Bilt value prop, applies across all three cards)
-- Rent and mortgage payments made through Bilt incur no transaction fee.
-- Housing payments run through a separate credit line from everyday spend.
-- Housing-payment point-earning (up to 1x) is unlocked by redeeming Bilt Cash: ratio of $3 Bilt Cash per 100 points. Example given by Upgraded Points: a $2,000 mortgage payment earning full 1x points requires $60 of Bilt Cash, in turn requiring roughly $1,500 of everyday card spend at the 4% Bilt Cash rate.
+Redemption
+Points redeemable as a statement credit toward the card's principal balance (min. 1,000 points per redemption; max per redemption = principal balance or $100,000-equivalent, whichever is less). Statement credits do not count toward minimum payment due.
 
-Bilt Cash
-- Earned at 4% back on everyday spend.
-- Expires annually Dec 31, with up to $100 allowed to roll into the next year.
-- Additionally, Palladium deposits "$200 in Bilt Cash annually" at the start of each year (on top of the 4% earn rate and the $300 welcome-offer Bilt Cash) — per newsroom and Upgraded Points.
+Notable Perks
+Priority Pass airport lounge access: complimentary membership for the cardholder plus up to two guests per visit ($35/guest for additional guests beyond two). Access to 1,200+ Priority Pass lounges across 400+ airports in 120+ countries, regardless of airline, frequent flyer status, or ticket class.
 
-Credits & Benefits
-- $400/year in Bilt Travel hotel credits, distributed as $200 in each half of the year (per Upgraded Points; newsroom phrasing: "$400 Bilt Travel Hotel credits").
-- $200 in Bilt Cash deposited annually (see above; newsroom bundles this with the travel credit as "$600 in annual credits ($400 Bilt Travel Hotel credits + $200 in Bilt Cash)").
-- Priority Pass lounge membership, including access for the cardholder plus up to 2 guests.
-- World Legend Mastercard benefits (Mastercard's top-tier benefit suite).
-- No foreign transaction fees.
-- Purchase protection mentioned generically in newsroom summary ("Priority Pass access, purchase protection, no foreign transaction fees, authorized users and more") — specific coverage limits not found in fetched sources.
-- Gold elite status in Bilt Rewards program (via welcome offer, after qualifying spend).
+Partner earning (stacks with base rate, all tiers): Lyft rideshare, Bilt Dining (participating restaurants), Bilt Travel Portal bookings, Bilt Fitness classes, Metropolis parking, Walgreens pharmacy purchases, Bilt Home Delivery. Rates vary by partner/merchant, set in the Bilt app.
 
-Not confirmed / not found in fetched sources
-- Specific purchase APR, penalty APR, and late-fee dollar figures — official terms PDF only partially machine-readable (compressed PDF streams); one source (newsroom, indirectly) references a "10.00% introductory APR on new eligible purchases for the first 12 months" that may apply across all three tiers, but this needs confirmation directly against the cardholder agreement since it wasn't independently corroborated by a second primary source.
-- Exact purchase-protection / extended-warranty coverage limits.
-- Whether the $200 Bilt Cash annual deposit and the 4%-back Bilt Cash and the $300 welcome-offer Bilt Cash share the same $100 year-end rollover cap described in the Blue/Obsidian sources.
-
-NEEDS human verification: confirm exact APR/fees, Priority Pass enrollment mechanics, and full credits list directly from biltrewards.com card page / cardholder agreement before marking confidence: high.
+Issuer: Column N.A., Member FDIC. Servicer: Cardless Inc. Network: Mastercard (World Legend tier).

@@ -2,20 +2,22 @@ Wells Fargo Autograph® Card
 Source pages: https://creditcards.wellsfargo.com/autograph-visa-credit-card ; https://www.wellsfargo.com/credit-cards/autograph-visa/guide-to-benefits/ ; https://www.wellsfargo.com/credit-cards/autograph-visa/terms/ (rates & fees disclosure — WebFetch declined full verbatim reproduction citing copyright; figures below sourced from product page + guide-to-benefits + corroborating secondary sources)
 Captured: 2026-07-04
 
-MARKETING / PRODUCT PAGE CONTENT
-
-- Welcome offer: "Earn 20,000 bonus points when you spend $1,000 in purchases in the first 3 months" — stated value "$200 cash redemption."
-- Annual fee: "$0"
-- Rewards structure:
-  - Unlimited 3X points: restaurants (dining in, takeout, delivery, catering); travel (airfare, hotels, car rentals, cruises); gas stations and EV charging; transit (subways, rideshare, parking, tolls); popular streaming services; phone plans.
-  - 1X point on all other purchases.
-  - No earning limit stated.
-- APR: "0% intro APR for 12 months from account opening on purchases." 18.49%, 24.49%, or 28.49% variable APR thereafter.
-- No foreign transaction fees.
+EARN RATES
+- Unlimited 3X points: restaurants (dining in, takeout, delivery, catering); travel (airfare, hotels, car rentals, cruises); gas stations and EV charging; transit (subways, rideshare, parking, tolls); popular streaming services; phone plans.
+- 1X point on all other purchases.
+- No earning limit stated.
 - Transfer partners (per secondary sources, transfer program launched April 4, 2024): Choice Privileges, Air France-KLM Flying Blue, Avianca LifeMiles, British Airways Executive Club, AerClub, Iberia Plus.
 
-KEY BENEFITS (from product page + guide to benefits)
+SIGNUP BONUS
+- 20,000 bonus points when you spend $1,000 in purchases in the first 3 months — stated value "$200 cash redemption."
 
+FEES
+- Annual Fee: $0
+- APR: 0% intro APR for 12 months from account opening on purchases. 18.49%, 24.49%, or 28.49% variable APR thereafter.
+- No foreign transaction fees.
+- Precise fee figures (balance transfer fee, cash advance fee, late fee) were not independently re-confirmed from the official disclosure page for this card in this pass — assume parity with the Active Cash card's Schumer box (same issuer family, same APR tiers) pending direct verification: balance transfer fee up to 5% (min $5), cash advance fee greater of $10 or 5%, late fee up to $40.
+
+NOTABLE PERKS (product page + guide to benefits)
 - Cellular Telephone Protection (up to $600 with $25 deductible; requires paying monthly wireless bill with card).
 - Auto Rental Collision Damage Waiver.
 - Visa Signature® Concierge Services.
@@ -25,9 +27,9 @@ KEY BENEFITS (from product page + guide to benefits)
 - Credit Close-Up® — complimentary FICO® Score monitoring.
 - My Wells Fargo Deals — personalized cash-back merchant offers.
 - Zero Liability Protection.
-
-REDEMPTION
-- Pay with Rewards via PayPal, redeem for purchases, gift cards, account credits, or transfer points to travel loyalty programs.
+- Redemption: Pay with Rewards via PayPal, redeem for purchases, gift cards, account credits, or transfer points to travel loyalty programs.
 
 NOTE ON RATES & FEES PAGE
-- Direct WebFetch of https://www.wellsfargo.com/credit-cards/autograph-visa/terms/ was declined by the fetch tool (cited copyright concerns over full verbatim reproduction of the Schumer box / T&C page). The APR figures (18.49%/24.49%/28.49% variable, 0% intro for 12 months on purchases) and $0 annual fee are corroborated across the official product page and multiple secondary sources (NerdWallet, The Points Guy, U.S. News). Precise fee figures (balance transfer fee, cash advance fee, late fee) were not independently re-confirmed from the official disclosure page for this card in this pass — assume parity with the Active Cash card's Schumer box (same issuer family, same APR tiers) pending direct verification: balance transfer fee up to 5% (min $5), cash advance fee greater of $10 or 5%, foreign transaction fee $0 (per product page, unlike Active Cash's 3%), late fee up to $40.
+- Direct WebFetch of the official terms page was declined by the fetch tool (cited copyright concerns over full verbatim reproduction of the Schumer box / T&C page). The APR figures and $0 annual fee are corroborated across the official product page and multiple secondary sources (NerdWallet, The Points Guy, U.S. News).
+
+NEEDS_VERIFICATION: contains figures from third-party/secondary sources and/or could not be fully parsed from the official page or PDF disclosure — re-check against issuer terms before curating to confidence: high.

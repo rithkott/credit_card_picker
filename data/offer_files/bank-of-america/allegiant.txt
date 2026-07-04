@@ -30,3 +30,5 @@ Foreign Transaction Fee
 - No foreign transaction fees.
 
 Issued by Bank of America, N.A.
+
+NEEDS_VERIFICATION: contains figures from third-party/secondary sources and/or could not be fully parsed from the official page or PDF disclosure — re-check against issuer terms before curating to confidence: high.
