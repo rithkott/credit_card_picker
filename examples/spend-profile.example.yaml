@@ -1,0 +1,24 @@
+# Example spend profile for scripts/optimize.py.
+# Copy this file, put in your own annual numbers, then run:
+#   python3 scripts/optimize.py --profile my-profile.yaml
+# Full input rules: docs/plans/02-optimizer.md §2.
+
+spend:                    # annual USD per category key from data/meta/categories.yaml
+  groceries: 8000
+  dining: 5000
+  gas: 2000
+  travel_flights: 1500
+  travel_hotels: 1000
+  streaming: 600
+  other: 12000
+
+merchant_spend:           # optional carve-outs, keys from data/meta/merchants.yaml;
+  costco: 3000            # counted INSIDE spend[groceries], not in addition to it
+
+user:
+  credit_tier: very_good  # required: building | fair | good | very_good | excellent
+  valuation_mode: floor   # floor | optimistic (default floor)
+  max_cards: 3            # 1-5 (default 3)
+  optimize_for: ongoing   # ongoing | year1 (default ongoing)
+  activates_rotating: true
+  uses_travel_portal: false

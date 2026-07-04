@@ -3,9 +3,9 @@ name: Validate card data
 on:
   push:
     branches: [main]
-    paths: ["data/**", "docs/card-backlog.md", "scripts/validate_cards.py", ".github/workflows/validate-data.yml"]
+    paths: ["data/**", "docs/card-backlog.md", "scripts/**", "tests/**", ".github/workflows/validate-data.yml"]
   pull_request:
-    paths: ["data/**", "docs/card-backlog.md", "scripts/validate_cards.py", ".github/workflows/validate-data.yml"]
+    paths: ["data/**", "docs/card-backlog.md", "scripts/**", "tests/**", ".github/workflows/validate-data.yml"]
   schedule:
     # Weekly run so staleness warnings surface even when no one is editing data
     - cron: "0 14 * * 1"
@@ -20,3 +20,6 @@ jobs:
           python-version: "3.12"
       - run: pip install pyyaml jsonschema
       - run: python3 scripts/validate_cards.py
+      # Optimizer golden tests (tests/test_optimizer.py) load the live dataset,
+      # so they re-run on any data change as well as on code changes.
+      - run: python3 -m unittest discover tests

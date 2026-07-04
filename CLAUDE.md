@@ -9,6 +9,7 @@ Deterministic credit-card portfolio optimizer built on a hand-curated YAML datas
 - `data/schema/card.schema.json` (fields added/removed/changed — the diagram explains every block)
 - `data/meta/` registries (new registry files, or structural changes to existing ones)
 - `scripts/validate_cards.py` (new checks, or changes to what's an error vs a warning)
+- `scripts/optimize.py` (policy constants, value model, filters, or output-contract changes — golden tests in `tests/test_optimizer.py` must be updated in the same change)
 - `.github/workflows/validate-data.yml` (triggers, cadence)
 - the repo's data layout (`data/`, `scripts/` structure)
 

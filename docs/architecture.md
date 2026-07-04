@@ -1,8 +1,8 @@
 # Data Infrastructure & Schema Architecture
 
-Current state of what's actually built (dataset layer + validation pipeline only — the optimizer, spend-entry UI, and site are planned but not built, so they don't appear here).
+Current state of what's actually built (dataset layer + validation pipeline + optimization engine — the spend-entry UI and site are planned but not built, so they don't appear here).
 
-> **Maintenance rule:** this diagram must be updated in the same change as any edit to `data/schema/card.schema.json`, the `data/meta/` registries, `scripts/validate_cards.py`, `.github/workflows/validate-data.yml`, or the repo's data layout. See `CLAUDE.md`.
+> **Maintenance rule:** this diagram must be updated in the same change as any edit to `data/schema/card.schema.json`, the `data/meta/` registries, `scripts/validate_cards.py`, `scripts/optimize.py`, `.github/workflows/validate-data.yml`, or the repo's data layout. See `CLAUDE.md`.
 
 ```mermaid
 flowchart TB
@@ -41,6 +41,12 @@ subgraph PIPE["✅ Validation pipeline — errors block, warnings nag"]
     CI["<b>.github/workflows/validate-data.yml</b><br/><i>runs on PRs/pushes touching data, AND weekly on cron —<br/>so staleness and expired promos surface<br/>even when nobody is editing</i>"]
 end
 
+subgraph OPT["🧮 Optimization engine — deterministic portfolio recommendation (docs/plans/02-optimizer.md)"]
+    PROFILE["<b>spend profile YAML (user-authored)</b><br/><i>annual spend per category + optional merchant carve-outs<br/>(sub-buckets of their category, never additive) + user block<br/>(credit_tier, valuation_mode, max_cards, optimize_for,<br/>activates_rotating, uses_travel_portal) — keys validated<br/>against the registries at load; see examples/</i>"]
+    OPTIMIZE["<b>scripts/optimize.py</b><br/><i>pure function f(dataset, profile, policy constants, --as-of):<br/>identical inputs ⇒ byte-identical output. Buckets partition spend;<br/>reward lines (merchant &gt; category &gt; base per card, caps via<br/>fallback lines, rotating as capped wildcard, portal ×0.75) are<br/>greedily assigned by effective rate with deterministic tie-breaks;<br/>credits get period-based capture haircuts against a shared<br/>remaining-spend tracker; signup bonuses are year-1 only.<br/>Exhaustive subset search sizes 1..max_cards (hard stop &gt; 80<br/>eligible cards); approval-tier filter; low-confidence / stale /<br/>expired-bonus warnings surface in output, never silently drop.<br/>All judgment calls live in one policy-constants block echoed<br/>into every output. stdlib + pyyaml only</i>"]
+    TESTS["<b>tests/test_optimizer.py</b><br/><i>golden tests with hand-computed expected values: all 7 seed<br/>cards both modes, caps, rotating, portal on/off, credit gating,<br/>bonus feasibility/expiry, portfolio cap competition, synthetic<br/>merchant_rewards/closed_loop fixtures, byte-determinism</i>"]
+end
+
 CARD -->|"must conform to"| SCHEMA
 IDENTITY ~~~ CURRENCY
 
@@ -62,11 +68,21 @@ VERIF -->|"staleness &amp; confidence checks"| WARNINGS
 SUB -->|"expiry check"| WARNINGS
 VALIDATE --> WARNINGS
 CI -->|"runs (PR / push / weekly cron)"| VALIDATE
+CI -->|"runs unittest suite"| TESTS
+TESTS -->|"golden-tests"| OPTIMIZE
+
+PROFILE -->|"category/merchant keys validated against"| META
+PROFILE --> OPTIMIZE
+CARD -->|"scored by (assumes validator already passed)"| OPTIMIZE
+VALS -->|"cpp (floor vs optimistic) prices every point line"| OPTIMIZE
+MERCH -->|"routes carve-outs to their parent category"| OPTIMIZE
 ```
 
 ## Reading the diagram
 
-**Data flow in one sentence:** humans hand-write one YAML file per card conforming to the schema's blocks, every cross-card assumption (categories, merchants, point values) lives once in the `meta/` registries and is referenced by key, and a validator — run by CI on every data change plus weekly — enforces structure as errors and freshness as warnings.
+**Data flow in one sentence:** humans hand-write one YAML file per card conforming to the schema's blocks, every cross-card assumption (categories, merchants, point values) lives once in the `meta/` registries and is referenced by key, a validator — run by CI on every data change plus weekly — enforces structure as errors and freshness as warnings, and a deterministic optimizer scores every subset of eligible cards against a user's registry-keyed spend profile to rank portfolios.
+
+**Why the optimizer is a pure function:** `scripts/optimize.py` takes only the dataset, a spend profile, its module-level policy-constants block, and an `--as-of` date — no network, no randomness, no hidden time inputs — so identical inputs produce byte-identical output, every recommendation is reproducible, and every judgment call (credit-capture haircuts, portal discount, rotating overlap) is echoed into the output where the user can see it. Data-quality problems (`confidence: low`, stale verification, expired bonuses) become per-card warnings in the results rather than silent exclusions, because excluding unverified cards would empty the product today.
 
 **Why the blocks are separate:** each block is a different *kind of value* requiring different math — spend-proportional rates (with caps), fixed periodic credits, a one-time bonus, recurring fees. Flattening them into one rate table or prose is exactly what makes card comparisons unreliable everywhere else. The uniform shape means no card ever needs special-case handling.
 
@@ -82,3 +98,5 @@ CI -->|"runs (PR / push / weekly cron)"| VALIDATE
 4. Cash cards always use `program: cash`; points values come only from the shared valuation table.
 5. Every card carries a `sources` list pasting the exact URLs its facts came from, each declaring which blocks it supports — populated blocks with no supporting source are flagged.
 6. Every card states who verified it, when, at what confidence — and CI re-surfaces anything stale, unverified, unsourced, or past its offer expiry, weekly, forever.
+7. Optimizer runs are byte-reproducible: same dataset + profile + `--as-of` ⇒ identical output, with every policy assumption echoed in the run header.
+8. In every scored portfolio each dollar of profile spend is assigned to exactly one reward line (closed-loop-only portfolios report unassignable spend as $0, never silently); credits can never exceed the user's real spend in their category; no card is recommended above the user's stated credit tier.

@@ -14,6 +14,9 @@ data/schema/              JSON Schema every card file must conform to
 data/cards/<issuer>/      one hand-curated YAML file per card (source of truth)
 data/meta/                canonical registries: categories, merchants, point valuations
 scripts/validate_cards.py schema + registry + staleness validation (runs in CI)
+scripts/optimize.py       deterministic portfolio optimizer (spec: docs/plans/02-optimizer.md)
+tests/                    optimizer golden tests (python3 -m unittest discover tests, runs in CI)
+examples/                 example spend-profile YAML to copy for scripts/optimize.py
 tools/card-entry-form.html browser form that generates schema-valid card YAML (open directly, no build)
 ```
 
@@ -29,3 +32,13 @@ python3 scripts/validate_cards.py
 ```
 
 Runs automatically in CI on any change under `data/`, plus weekly to surface staleness.
+
+## Running the optimizer
+
+```sh
+pip install pyyaml
+cp examples/spend-profile.example.yaml my-profile.yaml   # then edit in your numbers
+python3 scripts/optimize.py --profile my-profile.yaml
+```
+
+Ranks every 1–`max_cards` portfolio of cards you can get approved for by net annual value (`--mode floor|optimistic`, `--json` for machine output, `--as-of` for reproducible runs). Deterministic by design: identical inputs produce byte-identical output, and every valuation assumption is echoed in the run header. Design spec: [docs/plans/02-optimizer.md](docs/plans/02-optimizer.md).
