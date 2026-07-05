@@ -15,9 +15,25 @@ data/cards/<issuer>/      one hand-curated YAML file per card (source of truth)
 data/meta/                canonical registries: categories, merchants, point valuations
 scripts/validate_cards.py schema + registry + staleness validation (runs in CI)
 scripts/optimize.py       deterministic portfolio optimizer (spec: docs/plans/02-optimizer.md)
-tests/                    optimizer golden tests (python3 -m unittest discover tests, runs in CI)
+server/                   FastAPI wrapper exposing the optimizer to the web UI (local-only v1)
+site/                     the web UI (Vite + React + TS; deploys to GitHub Pages)
+tests/                    optimizer golden + API tests (python3 -m unittest discover tests, runs in CI)
 examples/                 example spend-profile YAML to copy for scripts/optimize.py
 tools/card-entry-form.html browser form that generates schema-valid card YAML (open directly, no build)
+```
+
+## Web UI
+
+The site computes nothing itself and your spending data never leaves your
+machine — it talks to the optimizer running locally
+([docs/plans/04-tech-stack.md](docs/plans/04-tech-stack.md)):
+
+```sh
+pip install -r server/requirements.txt
+python3 server/app.py              # API on http://localhost:8000
+
+cd site && npm ci && npm run dev   # dev UI on http://localhost:5173
+# or: npm run build — the server then serves the built site at http://localhost:8000
 ```
 
 ## Data philosophy
