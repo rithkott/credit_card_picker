@@ -19,10 +19,15 @@ category_rewards:
         each quarter before the elevated rate applies; unactivated spend earns the
         1% base rate. Specific categories change quarterly (past examples include
         groceries, gas, restaurants, wholesale clubs) — not modeled as permanent.
+    cap:
+      period: quarterly
+      max_spend_usd: 1500
+      fallback_rate: 1
     notes: >-
-      A quarterly maximum applies to the 5% rate (spend above it earns 1%), but the
-      offer file does not state the dollar amount of that cap, so no cap block is
-      modeled here. NEEDS human verification of the quarterly spend cap.
+      The offer file does not state the dollar amount of the quarterly maximum;
+      the $1,500/quarter cap is the standard published figure for this product,
+      drafted from general knowledge and NOT re-checked against issuer sources
+      in this change. NEEDS human verification of the quarterly spend cap.
 
 merchant_rewards: []
 

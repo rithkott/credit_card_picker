@@ -1,0 +1,44 @@
+# Canonical spend-category enum.
+# Shared by card data (category_rewards[].category) and the manual spend-entry UI,
+# so the two can never drift. Keys are stable slugs; label is what the UI shows.
+#
+# `rotating` and `choice` are pseudo-categories: they never appear in a user's
+# spend profile. `rotating` marks a reward whose eligible categories change each
+# quarter (Freedom Flex, Discover it). `choice` marks a reward whose category the
+# cardholder picks from a fixed options list (Citi Custom Cash, BofA Customized
+# Cash); the optimizer expands such cards into one variant per option and lets the
+# portfolio search pick the best configuration (see docs/plans/02-optimizer.md).
+
+categories:
+  groceries:
+    label: Groceries / supermarkets
+  dining:
+    label: Dining & restaurants
+  travel_flights:
+    label: Travel — flights
+  travel_hotels:
+    label: Travel — hotels
+  travel_other:
+    label: Travel — other (trains, car rental, cruises, etc.)
+  gas:
+    label: Gas stations / EV charging
+  transit:
+    label: Transit & rideshare
+  streaming:
+    label: Streaming services
+  drugstores:
+    label: Drugstores & pharmacies
+  online_shopping:
+    label: Online shopping (general)
+  entertainment:
+    label: Entertainment
+  utilities:
+    label: Utilities & phone
+  other:
+    label: Everything else
+  rotating:
+    label: Rotating quarterly categories (pseudo-category, data-only)
+    pseudo: true
+  choice:
+    label: Choose-your-own category (pseudo-category, data-only)
+    pseudo: true

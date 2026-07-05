@@ -267,6 +267,11 @@ documented later path (needed near ~200 cards) is: pre-prune dominated cards (a
 card that never wins any bucket at any mode and has no unique credit or bonus
 edge), then beam search / branch-and-bound. **v1 ships exhaustive.**
 
+> **Superseded:** the fixed n ≤ 80 hard stop is replaced by a dynamic
+> subset-work budget (`MAX_SCORED_SUBSETS`) plus exact dominance pruning — see
+> `docs/plans/02.5-optimizer_improvements.md`. The search itself remains
+> exhaustive; beam search stays future work.
+
 ## 7. Filters and data-quality gating
 
 Applied before search; every exclusion/warning is counted in the run header:
@@ -358,3 +363,7 @@ Constraints: at most one `choice` reward per card (validator + optimizer both
 enforce); the `MAX_ELIGIBLE_CARDS = 80` exhaustive-search cap now counts
 *variants*; `choice` is banned from spend profiles and credit categories like any
 pseudo-category.
+
+> **Superseded:** `MAX_ELIGIBLE_CARDS` is gone — the scale gate is now the
+> `MAX_SCORED_SUBSETS` work budget (still counted over variants); see
+> `docs/plans/02.5-optimizer_improvements.md`.

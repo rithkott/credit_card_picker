@@ -1,0 +1,30 @@
+# Canonical merchant enum for merchant-keyed rewards (merchant_rewards[].merchant).
+# Starter list — add merchants only when a card in data/cards/ actually references them.
+# `category` maps each merchant to its canonical spend category so the optimizer can
+# route merchant-level spend out of the right category bucket.
+
+merchants:
+  amazon:
+    label: Amazon.com
+    category: online_shopping
+  whole_foods:
+    label: Whole Foods Market
+    category: groceries
+  walmart:
+    label: Walmart
+    category: groceries
+  target:
+    label: Target
+    category: groceries
+  costco:
+    label: Costco
+    category: groceries
+  uber:
+    label: Uber (rides)
+    category: transit
+  lyft:
+    label: Lyft
+    category: transit
+  dunkin:
+    label: Dunkin'
+    category: dining

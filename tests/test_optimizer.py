@@ -16,6 +16,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import optimize as opt
 
+# Frozen copy of the 8-seed-card dataset (tests/fixtures/data/, taken from the
+# last revision where the goldens were hand-computed) — dataset growth must
+# never invalidate these numbers again (plan 02.5 §5). Assigning the module
+# paths also routes opt.main() (TestDeterminism) through the fixture.
+FIXTURE_DATA = Path(__file__).resolve().parent / "fixtures" / "data"
+opt.CARDS_DIR = FIXTURE_DATA / "cards"
+opt.META_DIR = FIXTURE_DATA / "meta"
+
 AS_OF = date(2026, 7, 3)  # matches seed-card verification dates: no staleness
 DATASET = opt.load_dataset()
 
@@ -533,6 +541,160 @@ class TestProfileValidation(unittest.TestCase):
     def test_missing_credit_tier_rejected(self):
         self.assert_rejected({"spend": {"groceries": 100}, "user": {}},
                              "credit_tier is required")
+
+
+class TestSubsetBudget(unittest.TestCase):
+    """Dynamic work-budget gate replacing the static 80-variant stop (plan 02.5 §1)."""
+
+    def test_budget_formula(self):
+        self.assertEqual(opt.subset_budget(129, 3), 357_889)
+        self.assertEqual(opt.subset_budget(129, 5), 286_601_665)
+
+    def test_over_budget_pool_raises_before_scoring(self):
+        # Poison pill: an unexpanded 'choice' reward makes build_lines raise
+        # with a different message, so getting the budget message proves the
+        # gate fired before any subset was scored.
+        poison = [{"category": "choice", "rate": 5,
+                   "choice": {"options": ["gas"]}}]
+        variants = [synth_card(id=f"card-{i:03d}", category_rewards=poison)
+                    for i in range(300)]  # C(300,1..3) ≈ 4.5M > 2M budget
+        prof = make_profile({"other": 10000})
+        with self.assertRaises(opt.DataError) as ctx:
+            opt.search(variants, prof, "floor", DATASET["programs"],
+                       DATASET["merchants"], AS_OF)
+        msg = str(ctx.exception)
+        self.assertIn("max_cards", msg)
+        self.assertIn("MAX_SCORED_SUBSETS", msg)
+
+    def test_small_pool_searches_fine(self):
+        variants = [synth_card(id="one", base_rate=1), synth_card(id="two", base_rate=2)]
+        results = opt.search(variants, make_profile({"other": 5000}), "floor",
+                             DATASET["programs"], DATASET["merchants"], AS_OF)
+        self.assertEqual(len(results), 3)  # {one}, {two}, {one, two}
+
+    def test_policy_constants_echo(self):
+        pc = opt.policy_constants()
+        self.assertIn("MAX_SCORED_SUBSETS", pc)
+        self.assertNotIn("MAX_ELIGIBLE_CARDS", pc)
+
+
+class TestDominancePruning(unittest.TestCase):
+    """Exact pre-search dominance pruning (plan 02.5 §2)."""
+
+    def prune(self, variants, prof, mode="floor"):
+        return opt.prune_dominated_variants(variants, prof, mode,
+                                            DATASET["programs"], DATASET["merchants"])
+
+    def test_strictly_worse_clone_pruned(self):
+        variants = [synth_card(id="worse", base_rate=1),
+                    synth_card(id="better", base_rate=2)]
+        kept, pruned = self.prune(variants, make_profile({"other": 10000}))
+        self.assertEqual([v["id"] for v in kept], ["better"])
+        self.assertEqual(pruned, [{"id": "worse", "reason": "dominated by better"}])
+
+    def test_signup_bonus_blocks_pruning_even_expired(self):
+        bonus = {"value": {"usd": 100}, "spend_requirement_usd": 500,
+                 "window_months": 3, "expires": "2020-01-01"}
+        variants = [synth_card(id="worse", base_rate=1, signup_bonus=bonus),
+                    synth_card(id="better", base_rate=2)]
+        _, pruned = self.prune(variants, make_profile({"other": 10000}))
+        self.assertEqual(pruned, [])
+
+    def test_credit_blocks_pruning(self):
+        credit = {"name": "tiny credit", "amount_usd": 1, "period": "annual",
+                  "realistic_capture_rate_note": "x"}
+        variants = [synth_card(id="worse", base_rate=1, credits=[credit]),
+                    synth_card(id="better", base_rate=2)]
+        _, pruned = self.prune(variants, make_profile({"other": 10000}))
+        self.assertEqual(pruned, [])
+
+    def test_capped_cover_never_dominates(self):
+        # B's 5% groceries line is capped; inside a subset its room may already
+        # be consumed, so it cannot cover A's uncapped 1.5%.
+        cap = {"period": "annual", "max_spend_usd": 6000, "fallback_rate": 1}
+        variants = [synth_card(id="aflat", base_rate=1.5),
+                    synth_card(id="bgroc", base_rate=1.5,
+                               category_rewards=[{"category": "groceries",
+                                                  "rate": 5, "cap": cap}])]
+        _, pruned = self.prune(variants, make_profile({"groceries": 8000, "other": 4000}))
+        self.assertEqual(pruned, [])
+
+    def test_higher_fee_blocks_pruning(self):
+        variants = [synth_card(id="worse", base_rate=1),
+                    synth_card(id="better", base_rate=2,
+                               fees={"annual_fee_usd": 95, "foreign_transaction_pct": 0})]
+        _, pruned = self.prune(variants, make_profile({"other": 10000}))
+        self.assertEqual(pruned, [])
+
+    def test_first_year_waiver_blocks_pruning(self):
+        # Equal ongoing fees, but A waives year 1 and B doesn't: year1_fee_B > year1_fee_A.
+        variants = [synth_card(id="worse", base_rate=1,
+                               fees={"annual_fee_usd": 95, "first_year_waived": True,
+                                     "foreign_transaction_pct": 0}),
+                    synth_card(id="better", base_rate=2,
+                               fees={"annual_fee_usd": 95, "foreign_transaction_pct": 0})]
+        _, pruned = self.prune(variants, make_profile({"other": 10000}))
+        self.assertEqual(pruned, [])
+
+    def test_reward_clamp_blocks_pruning(self):
+        variants = [synth_card(id="worse", base_rate=1),
+                    synth_card(id="better", base_rate=2, max_annual_rewards_usd=300)]
+        _, pruned = self.prune(variants, make_profile({"other": 10000}))
+        self.assertEqual(pruned, [])
+
+    def test_capped_specialist_coexists_with_flat_card(self):
+        # A's capped 5% groceries headline beats B's 2% uncapped cover, so A
+        # survives even though B is better everywhere else.
+        cap = {"period": "annual", "max_spend_usd": 6000, "fallback_rate": 1}
+        variants = [synth_card(id="acap", base_rate=1,
+                               category_rewards=[{"category": "groceries",
+                                                  "rate": 5, "cap": cap}]),
+                    synth_card(id="bflat", base_rate=2)]
+        kept, pruned = self.prune(variants, make_profile({"groceries": 8000, "other": 4000}))
+        self.assertEqual(pruned, [])
+        self.assertEqual(sorted(v["id"] for v in kept), ["acap", "bflat"])
+
+    def test_match_interception_guard(self):
+        # M holds dining at 3% with a first-year match. B (4% dining) would
+        # newly out-rate M where A's uncapped 1% did not → guard blocks the
+        # prune. A control flat 2% card (no dining line above 3%) prunes A.
+        matcher = synth_card(id="matcher", base_rate=1,
+                             category_rewards=[{"category": "dining", "rate": 3}],
+                             signup_bonus={"first_year_match": True},
+                             fees={"annual_fee_usd": 5, "foreign_transaction_pct": 0})
+        plain = synth_card(id="plainflat", base_rate=1)
+        prof = make_profile({"dining": 3000, "other": 7000})
+        interceptor = synth_card(id="bigdining", base_rate=2,
+                                 category_rewards=[{"category": "dining", "rate": 4}])
+        _, pruned = self.prune([plain, interceptor, matcher], prof)
+        self.assertEqual(pruned, [])
+        control = synth_card(id="modestflat", base_rate=2)
+        _, pruned = self.prune([plain, control, matcher], prof)
+        self.assertEqual(pruned, [{"id": "plainflat", "reason": "dominated by modestflat"}])
+
+    def test_tie_pruning_is_deterministic(self):
+        prof = make_profile({"other": 10000})
+        first, second = synth_card(id="aaa"), synth_card(id="bbb")
+        for order in ([first, second], [second, first]):
+            kept, pruned = self.prune(order, prof)
+            self.assertEqual([v["id"] for v in kept], ["aaa"])
+            self.assertEqual(pruned, [{"id": "bbb", "reason": "dominated by aaa"}])
+
+    def test_run_bundle_and_render_surface_pruned(self):
+        dataset = {"categories": DATASET["categories"],
+                   "merchants": DATASET["merchants"],
+                   "programs": DATASET["programs"],
+                   "cards": [synth_card(id="better", name="Better", base_rate=2),
+                             synth_card(id="worse", name="Worse", base_rate=1)]}
+        prof = make_profile({"other": 10000})
+        bundle = opt.run(dataset, prof, AS_OF, 3)
+        self.assertEqual(bundle["card_variants"], 2)
+        self.assertEqual(bundle["card_variants_pruned"], 1)
+        self.assertEqual(bundle["pruned"],
+                         [{"id": "worse", "reason": "dominated by better"}])
+        text = opt.render_text(bundle)
+        self.assertIn("1 pruned as dominated", text)
+        self.assertIn("Pruned: worse (dominated by better)", text)
 
 
 class TestDeterminism(unittest.TestCase):

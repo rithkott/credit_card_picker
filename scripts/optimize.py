@@ -25,6 +25,7 @@ import argparse
 import copy
 import itertools
 import json
+import math
 import sys
 from datetime import date
 from pathlib import Path
@@ -67,9 +68,11 @@ ROTATING_ELIGIBLE = ["dining", "drugstores", "gas", "groceries",
 
 TIER_ORDER = ["building", "fair", "good", "very_good", "excellent"]
 
-# Above this many eligible cards, exhaustive subset search is too slow; the
-# documented later path is dominance pruning + beam search.
-MAX_ELIGIBLE_CARDS = 80
+# Exhaustive search scores every subset; each score_portfolio call costs
+# ~35-55 µs in pure Python. 2M subsets ≈ one to two minutes — the tolerable
+# ceiling for an interactive CLI. At max_cards=3 this admits ~229 variants
+# (C(229,3) ≈ 2M), matching 02-optimizer.md §6's ~200-card horizon.
+MAX_SCORED_SUBSETS = 2_000_000
 
 KIND_RANK = {"merchant": 0, "category": 1, "rotating": 2, "fallback": 3, "base": 4}
 
@@ -98,7 +101,7 @@ def policy_constants() -> dict:
         "ROTATING_ELIGIBLE": ROTATING_ELIGIBLE,
         "TIER_ORDER": TIER_ORDER,
         "STALE_DAYS": STALE_DAYS,
-        "MAX_ELIGIBLE_CARDS": MAX_ELIGIBLE_CARDS,
+        "MAX_SCORED_SUBSETS": MAX_SCORED_SUBSETS,
     }
 
 
@@ -634,23 +637,117 @@ def card_warnings(card: dict, as_of: date) -> list:
     return warnings
 
 
+def prune_dominated_variants(variants: list, profile: dict, mode: str,
+                             programs: dict, merchants: dict) -> tuple:
+    """Exact pre-search pass (plan 02.5 §2): drop variants provably unable to
+    appear in an optimal portfolio. B dominates A only when A is plain (no
+    credits, no signup bonus), every live bucket A can win is covered by an
+    *uncapped* B line at >= rate, B's fees are <= in both metrics, B carries no
+    card-wide reward clamp, swapping A->B cannot newly out-rate any
+    first_year_match card (guard g), and every sibling variant of B passes the
+    same checks (rule s). Exact ties prune only the lexicographically larger id
+    (rule e), so the reported rank-1 portfolio is unchanged. Profile-aware and
+    time-free: rates come from build_lines under this profile, and an expired
+    bonus still blocks pruning. Returns (kept, pruned) where pruned is an
+    id-sorted list of {"id", "reason"} dicts."""
+    buckets = build_buckets(profile, merchants)
+    NEG = float("-inf")
+    tables = {}
+    for v in variants:
+        best_any, best_uncapped = {}, {}
+        for ln in build_lines(v, profile, mode, programs, buckets):
+            for b in ln["eligible"]:
+                if buckets[b]["amount"] <= EPS:
+                    continue
+                r = ln["effective_rate"]
+                if r > best_any.get(b, NEG):
+                    best_any[b] = r
+                if ln["room"] is None and r > best_uncapped.get(b, NEG):
+                    best_uncapped[b] = r
+        fees = v["fees"]
+        tables[v["id"]] = {
+            "best_any": best_any, "best_uncapped": best_uncapped,
+            "fee": fees["annual_fee_usd"],
+            "year1_fee": 0 if fees.get("first_year_waived") else fees["annual_fee_usd"],
+            "plain": not v["credits"] and v["signup_bonus"] is None,
+            "clamped": v.get("max_annual_rewards_usd") is not None,
+            "base_id": v.get("base_id", v["id"]),
+        }
+    match_ids = [v["id"] for v in variants
+                 if (v["signup_bonus"] or {}).get("first_year_match")]
+    by_base = {}
+    for cid, t in tables.items():
+        by_base.setdefault(t["base_id"], []).append(cid)
+
+    def covers(b_id, a_id):
+        """Conditions (a), (c), (d), (g) for one candidate dominator (or one of
+        its siblings) b_id versus plain variant a_id."""
+        A, B = tables[a_id], tables[b_id]
+        if B["clamped"]:  # (d)
+            return False
+        if B["fee"] > A["fee"] + EPS or B["year1_fee"] > A["year1_fee"] + EPS:  # (c)
+            return False
+        for b, rate_a in A["best_any"].items():  # (a) uncapped pointwise cover
+            if B["best_uncapped"].get(b, NEG) < rate_a - EPS:
+                return False
+        for m_id in match_ids:  # (g) match-interception guard
+            if m_id in (a_id, b_id):
+                continue
+            for b, rate_m in tables[m_id]["best_any"].items():
+                if (B["best_any"].get(b, NEG) > rate_m - EPS  # B out-rates M (ties count)
+                        and A["best_uncapped"].get(b, NEG) < rate_m - EPS):  # A didn't already
+                    return False
+        return True
+
+    def dominates(b_id, a_id):
+        A, B = tables[a_id], tables[b_id]
+        for sib in by_base[B["base_id"]]:  # (s) — includes b_id itself
+            if sib != a_id and not covers(sib, a_id):
+                return False
+        strict = (B["fee"] < A["fee"] - EPS or B["year1_fee"] < A["year1_fee"] - EPS
+                  or any(B["best_uncapped"].get(b, NEG) > rate_a + EPS
+                         for b, rate_a in A["best_any"].items()))
+        return strict or b_id < a_id  # (e) exact clones: smaller id survives
+
+    ids = sorted(tables)
+    pruned = []
+    for a_id in ids:
+        if not tables[a_id]["plain"]:  # (b)
+            continue
+        for b_id in ids:  # ascending: first hit is the smallest dominator
+            if b_id != a_id and dominates(b_id, a_id):
+                pruned.append({"id": a_id, "reason": f"dominated by {b_id}"})
+                break
+    pruned_ids = {p["id"] for p in pruned}
+    kept = [v for v in variants if v["id"] not in pruned_ids]
+    return kept, pruned
+
+
+def subset_budget(n_variants: int, max_cards: int) -> int:
+    """Upper bound on scored subsets: sum of C(n, k) for k = 1..max_cards.
+    Ignores the same-base_id exclusion (a small documented over-count)."""
+    return sum(math.comb(n_variants, k) for k in range(1, max_cards + 1))
+
+
 def search(variants: list, profile: dict, mode: str, programs: dict,
            merchants: dict, as_of: date) -> list:
     """Exhaustive over all subsets of eligible card variants, sizes
     1..max_cards. Two variants of the same physical card (same base_id) are
     mutually exclusive — you can only configure a choose-your-own card one way.
     Returns (cards, ongoing_net, year1_net) tuples, ranked."""
-    if len(variants) > MAX_ELIGIBLE_CARDS:
-        raise DataError(
-            f"{len(variants)} eligible card variants exceeds the exhaustive-search "
-            f"limit of {MAX_ELIGIBLE_CARDS}; the documented path forward is dominance "
-            "pruning + beam search (docs/plans/02-optimizer.md §6)")
     buckets = build_buckets(profile, merchants)
     by_id = {c["id"]: c for c in variants}
     base_of = {cid: by_id[cid].get("base_id", cid) for cid in by_id}
     ids = sorted(by_id)
     results = []
     max_cards = min(profile["user"]["max_cards"], len(set(base_of.values())))
+    budget = subset_budget(len(ids), max_cards)
+    if budget > MAX_SCORED_SUBSETS:
+        raise DataError(
+            f"{len(ids)} eligible card variants at max_cards={max_cards} means "
+            f"{budget:,} subsets to score, over the exhaustive-search budget "
+            f"MAX_SCORED_SUBSETS = {MAX_SCORED_SUBSETS:,}; lower user.max_cards "
+            "(or --max-cards) to bring the search back under budget")
     for k in range(1, max_cards + 1):
         for combo in itertools.combinations(ids, k):
             if len({base_of[c] for c in combo}) < k:
@@ -679,7 +776,9 @@ def run(dataset: dict, profile: dict, as_of: date, top: int) -> dict:
     programs = dataset["programs"]
     merchants = dataset["merchants"]
     eligible, excluded = filter_cards(dataset["cards"], profile)
-    variants = expand_choice_variants(eligible, profile)
+    expanded = expand_choice_variants(eligible, profile)
+    variants, pruned = prune_dominated_variants(expanded, profile, mode,
+                                                programs, merchants)
     ranked = search(variants, profile, mode, programs, merchants, as_of)
 
     by_id = {c["id"]: c for c in variants}
@@ -728,7 +827,9 @@ def run(dataset: dict, profile: dict, as_of: date, top: int) -> dict:
         "policy_constants": policy_constants(),
         "cards_total": len(dataset["cards"]),
         "cards_eligible": len(eligible),
-        "card_variants": len(variants),
+        "card_variants": len(expanded),
+        "card_variants_pruned": len(pruned),
+        "pruned": pruned,
         "excluded": excluded,
         "portfolios": portfolios,
     }
@@ -750,7 +851,11 @@ def render_text(bundle: dict) -> str:
     excluded = "; ".join(f"{e['id']}: {e['reason']}" for e in bundle["excluded"]) or "none"
     out.append(f"Cards: {bundle['cards_total']} in dataset, {bundle['cards_eligible']} "
                f"eligible ({bundle['card_variants']} variants after choose-your-own-"
-               f"category expansion), {len(bundle['excluded'])} excluded ({excluded})")
+               f"category expansion, {bundle['card_variants_pruned']} pruned as "
+               f"dominated), {len(bundle['excluded'])} excluded ({excluded})")
+    if bundle["pruned"]:
+        out.append("Pruned: " + "; ".join(f"{p['id']} ({p['reason']})"
+                                          for p in bundle["pruned"]))
     out.append("")
 
     for rank, p in enumerate(bundle["portfolios"], 1):
