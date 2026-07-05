@@ -7,9 +7,10 @@ computation engine; this file only maps HTTP to its functions:
   GET  /api/health    — liveness probe for the frontend's server banner.
   GET  /api/config    — everything the form needs in one call (categories,
                         merchants, usage-question groups, tier order, user
-                        defaults, reward kinds), built from the loaded dataset
-                        and optimize.py constants. The site embeds NO registry
-                        copies, so it cannot drift from the data.
+                        defaults, reward kinds, statement-import rules), built
+                        from the loaded dataset and optimize.py constants. The
+                        site embeds NO registry copies, so it cannot drift
+                        from the data.
   POST /api/optimize  — body {spend, merchant_spend?, user, as_of?, top?}.
                         parse_profile is the single validator (no Pydantic
                         mirror — that would be a second drift surface).
@@ -60,6 +61,14 @@ STATE: dict = {}
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     STATE["dataset"] = opt.load_dataset()
+    # Statement-import rules (plan 09): read only here, never by the optimizer.
+    # opt.META_DIR (not a local constant) so tests that repoint the dataset
+    # repoint these too.
+    meta = Path(opt.META_DIR)
+    with open(meta / "statement-descriptors.yaml") as f:
+        STATE["descriptors"] = yaml.safe_load(f)["descriptors"]
+    with open(meta / "category-rules.yaml") as f:
+        STATE["category_rules"] = yaml.safe_load(f)
     yield
     STATE.clear()
 
@@ -119,6 +128,20 @@ def config() -> dict:
         "reward_kinds": opt.REWARD_KINDS,
         "max_cards_range": [1, 5],
         "cards_total": len(ds["cards"]),
+        # Rules for the in-browser statement importer (plan 09). Rules travel
+        # API -> browser; statement data never travels anywhere.
+        "statement_import": {
+            "descriptors": [
+                {"key": key, "label": entry.get("label", key),
+                 "patterns": entry["statement_patterns"]}
+                for key, entry in STATE["descriptors"].items()],
+            "descriptor_categories": STATE["category_rules"]["descriptor_categories"],
+            "aggregator_prefixes": STATE["category_rules"]["aggregator_prefixes"],
+            "unmapped": STATE["category_rules"]["unmapped"],
+            "keywords": STATE["category_rules"]["keywords"],
+            "issuer_categories": STATE["category_rules"]["issuer_categories"],
+            "mcc": STATE["category_rules"]["mcc"],
+        },
     }
 
 

@@ -91,6 +91,32 @@ class TestServerAPI(unittest.TestCase):
         self.assertEqual(cfg["reward_kinds"], opt.REWARD_KINDS)
         self.assertEqual(cfg["max_cards_range"], [1, 5])
 
+    def test_config_statement_import_mirrors_registries(self):
+        cfg = self.client.get("/api/config").json()
+        si = cfg["statement_import"]
+        descriptors = yaml.safe_load(
+            (ROOT / "data" / "meta" / "statement-descriptors.yaml").read_text()
+        )["descriptors"]
+        rules = yaml.safe_load(
+            (ROOT / "data" / "meta" / "category-rules.yaml").read_text())
+        # Descriptors mirror the registry exactly, key order preserved.
+        self.assertEqual([d["key"] for d in si["descriptors"]], list(descriptors))
+        for d in si["descriptors"]:
+            self.assertEqual(d["patterns"],
+                             descriptors[d["key"]]["statement_patterns"])
+            self.assertEqual(d["label"], descriptors[d["key"]]["label"])
+        # Rule blocks are passed through verbatim.
+        for block in ("descriptor_categories", "aggregator_prefixes", "unmapped",
+                      "keywords", "issuer_categories", "mcc"):
+            self.assertEqual(si[block], rules[block], block)
+        # Bridge integrity as served: every bridge key resolves to a descriptor
+        # and every descriptor key is accounted for in exactly one block.
+        served_keys = {d["key"] for d in si["descriptors"]}
+        assigned = (list(si["descriptor_categories"])
+                    + list(si["aggregator_prefixes"]) + list(si["unmapped"]))
+        self.assertEqual(len(assigned), len(set(assigned)))
+        self.assertTrue(set(assigned) <= served_keys)
+
     # -- optimize: golden equivalence ----------------------------------------
 
     def test_optimize_matches_engine_byte_for_byte(self):

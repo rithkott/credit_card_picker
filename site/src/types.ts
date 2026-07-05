@@ -12,6 +12,21 @@ export interface ConfigMerchant { key: string; label: string; category: string }
 export interface UsageItem { key: string; label: string }
 export interface UsageGroup { key: string; label: string; prompt: string; items: UsageItem[] }
 
+/** Statement-import rules (data/meta/category-rules.yaml +
+ * statement-descriptors.yaml) served by /api/config for the in-browser
+ * importer. Rules travel API -> browser; statement data never travels. */
+export interface ConfigDescriptor { key: string; label: string; patterns: string[] }
+export interface MccRange { from: number; to: number; category: string }
+export interface StatementImportRules {
+  descriptors: ConfigDescriptor[]
+  descriptor_categories: Record<string, string>
+  aggregator_prefixes: Record<string, { fallback_category?: string }>
+  unmapped: string[]
+  keywords: Record<string, string[]>
+  issuer_categories: Record<string, string>
+  mcc: MccRange[]
+}
+
 export interface Config {
   categories: ConfigCategory[]
   merchants: ConfigMerchant[]
@@ -28,6 +43,7 @@ export interface Config {
   reward_kinds: string[]
   max_cards_range: [number, number]
   cards_total: number
+  statement_import: StatementImportRules
 }
 
 export interface ProfileUser {
