@@ -529,6 +529,17 @@ def score_bonus(card: dict, profile: dict, mode: str, programs: dict, as_of: dat
     return {"value": total, "note": note}
 
 
+def membership_fee(card: dict) -> float:
+    """Annual cost of a required membership that exists solely for the card
+    (required_membership.card_exclusive, e.g. Robinhood Gold). Memberships with
+    standalone value (Costco, Prime, Sam's Club) stay unscored — the optimizer
+    assumes the user already holds those."""
+    rm = card.get("required_membership") or {}
+    if rm.get("card_exclusive"):
+        return float(rm.get("annual_cost_usd") or 0)
+    return 0.0
+
+
 def score_portfolio(cards: list, profile: dict, mode: str, programs: dict,
                     buckets: dict, as_of: date) -> dict:
     """Jointly score a card subset: one shared spend assignment over all the
@@ -557,9 +568,12 @@ def score_portfolio(cards: list, profile: dict, mode: str, programs: dict,
                                        per_card_earnings[card["id"]])
                for card in cards}
     bonus_total = sum(b["value"] for b in bonuses.values())
-    ongoing_fee = sum(c["fees"]["annual_fee_usd"] for c in cards)
+    # Card-exclusive membership costs (Robinhood Gold) count in both metrics —
+    # a fee waiver never covers the separate membership.
+    membership = sum(membership_fee(c) for c in cards)
+    ongoing_fee = sum(c["fees"]["annual_fee_usd"] for c in cards) + membership
     year1_fee = sum(0 if c["fees"].get("first_year_waived") else c["fees"]["annual_fee_usd"]
-                    for c in cards)
+                    for c in cards) + membership
     return {
         "cards": sorted(c["id"] for c in cards),
         "ongoing_net": earnings + credits_total - ongoing_fee,
@@ -702,8 +716,9 @@ def prune_dominated_variants(variants: list, profile: dict, mode: str,
         fees = v["fees"]
         tables[v["id"]] = {
             "best_any": best_any, "best_uncapped": best_uncapped,
-            "fee": fees["annual_fee_usd"],
-            "year1_fee": 0 if fees.get("first_year_waived") else fees["annual_fee_usd"],
+            "fee": fees["annual_fee_usd"] + membership_fee(v),
+            "year1_fee": (0 if fees.get("first_year_waived") else fees["annual_fee_usd"])
+                         + membership_fee(v),
             "plain": not v["credits"] and v["signup_bonus"] is None,
             "clamped": v.get("max_annual_rewards_usd") is not None,
             "base_id": v.get("base_id", v["id"]),
@@ -841,6 +856,9 @@ def run(dataset: dict, profile: dict, as_of: date, top: int) -> dict:
                          "first_year_waived": bool(card["fees"].get("first_year_waived"))},
                 "warnings": card_warnings(card, as_of),
             }
+            if membership_fee(card):
+                per_card[cid]["fees"]["membership_fee_usd"] = _round2(membership_fee(card))
+                per_card[cid]["fees"]["membership_name"] = card["required_membership"]["name"]
             if cid in scored["reward_cap_clamps"]:
                 per_card[cid]["reward_cap_clamp"] = _round2(scored["reward_cap_clamps"][cid])
             if "choice_category" in card:
@@ -920,6 +938,9 @@ def render_text(bundle: dict) -> str:
             fee = d["fees"]
             waived = " (first year waived)" if fee["first_year_waived"] else ""
             out.append(f"      annual fee: ${fee['annual_fee_usd']:,.2f}{waived}")
+            if "membership_fee_usd" in fee:
+                out.append(f"      required membership ({fee['membership_name']}): "
+                           f"-${fee['membership_fee_usd']:,.2f}/yr")
             for w in d["warnings"]:
                 out.append(f"      ⚠ {w}")
         for b, v in p["unassigned_spend"].items():

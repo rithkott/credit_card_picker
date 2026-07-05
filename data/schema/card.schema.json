@@ -41,10 +41,11 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["name", "note"],
-      "description": "Paid membership/subscription that is a prerequisite for holding the card or earning its rewards (Sam's Club membership, Amazon Prime, REI Co-op, Robinhood Gold). Recorded but NOT scored in v1 — the optimizer assumes the user already holds it. Omit for cards without one; free credit-union membership goes in approval.notes instead",
+      "description": "Paid membership/subscription that is a prerequisite for holding the card or earning its rewards (Sam's Club membership, Amazon Prime, REI Co-op, Robinhood Gold). Unscored by default — the optimizer assumes the user already holds it — unless card_exclusive is true, in which case annual_cost_usd is scored as an ongoing cost. Omit for cards without one; free credit-union membership goes in approval.notes instead",
       "properties": {
         "name": { "type": "string", "minLength": 1, "description": "Membership name, e.g. 'Amazon Prime'" },
         "annual_cost_usd": { "type": "number", "minimum": 0, "description": "Current annual cost of the cheapest qualifying tier" },
+        "card_exclusive": { "type": "boolean", "description": "True when the membership has no material standalone value apart from the card (Robinhood Gold): the optimizer subtracts annual_cost_usd from ongoing and year-1 net. Omit/false for memberships people hold anyway (Costco, Prime, Sam's Club)" },
         "note": { "type": "string", "minLength": 1, "description": "What the membership gates (card eligibility, earn rate, redemption) and which tier qualifies" }
       }
     },

@@ -117,7 +117,8 @@ function render(d) {
          ` — ongoing net ${usd(p.ongoing_net)}/yr, year-1 net ${usd(p.year1_net)}`;
     for (const [id, c] of Object.entries(p.per_card)) {
       h += `<div class="card"><b>${c.name}</b> (fee ${usd(c.fees.annual_fee_usd)}` +
-           `${c.fees.first_year_waived ? ", waived yr 1" : ""})`;
+           `${c.fees.first_year_waived ? ", waived yr 1" : ""}` +
+           `${c.fees.membership_fee_usd ? ", + " + usd(c.fees.membership_fee_usd) + "/yr " + c.fees.membership_name + " membership" : ""})`;
       if (c.assignments.length) {
         h += "<table><tr><th>spend bucket</th><th>rate</th><th>assigned</th><th>value/yr</th></tr>";
         for (const a of c.assignments)

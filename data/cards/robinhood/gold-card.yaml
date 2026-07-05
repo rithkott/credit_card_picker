@@ -52,11 +52,13 @@ approval:
 required_membership:
   name: Robinhood Gold
   annual_cost_usd: 50         # cheapest qualifying tier: $50/year (vs $5/month = $60/yr) (offer file line 4)
+  card_exclusive: true        # Gold gates the card's earn rate and has no material standalone value for a card decision, so the optimizer scores the $50/yr as an ongoing cost
   note: >-
     A PAID, active Robinhood Gold subscription ($5/month or $50/year) is a mandatory prerequisite to
     hold the card and to earn its 3 pts/$1 rate — the card itself has no 30-day free trial. This is an
     ongoing cost separate from the $0 card annual fee; a cardholder unwilling to pay for Gold cannot
-    obtain the advertised earn rate economically. Not scored in v1.
+    obtain the advertised earn rate economically. Scored: card_exclusive, so the optimizer subtracts
+    $50/yr from ongoing and year-1 net.
 
 benefit_flags: []
 

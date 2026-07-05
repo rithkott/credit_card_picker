@@ -385,6 +385,41 @@ class TestRewardCapAndPeriods(unittest.TestCase):
         r = score([card], make_profile({"other": 10000}))
         self.assertAlmostEqual(r["bonuses"]["synth"]["value"], 300.0)
 
+    def test_card_exclusive_membership_scored_as_fee(self):
+        # $10,000 at 3% = $300; a card_exclusive membership (Robinhood Gold
+        # pattern) costs $50/yr in BOTH metrics — a first-year fee waiver never
+        # covers the separate membership.
+        rm = {"name": "Gold", "annual_cost_usd": 50, "card_exclusive": True,
+              "note": "x"}
+        card = synth_card(base_rate=3, required_membership=rm,
+                          fees={"annual_fee_usd": 0, "first_year_waived": True,
+                                "foreign_transaction_pct": 0})
+        r = score([card], make_profile({"other": 10000}))
+        self.assertAlmostEqual(r["ongoing_net"], 250.0)
+        self.assertAlmostEqual(r["year1_net"], 250.0)
+        # Non-exclusive membership (Costco/Prime pattern) stays unscored.
+        card = synth_card(base_rate=3,
+                          required_membership={"name": "Prime",
+                                               "annual_cost_usd": 139,
+                                               "note": "x"})
+        r = score([card], make_profile({"other": 10000}))
+        self.assertAlmostEqual(r["ongoing_net"], 300.0)
+
+    def test_membership_fee_surfaced_in_bundle(self):
+        rm = {"name": "Gold", "annual_cost_usd": 50, "card_exclusive": True,
+              "note": "x"}
+        dataset = {"categories": DATASET["categories"],
+                   "merchants": DATASET["merchants"],
+                   "programs": DATASET["programs"],
+                   "cards": [synth_card(id="gated", name="Gated", base_rate=3,
+                                        required_membership=rm)]}
+        bundle = opt.run(dataset, make_profile({"other": 10000}), AS_OF, 1)
+        fees = bundle["portfolios"][0]["per_card"]["gated"]["fees"]
+        self.assertEqual(fees["membership_fee_usd"], 50.0)
+        self.assertEqual(fees["membership_name"], "Gold")
+        self.assertIn("required membership (Gold): -$50.00/yr",
+                      opt.render_text(bundle))
+
     def test_every_5_years_credit(self):
         # $120 every 5 years, uncategorized statement credit → face value
         # annualized: 120 * 0.2 = $24.

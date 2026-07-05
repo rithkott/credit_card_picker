@@ -214,6 +214,12 @@ def main() -> int:
             populated.add("relationship_boost")
         if "required_membership" in card:
             populated.add("required_membership")
+            rm = card["required_membership"]
+            if rm.get("card_exclusive") and "annual_cost_usd" not in rm:
+                errors.append(
+                    f"{rel}: required_membership.card_exclusive is true but annual_cost_usd is "
+                    "missing — the optimizer scores that cost, so it must be recorded"
+                )
         for block in sorted(populated - supported):
             warnings.append(f"{rel}: UNSOURCED — no entry in `sources` supports the '{block}' block")
 

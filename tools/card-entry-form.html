@@ -251,7 +251,7 @@ pre#yaml .k{color:var(--code-key)} pre#yaml .s{color:var(--code-str)} pre#yaml .
 
 <section class="block">
   <h2><code>required_membership</code> &amp; <code>max_annual_rewards_usd</code> <span class="hint" style="font-weight:400">rare</span></h2>
-  <p class="why">A PAID membership prerequisite (Sam's Club, Amazon Prime, REI Co-op, Robinhood Gold) — stored, unscored; the optimizer assumes the user holds it. The reward cap is for issuers that cap total reward dollars per year (Sam's Cash $5,000/yr), not spend at a rate.</p>
+  <p class="why">A PAID membership prerequisite (Sam's Club, Amazon Prime, REI Co-op, Robinhood Gold) — unscored by default (the optimizer assumes the user holds it) unless card-exclusive, in which case the annual cost is scored as an ongoing cost. The reward cap is for issuers that cap total reward dollars per year (Sam's Cash $5,000/yr), not spend at a rate.</p>
   <label class="check" style="margin-bottom:10px"><input type="checkbox" id="rmon"> a paid membership gates this card or its earn</label>
   <div id="rmfields" hidden>
     <div class="grid g2">
@@ -260,6 +260,7 @@ pre#yaml .k{color:var(--code-key)} pre#yaml .s{color:var(--code-str)} pre#yaml .
       <div class="field"><label for="rmcost">annual cost (USD) <span class="hint">cheapest qualifying tier</span></label>
         <input type="number" id="rmcost" class="mono" min="0" step="any"></div>
     </div>
+    <label class="check" style="margin-top:10px"><input type="checkbox" id="rmexcl"> card_exclusive — membership has no standalone value apart from the card (Robinhood Gold); optimizer scores its cost. Leave off for Costco/Prime/Sam's</label>
     <div class="field" style="margin-top:10px"><label for="rmnote">note <span class="req">*</span> <span class="hint">what it gates: eligibility, earn rate, redemption</span></label>
       <input type="text" id="rmnote"></div>
   </div>
@@ -789,11 +790,14 @@ function build(){
   const rmOn = $("#rmon").checked;
   if (rmOn){
     const rmn = val("rmname"), rmnote = val("rmnote"), rmc = num(val("rmcost"));
+    const rmExcl = $("#rmexcl").checked;
     if (!rmn) errs.push("required membership: name is required");
     if (!rmnote) errs.push("required membership: note is required — say what the membership gates");
+    if (rmExcl && rmc===null) errs.push("required membership: card_exclusive needs annual_cost_usd — the optimizer scores that cost");
     L.push("required_membership:");
     L.push(`  name: ${rmn?ystr(rmn):"?"}`);
     if (rmc!==null) L.push(`  annual_cost_usd: ${rmc}`);
+    if (rmExcl) L.push("  card_exclusive: true");
     L.push(`  note: ${rmnote?fold(rmnote,4):"?"}`);
   }
   const maxrew = num(val("maxrew"));
