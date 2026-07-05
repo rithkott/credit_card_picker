@@ -238,11 +238,11 @@ describe('parseFiles', () => {
     expect(result.errors[0].message).toMatch(/unrecognized format/)
   })
 
-  it('rejects PDFs with the not-yet-supported stub error', async () => {
+  it('routes PDFs to the pdf parser (corrupt bytes -> per-file error)', async () => {
     const result = await parseFiles([
       { name: 's.pdf', bytes: new TextEncoder().encode('%PDF-1.7') },
     ])
-    expect(result.errors[0].message).toMatch(/PDF/)
+    expect(result.errors[0].message).toMatch(/couldn't read this PDF/)
   })
 
   it('enforces the batch file limit', async () => {
