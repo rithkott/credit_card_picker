@@ -11,6 +11,7 @@ import { ServerBanner } from './components/ServerBanner'
 import { SpendEntry } from './components/SpendEntry'
 import { TotalsCard } from './components/TotalsCard'
 import { UsageQuestionnaire } from './components/UsageQuestionnaire'
+import { ResultsView } from './components/results/ResultsView'
 
 type ConfigPhase =
   | { phase: 'loading' }
@@ -167,13 +168,7 @@ export default function App() {
               <span className="error">{run.detail}</span>
             )}
           </div>
-          {run.phase === 'done' && (
-            /* Placeholder: replaced by the results components (plan 04 commit 3). */
-            <details className="disclosure" open>
-              <summary>Raw results</summary>
-              <pre>{JSON.stringify(run.bundle, null, 2)}</pre>
-            </details>
-          )}
+          {run.phase === 'done' && <ResultsView bundle={run.bundle} />}
         </>
       )}
     </div>
