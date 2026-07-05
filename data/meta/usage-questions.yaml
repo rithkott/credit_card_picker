@@ -1,12 +1,13 @@
-# Two-level usage questionnaire registry.
+# Usage questionnaire registry — grouped, all options visible.
 #
 # Purpose: the optimizer values a merchant/service/brand-locked credit at $0
 # unless the user has confirmed they actually use the underlying service
 # (user.confirmed_usage in the spend profile). This file defines the minimal
 # question set that collects those confirmations:
 #
-#   groups: one yes/no gate question each ("Do you use streaming services?").
-#   items:  the confirmable keys revealed only on "yes" ("Which ones?").
+#   groups: display sections, each with a "do you or will you use these" prompt
+#           captioning its always-visible items.
+#   items:  the confirmable keys, all shown upfront as checkboxes.
 #
 # Item keys are globally unique across groups and are the vocabulary for:
 #   - credits[].usage_keys in card files (anyOf: one confirmed key unlocks it)
@@ -20,13 +21,13 @@
 #     program loyalty_keys — unreferenced items are warned so the question
 #     count stays minimal
 #
-# Groups are pure UI affordances: a "no" on the gate skips all items; a
-# single-item group renders as one checkbox.
+# Groups are pure UI affordances: every item renders visibly under its group
+# prompt; a single-item group renders as one checkbox labeled by the prompt.
 
 groups:
   travel_portals:
     label: Issuer travel portals
-    prompt: "Do you book travel through a credit-card issuer's travel portal?"
+    prompt: "Do you (or will you) book travel through any of these issuer portals?"
     items:
       chase_travel: {label: "Chase Travel"}
       amex_travel: {label: "Amex Travel (AmexTravel.com)"}
@@ -39,7 +40,7 @@ groups:
 
   airlines:
     label: Airlines
-    prompt: "Do you fly regularly with any particular airline?"
+    prompt: "Do you (or will you) fly regularly with any of these airlines?"
     items:
       delta: {label: "Delta"}
       united: {label: "United"}
@@ -59,8 +60,8 @@ groups:
       jsx: {label: "JSX (semi-private air)"}
 
   hotels:
-    label: Hotel chains
-    prompt: "Do you stay regularly with any particular hotel chain?"
+    label: Hotel chains & cruises
+    prompt: "Do you (or will you) stay regularly with any of these hotel chains or cruise lines?"
     items:
       hilton: {label: "Hilton (Waldorf, Conrad, Hampton, DoubleTree, ...)"}
       marriott: {label: "Marriott (Ritz-Carlton, Westin, Sheraton, Courtyard, ...)"}
@@ -69,31 +70,30 @@ groups:
       wyndham: {label: "Wyndham (Days Inn, La Quinta, Ramada, ...)"}
       choice_hotels: {label: "Choice Hotels (Comfort, Quality Inn, Cambria, ...)"}
       rci: {label: "RCI timeshare exchange"}
+      royal_caribbean: {label: "Royal Caribbean / Celebrity / Silversea cruises"}
 
   rideshare_car:
     label: Rideshare & car rental
-    prompt: "Do you use rideshare apps or rent cars?"
+    prompt: "Do you (or will you) use any of these rideshare or car-rental services?"
     items:
-      uber: {label: "Uber / Uber One"}
+      uber: {label: "Uber rides / Uber One"}
       lyft: {label: "Lyft"}
       turo: {label: "Turo (car sharing)"}
       avis_budget: {label: "Avis / Budget"}
       blacklane: {label: "Blacklane (chauffeur)"}
 
-  dining_delivery:
-    label: Food delivery & dining services
-    prompt: "Do you use food-delivery or dining apps/services?"
+  food_delivery:
+    label: Food & grocery delivery
+    prompt: "Do you (or will you) use any of these delivery services?"
     items:
       doordash: {label: "DoorDash / DashPass"}
+      uber_eats: {label: "Uber Eats"}
       grubhub: {label: "Grubhub / Seamless"}
       instacart: {label: "Instacart"}
-      resy: {label: "Resy (restaurant reservations)"}
-      dunkin: {label: "Dunkin'"}
-      home_chef: {label: "Home Chef (meal kits)"}
 
   streaming:
     label: Streaming & digital subscriptions
-    prompt: "Do you pay for streaming or digital subscriptions?"
+    prompt: "Do you (or will you) pay for any of these streaming or digital subscriptions?"
     items:
       disney_plus: {label: "Disney+ / Disney Bundle"}
       hulu: {label: "Hulu"}
@@ -105,36 +105,38 @@ groups:
       youtube: {label: "YouTube Premium / YouTube TV"}
 
   fitness_lifestyle:
-    label: Fitness & lifestyle memberships
-    prompt: "Do you pay for fitness or lifestyle memberships/gear?"
+    label: Fitness & lifestyle
+    prompt: "Do you (or will you) pay for any of these fitness or lifestyle brands?"
     items:
       peloton: {label: "Peloton"}
       equinox: {label: "Equinox"}
       lululemon: {label: "lululemon"}
       oura: {label: "Oura Ring"}
-      walmart_plus: {label: "Walmart+ membership"}
-      clear: {label: "CLEAR airport security"}
 
   events:
     label: Live events
-    prompt: "Do you buy tickets to concerts, sports, or other live events?"
+    prompt: "Do you (or will you) buy live-event tickets from either of these?"
     items:
       stubhub: {label: "StubHub / viagogo"}
       ticketmaster: {label: "Ticketmaster / Live Nation"}
 
-  trusted_traveler:
-    label: Trusted traveler
-    prompt: "Do you have (or want) Global Entry / TSA PreCheck?"
+  airport_security:
+    label: Airport security programs
+    prompt: "Do you have (or want) any of these airport security programs?"
     items:
       global_entry_tsa: {label: "Global Entry / TSA PreCheck"}
+      clear: {label: "CLEAR"}
 
   brand_programs:
-    label: Brand-specific spend
-    prompt: "Are you a regular customer of any of these brands?"
+    label: Brand-specific memberships & spend
+    prompt: "Do you (or will you) regularly spend with any of these brands?"
     items:
+      resy: {label: "Resy (restaurant reservations)"}
+      dunkin: {label: "Dunkin'"}
+      home_chef: {label: "Home Chef (meal kits)"}
+      walmart_plus: {label: "Walmart+ membership"}
+      costco: {label: "Costco"}
+      sams_club: {label: "Sam's Club"}
       att: {label: "AT&T"}
       verizon: {label: "Verizon"}
       gm: {label: "General Motors (vehicle, OnStar, GM Financial)"}
-      royal_caribbean: {label: "Royal Caribbean / Celebrity / Silversea cruises"}
-      costco: {label: "Costco"}
-      sams_club: {label: "Sam's Club"}

@@ -1,3 +1,6 @@
 __pycache__/
 *.pyc
 tools/debug-runs/
+server/debug-runs/
+site/node_modules/
+site/dist/

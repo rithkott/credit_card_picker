@@ -36,7 +36,7 @@ credits:
   - name: Uber Cash
     amount_usd: 15           # "$15/month + $20 in December"
     period: monthly
-    usage_keys: [uber]
+    usage_keys: [uber, uber_eats]
     category: transit
     requires_enrollment: true
     realistic_capture_rate_note: >-
@@ -47,7 +47,7 @@ credits:
   - name: Uber One Credit
     amount_usd: 120          # "up to $120/year on Uber One membership fees"
     period: annual
-    usage_keys: [uber]
+    usage_keys: [uber, uber_eats]
     category: transit
     requires_enrollment: true
     realistic_capture_rate_note: >-

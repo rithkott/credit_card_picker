@@ -15,8 +15,10 @@ given user would actually realize.
 The fix: **no credit counts unless the user confirmed they already use (or
 will use) the underlying service**, and **optimistic point value requires
 confirmed loyalty to the program's brand**. Confirmation is collected by a
-minimal two-level questionnaire (group yes/no gate → "which ones" only on
-yes), so users answer ~10 questions instead of ~50.
+grouped questionnaire: ~10 sections, each a "do you or will you use these"
+prompt over its always-visible options — every option on screen (a prompt
+like "are you a regular customer of these brands" only makes sense when the
+brands are shown), kept scannable by compact per-section chip rows.
 
 ## What users can say
 
@@ -45,7 +47,8 @@ still carrying it get a targeted migration error.
 ## Where the knowledge lives
 
 - **`data/meta/usage-questions.yaml`** (new registry): the questionnaire —
-  groups (label + yes/no prompt) → items (key + label). Single source of truth
+  groups (label + "do you or will you use these" prompt) → always-visible
+  items (key + label). Single source of truth
   for the UI, profile validation, and the vocabulary of the three fields
   below. Every item key must exist in `statement-descriptors.yaml` (the
   descriptor registry stays the statement-parsing ground truth), and every
@@ -108,8 +111,9 @@ still carrying it get a targeted migration error.
   would unlock it.
 - The POC UI (`tools/test-ui.html`) renders the questionnaire from
   `GET /usage-questions` (served by `tools/test-server.py` straight from the
-  registry): per group a yes/no gate revealing item checkboxes; single-item
-  groups collapse to one checkbox. Checked keys → `user.confirmed_usage`.
+  registry): one section per group — the prompt above a wrapped row of
+  checkbox chips, every option visible upfront; single-item groups render as
+  one chip labeled by the prompt. Checked keys → `user.confirmed_usage`.
 
 ## Addendum: transfer-gateway gating (portfolio-aware cpp)
 

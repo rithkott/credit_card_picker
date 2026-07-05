@@ -10,6 +10,13 @@
   label { display: inline-block; width: 22em; }
   input[type=number] { width: 8em; }
   .portfolio { border: 1px solid #888; padding: 0.8em; margin: 1em 0; }
+  .ug { margin: 0.9em 0; }
+  .ug-prompt { margin-bottom: 0.35em; }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .chip { display: inline-flex; align-items: center; gap: 5px; width: auto;
+          border: 1px solid #bbb; border-radius: 3px; padding: 2px 9px;
+          cursor: pointer; user-select: none; }
+  .chip:has(input:checked) { background: #e8eeff; border-color: #667fc0; }
   .card { margin: 0.6em 0 0.6em 1.5em; }
   .warn { color: #a60; }
   .err { color: #c00; white-space: pre-wrap; }
@@ -56,7 +63,7 @@
 </fieldset>
 
 <fieldset>
-  <legend>Things you already use (unlocks credits, portal rates, and airline/hotel point value)</legend>
+  <legend>Things you use or will use (unlocks credits, portal rates, and airline/hotel point value)</legend>
   <div id="usage-groups">loading questionnaire…</div>
 </fieldset>
 
@@ -85,42 +92,31 @@ const CATS = ["groceries","dining","travel_flights","travel_hotels","travel_othe
   "transit","streaming","drugstores","online_shopping","entertainment","utilities","other"];
 const usd = n => "$" + Number(n).toLocaleString(undefined, {maximumFractionDigits: 0});
 
-/* Two-level usage questionnaire (plan 07), rendered from GET /usage-questions
-   (data/meta/usage-questions.yaml). A "no" on the gate question skips (and
-   unchecks) all of the group's items; single-item groups are one checkbox. */
+/* Usage questionnaire (plan 07), rendered from GET /usage-questions
+   (data/meta/usage-questions.yaml). Every option is visible upfront: each
+   group is a "do you or will you use these" prompt over a row of checkbox
+   chips — nothing is hidden behind a gate question. Single-item groups render
+   as one chip labeled by the prompt itself. */
 async function loadUsageQuestions() {
   const box = document.getElementById("usage-groups");
+  const chip = (key, label) =>
+    `<label class="chip"><input type="checkbox" name="usage_key" value="${key}"> ${label}</label>`;
   try {
     const r = await fetch("/usage-questions");
     const {groups} = await r.json();
     let h = "";
-    for (const [gname, g] of Object.entries(groups)) {
+    for (const g of Object.values(groups)) {
       const items = Object.entries(g.items);
+      h += `<div class="ug">`;
       if (items.length === 1) {
-        const [key, item] = items[0];
-        h += `<div><label style="width:auto"><input type="checkbox" name="usage_key" value="${key}"> ${g.prompt}</label></div>`;
-        continue;
+        h += `<div class="chips">${chip(items[0][0], g.prompt)}</div>`;
+      } else {
+        h += `<div class="ug-prompt"><b>${g.label}</b> — ${g.prompt}</div>` +
+             `<div class="chips">${items.map(([k, it]) => chip(k, it.label)).join("")}</div>`;
       }
-      h += `<div style="margin-bottom:0.5em">` +
-           `<span>${g.prompt}</span> ` +
-           `<label style="width:auto"><input type="radio" name="ug_${gname}" value="no" checked> no</label> ` +
-           `<label style="width:auto"><input type="radio" name="ug_${gname}" value="yes"> yes</label>` +
-           `<div id="ugi_${gname}" hidden style="margin:0.2em 0 0 2em">` +
-           items.map(([key, item]) =>
-             `<label style="width:16em"><input type="checkbox" name="usage_key" value="${key}"> ${item.label}</label>`).join(" ") +
-           `</div></div>`;
+      h += `</div>`;
     }
     box.innerHTML = h;
-    for (const gname of Object.keys(groups)) {
-      document.querySelectorAll(`input[name=ug_${gname}]`).forEach(radio =>
-        radio.addEventListener("change", () => {
-          const itemsDiv = document.getElementById(`ugi_${gname}`);
-          if (!itemsDiv) return;
-          const yes = radio.value === "yes" && radio.checked;
-          itemsDiv.hidden = !yes;
-          if (!yes) itemsDiv.querySelectorAll("input").forEach(cb => cb.checked = false);
-        }));
-    }
   } catch (err) {
     box.innerHTML = '<span class="err">could not load /usage-questions: ' + err + "</span>";
   }

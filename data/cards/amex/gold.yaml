@@ -71,7 +71,7 @@ credits:
   - name: Uber Cash
     amount_usd: 10           # "$10/month in Uber Cash (US only)"
     period: monthly
-    usage_keys: [uber]
+    usage_keys: [uber, uber_eats]
     category: transit
     requires_enrollment: true
     realistic_capture_rate_note: >-

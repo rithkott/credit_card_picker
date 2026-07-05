@@ -1,0 +1,6 @@
+# Deps for the product API (server/app.py) only — the dataset/optimizer layer
+# stays stdlib + pyyaml + jsonschema (see CLAUDE.md).
+fastapi
+uvicorn[standard]
+pyyaml
+httpx  # only needed to run tests/test_server_api.py (FastAPI TestClient)
