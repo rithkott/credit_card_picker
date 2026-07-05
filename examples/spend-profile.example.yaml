@@ -21,7 +21,16 @@ user:
   max_cards: 3            # 1-5 (default 3)
   optimize_for: ongoing   # ongoing | year1 (default ongoing)
   activates_rotating: true
-  uses_travel_portal: false
+  accepts_brand_lockin: false  # true = also consider cards whose rewards only redeem
+                               # with one company (airline miles, hotel points, store
+                               # credit) — often higher point value, but you're locked
+                               # to that brand. Default false: cash-path cards only
+  confirmed_usage: []     # services/portals/brands you ALREADY use (or will) — item keys
+                          # from data/meta/usage-questions.yaml. A merchant credit counts
+                          # $0 unless its service is listed here; portal-only earn rates
+                          # need their portal key; airline/hotel points get optimistic
+                          # value only with the brand key. Example:
+                          #   confirmed_usage: [chase_travel, doordash, delta, global_entry_tsa]
   reward_preferences: [total_value]  # any combination of: flights, hotels, cashback,
                                      # total_value. Concrete kinds keep only cards whose
                                      # currency redeems for one of them (see redeems_for

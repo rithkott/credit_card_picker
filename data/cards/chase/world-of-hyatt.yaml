@@ -31,6 +31,7 @@ credits:
     amount_usd: 150             # in_kind: curator estimate of a Category 1-4 Hyatt night
     kind: in_kind
     period: annual
+    usage_keys: [hyatt]
     category: travel_hotels
     realistic_capture_rate_note: >-
       Automatic every cardmember anniversary; good for one night at a Category 1-4 Hyatt
@@ -42,6 +43,7 @@ credits:
     amount_usd: 150             # in_kind: same Category 1-4 terms
     kind: in_kind
     period: annual
+    usage_keys: [hyatt]
     category: travel_hotels
     unlock_spend_usd: 15000     # "after $15,000 in purchases each calendar year"
     realistic_capture_rate_note: >-
@@ -51,6 +53,7 @@ credits:
   - name: DashPass DoorDash quarterly credit
     amount_usd: 10             # "$10 off quarterly on one DoorDash non-restaurant order while enrolled"
     period: quarterly
+    usage_keys: [doordash]
     requires_enrollment: true
     realistic_capture_rate_note: >-
       Requires activating complimentary DashPass and one qualifying DoorDash

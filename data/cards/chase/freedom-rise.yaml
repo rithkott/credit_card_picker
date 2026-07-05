@@ -22,6 +22,7 @@ credits:
   - name: DashPass DoorDash quarterly credit
     amount_usd: 10            # "$10 off quarterly on one DoorDash non-restaurant order while enrolled"
     period: quarterly
+    usage_keys: [doordash]
     requires_enrollment: true
     realistic_capture_rate_note: >-
       Requires activating the complimentary 6-month DashPass (activation window

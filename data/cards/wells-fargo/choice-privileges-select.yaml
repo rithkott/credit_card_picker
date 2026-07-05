@@ -26,6 +26,7 @@ credits:
   - name: Anniversary bonus points
     amount_points: 30000     # "30,000 bonus points every account anniversary year"
     period: annual
+    automatic: true    # pays out with no merchant-specific action
     realistic_capture_rate_note: >-
       Automatically deposited each account anniversary — captured by essentially all
       cardholders who keep the account open past the anniversary. Worth roughly 3 Choice
@@ -33,6 +34,7 @@ credits:
   - name: Trusted Traveler (Global Entry / TSA PreCheck) fee credit
     amount_usd: 120          # "Up to $120 statement credit for Trusted Traveler Program fees ... every 4 years"
     period: every_4_years
+    usage_keys: [global_entry_tsa]
     category: travel_other
     realistic_capture_rate_note: >-
       Reimburses Global Entry ($100) or TSA PreCheck (~$78) application fees once every

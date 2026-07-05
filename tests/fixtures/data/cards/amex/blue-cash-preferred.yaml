@@ -28,6 +28,7 @@ credits:
   - name: Disney Bundle credit
     amount_usd: 7
     period: monthly
+    usage_keys: [disney_plus, hulu, espn]
     category: streaming
     realistic_capture_rate_note: >-
       Only worth face value if you already pay for the Disney Bundle (>= $9.99/mo)

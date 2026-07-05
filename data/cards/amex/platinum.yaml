@@ -3,6 +3,7 @@ id: platinum
 name: The Platinum Card from American Express
 issuer: amex
 network: amex
+portal: amex_travel    # portal_only rates book through this portal
 currency:
   type: points
   program: amex_mr
@@ -35,6 +36,7 @@ credits:
   - name: Uber Cash
     amount_usd: 15           # "$15/month + $20 in December"
     period: monthly
+    usage_keys: [uber]
     category: transit
     requires_enrollment: true
     realistic_capture_rate_note: >-
@@ -45,6 +47,7 @@ credits:
   - name: Uber One Credit
     amount_usd: 120          # "up to $120/year on Uber One membership fees"
     period: annual
+    usage_keys: [uber]
     category: transit
     requires_enrollment: true
     realistic_capture_rate_note: >-
@@ -62,6 +65,7 @@ credits:
   - name: Oura Ring Credit
     amount_usd: 200          # "up to $200/year, Oura Ring purchases only"
     period: annual
+    usage_keys: [oura]
     requires_enrollment: true
     realistic_capture_rate_note: >-
       Up to $200/yr on Oura Ring hardware at ouraring.com only (excludes memberships/
@@ -70,6 +74,7 @@ credits:
   - name: Digital Entertainment Credit
     amount_usd: 25           # "up to $25/month ($300/year)"
     period: monthly
+    usage_keys: [disney_plus, hulu, espn, paramount_plus, peacock, nytimes, wsj, youtube]
     category: streaming
     requires_enrollment: true
     realistic_capture_rate_note: >-
@@ -79,6 +84,7 @@ credits:
   - name: CLEAR Plus Credit
     amount_usd: 209          # "up to $209/year on CLEAR+ membership"
     period: annual
+    usage_keys: [clear]
     category: travel_other
     requires_enrollment: true
     realistic_capture_rate_note: >-
@@ -86,6 +92,7 @@ credits:
   - name: Equinox Credit
     amount_usd: 300          # "up to $300/year on Equinox membership ... or Equinox+"
     period: annual
+    usage_keys: [equinox]
     requires_enrollment: true
     realistic_capture_rate_note: >-
       Up to $300/yr on Equinox or Equinox+ memberships; requires eligibility
@@ -93,6 +100,7 @@ credits:
   - name: lululemon Credit
     amount_usd: 75           # "up to $75/quarter ($300/year)"
     period: quarterly
+    usage_keys: [lululemon]
     requires_enrollment: true
     realistic_capture_rate_note: >-
       $75/quarter at lululemon stores/site/app (excludes Studio, Like New, outlet,
@@ -100,6 +108,7 @@ credits:
   - name: Resy Credit
     amount_usd: 100          # "up to $100/quarter ($400/year)"
     period: quarterly
+    usage_keys: [resy]
     category: dining
     requires_enrollment: true
     realistic_capture_rate_note: >-
@@ -108,6 +117,7 @@ credits:
   - name: Hotel Credit
     amount_usd: 300          # "up to $300 semiannually ($600/year)"
     period: semiannual
+    usage_keys: [amex_travel]
     category: travel_hotels
     realistic_capture_rate_note: >-
       $300 twice a year on prepaid Fine Hotels+Resorts / The Hotel Collection bookings
@@ -116,6 +126,7 @@ credits:
   - name: Walmart Plus Monthly Credit
     amount_usd: 12.95        # "covers one Walmart+ monthly membership fee (~$12.95)/month"
     period: monthly
+    usage_keys: [walmart_plus]
     realistic_capture_rate_note: >-
       Covers one monthly Walmart+ membership fee (~$12.95); annual Walmart+ plans do
       NOT qualify (must switch to monthly). Only valuable to monthly Walmart+
@@ -123,6 +134,7 @@ credits:
   - name: Global Entry or TSA PreCheck Fee Credit
     amount_usd: 120
     period: every_4_years
+    usage_keys: [global_entry_tsa]
     category: travel_other
     realistic_capture_rate_note: >-
       One credit every 4 years, up to $120 (Global Entry) or $85 (TSA PreCheck).

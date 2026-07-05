@@ -25,12 +25,14 @@ credits:
   - name: Anniversary bonus points
     amount_points: 5000         # "5,000 bonus points each year after account anniversary"
     period: annual
+    automatic: true    # pays out with no merchant-specific action
     realistic_capture_rate_note: >-
       Automatic 5,000 TrueBlue points each year after the account anniversary; captured by every
       cardholder who keeps the card open. Valued via the card's TrueBlue program.
   - name: JetBlue Vacations statement credit
     amount_usd: 100             # "$100 statement credit after a JetBlue Vacations package of $100+ (limit one/year)"
     period: annual
+    usage_keys: [jetblue]
     realistic_capture_rate_note: >-
       Scoped trigger: requires buying a JetBlue Vacations package of $100+ (limit one per year) —
       NOT total card spend, so unlock_spend_usd is intentionally unset. Captured only by

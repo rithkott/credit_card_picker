@@ -39,6 +39,7 @@ credits:
   - name: Global Entry / TSA PreCheck application fee credit
     amount_usd: 120          # "up to $120 statement credit per eligible card"
     period: every_4_years    # "once every 4 years"
+    usage_keys: [global_entry_tsa]
     realistic_capture_rate_note: >-
       Captured only by cardholders who apply/reapply for Global Entry or TSA PreCheck
       within the 4-year window; worth ~$100-$120 (application fees) to travelers, $0

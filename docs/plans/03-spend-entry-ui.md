@@ -75,7 +75,9 @@ user:
   max_cards: 3            # 1-5 (default 3)
   optimize_for: ongoing   # ongoing | year1 (default ongoing)
   activates_rotating: true
-  uses_travel_portal: false
+  uses_travel_portal: false   # SUPERSEDED (plan 07): now confirmed_usage — see
+                              # docs/plans/07-confirmed-usage.md; the form must
+                              # emit the questionnaire's confirmed keys instead
 ```
 
 The rules, each traceable to a line in `parse_profile`:

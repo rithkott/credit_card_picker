@@ -5,6 +5,7 @@ id: credit-card
 name: SoFi Unlimited 2% Credit Card
 issuer: sofi
 network: mastercard          # "Issued by SoFi Bank, N.A., pursuant to license by Mastercard International"
+portal: sofi_travel    # portal_only rates book through this portal
 currency:
   type: points
   program: sofi_points       # 1 pt = 1 cent redeemed INTO a SoFi account (cardholders have one)

@@ -144,6 +144,9 @@ pre#yaml .k{color:var(--code-key)} pre#yaml .s{color:var(--code-str)} pre#yaml .
       <input type="text" id="issuer" class="mono" placeholder="amex"></div>
     <div class="field"><label for="network">network <span class="req">*</span></label>
       <select id="network"><option value="visa">visa</option><option value="mastercard">mastercard</option><option value="amex">amex</option><option value="discover">discover</option></select></div>
+    <div class="field"><label for="portal">issuer travel portal <span class="hint">required iff any reward is portal-only; which portal those rates book through</span></label>
+      <select id="portal"></select></div>
+    <label class="check"><input type="checkbox" id="unlockstransfers"> transfer gateway — holding this card unlocks the program's transfer partners for the whole portfolio (Sapphire, Strata Premier/Elite, Autograph Journey). Only on transfer_gateway_required programs</label>
   </div>
 </section>
 
@@ -357,6 +360,21 @@ const PROGRAMS = ["cash","chase_ur","amex_mr","citi_typ","capital_one_miles","we
 const SUPPORTS = ["identity","currency","base_rate","category_rewards","merchant_rewards","credits","signup_bonus","fees","approval","closed_loop","relationship_boost","required_membership","benefit_flags"];
 const PERIODS = ["monthly","quarterly","semiannual","annual","every_4_years","every_5_years"];
 const CAP_PERIODS = ["monthly","quarterly","annual"];
+/* point-valuations.yaml programs with transfer_gateway_required — the only
+   programs unlocks_transfers may appear on (sync when the registry changes). */
+const GATEWAY_PROGRAMS = ["chase_ur","citi_typ","wells_fargo_rewards"];
+/* data/meta/usage-questions.yaml item keys — the vocabulary for credits[].usage_keys
+   and the card-level portal field (sync when the registry changes). */
+const PORTAL_KEYS = ["chase_travel","amex_travel","capital_one_travel","citi_travel","bilt_travel","sofi_travel","robinhood_travel","aadvantage_hotels"];
+const USAGE_KEYS = [...PORTAL_KEYS,
+  "delta","united","american_airlines","southwest","jetblue","alaska_airlines","air_canada","british_airways","aer_lingus","iberia","air_france_klm","emirates","lufthansa","frontier","allegiant","jsx",
+  "hilton","marriott","hyatt","ihg","wyndham","choice_hotels","rci",
+  "uber","lyft","turo","avis_budget","blacklane",
+  "doordash","grubhub","instacart","resy","dunkin","home_chef",
+  "disney_plus","hulu","espn","paramount_plus","peacock","nytimes","wsj","youtube",
+  "peloton","equinox","lululemon","oura","walmart_plus","clear",
+  "stubhub","ticketmaster","global_entry_tsa",
+  "att","verizon","gm","royal_caribbean","costco","sams_club"];
 
 const $ = (s,el=document)=>el.querySelector(s);
 const $$ = (s,el=document)=>[...el.querySelectorAll(s)];
@@ -454,6 +472,11 @@ function addCred(){
       <label class="check"><input type="checkbox" data-role="inkind"> in-kind benefit (free night, companion cert — amount is your estimate)</label>
       <label class="check"><input type="checkbox" data-role="enroll"> requires enrollment / activation</label>
       <div class="field"><label>promo expires <span class="hint">omit if evergreen</span></label><input type="date" data-role="credexp"></div>
+    </div>
+    <div class="grid g3" style="margin-top:10px">
+      <div class="field" style="grid-column:span 2"><label>usage keys <span class="hint">comma-separated usage-questions.yaml items (doordash, delta, ...) — credit is $0 unless the user confirmed one</span></label>
+        <input type="text" data-role="usagekeys" class="mono" placeholder="doordash, uber"></div>
+      <label class="check"><input type="checkbox" data-role="automatic"> automatic (anniversary-style — no merchant action; exclusive of usage keys / category)</label>
     </div>
     <div class="field" style="margin-top:10px"><label>realistic capture-rate note <span class="req">*</span></label>
       <textarea data-role="capture" placeholder="Who actually captures this and who doesn't — enrollment, partner list, monthly forfeit…"></textarea></div>
@@ -564,6 +587,11 @@ function build(){
   L.push(`name: ${name?ystr(name):"?"}`);
   L.push(`issuer: ${issuer||"?"}`);
   L.push(`network: ${val("network")}`);
+  if (val("portal")) L.push(`portal: ${val("portal")}    # portal_only rates book through this portal`);
+  if ($("#unlockstransfers").checked){
+    if (!GATEWAY_PROGRAMS.includes(program)) errs.push(`unlocks_transfers is only meaningful on transfer_gateway_required programs (${GATEWAY_PROGRAMS.join(", ")}) — '${program}' either transfers natively or never`);
+    L.push(`unlocks_transfers: true   # gateway: unlocks this program's transfer partners for the whole portfolio`);
+  }
   L.push(`currency:`);
   L.push(`  type: ${curtype}`);
   L.push(`  program: ${program}`);
@@ -635,6 +663,11 @@ function build(){
     });
   }
 
+  /* portal gating (mirrors validate_cards.py) */
+  const hasPortalLines = cats.some(it=>$('[data-role=portal]',it).checked);
+  if (hasPortalLines && !val("portal")) errs.push("a reward line is portal-only but no issuer travel portal is selected — the optimizer needs it to gate those lines");
+  else if (!hasPortalLines && val("portal")) warns.push(`portal '${val("portal")}' selected but no reward line is portal-only — drop it or mark the portal lines`);
+
   /* shared-cap groups (mirrors validate_cards.py) */
   const capGroups = {};
   [...cats, ...mers].forEach(it=>{
@@ -667,8 +700,20 @@ function build(){
       L.push(`  - name: ${nm?ystr(nm):"?"}`);
       if ($('[data-role=inkind]',it).checked) L.push(`    kind: in_kind`);
       L.push(`    ${unit==="points"?"amount_points":"amount_usd"}: ${amt ?? "?"}`);
-      L.push(`    period: ${$('[data-role=period]',it).value}`);
+      const period = $('[data-role=period]',it).value;
+      L.push(`    period: ${period}`);
       const c = $('[data-role=cat]',it).value;
+      const ukRaw = $('[data-role=usagekeys]',it).value.trim();
+      const uk = ukRaw ? ukRaw.split(/[,\s]+/).filter(Boolean) : [];
+      const auto = $('[data-role=automatic]',it).checked;
+      uk.filter(k=>!USAGE_KEYS.includes(k)).forEach(k=>
+        errs.push(`credit #${i+1}: usage key '${k}' is not a usage-questions.yaml item`));
+      if (auto && (uk.length || c)) errs.push(`credit #${i+1}: automatic may not be combined with usage keys or a category — an automatic credit needs no gate`);
+      if (!auto && !uk.length && !c) errs.push(`credit #${i+1}: un-gated credit — needs usage keys (merchant/service/brand), a category (generic spend-offset), or automatic`);
+      if ((period==="monthly"||period==="quarterly") && unit==="usd" && !$('[data-role=inkind]',it).checked && c && !uk.length)
+        warns.push(`credit #${i+1}: ${period} statement credit with category but no usage keys — short-cycle coupons are almost always merchant-specific; verify it is genuinely merchant-agnostic`);
+      if (uk.length) L.push(`    usage_keys: [${uk.join(", ")}]`);
+      if (auto) L.push(`    automatic: true    # pays out with no merchant-specific action`);
       if (c) L.push(`    category: ${c}`);
       const ul = num($('[data-role=unlock]',it).value);
       if (ul!==null && ul>0) L.push(`    unlock_spend_usd: ${ul}`);
@@ -891,6 +936,7 @@ function render(){
 
 /* ---------- wiring ---------- */
 $("#program").innerHTML = opts(PROGRAMS,"cash");
+$("#portal").innerHTML = `<option value="">—</option>` + opts(PORTAL_KEYS);
 $("#clchips").innerHTML = MERCHANTS.map(m=>`<label class="chip"><input type="checkbox" value="${m}">${m}</label>`).join("");
 $("#vdate").value = today;
 

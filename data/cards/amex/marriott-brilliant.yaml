@@ -33,6 +33,7 @@ credits:
   - name: Marriott Property Credit (Ritz-Carlton / St. Regis)
     amount_usd: 100          # "up to $100 per booking"
     period: annual
+    usage_keys: [marriott]
     category: travel_hotels
     realistic_capture_rate_note: >-
       Up to $100 per booking at Ritz-Carlton/St. Regis, only via the specific "$100
@@ -42,6 +43,7 @@ credits:
   - name: Global Entry or TSA PreCheck Fee Credit
     amount_usd: 120
     period: every_4_years
+    usage_keys: [global_entry_tsa]
     category: travel_other
     realistic_capture_rate_note: >-
       One credit every 4 years, up to $120 (Global Entry) or $85 (TSA PreCheck).
@@ -59,6 +61,7 @@ credits:
     kind: in_kind
     amount_usd: 400          # estimated value of a <=85,000-point Marriott night
     period: annual
+    usage_keys: [marriott]
     category: travel_hotels
     realistic_capture_rate_note: >-
       Free night each year after renewal (redemption level <=85,000 points; can add up

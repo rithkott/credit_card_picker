@@ -35,6 +35,7 @@ credits:
   - name: Hilton Resort Credit
     amount_usd: 200          # "up to $200 semiannually (Jan-Jun, Jul-Dec)"
     period: semiannual
+    usage_keys: [hilton]
     category: travel_hotels
     realistic_capture_rate_note: >-
       $200 twice a year ($400/yr) on purchases made directly with participating Hilton
@@ -44,6 +45,7 @@ credits:
   - name: Property Credit (Waldorf Astoria / Conrad)
     amount_usd: 100          # "up to $100 hotel-folio credit per booking (2-night minimum)"
     period: annual
+    usage_keys: [hilton]
     category: travel_hotels
     realistic_capture_rate_note: >-
       Up to $100 folio credit per qualifying booking (2-night min) at Waldorf Astoria/
@@ -53,6 +55,7 @@ credits:
   - name: CLEAR Plus Credit
     amount_usd: 219          # "up to $219/calendar year"
     period: annual
+    usage_keys: [clear]
     category: travel_other
     requires_enrollment: true
     realistic_capture_rate_note: >-
@@ -62,6 +65,7 @@ credits:
     kind: in_kind
     amount_usd: 200          # estimated value of one standard Hilton night at ~0.4-0.6 cpp redemption
     period: annual
+    usage_keys: [hilton]
     category: travel_hotels
     realistic_capture_rate_note: >-
       One free standard-room night each card year at most Hilton properties (expires 1

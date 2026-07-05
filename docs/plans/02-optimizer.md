@@ -51,6 +51,11 @@ user:
   uses_travel_portal: false     # default false
 ```
 
+> **Superseded (plan 07):** `uses_travel_portal` was replaced by
+> `user.confirmed_usage`, a list of usage-questions item keys; portal-only
+> lines now gate on the card's `portal` key being confirmed. See
+> `docs/plans/07-confirmed-usage.md`.
+
 Rules, enforced at load with hand-rolled checks in the style of
 `validate_cards.py`'s registry checks (exit 1 with a clear message on violation):
 
@@ -206,6 +211,9 @@ Annual room of a capped line = `cap.max_spend_usd × CAP_PERIODS_PER_YEAR[period
 Stated simplification: spend is even across periods (no seasonality).
 
 ### 5.3 `portal_only` lines
+
+> **Superseded (plan 07):** the gate is now per-portal — a portal-only line is
+> kept only when the card's `portal` key appears in `user.confirmed_usage`.
 
 If `user.uses_travel_portal` is false, portal-only lines are dropped entirely —
 their spend falls through to the next eligible line. If true, the line is kept with

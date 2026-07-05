@@ -21,6 +21,7 @@ credits:
   - name: DoorDash monthly 10%-off order credit
     amount_usd: 15            # "10% off (up to $15/month) one Convenience/Grocery/Alcohol/Retail/DashMart order per month on DoorDash ... through 12/31/2026"
     period: monthly
+    usage_keys: [doordash]
     expires: "2026-12-31"
     realistic_capture_rate_note: >-
       10% off one qualifying DoorDash (not Caviar) Convenience/Grocery/Alcohol/Retail/
@@ -31,6 +32,7 @@ credits:
     amount_usd: 96            # in-kind estimate: ~$96/yr DashPass annual plan value, waived for the primary + 1 authorized user
     kind: in_kind
     period: annual
+    usage_keys: [doordash]
     realistic_capture_rate_note: >-
       12 months of complimentary DashPass for the primary cardmember (auto-activated on
       approval) + up to 1 authorized user; renews for another 12 months in any Anniversary

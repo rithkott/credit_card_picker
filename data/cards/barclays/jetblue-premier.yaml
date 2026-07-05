@@ -25,6 +25,7 @@ credits:
   - name: TrueBlue Travel statement credit
     amount_usd: 300             # "Up to $300/calendar year in statement credits on TrueBlue Travel purchases"
     period: annual
+    usage_keys: [jetblue]
     category: travel_flights
     realistic_capture_rate_note: >-
       Up to $300/calendar year automatically credited against eligible TrueBlue Travel
@@ -33,18 +34,21 @@ credits:
   - name: Anniversary bonus points
     amount_points: 5000         # "5,000 bonus points each year after account anniversary"
     period: annual
+    automatic: true    # pays out with no merchant-specific action
     realistic_capture_rate_note: >-
       Automatic 5,000 TrueBlue points each year after the account anniversary; captured by every
       cardholder who keeps the card open.
   - name: Global Entry / TSA PreCheck fee credit
     amount_usd: 120             # "up to $120 every 4 years"
     period: every_4_years
+    usage_keys: [global_entry_tsa]
     realistic_capture_rate_note: >-
       One statement credit up to $120 per 4-year cycle for a Global Entry/TSA PreCheck fee.
       Captured only by travelers who apply/renew.
   - name: Companion Pass credit — first tranche
     amount_usd: 500             # "$500 credit after $15,000 in eligible net purchases in a calendar year"
     period: annual
+    usage_keys: [jetblue]
     unlock_spend_usd: 15000     # total card spend in the calendar year (whole-card threshold)
     realistic_capture_rate_note: >-
       One-time $500 statement credit once $15,000 in total net purchases posts in a calendar
@@ -53,6 +57,7 @@ credits:
   - name: Companion Pass credit — second tranche
     amount_usd: 1500            # "additional one-time $1,500 credit after $75,000 net purchases (incl. the initial $15,000)"
     period: annual
+    usage_keys: [jetblue]
     unlock_spend_usd: 75000     # cumulative total card spend in the calendar year
     realistic_capture_rate_note: >-
       Additional one-time $1,500 statement credit once cumulative total net purchases reach

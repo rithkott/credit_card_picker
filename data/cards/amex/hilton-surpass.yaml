@@ -33,6 +33,7 @@ credits:
   - name: Hilton Statement Credit
     amount_usd: 50           # "up to $50/quarter ($200/year)"
     period: quarterly
+    usage_keys: [hilton]
     category: travel_hotels
     realistic_capture_rate_note: >-
       $50/quarter on purchases made directly with a Hilton portfolio property

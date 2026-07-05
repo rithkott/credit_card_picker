@@ -36,6 +36,7 @@ credits:
   - name: CLEAR Plus Credit
     amount_usd: 219          # "up to $219/calendar year"
     period: annual
+    usage_keys: [clear]
     category: travel_other
     requires_enrollment: true
     realistic_capture_rate_note: >-

@@ -3,6 +3,7 @@ id: freedom-unlimited
 name: Chase Freedom Unlimited
 issuer: chase
 network: visa                # NOT stated in offer file; Freedom Unlimited is a Visa — inference, NEEDS human verification
+portal: chase_travel    # portal_only rates book through this portal
 currency:
   type: points               # earns Ultimate Rewards points (1 pt = $0.01); transferable when paired with a premium Chase card
   program: chase_ur
@@ -38,6 +39,7 @@ credits:
   - name: DashPass DoorDash quarterly credit
     amount_usd: 10            # "Up to $10 off quarterly on DoorDash non-restaurant orders while enrolled in DashPass"
     period: quarterly
+    usage_keys: [doordash]
     requires_enrollment: true
     realistic_capture_rate_note: >-
       Requires activating the complimentary 6-month DashPass (activation window

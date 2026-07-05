@@ -44,6 +44,7 @@ credits:
   - name: Home Chef Credit
     amount_usd: 15           # "up to $15/month statement credit ... ($180/year max)"
     period: monthly
+    usage_keys: [home_chef]
     requires_enrollment: true
     realistic_capture_rate_note: >-
       Only captured by active Home Chef meal-kit subscribers who buy online at
@@ -53,6 +54,7 @@ credits:
   - name: Disney Streaming Credit
     amount_usd: 7            # "up to $7/month ... ($84/year max)"
     period: monthly
+    usage_keys: [disney_plus, hulu, espn]
     category: streaming
     requires_enrollment: true
     realistic_capture_rate_note: >-

@@ -19,6 +19,7 @@ credits:
   - name: Lufthansa Business Lounge vouchers
     amount_usd: 100             # curator estimate: 2 single-visit Business Lounge vouchers, ~$50 each
     period: annual
+    usage_keys: [lufthansa]
     kind: in_kind
     realistic_capture_rate_note: >-
       Two complimentary Lufthansa Business Lounge vouchers per year; captured only when flying

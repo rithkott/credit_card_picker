@@ -48,6 +48,7 @@ credits:
     kind: in_kind
     amount_usd: 300          # estimated value of a <=50,000-point Marriott night at ~0.6cpp floor
     period: annual
+    usage_keys: [marriott]
     category: travel_hotels
     unlock_spend_usd: 15000  # "Free Night Award after $15,000 in eligible spend in a calendar year"
     realistic_capture_rate_note: >-

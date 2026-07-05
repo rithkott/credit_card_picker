@@ -32,6 +32,7 @@ credits:
   - name: Anniversary bonus points ($10k spend)
     amount_points: 10000        # "10,000 bonus points each calendar year with $10,000+ spend"
     period: annual
+    automatic: true    # pays out with no merchant-specific action
     unlock_spend_usd: 10000
     realistic_capture_rate_note: >-
       Pays only after $10,000 of card spend in a calendar year; captured by moderate-to-
@@ -39,6 +40,7 @@ credits:
   - name: DashPass DoorDash quarterly credit
     amount_usd: 10             # "$10 off quarterly on one DoorDash non-restaurant order while enrolled"
     period: quarterly
+    usage_keys: [doordash]
     requires_enrollment: true
     realistic_capture_rate_note: >-
       Requires activating complimentary DashPass and one qualifying DoorDash
@@ -46,6 +48,7 @@ credits:
   - name: Instacart monthly credit
     amount_usd: 10             # "$10/month Instacart credit while active"
     period: monthly
+    usage_keys: [instacart]
     requires_enrollment: true
     realistic_capture_rate_note: >-
       Requires an active Instacart+ membership (3 months complimentary, then auto-renews

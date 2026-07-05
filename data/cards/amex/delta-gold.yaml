@@ -26,6 +26,7 @@ credits:
   - name: Delta Flight Credit
     amount_usd: 200          # "$200 Delta Flight Credit ... if $10,000+ ... in a calendar year"
     period: annual
+    usage_keys: [delta]
     category: travel_flights
     unlock_spend_usd: 10000  # requires $10,000 in eligible purchases in a calendar year
     realistic_capture_rate_note: >-
@@ -36,6 +37,7 @@ credits:
   - name: Rideshare Credit
     amount_usd: 10           # "up to $10/month statement credit"
     period: monthly
+    usage_keys: [uber, lyft]
     category: transit
     requires_enrollment: true
     realistic_capture_rate_note: >-
@@ -46,6 +48,7 @@ credits:
   - name: Delta Stays Credit
     amount_usd: 100          # "up to $100/year"
     period: annual
+    usage_keys: [delta]
     category: travel_hotels
     realistic_capture_rate_note: >-
       $100/yr on prepaid hotel/vacation-rental bookings via the Delta Stays platform
@@ -54,6 +57,7 @@ credits:
   - name: 20% Back on In-Flight Purchases
     amount_usd: 15           # uncapped % rebate; nominal realistic annual figure
     period: annual
+    usage_keys: [delta]
     realistic_capture_rate_note: >-
       20% statement credit on Delta in-flight food/beverage (automatic). No cap;
       value depends on in-flight spend, typically small — modeled at ~$15/yr.

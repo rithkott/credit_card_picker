@@ -68,6 +68,7 @@ credits:
   - name: Global Entry / TSA PreCheck application fee credit
     amount_usd: 120            # up to $120 (Global Entry) / $85 (TSA PreCheck), once every 4 years
     period: every_4_years
+    usage_keys: [global_entry_tsa]
     realistic_capture_rate_note: >-
       Captured only by travelers who apply/renew a trusted-traveler membership and pay with
       the card; credit posts 6-8 weeks after the charge. Face value reported as up to $120

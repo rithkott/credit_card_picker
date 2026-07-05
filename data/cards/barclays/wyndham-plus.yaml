@@ -29,12 +29,14 @@ credits:
   - name: Anniversary bonus points
     amount_points: 15000        # "15,000 bonus points each anniversary year after annual fee payment"
     period: annual
+    automatic: true    # pays out with no merchant-specific action
     realistic_capture_rate_note: >-
       15,000 Wyndham points each anniversary after the annual fee posts (up to ~2 free nights);
       captured by every renewing cardholder. Valued via the wyndham_rewards program.
   - name: Free night after 5 nights stayed
     amount_usd: 105             # curator estimate: up to 15,000 Wyndham pts x 0.7cpp floor
     period: annual
+    usage_keys: [wyndham]
     kind: in_kind
     realistic_capture_rate_note: >-
       Non-spend trigger: 1 free night (up to 15,000 points) after 5+ paid nights stayed in a

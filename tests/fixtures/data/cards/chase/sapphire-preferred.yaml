@@ -3,6 +3,8 @@ id: sapphire-preferred
 name: Chase Sapphire Preferred
 issuer: chase
 network: visa
+portal: chase_travel
+unlocks_transfers: true   # gateway: unlocks this program's transfer partners for the whole portfolio
 currency:
   type: points
   program: chase_ur
@@ -31,6 +33,7 @@ credits:
   - name: Annual hotel credit (Chase Travel)
     amount_usd: 50
     period: annual
+    usage_keys: [chase_travel]
     category: travel_hotels
     realistic_capture_rate_note: >-
       Requires booking a hotel through Chase Travel, where prices can exceed direct

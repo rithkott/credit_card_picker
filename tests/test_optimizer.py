@@ -63,19 +63,25 @@ def synth_card(**overrides):
 # $30,000/yr profile from spec §4.3 — the first golden test.
 P30K = {"groceries": 8000, "dining": 5000, "other": 17000}
 
+# The Gold fixture card's four credit services, confirmed (plan 07).
+GOLD_KEYS = ["dunkin", "grubhub", "resy", "uber"]
+
 
 class TestSingleCardGolden(unittest.TestCase):
     """All 7 seed cards single-card, both modes (spec §9)."""
 
     def test_double_cash_worked_example(self):
-        # Spec §4.3: floor ongoing $600, year-1 $800, optimistic ongoing $1,020.
+        # Spec §4.3: floor ongoing $600, year-1 $800. Optimistic (plan 07
+        # addendum): citi_typ is transfer_gateway_required and no premium TY
+        # card is in the portfolio, so standalone Double Cash stays at floor
+        # 1.0cpp — its 1.7cpp upside needs a Strata Premier/Elite pairing.
         prof = make_profile(P30K)
         floor = score(["double-cash"], prof, "floor")
         self.assertAlmostEqual(floor["ongoing_net"], 600.0)
         self.assertAlmostEqual(floor["year1_net"], 800.0)
         optimistic = score(["double-cash"], prof, "optimistic")
-        self.assertAlmostEqual(optimistic["ongoing_net"], 1020.0)
-        self.assertAlmostEqual(optimistic["year1_net"], 1220.0)
+        self.assertAlmostEqual(optimistic["ongoing_net"], 600.0)
+        self.assertAlmostEqual(optimistic["year1_net"], 800.0)
 
     def test_active_cash(self):
         # Flat 2% cash: 30000*2% = 600; +$200 bonus year 1. Identical both modes.
@@ -107,44 +113,58 @@ class TestSingleCardGolden(unittest.TestCase):
     def test_amex_gold_floor(self):
         # cpp 0.6: dining 5000*4*.006=120, groceries 8000*4*.006=192,
         # other 17000*.006=102 → 414 earn.
-        # Credits vs dining tracker 5000: dining 10*12*.5=60, Uber $0 (no transit
-        # spend), Resy 50*2*.8=80, Dunkin 7*12*.5=42 → 182.
-        # ongoing 414+182-325=271; bonus 60000*.006=360 → year1 631.
-        prof = make_profile(P30K)
+        # All four credit services confirmed → CONFIRMED_CREDIT_CAPTURE.
+        # Credits vs dining tracker 5000: dining 10*12*.8=96, Uber $0 (no transit
+        # spend), Resy 50*2*.9=90, Dunkin 7*12*.8=67.2 → 253.2.
+        # ongoing 414+253.2-325=342.2; bonus 60000*.006=360 → year1 702.2.
+        prof = make_profile(P30K, confirmed_usage=GOLD_KEYS)
         r = score(["gold"], prof, "floor")
         self.assertAlmostEqual(r["earnings"], 414.0)
-        self.assertAlmostEqual(sum(c["value"] for c in r["credits"]), 182.0)
-        self.assertAlmostEqual(r["ongoing_net"], 271.0)
-        self.assertAlmostEqual(r["year1_net"], 631.0)
+        self.assertAlmostEqual(sum(c["value"] for c in r["credits"]), 253.2)
+        self.assertAlmostEqual(r["ongoing_net"], 342.2)
+        self.assertAlmostEqual(r["year1_net"], 702.2)
+
+    def test_amex_gold_floor_unconfirmed(self):
+        # No confirmed usage: every merchant credit is $0 with an explicit
+        # reason — the card is just its earn minus the fee.
+        prof = make_profile(P30K)
+        r = score(["gold"], prof, "floor")
+        self.assertAlmostEqual(sum(c["value"] for c in r["credits"]), 0.0)
+        for c in r["credits"]:
+            self.assertIn("requires confirmed use", c["note"])
+        self.assertAlmostEqual(r["ongoing_net"], 414.0 - 325.0)
 
     def test_amex_gold_optimistic(self):
         # cpp 1.9: 5000*4*.019=380 + 8000*4*.019=608 + 17000*.019=323 = 1311.
-        # ongoing 1311+182-325=1168; bonus 1140 → year1 2308.
-        prof = make_profile(P30K)
+        # ongoing 1311+253.2-325=1239.2; bonus 1140 → year1 2379.2.
+        prof = make_profile(P30K, confirmed_usage=GOLD_KEYS)
         r = score(["gold"], prof, "optimistic")
-        self.assertAlmostEqual(r["ongoing_net"], 1168.0)
-        self.assertAlmostEqual(r["year1_net"], 2308.0)
+        self.assertAlmostEqual(r["ongoing_net"], 1239.2)
+        self.assertAlmostEqual(r["year1_net"], 2379.2)
 
-    def test_sapphire_preferred_portal_off(self):
-        # Portal-only 5x travel_other dropped → falls to base 1x.
+    def test_sapphire_preferred_portal_unconfirmed(self):
+        # chase_travel not confirmed: the portal-only 5x travel_other line is
+        # dropped (falls to base 1x) AND the portal-locked hotel credit is $0.
         # floor: dining 120 + groceries 180 + hotels 40 + base(1000+7000)*1% 80
-        # = 420; hotel credit min(50*0.9, 2000)=45; ongoing 420+45-95=370;
-        # bonus 60000*1.0cpp=600 → year1 970.
+        # = 420; ongoing 420+0-95=325; bonus 60000*1.0cpp=600 → year1 925.
         prof = make_profile({"dining": 4000, "groceries": 6000, "travel_hotels": 2000,
                              "travel_other": 1000, "other": 7000})
         r = score(["sapphire-preferred"], prof, "floor")
         self.assertAlmostEqual(r["earnings"], 420.0)
-        self.assertAlmostEqual(r["ongoing_net"], 370.0)
-        self.assertAlmostEqual(r["year1_net"], 970.0)
+        self.assertAlmostEqual(r["ongoing_net"], 325.0)
+        self.assertAlmostEqual(r["year1_net"], 925.0)
+        self.assertIn("requires confirmed use", r["credits"][0]["note"])
 
-    def test_sapphire_preferred_portal_on(self):
-        # travel_other kept at 5*0.75=3.75x → 1000*.0375=37.5 replaces base $10.
+    def test_sapphire_preferred_portal_confirmed(self):
+        # chase_travel confirmed: travel_other kept at 5*0.75=3.75x →
+        # 1000*.0375=37.5 replaces base $10 (earn 447.5); hotel credit
+        # min(50*0.95, 2000)=47.5; ongoing 447.5+47.5-95=400.
         prof = make_profile({"dining": 4000, "groceries": 6000, "travel_hotels": 2000,
                              "travel_other": 1000, "other": 7000},
-                            uses_travel_portal=True)
+                            confirmed_usage=["chase_travel"])
         r = score(["sapphire-preferred"], prof, "floor")
         self.assertAlmostEqual(r["earnings"], 447.5)
-        self.assertAlmostEqual(r["ongoing_net"], 397.5)
+        self.assertAlmostEqual(r["ongoing_net"], 400.0)
 
     def test_freedom_flex_rotating_activated(self):
         # Rotating room 1500*4*0.75=4500 @5x. Regret rule fills gas (alt 1%)
@@ -169,52 +189,63 @@ class TestSingleCardGolden(unittest.TestCase):
         self.assertAlmostEqual(r["ongoing_net"], 280.0)
 
     def test_freedom_flex_optimistic(self):
-        # cpp 2.0 doubles everything: 460*2 = 920 ongoing; +$200 bonus → 1120.
+        # Plan 07 addendum: standalone Freedom Flex is pure cash back — its UR
+        # points can't reach transfer partners without a Sapphire in the
+        # portfolio, so optimistic == floor (1.0cpp): 460 ongoing, 660 year-1.
+        # (Paired 2.0cpp behavior is pinned in TestTransferGateway.)
         prof = make_profile({"dining": 4000, "groceries": 6000, "gas": 2000, "other": 8000})
         r = score(["freedom-flex"], prof, "optimistic")
-        self.assertAlmostEqual(r["ongoing_net"], 920.0)
-        self.assertAlmostEqual(r["year1_net"], 1120.0)
+        self.assertAlmostEqual(r["ongoing_net"], 460.0)
+        self.assertAlmostEqual(r["year1_net"], 660.0)
 
-    def test_venture_x_portal_off(self):
-        # Both elevated lines are portal-only → all 20000 at base 2x*0.5cpp=1%
-        # → 200. Credits: travel credit min(300*0.9, 1000)=270 + anniversary 100
-        # (automatic). ongoing 200+370-395=175; bonus 75000*.005=375 → year1 550.
+    def test_venture_x_portal_unconfirmed(self):
+        # capital_one_travel not confirmed: both portal-only lines drop → all
+        # 20000 at base 2x*0.5cpp=1% → 200; the portal-locked travel credit is
+        # $0, only the automatic anniversary $100 survives. ongoing
+        # 200+100-395=-95; bonus 75000*.005=375 → year1 280.
         prof = make_profile({"travel_flights": 3000, "travel_hotels": 2000,
                              "travel_other": 1000, "other": 14000})
         r = score(["venture-x"], prof, "floor")
         self.assertAlmostEqual(r["earnings"], 200.0)
-        self.assertAlmostEqual(sum(c["value"] for c in r["credits"]), 370.0)
-        self.assertAlmostEqual(r["ongoing_net"], 175.0)
-        self.assertAlmostEqual(r["year1_net"], 550.0)
+        self.assertAlmostEqual(sum(c["value"] for c in r["credits"]), 100.0)
+        self.assertAlmostEqual(r["ongoing_net"], -95.0)
+        self.assertAlmostEqual(r["year1_net"], 280.0)
 
-    def test_venture_x_portal_on(self):
+    def test_venture_x_portal_confirmed(self):
         # hotels 2000@7.5x*.005=75, flights 3000@3.75x*.005=56.25,
-        # base 15000@1%=150 → 281.25; ongoing 281.25+370-395=256.25.
+        # base 15000@1%=150 → 281.25. Credits: travel credit
+        # min(300*0.95, travel_other 1000)=285 + anniversary 100 = 385.
+        # ongoing 281.25+385-395=271.25.
         prof = make_profile({"travel_flights": 3000, "travel_hotels": 2000,
                              "travel_other": 1000, "other": 14000},
-                            uses_travel_portal=True)
+                            confirmed_usage=["capital_one_travel"])
         r = score(["venture-x"], prof, "floor")
         self.assertAlmostEqual(r["earnings"], 281.25)
-        self.assertAlmostEqual(r["ongoing_net"], 256.25)
+        self.assertAlmostEqual(sum(c["value"] for c in r["credits"]), 385.0)
+        self.assertAlmostEqual(r["ongoing_net"], 271.25)
 
 
 class TestCreditsAndBonus(unittest.TestCase):
     def test_credit_gating_no_dining_spend(self):
-        # Without dining spend all three Gold dining credits are $0 with reasons.
-        prof = make_profile({"groceries": 8000, "other": 22000})
+        # Even with every service confirmed, the category gate still applies:
+        # without dining/transit spend all four Gold credits are $0 with reasons.
+        prof = make_profile({"groceries": 8000, "other": 22000},
+                            confirmed_usage=GOLD_KEYS)
         r = score(["gold"], prof, "floor")
         self.assertAlmostEqual(sum(c["value"] for c in r["credits"]), 0.0)
         for c in r["credits"]:
             self.assertIn("no remaining spend", c["note"])
 
     def test_stacked_credits_capped_by_real_spend(self):
-        # Only $80 of dining spend: file order draws dining $60, then Resy
-        # min(80, remaining 20)=20, then Dunkin $0.
-        prof = make_profile({"dining": 80, "other": 30000})
+        # Only $150 of dining spend, all services confirmed: file order draws
+        # dining min(10*12*.8=96, 150)=96, then Resy min(50*2*.9=90,
+        # remaining 54)=54, then Dunkin $0.
+        prof = make_profile({"dining": 150, "other": 30000},
+                            confirmed_usage=GOLD_KEYS)
         r = score(["gold"], prof, "floor")
         by_name = {c["name"]: c["value"] for c in r["credits"]}
-        self.assertAlmostEqual(by_name["Dining credit (Grubhub, Cheesecake Factory, etc.)"], 60.0)
-        self.assertAlmostEqual(by_name["Resy dining credit"], 20.0)
+        self.assertAlmostEqual(by_name["Dining credit (Grubhub, Cheesecake Factory, etc.)"], 96.0)
+        self.assertAlmostEqual(by_name["Resy dining credit"], 54.0)
         self.assertAlmostEqual(by_name["Dunkin' credit"], 0.0)
 
     def test_bonus_infeasible_at_low_volume(self):
@@ -314,8 +345,10 @@ class TestCreditVariants(unittest.TestCase):
     def test_points_credit_valued_by_cpp(self):
         credit = {"name": "anniversary points", "amount_points": 10000,
                   "period": "annual", "realistic_capture_rate_note": "automatic"}
+        # unlocks_transfers: the card is its own UR gateway, so optimistic
+        # 2.0cpp applies standalone (the gateway gate is tested separately).
         card = synth_card(currency={"type": "points", "program": "chase_ur"},
-                          credits=[credit])
+                          unlocks_transfers=True, credits=[credit])
         prof = make_profile({"other": 5000})
         self.assertAlmostEqual(score([card], prof, "floor")["credits"][0]["value"], 100.0)
         self.assertAlmostEqual(score([card], prof, "optimistic")["credits"][0]["value"], 200.0)
@@ -343,6 +376,194 @@ class TestCreditVariants(unittest.TestCase):
                   "period": "annual", "realistic_capture_rate_note": "estimate"}
         r = score([synth_card(credits=[credit])], make_profile({"other": 5000}))
         self.assertAlmostEqual(r["credits"][0]["value"], 135.0)
+
+
+class TestConfirmedUsage(unittest.TestCase):
+    """Plan 07: usage-gated credits and loyalty-aware point valuation."""
+
+    def test_unconfirmed_usage_keys_credit_is_zero(self):
+        credit = {"name": "ride credit", "amount_usd": 10, "period": "monthly",
+                  "usage_keys": ["uber", "lyft"], "realistic_capture_rate_note": "x"}
+        r = score([synth_card(credits=[credit])], make_profile({"other": 5000}))
+        self.assertEqual(r["credits"][0]["value"], 0.0)
+        self.assertIn("requires confirmed use of one of: uber, lyft",
+                      r["credits"][0]["note"])
+
+    def test_confirmed_uncategorized_coupon_gets_capture_not_face(self):
+        # A confirmed merchant coupon is spendable only at that merchant —
+        # face × CONFIRMED capture (annual 0.95), never the full-face path.
+        credit = {"name": "gear credit", "amount_usd": 200, "period": "annual",
+                  "usage_keys": ["lyft"], "realistic_capture_rate_note": "x"}
+        r = score([synth_card(credits=[credit])],
+                  make_profile({"other": 5000}, confirmed_usage=["lyft"]))
+        self.assertAlmostEqual(r["credits"][0]["value"], 190.0)  # 200 × 0.95
+        self.assertIn("confirmed: lyft", r["credits"][0]["note"])
+
+    def test_any_one_confirmed_key_unlocks(self):
+        credit = {"name": "ride credit", "amount_usd": 10, "period": "monthly",
+                  "usage_keys": ["uber", "lyft"], "realistic_capture_rate_note": "x"}
+        r = score([synth_card(credits=[credit])],
+                  make_profile({"other": 5000}, confirmed_usage=["lyft"]))
+        self.assertAlmostEqual(r["credits"][0]["value"], 96.0)  # 120 × 0.8
+
+    def test_confirmed_credit_still_gated_by_category_spend(self):
+        # Both gates stack: confirmed Uber credit with no transit spend is $0.
+        credit = {"name": "uber credit", "amount_usd": 10, "period": "monthly",
+                  "usage_keys": ["uber"], "category": "transit",
+                  "realistic_capture_rate_note": "x"}
+        r = score([synth_card(credits=[credit])],
+                  make_profile({"other": 5000}, confirmed_usage=["uber"]))
+        self.assertEqual(r["credits"][0]["value"], 0.0)
+        self.assertIn("no remaining spend", r["credits"][0]["note"])
+
+    def test_automatic_credit_pays_full_face(self):
+        credit = {"name": "anniversary credit", "amount_usd": 100, "period": "annual",
+                  "automatic": True, "realistic_capture_rate_note": "x"}
+        r = score([synth_card(credits=[credit])], make_profile({"other": 5000}))
+        self.assertAlmostEqual(r["credits"][0]["value"], 100.0)
+        self.assertIn("automatic", r["credits"][0]["note"])
+
+    def test_confirmed_in_kind_uses_confirmed_capture(self):
+        credit = {"name": "free night", "kind": "in_kind", "amount_usd": 150,
+                  "period": "annual", "usage_keys": ["brandair"],
+                  "realistic_capture_rate_note": "estimate"}
+        card = synth_card(credits=[credit])
+        prof = make_profile({"other": 5000}, confirmed_usage=["brandair"])
+        r = score([card], prof)
+        self.assertAlmostEqual(r["credits"][0]["value"], 142.5)  # 150 × 0.95
+        unconfirmed = score([card], make_profile({"other": 5000}))
+        self.assertEqual(unconfirmed["credits"][0]["value"], 0.0)
+
+    def brandair_card(self, **overrides):
+        return synth_card(currency={"type": "points", "program": "brandair_miles"},
+                          **overrides)
+
+    def test_lockin_currency_floored_without_loyalty(self):
+        # brandair_miles: floor 0.8, optimistic 1.5, loyalty_keys [brandair].
+        # Optimistic without confirmation → floor cpp (keep-but-devalue).
+        prof = make_profile({"other": 10000})
+        r = score([self.brandair_card()], prof, "optimistic")
+        self.assertAlmostEqual(r["earnings"], 80.0)  # 10000 × 1x × 0.8cpp
+        loyal = make_profile({"other": 10000}, confirmed_usage=["brandair"])
+        r = score([self.brandair_card()], loyal, "optimistic")
+        self.assertAlmostEqual(r["earnings"], 150.0)  # 10000 × 1x × 1.5cpp
+
+    def test_lockin_floor_mode_is_noop_and_transferables_unaffected(self):
+        prof = make_profile({"other": 10000})
+        r = score([self.brandair_card()], prof, "floor")
+        self.assertAlmostEqual(r["earnings"], 80.0)
+        # amex_mr has a cashback path and transfers natively (no gateway
+        # required) → never devalued by the loyalty gate.
+        mr = synth_card(currency={"type": "points", "program": "amex_mr"})
+        r = score([mr], prof, "optimistic")
+        self.assertAlmostEqual(r["earnings"], 190.0)  # 1.9cpp intact
+
+    def test_lockin_devalues_bonus_and_points_credits(self):
+        bonus = {"value": {"points": 10000}, "spend_requirement_usd": 100,
+                 "window_months": 3}
+        credit = {"name": "anniversary miles", "amount_points": 5000,
+                  "period": "annual", "realistic_capture_rate_note": "automatic"}
+        card = self.brandair_card(signup_bonus=bonus, credits=[credit])
+        prof = make_profile({"other": 10000})
+        r = score([card], prof, "optimistic")
+        self.assertAlmostEqual(r["bonuses"]["synth"]["value"], 80.0)   # 10000 × 0.8cpp
+        self.assertAlmostEqual(r["credits"][0]["value"], 40.0)        # 5000 × 0.8cpp
+        loyal = make_profile({"other": 10000}, confirmed_usage=["brandair"])
+        r = score([card], loyal, "optimistic")
+        self.assertAlmostEqual(r["bonuses"]["synth"]["value"], 150.0)
+        self.assertAlmostEqual(r["credits"][0]["value"], 75.0)
+
+    def test_valuation_note_surfaced_in_bundle_and_text(self):
+        dataset = {**{k: DATASET[k] for k in
+                      ("categories", "merchants", "programs", "usage_questions",
+                       "usage_keys")},
+                   "cards": [self.brandair_card(id="brand", name="Brand")]}
+        # accepts_brand_lockin: the lock-in filter would otherwise exclude the
+        # brandair card before scoring — this test targets the valuation note.
+        prof = make_profile({"other": 10000}, valuation_mode="optimistic",
+                            accepts_brand_lockin=True)
+        bundle = opt.run(dataset, prof, AS_OF, 1)
+        note = bundle["portfolios"][0]["per_card"]["brand"]["valuation_note"]
+        self.assertIn("no confirmed loyalty", note)
+        self.assertIn("brandair", note)
+        self.assertIn("no confirmed loyalty", opt.render_text(bundle))
+        self.assertIn("confirmed_usage", bundle)
+        # Loyal user: no note.
+        loyal = make_profile({"other": 10000}, valuation_mode="optimistic",
+                             accepts_brand_lockin=True,
+                             confirmed_usage=["brandair"])
+        bundle = opt.run(dataset, loyal, AS_OF, 1)
+        self.assertNotIn("valuation_note", bundle["portfolios"][0]["per_card"]["brand"])
+        self.assertEqual(bundle["confirmed_usage"], ["brandair"])
+
+    def test_confirmed_capture_in_policy_constants(self):
+        self.assertIn("CONFIRMED_CREDIT_CAPTURE", opt.policy_constants())
+
+
+class TestTransferGateway(unittest.TestCase):
+    """Plan 07 addendum: transfer_gateway_required currencies get optimistic_cpp
+    only when the scored portfolio holds a gateway card (unlocks_transfers)."""
+
+    FLEX_PROF = {"dining": 4000, "groceries": 6000, "gas": 2000, "other": 8000}
+
+    def test_standalone_flex_prices_at_floor(self):
+        prof = make_profile(self.FLEX_PROF)
+        r = score(["freedom-flex"], prof, "optimistic")
+        for a in r["assignments"]:
+            self.assertEqual(a["cpp"], 1.0)
+
+    def test_pairing_with_sapphire_unlocks_optimistic(self):
+        prof = make_profile(self.FLEX_PROF, confirmed_usage=["chase_travel"])
+        r = score(["freedom-flex", "sapphire-preferred"], prof, "optimistic")
+        for a in r["assignments"]:  # BOTH cards' UR now price at 2.0cpp
+            self.assertEqual(a["cpp"], 2.0, a)
+
+    def test_gateway_card_is_standalone_optimistic(self):
+        prof = make_profile(self.FLEX_PROF)
+        r = score(["sapphire-preferred"], prof, "optimistic")
+        for a in r["assignments"]:
+            self.assertEqual(a["cpp"], 2.0)
+
+    def test_floor_mode_is_a_noop(self):
+        prof = make_profile(self.FLEX_PROF)
+        r = score(["freedom-flex"], prof, "floor")
+        for a in r["assignments"]:
+            self.assertEqual(a["cpp"], 1.0)
+
+    def test_gateway_note_surfaced_in_bundle(self):
+        dataset = {**{k: DATASET[k] for k in
+                      ("categories", "merchants", "programs", "usage_questions",
+                       "usage_keys")},
+                   "cards": [seed_card("freedom-flex")]}
+        prof = make_profile(self.FLEX_PROF, valuation_mode="optimistic")
+        bundle = opt.run(dataset, prof, AS_OF, 1)
+        note = bundle["portfolios"][0]["per_card"]["freedom-flex"]["valuation_note"]
+        self.assertIn("gateway card", note)
+        # With the Sapphire in the pool the top portfolio pairs them: no note.
+        dataset["cards"] = [seed_card("freedom-flex"), seed_card("sapphire-preferred")]
+        prof = make_profile(self.FLEX_PROF, valuation_mode="optimistic",
+                            max_cards=2, confirmed_usage=["chase_travel"])
+        bundle = opt.run(dataset, prof, AS_OF, 1)
+        top = bundle["portfolios"][0]
+        self.assertEqual(top["cards"], ["freedom-flex", "sapphire-preferred"])
+        self.assertNotIn("valuation_note", top["per_card"]["freedom-flex"])
+
+    def test_context_dependent_card_never_pruned_in_optimistic(self):
+        # A plain UR card is worth 1.0cpp standalone but 2.0cpp next to a
+        # Sapphire — pruning must not judge it by its standalone floor.
+        plain_ur = synth_card(id="plain-ur", base_rate=1.5,
+                              currency={"type": "points", "program": "chase_ur"})
+        better = synth_card(id="better", base_rate=2)
+        prof = make_profile({"other": 10000})
+        _, pruned = opt.prune_dominated_variants(
+            [plain_ur, better], prof, "optimistic",
+            DATASET["programs"], DATASET["merchants"])
+        self.assertEqual(pruned, [])
+        # Floor mode: cpp is fixed at 1.0, 1.5% < 2% → prunable as before.
+        _, pruned = opt.prune_dominated_variants(
+            [plain_ur, better], prof, "floor",
+            DATASET["programs"], DATASET["merchants"])
+        self.assertEqual([p["id"] for p in pruned], ["plain-ur"])
 
 
 class TestRewardCapAndPeriods(unittest.TestCase):
@@ -463,23 +684,26 @@ class TestPortfolio(unittest.TestCase):
         # BCP 6% wins groceries at floor (Gold 4x*0.6cpp=2.4%): BCP takes 6000
         # (360), Gold takes overflow 4000 (96) + dining 4000 (96); BCP base 1%
         # beats Gold base 0.6% for other 6000 (60) → 612 earn. Gold credits
-        # 182 (dining tracker 4000). Fees 95+325 → ongoing 374.
-        # Bonuses: 250 + 360; year-1 fee 325 (BCP waived) → year1 1079.
-        prof = make_profile({"groceries": 10000, "dining": 4000, "other": 6000})
+        # confirmed: dining tracker 4000 → 96+0+90+67.2 = 253.2.
+        # Fees 95+325 → ongoing 612+253.2-420 = 445.2.
+        # Bonuses: 250 + 360; year-1 fee 325 (BCP waived) → year1 1150.2.
+        prof = make_profile({"groceries": 10000, "dining": 4000, "other": 6000},
+                            confirmed_usage=GOLD_KEYS)
         r = score(["blue-cash-preferred", "gold"], prof, "floor")
         self.assertAlmostEqual(r["earnings"], 612.0)
-        self.assertAlmostEqual(r["ongoing_net"], 374.0)
-        self.assertAlmostEqual(r["year1_net"], 1079.0)
+        self.assertAlmostEqual(r["ongoing_net"], 445.2)
+        self.assertAlmostEqual(r["year1_net"], 1150.2)
 
     def test_cap_competition_flips_optimistic(self):
         # At 1.9cpp Gold groceries is 7.6% > BCP 6%: Gold takes all 10000
         # groceries (760) + dining (304); Gold base 1.9% takes other (114)
-        # → 1178 earn; ongoing 1178+182-420=940; year1 +250+1140-325 → 2425.
-        prof = make_profile({"groceries": 10000, "dining": 4000, "other": 6000})
+        # → 1178 earn; ongoing 1178+253.2-420=1011.2; year1 +250+1140-325 → 2496.2.
+        prof = make_profile({"groceries": 10000, "dining": 4000, "other": 6000},
+                            confirmed_usage=GOLD_KEYS)
         r = score(["blue-cash-preferred", "gold"], prof, "optimistic")
         self.assertAlmostEqual(r["earnings"], 1178.0)
-        self.assertAlmostEqual(r["ongoing_net"], 940.0)
-        self.assertAlmostEqual(r["year1_net"], 2425.0)
+        self.assertAlmostEqual(r["ongoing_net"], 1011.2)
+        self.assertAlmostEqual(r["year1_net"], 2496.2)
         gold_groceries = [a for a in r["assignments"]
                           if a["card_id"] == "gold" and a["bucket"] == "groceries"]
         self.assertAlmostEqual(gold_groceries[0]["usd_assigned"], 10000.0)
@@ -578,20 +802,50 @@ class TestFiltersAndSearch(unittest.TestCase):
         self.assertEqual(excluded, [])
 
     def test_merchant_restricted_currency_matches_nothing(self):
-        # redeems_for: [] (store credit) survives only a total_value run.
+        # redeems_for: [] (store credit) survives only a total_value run —
+        # accepts_brand_lockin=True keeps the lock-in filter out of the way so
+        # this test isolates the reward-preference filter.
         programs = {**DATASET["programs"],
                     "store": {"label": "Store credit", "redeems_for": [],
                               "floor_cpp": 1.0, "optimistic_cpp": 1.0}}
         card = synth_card(currency={"type": "points", "program": "store"})
         for kind in ("cashback", "flights", "hotels"):
-            prof = make_profile(P30K, reward_preferences=[kind])
+            prof = make_profile(P30K, reward_preferences=[kind],
+                                accepts_brand_lockin=True)
             eligible, excluded = opt.filter_cards([card], prof, programs)
             self.assertEqual(eligible, [])
             self.assertEqual(len(excluded), 1)
-        prof = make_profile(P30K)  # default: total_value
+        prof = make_profile(P30K, accepts_brand_lockin=True)  # default: total_value
         eligible, excluded = opt.filter_cards([card], prof, programs)
         self.assertEqual([c["id"] for c in eligible], ["synth"])
         self.assertEqual(excluded, [])
+
+    def test_brand_lockin_filter(self):
+        # Default (accepts_brand_lockin: false): a no-cashback-path currency is
+        # excluded outright, whatever the reward preferences — willingness to
+        # be brand-restricted is its own question.
+        card = synth_card(currency={"type": "points", "program": "brandair_miles"})
+        prof = make_profile(P30K)
+        eligible, excluded = opt.filter_cards([card], prof, DATASET["programs"])
+        self.assertEqual(eligible, [])
+        self.assertIn("locks rewards to a single company", excluded[0]["reason"])
+        # Opt-in: eligible again (valuation still floor unless loyalty confirmed).
+        prof = make_profile(P30K, accepts_brand_lockin=True)
+        eligible, excluded = opt.filter_cards([card], prof, DATASET["programs"])
+        self.assertEqual([c["id"] for c in eligible], ["synth"])
+        self.assertEqual(excluded, [])
+        # Cashback-path currencies are never touched by this filter.
+        cash = synth_card(id="plain-cash")
+        eligible, excluded = opt.filter_cards([cash], make_profile(P30K),
+                                              DATASET["programs"])
+        self.assertEqual([c["id"] for c in eligible], ["plain-cash"])
+
+    def test_accepts_brand_lockin_must_be_bool(self):
+        with self.assertRaises(opt.InputError) as ctx:
+            opt.parse_profile({"spend": {"groceries": 100},
+                               "user": {"credit_tier": "good",
+                                        "accepts_brand_lockin": "yes"}}, DATASET)
+        self.assertIn("accepts_brand_lockin", str(ctx.exception))
 
     def test_search_is_exhaustive_and_ranked(self):
         # 7 eligible cards; custom-cash expands to 2 variants (dining, groceries)
@@ -658,6 +912,29 @@ class TestProfileValidation(unittest.TestCase):
                                   "user": {"credit_tier": "good",
                                            "reward_preferences": bad}},
                                  "reward_preferences")
+
+    def test_unknown_confirmed_usage_key_rejected(self):
+        self.assert_rejected({"spend": {"groceries": 100},
+                              "user": {"credit_tier": "good",
+                                       "confirmed_usage": ["netflix"]}},
+                             "unknown key(s) ['netflix']")
+
+    def test_bad_confirmed_usage_shapes_rejected(self):
+        for bad in ("uber", ["uber", "uber"], [7]):
+            self.assert_rejected({"spend": {"groceries": 100},
+                                  "user": {"credit_tier": "good",
+                                           "confirmed_usage": bad}},
+                                 "confirmed_usage")
+
+    def test_confirmed_usage_stored_sorted(self):
+        prof = make_profile({"groceries": 100}, confirmed_usage=["uber", "brandair"])
+        self.assertEqual(prof["user"]["confirmed_usage"], ["brandair", "uber"])
+
+    def test_uses_travel_portal_migration_error(self):
+        self.assert_rejected({"spend": {"groceries": 100},
+                              "user": {"credit_tier": "good",
+                                       "uses_travel_portal": True}},
+                             "uses_travel_portal was removed")
 
 
 class TestSubsetBudget(unittest.TestCase):

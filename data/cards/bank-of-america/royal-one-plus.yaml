@@ -26,6 +26,7 @@ credits:
   - name: Anniversary Reward
     amount_usd: 200          # "$200 anniversary reward after qualifying annual spend"
     period: annual
+    automatic: true    # pays out with no merchant-specific action
     realistic_capture_rate_note: >-
       A $200 reward on the account anniversary contingent on an unspecified "qualifying annual
       spend" threshold (amount not stated in the offer file, so no unlock_spend_usd is set).
@@ -37,6 +38,7 @@ credits:
   - name: Airport Security Statement Credit (TSA PreCheck / Global Entry)
     amount_usd: 120          # "up to $120 TSA PreCheck/Global Entry credit every four years"
     period: every_4_years
+    usage_keys: [global_entry_tsa]
     realistic_capture_rate_note: >-
       Reimburses the TSA PreCheck (~$78) or Global Entry ($120) application fee once per 4-year
       cycle. Captured by anyone who applies; otherwise unused.

@@ -40,11 +40,24 @@
 </fieldset>
 
 <fieldset>
-  <legend>Rewards to prioritize</legend>
-  <label><input type="checkbox" name="pref" value="total_value" checked> Total value (everything)</label><br>
-  <label><input type="checkbox" name="pref" value="cashback"> Cash back</label><br>
-  <label><input type="checkbox" name="pref" value="flights"> Flights</label><br>
-  <label><input type="checkbox" name="pref" value="hotels"> Hotels</label>
+  <legend>Rewards to prioritize (check all that apply)</legend>
+  <label><input type="checkbox" name="pref" value="cashback" checked> Cash back</label><br>
+  <label><input type="checkbox" name="pref" value="flights" checked> Flights</label><br>
+  <label><input type="checkbox" name="pref" value="hotels" checked> Hotels</label>
+</fieldset>
+
+<fieldset>
+  <legend>Brand restriction</legend>
+  <div>Some cards earn points that only redeem with one company (an airline's miles,
+  a hotel chain's points) — often worth more per point, but you're locked to that brand.
+  Are you OK being restricted to a single company to maximize point output?</div>
+  <label style="width:auto"><input type="radio" name="lockin" value="no" checked> No — only cards whose rewards can always be taken as cash</label><br>
+  <label style="width:auto"><input type="radio" name="lockin" value="yes"> Yes — include single-brand cards too</label>
+</fieldset>
+
+<fieldset>
+  <legend>Things you already use (unlocks credits, portal rates, and airline/hotel point value)</legend>
+  <div id="usage-groups">loading questionnaire…</div>
 </fieldset>
 
 <fieldset>
@@ -72,6 +85,48 @@ const CATS = ["groceries","dining","travel_flights","travel_hotels","travel_othe
   "transit","streaming","drugstores","online_shopping","entertainment","utilities","other"];
 const usd = n => "$" + Number(n).toLocaleString(undefined, {maximumFractionDigits: 0});
 
+/* Two-level usage questionnaire (plan 07), rendered from GET /usage-questions
+   (data/meta/usage-questions.yaml). A "no" on the gate question skips (and
+   unchecks) all of the group's items; single-item groups are one checkbox. */
+async function loadUsageQuestions() {
+  const box = document.getElementById("usage-groups");
+  try {
+    const r = await fetch("/usage-questions");
+    const {groups} = await r.json();
+    let h = "";
+    for (const [gname, g] of Object.entries(groups)) {
+      const items = Object.entries(g.items);
+      if (items.length === 1) {
+        const [key, item] = items[0];
+        h += `<div><label style="width:auto"><input type="checkbox" name="usage_key" value="${key}"> ${g.prompt}</label></div>`;
+        continue;
+      }
+      h += `<div style="margin-bottom:0.5em">` +
+           `<span>${g.prompt}</span> ` +
+           `<label style="width:auto"><input type="radio" name="ug_${gname}" value="no" checked> no</label> ` +
+           `<label style="width:auto"><input type="radio" name="ug_${gname}" value="yes"> yes</label>` +
+           `<div id="ugi_${gname}" hidden style="margin:0.2em 0 0 2em">` +
+           items.map(([key, item]) =>
+             `<label style="width:16em"><input type="checkbox" name="usage_key" value="${key}"> ${item.label}</label>`).join(" ") +
+           `</div></div>`;
+    }
+    box.innerHTML = h;
+    for (const gname of Object.keys(groups)) {
+      document.querySelectorAll(`input[name=ug_${gname}]`).forEach(radio =>
+        radio.addEventListener("change", () => {
+          const itemsDiv = document.getElementById(`ugi_${gname}`);
+          if (!itemsDiv) return;
+          const yes = radio.value === "yes" && radio.checked;
+          itemsDiv.hidden = !yes;
+          if (!yes) itemsDiv.querySelectorAll("input").forEach(cb => cb.checked = false);
+        }));
+    }
+  } catch (err) {
+    box.innerHTML = '<span class="err">could not load /usage-questions: ' + err + "</span>";
+  }
+}
+loadUsageQuestions();
+
 document.getElementById("f").addEventListener("submit", async e => {
   e.preventDefault();
   const fd = new FormData(e.target);
@@ -88,7 +143,10 @@ document.getElementById("f").addEventListener("submit", async e => {
       valuation_mode: fd.get("valuation_mode"),
       max_cards: parseInt(fd.get("max_cards")),
       optimize_for: fd.get("optimize_for"),
-      reward_preferences: prefs.length ? prefs : ["total_value"],
+      // no "total value" option: all three kinds checked (the default) = everything
+      reward_preferences: prefs.length ? prefs : ["cashback", "flights", "hotels"],
+      accepts_brand_lockin: fd.get("lockin") === "yes",
+      confirmed_usage: fd.getAll("usage_key"),
     },
   };
   const status = document.getElementById("status");
@@ -111,7 +169,8 @@ document.getElementById("f").addEventListener("submit", async e => {
 function render(d) {
   const out = document.getElementById("out");
   let h = `<p>as of ${d.as_of} — ${d.cards_eligible}/${d.cards_total} cards eligible, ` +
-          `mode=${d.valuation_mode}, rewards=${(d.reward_preferences||[]).join(",")}</p>`;
+          `mode=${d.valuation_mode}, rewards=${(d.reward_preferences||[]).join(",")}, ` +
+          `confirmed=${(d.confirmed_usage||[]).join(",") || "none"}</p>`;
   d.portfolios.forEach((p, i) => {
     h += `<div class="portfolio"><b>#${i + 1}: ${p.cards.join(" + ")}</b>` +
          ` — ongoing net ${usd(p.ongoing_net)}/yr, year-1 net ${usd(p.year1_net)}`;
@@ -119,6 +178,7 @@ function render(d) {
       h += `<div class="card"><b>${c.name}</b> (fee ${usd(c.fees.annual_fee_usd)}` +
            `${c.fees.first_year_waived ? ", waived yr 1" : ""}` +
            `${c.fees.membership_fee_usd ? ", + " + usd(c.fees.membership_fee_usd) + "/yr " + c.fees.membership_name + " membership" : ""})`;
+      if (c.valuation_note) h += `<div class="warn">⚠ ${c.valuation_note}</div>`;
       if (c.assignments.length) {
         h += "<table><tr><th>spend bucket</th><th>rate</th><th>assigned</th><th>value/yr</th></tr>";
         for (const a of c.assignments)

@@ -24,6 +24,7 @@ credits:
   - name: Airline Incidental Statement Credit
     amount_usd: 100          # "Up to $100 in Airline Incidental Statement Credits annually"
     period: annual
+    category: travel_flights
     realistic_capture_rate_note: >-
       Reimburses qualifying airline incidentals (seat upgrades, baggage fees, in-flight services,
       lounge fees) up to $100/year. Airfare itself usually does NOT qualify; captured by cardholders
@@ -31,6 +32,7 @@ credits:
   - name: Airport Security Statement Credit (TSA PreCheck / Global Entry)
     amount_usd: 100          # "Up to $100 ... for TSA PreCheck or Global Entry application fees, every four years"
     period: every_4_years
+    usage_keys: [global_entry_tsa]
     realistic_capture_rate_note: >-
       Reimburses the TSA PreCheck (~$78) or Global Entry ($120) application fee once per 4-year
       cycle. Captured by anyone who applies; otherwise unused.

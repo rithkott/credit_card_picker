@@ -3,6 +3,7 @@ id: autograph-journey
 name: Wells Fargo Autograph Journey
 issuer: wells-fargo
 network: visa                # "Autograph Journey Visa Card" (Visa Signature perk set)
+unlocks_transfers: true   # gateway: unlocks this program's transfer partners for the whole portfolio
 currency:
   type: points
   program: wells_fargo_rewards

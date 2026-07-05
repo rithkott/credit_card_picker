@@ -20,6 +20,22 @@
 #   - []: merchant-restricted currencies (store credit, cruise/theme-park dollars) —
 #     they match only a 'total_value' (unfiltered) run
 #
+# transfer_gateway_required marks currencies whose optimistic_cpp (transfer
+# partners) is reachable only by holding a specific "gateway" card — e.g. Freedom
+# points are pure 1cpp cash back unless pooled into a Sapphire. Gateway cards
+# carry unlocks_transfers: true; the optimizer grants optimistic_cpp to such a
+# currency only when the SCORED PORTFOLIO contains a gateway card for it (a
+# gateway card qualifies by itself). Currencies whose every card transfers
+# natively (amex_mr, capital_one_miles, bilt_points) are not flagged.
+#
+# loyalty_keys marks lock-in currencies (no cashback redemption path) with the
+# usage-questions item key(s) (data/meta/usage-questions.yaml) whose confirmation
+# in user.confirmed_usage unlocks optimistic_cpp. Without confirmed loyalty the
+# optimizer values these currencies at floor_cpp even in optimistic mode — a
+# Delta SkyMile is only "worth" 1.3c to someone who actually flies Delta.
+# Programs with a cashback path never carry loyalty_keys (validator-enforced):
+# their floor is cash, so no loyalty is required to realize it.
+#
 # NOTE: optimistic values are inherently judgment calls; sources and reasoning belong
 # in the comments next to each program. Verify alongside card data (confidence applies).
 # Airline/hotel values below were drafted from early-2026 consensus (TPG / r/churning
@@ -36,6 +52,8 @@ programs:
   chase_ur:
     label: Chase Ultimate Rewards
     redeems_for: [cashback, flights, hotels]
+    transfer_gateway_required: true  # Freedom-family points reach partners only when
+                                     # pooled with a Sapphire (cards with unlocks_transfers)
     floor_cpp: 1.0          # cash out / statement credit
     optimistic_cpp: 2.0     # transfer partners (Hyatt etc.), r/churning consensus range 1.8–2.2
   amex_mr:
@@ -46,6 +64,8 @@ programs:
   citi_typ:
     label: Citi ThankYou Points
     redeems_for: [cashback, flights, hotels]
+    transfer_gateway_required: true  # full transfer partners require a premium TY card
+                                     # (Strata Premier / Elite carry unlocks_transfers)
     floor_cpp: 1.0          # cash back at 1cpp
     optimistic_cpp: 1.7     # transfer partners (requires a premium TY card)
   capital_one_miles:
@@ -56,6 +76,7 @@ programs:
   wells_fargo_rewards:
     label: Wells Fargo Rewards
     redeems_for: [cashback, flights, hotels]
+    transfer_gateway_required: true  # transfers gated to Autograph Journey (unlocks_transfers)
     floor_cpp: 1.0          # cash redemption at 1cpp
     optimistic_cpp: 1.3     # transfer partners exist but the list is thin and gated to Autograph Journey
   bilt_points:
@@ -110,66 +131,79 @@ programs:
   delta_skymiles:
     label: Delta SkyMiles
     redeems_for: [flights]
+    loyalty_keys: [delta]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 1.0          # Pay with Miles guarantees 1cpp toward Delta tickets for cardholders
     optimistic_cpp: 1.3     # SkyMiles Deals / flash-sale awards
   united_mileageplus:
     label: United MileagePlus
     redeems_for: [flights]
+    loyalty_keys: [united]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 0.8          # no cash-out; low-end saver economy redemptions
     optimistic_cpp: 1.3     # saver/partner awards
   southwest_rapid_rewards:
     label: Southwest Rapid Rewards
     redeems_for: [flights]
+    loyalty_keys: [southwest]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 1.3          # near-fixed value pegged to Wanna Get Away fares (~1.35)
     optimistic_cpp: 1.4
   jetblue_trueblue:
     label: JetBlue TrueBlue
     redeems_for: [flights]
+    loyalty_keys: [jetblue]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 1.2          # near-fixed value pegged to Blue fares
     optimistic_cpp: 1.35
   aa_advantage:
     label: American Airlines AAdvantage
     redeems_for: [flights]
+    loyalty_keys: [american_airlines]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 0.8          # no cash-out; Web Special economy awards
     optimistic_cpp: 1.5     # saver/partner awards (oneworld premium cabins)
   aeroplan:
     label: Air Canada Aeroplan
     redeems_for: [flights]
+    loyalty_keys: [air_canada]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 1.0          # distance-based chart keeps a decent baseline
     optimistic_cpp: 1.4     # partner awards / stopover tricks
   avios:
     label: Avios (British Airways / Iberia / Aer Lingus)
     redeems_for: [flights]
+    loyalty_keys: [british_airways, iberia, aer_lingus]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 0.8          # one key for all three — Avios move 1:1 between BA/Iberia/Aer Lingus
     optimistic_cpp: 1.4     # short-haul partner awards and off-peak Iberia pricing
   flying_blue:
     label: Air France-KLM Flying Blue
     redeems_for: [flights]
+    loyalty_keys: [air_france_klm]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 0.9
     optimistic_cpp: 1.3     # monthly Promo Rewards
   emirates_skywards:
     label: Emirates Skywards
     redeems_for: [flights]
+    loyalty_keys: [emirates]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 0.8          # cash+miles on Emirates fares
     optimistic_cpp: 1.2     # premium-cabin Emirates awards
   frontier_miles:
     label: Frontier Miles
     redeems_for: [flights]
+    loyalty_keys: [frontier]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 0.6          # low fares make miles hard to use well; short expiration risk
     optimistic_cpp: 1.0
   miles_and_more:
     label: Lufthansa Miles & More
     redeems_for: [flights]
+    loyalty_keys: [lufthansa]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 0.7          # heavy surcharges on most awards
     optimistic_cpp: 1.2
   atmos_rewards:
     label: Atmos Rewards (Alaska / Hawaiian)
     redeems_for: [flights]
+    loyalty_keys: [alaska_airlines]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 1.0          # merged Alaska+Hawaiian program (2025 rebrand of Mileage Plan)
     optimistic_cpp: 1.6     # oneworld partner awards — historically among the strongest mile currencies
   allegiant_points:
     label: Allegiant Allways Rewards
     redeems_for: [flights]
+    loyalty_keys: [allegiant]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 1.0          # fixed 1cpp toward Allegiant bookings only; no cash-out
     optimistic_cpp: 1.0
 
@@ -177,31 +211,37 @@ programs:
   world_of_hyatt:
     label: World of Hyatt
     redeems_for: [hotels]
+    loyalty_keys: [hyatt]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 1.2          # low-end category redemptions
     optimistic_cpp: 2.0     # consensus top hotel currency
   marriott_bonvoy:
     label: Marriott Bonvoy
     redeems_for: [hotels]
+    loyalty_keys: [marriott]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 0.6
     optimistic_cpp: 0.9
   hilton_honors:
     label: Hilton Honors
     redeems_for: [hotels]
+    loyalty_keys: [hilton]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 0.4
     optimistic_cpp: 0.6
   ihg_one_rewards:
     label: IHG One Rewards
     redeems_for: [hotels]
+    loyalty_keys: [ihg]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 0.4
     optimistic_cpp: 0.7
   wyndham_rewards:
     label: Wyndham Rewards
     redeems_for: [hotels]
+    loyalty_keys: [wyndham]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 0.7          # go free awards at fixed point prices
     optimistic_cpp: 1.1     # Vacasa vacation-rental redemptions
   choice_privileges:
     label: Choice Privileges
     redeems_for: [hotels]
+    loyalty_keys: [choice_hotels]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 0.5
     optimistic_cpp: 0.8
 
@@ -211,20 +251,24 @@ programs:
   mycruise_points:
     label: MyCruise points (Royal Caribbean / Celebrity / Silversea)
     redeems_for: []
+    loyalty_keys: [royal_caribbean]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 1.0          # 1cpp toward cruises and onboard credit only
     optimistic_cpp: 1.0
   gm_rewards:
     label: My GM Rewards points
     redeems_for: []
+    loyalty_keys: [gm]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 1.0          # nominal 1cpp toward GM vehicles/service — NEEDS human verification of current redemption caps
     optimistic_cpp: 1.0
   verizon_dollars:
     label: Verizon Dollars
     redeems_for: []
+    loyalty_keys: [verizon]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 1.0          # 1cpp toward Verizon bill/devices — near-cash for Verizon customers
     optimistic_cpp: 1.0
   rci_rewards:
     label: RCI Elite Rewards
     redeems_for: []
+    loyalty_keys: [rci]   # usage-questions item(s) whose confirmation unlocks optimistic_cpp
     floor_cpp: 1.0          # "5,000 Rewards worth $50" toward RCI fees/travel — NEEDS human verification of redemption options
     optimistic_cpp: 1.0

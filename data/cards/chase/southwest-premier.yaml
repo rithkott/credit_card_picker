@@ -50,12 +50,14 @@ credits:
   - name: Anniversary bonus points
     amount_points: 6000         # "6,000 bonus points each account anniversary year"
     period: annual
+    automatic: true    # pays out with no merchant-specific action
     realistic_capture_rate_note: >-
       Automatic each account anniversary year while the account is open — full capture
       for anyone who keeps the card.
   - name: DashPass DoorDash quarterly credit
     amount_usd: 10             # "$10 off quarterly on one DoorDash non-restaurant order while enrolled"
     period: quarterly
+    usage_keys: [doordash]
     requires_enrollment: true
     realistic_capture_rate_note: >-
       Requires activating complimentary DashPass and one qualifying DoorDash
@@ -63,6 +65,7 @@ credits:
   - name: Instacart monthly credit
     amount_usd: 10             # "$10/month Instacart credit while active"
     period: monthly
+    usage_keys: [instacart]
     requires_enrollment: true
     realistic_capture_rate_note: >-
       Requires an active Instacart+ membership (3 months complimentary, then auto-renews

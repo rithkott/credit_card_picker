@@ -43,6 +43,7 @@ credits:
     amount_usd: 200             # in_kind: estimated value of a night up to the 50,000-point redemption ceiling
     kind: in_kind
     period: annual
+    usage_keys: [marriott]
     category: travel_hotels
     unlock_spend_usd: 15000     # "each calendar year after $15,000 in purchases"
     realistic_capture_rate_note: >-
@@ -54,6 +55,7 @@ credits:
   - name: DashPass DoorDash quarterly credit
     amount_usd: 10             # "$10 off quarterly on one DoorDash non-restaurant order while enrolled"
     period: quarterly
+    usage_keys: [doordash]
     requires_enrollment: true
     realistic_capture_rate_note: >-
       Requires activating complimentary DashPass and one qualifying DoorDash

@@ -24,6 +24,7 @@ credits:
   - name: Airline Incidental Statement Credit
     amount_usd: 300          # "Up to $300 annually in statement credits for airline incidental charges"
     period: annual
+    category: travel_flights
     realistic_capture_rate_note: >-
       Reimburses airline incidentals (seat upgrades, baggage fees, lounge fees, in-flight services)
       up to $300/year. Airfare itself usually does NOT qualify; a frequent flyer who checks bags or
@@ -31,12 +32,14 @@ credits:
   - name: Lifestyle Conveniences Statement Credit
     amount_usd: 150          # "Up to $150 annually in statement credits for 'lifestyle conveniences'"
     period: annual
+    usage_keys: [uber, lyft, doordash, grubhub, instacart, peloton]
     realistic_capture_rate_note: >-
       Reimburses video streaming, food delivery, fitness subscriptions, and rideshare up to
       $150/year. Broad enough that most active cardholders capture the full amount.
   - name: Airport Security Statement Credit (TSA PreCheck / Global Entry)
     amount_usd: 120          # "Up to $120 every four years for Global Entry or TSA PreCheck application fees"
     period: every_4_years
+    usage_keys: [global_entry_tsa]
     realistic_capture_rate_note: >-
       Reimburses the TSA PreCheck (~$78) or Global Entry ($120) application fee once per 4-year
       cycle. Captured by anyone who applies; otherwise unused.

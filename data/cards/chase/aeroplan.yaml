@@ -29,6 +29,7 @@ credits:
   - name: Global Entry / TSA PreCheck / NEXUS fee credit
     amount_usd: 120             # "one statement credit up to $120 every 4 years"
     period: every_4_years
+    usage_keys: [global_entry_tsa]
     realistic_capture_rate_note: >-
       One statement credit up to $120 per 4-year cycle covering a Global Entry/TSA
       PreCheck/NEXUS application fee. Captured only by travelers who apply/renew;
@@ -36,6 +37,7 @@ credits:
   - name: DashPass DoorDash quarterly credit
     amount_usd: 10             # "$10 off quarterly on one DoorDash non-restaurant order while enrolled"
     period: quarterly
+    usage_keys: [doordash]
     requires_enrollment: true
     realistic_capture_rate_note: >-
       Requires activating complimentary DashPass (12 months free 2/1/2025-12/31/2027,

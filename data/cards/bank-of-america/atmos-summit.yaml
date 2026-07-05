@@ -22,6 +22,7 @@ credits:
   - name: Airport Security Statement Credit (TSA PreCheck / Global Entry)
     amount_usd: 120          # "Up to $120 Airport Security Statement Credit every four years"
     period: every_4_years
+    usage_keys: [global_entry_tsa]
     realistic_capture_rate_note: >-
       Reimburses the TSA PreCheck (~$78) or Global Entry ($120) application fee once per 4-year
       cycle. Captured by anyone who applies; otherwise unused.
@@ -29,6 +30,7 @@ credits:
     kind: in_kind
     amount_usd: 200          # curator estimate of net value, NOT an issuer figure — see notes
     period: annual
+    usage_keys: [alaska_airlines]
     realistic_capture_rate_note: >-
       A 25,000-point companion award granted every account anniversary; realized only when the
       cardholder books a second traveler on a qualifying itinerary. Captured by frequent
@@ -43,6 +45,7 @@ credits:
     kind: in_kind
     amount_usd: 200          # curator estimate; issuer markets "a $500+ value" — see notes
     period: annual
+    usage_keys: [alaska_airlines]
     realistic_capture_rate_note: >-
       8 Alaska Lounge passes per year (2 per calendar quarter) plus 8 Wi-Fi passes; valuable only
       to cardholders who fly through airports with an Alaska Lounge on days they hold unused passes.

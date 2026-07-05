@@ -3,6 +3,8 @@ id: sapphire-preferred
 name: Chase Sapphire Preferred
 issuer: chase
 network: visa                # NOT stated in offer file; Sapphire Preferred is a Visa Signature — inference, NEEDS human verification
+portal: chase_travel    # portal_only rates book through this portal
+unlocks_transfers: true   # gateway: unlocks this program's transfer partners for the whole portfolio
 currency:
   type: points               # Ultimate Rewards points, transferable to airline/hotel partners
   program: chase_ur
@@ -51,6 +53,7 @@ credits:
   - name: Annual Chase Travel Hotel Credit
     amount_usd: 100           # "$100 Annual Chase Travel Hotel Credit ... up to $100/year"
     period: annual
+    usage_keys: [chase_travel]
     category: travel_hotels
     realistic_capture_rate_note: >-
       Automatic statement credit on the first $100/year of hotel purchases booked through
@@ -60,6 +63,7 @@ credits:
   - name: Global Entry / TSA PreCheck / NEXUS application fee credit
     amount_usd: 120           # "one statement credit up to $120 every 4 years"
     period: every_4_years
+    usage_keys: [global_entry_tsa]
     realistic_capture_rate_note: >-
       Up to $120 once every 4 years for an application fee charged directly by
       DHS/CBP/TSA or authorized enrollment providers (not travel agencies/third-party

@@ -46,9 +46,19 @@ STALE_DAYS = 183  # matches scripts/validate_cards.py
 
 # Fraction of a credit's face value a typical user captures. Haircut scales with
 # redemption friction: monthly use-it-or-lose-it coupons are easy to miss;
-# annual credits are hard to miss.
+# annual credits are hard to miss. Applies to credits WITHOUT usage_keys —
+# generic category-gated credits where no confirmation signal exists.
 CREDIT_CAPTURE = {"monthly": 0.5, "quarterly": 0.7, "semiannual": 0.8,
                   "annual": 0.9, "every_4_years": 0.9, "every_5_years": 0.9}
+
+# Capture for credits whose usage the user explicitly CONFIRMED (a usage_keys
+# entry appears in user.confirmed_usage): the "do they use this service at all"
+# risk is answered by the questionnaire, so the residual haircut covers only
+# breakage — forgetting a monthly coupon, timing windows. Monthly 0.8 (even
+# loyal users miss ~2 of 12 windows a year), annual+ 0.95 (once a year for a
+# service you already use is near-automatic).
+CONFIRMED_CREDIT_CAPTURE = {"monthly": 0.8, "quarterly": 0.85, "semiannual": 0.9,
+                            "annual": 0.95, "every_4_years": 0.95, "every_5_years": 0.95}
 
 PERIODS_PER_YEAR = {"monthly": 12, "quarterly": 4, "semiannual": 2,
                     "annual": 1, "every_4_years": 0.25, "every_5_years": 0.2}
@@ -86,7 +96,8 @@ KIND_RANK = {"merchant": 0, "category": 1, "rotating": 2, "fallback": 3, "base":
 
 USER_DEFAULTS = {"valuation_mode": "floor", "max_cards": 3,
                  "optimize_for": "ongoing", "activates_rotating": True,
-                 "uses_travel_portal": False,
+                 "confirmed_usage": [],
+                 "accepts_brand_lockin": False,
                  "reward_preferences": ["total_value"]}
 
 EPS = 1e-9
@@ -103,6 +114,7 @@ class DataError(Exception):
 def policy_constants() -> dict:
     return {
         "CREDIT_CAPTURE": CREDIT_CAPTURE,
+        "CONFIRMED_CREDIT_CAPTURE": CONFIRMED_CREDIT_CAPTURE,
         "PERIODS_PER_YEAR": PERIODS_PER_YEAR,
         "CAP_PERIODS_PER_YEAR": CAP_PERIODS_PER_YEAR,
         "PORTAL_RATE_MULT": PORTAL_RATE_MULT,
@@ -130,8 +142,11 @@ def load_dataset() -> dict:
         categories = load_yaml(META_DIR / "categories.yaml")["categories"]
         merchants = load_yaml(META_DIR / "merchants.yaml")["merchants"]
         programs = load_yaml(META_DIR / "point-valuations.yaml")["programs"]
+        usage_questions = load_yaml(META_DIR / "usage-questions.yaml")["groups"]
     except (OSError, yaml.YAMLError, KeyError) as e:
         raise DataError(f"cannot load data/meta/ registries: {e}")
+    usage_keys = {key for group in usage_questions.values()
+                  for key in (group.get("items") or {})}
     overlap = set(categories) & set(merchants)
     if overlap:
         raise DataError(f"registry keys shared by categories and merchants: {sorted(overlap)}")
@@ -144,7 +159,8 @@ def load_dataset() -> dict:
         raise DataError(f"invalid card YAML: {e}")
     cards.sort(key=lambda c: c["id"])
     return {"categories": categories, "merchants": merchants,
-            "programs": programs, "cards": cards}
+            "programs": programs, "cards": cards,
+            "usage_questions": usage_questions, "usage_keys": usage_keys}
 
 
 def load_profile(path: Path, dataset: dict) -> dict:
@@ -203,20 +219,25 @@ def parse_profile(raw, dataset: dict) -> dict:
     user_raw = raw.get("user")
     if not isinstance(user_raw, dict):
         raise InputError("profile: 'user' must be a mapping and include credit_tier")
+    if "uses_travel_portal" in user_raw:
+        raise InputError(
+            "profile: user.uses_travel_portal was removed — list the issuer portals "
+            "you actually book through in user.confirmed_usage instead "
+            "(see data/meta/usage-questions.yaml, travel_portals group)")
     unknown = sorted(set(user_raw) - (set(USER_DEFAULTS) | {"credit_tier"}))
     if unknown:
         raise InputError(f"profile: user: unknown key(s): {unknown}")
     if "credit_tier" not in user_raw:
         raise InputError("profile: user.credit_tier is required")
     user = {**USER_DEFAULTS, **user_raw}
-    validate_user(user)
+    validate_user(user, dataset["usage_keys"])
 
     return {"spend": dict(sorted(spend.items())),
             "merchant_spend": dict(sorted(merchant_spend.items())),
             "user": user}
 
 
-def validate_user(user: dict) -> None:
+def validate_user(user: dict, usage_keys: set) -> None:
     if user["credit_tier"] not in TIER_ORDER:
         raise InputError(f"profile: user.credit_tier must be one of {TIER_ORDER}, got {user['credit_tier']!r}")
     if user["valuation_mode"] not in ("floor", "optimistic"):
@@ -226,9 +247,22 @@ def validate_user(user: dict) -> None:
         raise InputError(f"profile: user.max_cards must be an integer 1-5, got {mc!r}")
     if user["optimize_for"] not in ("ongoing", "year1"):
         raise InputError(f"profile: user.optimize_for must be 'ongoing' or 'year1', got {user['optimize_for']!r}")
-    for flag in ("activates_rotating", "uses_travel_portal"):
+    for flag in ("activates_rotating", "accepts_brand_lockin"):
         if not isinstance(user[flag], bool):
             raise InputError(f"profile: user.{flag} must be true or false, got {user[flag]!r}")
+    confirmed = user["confirmed_usage"]
+    if (not isinstance(confirmed, list)
+            or any(not isinstance(k, str) for k in confirmed)
+            or len(set(confirmed)) != len(confirmed)):
+        raise InputError(
+            f"profile: user.confirmed_usage must be a list of unique usage-question "
+            f"item keys (see data/meta/usage-questions.yaml), got {confirmed!r}")
+    bad = sorted(set(confirmed) - usage_keys)
+    if bad:
+        raise InputError(
+            f"profile: user.confirmed_usage: unknown key(s) {bad} — valid keys are "
+            f"the items of data/meta/usage-questions.yaml")
+    user["confirmed_usage"] = sorted(confirmed)  # canonical order for determinism
     prefs = user["reward_preferences"]
     if (not isinstance(prefs, list) or not prefs
             or any(p not in REWARD_PREF_CHOICES for p in prefs)
@@ -257,12 +291,53 @@ def build_buckets(profile: dict, merchants: dict) -> dict:
     return buckets
 
 
-def build_lines(card: dict, profile: dict, mode: str, programs: dict, buckets: dict) -> list:
+def unlocked_programs(cards: list) -> frozenset:
+    """Programs whose transfer partners the portfolio can reach: a gateway card
+    (unlocks_transfers) unlocks its own program for every card in the subset."""
+    return frozenset(c["currency"]["program"] for c in cards
+                     if c.get("unlocks_transfers"))
+
+
+def effective_cpp(card: dict, mode: str, programs: dict, confirmed: set,
+                  unlocked: frozenset = frozenset()) -> tuple:
+    """Context-aware cents-per-point: (cpp, note-or-None). optimistic_cpp
+    assumes engaged redemption (transfer partners, award charts). Two gates can
+    drop it to floor_cpp even in optimistic mode:
+      - loyalty: lock-in currencies (no cashback path, loyalty_keys in
+        data/meta/point-valuations.yaml) require confirmed loyalty in
+        user.confirmed_usage.
+      - transfer gateway: currencies marked transfer_gateway_required reach
+        their partners only through a gateway card (unlocks_transfers) — e.g.
+        Freedom-family UR is pure 1cpp cash unless the scored portfolio also
+        holds a Sapphire. `unlocked` is the portfolio's unlocked_programs().
+    Floor mode and unrestricted cashback-path currencies are unaffected."""
+    prog = programs[card["currency"]["program"]]
+    loyalty = prog.get("loyalty_keys") or []
+    if mode == "optimistic" and loyalty and not (set(loyalty) & confirmed):
+        return prog["floor_cpp"], (
+            f"points valued at floor {prog['floor_cpp']}cpp — no confirmed loyalty "
+            f"to {prog.get('label', card['currency']['program'])} "
+            f"(confirm one of: {', '.join(loyalty)} in user.confirmed_usage)")
+    if (mode == "optimistic" and prog.get("transfer_gateway_required")
+            and not card.get("unlocks_transfers")
+            and card["currency"]["program"] not in unlocked):
+        return prog["floor_cpp"], (
+            f"points valued at floor {prog['floor_cpp']}cpp — "
+            f"{prog.get('label', card['currency']['program'])} transfer partners "
+            f"need a gateway card (unlocks_transfers) in the portfolio")
+    return prog[mode + "_cpp"], None
+
+
+def build_lines(card: dict, profile: dict, mode: str, programs: dict, buckets: dict,
+                unlocked: frozenset = frozenset()) -> list:
     """All reward lines of one card, with effective USD rates and bucket
     eligibility. Issuer precedence (merchant beats category beats base) is
-    encoded in the eligibility sets, not chosen by the optimizer."""
+    encoded in the eligibility sets, not chosen by the optimizer. `unlocked` is
+    the scoring portfolio's unlocked_programs() — the default (empty) prices
+    the card standalone."""
     user = profile["user"]
-    cpp = programs[card["currency"]["program"]][mode + "_cpp"]
+    confirmed = set(user["confirmed_usage"])
+    cpp, _ = effective_cpp(card, mode, programs, confirmed, unlocked)
     closed = set(card.get("closed_loop", {}).get("merchants", []))
     lines = []
 
@@ -324,10 +399,10 @@ def build_lines(card: dict, profile: dict, mode: str, programs: dict, buckets: d
         rate = cr["rate"]
         notes = ["chosen category"] if cr.get("_chosen") else []
         if cr.get("portal_only"):
-            if not user["uses_travel_portal"]:
-                continue  # dropped entirely; spend falls through to the next line
+            if card.get("portal") not in confirmed:
+                continue  # portal unconfirmed — dropped; spend falls through to the next line
             rate = rate * PORTAL_RATE_MULT
-            notes.append(f"portal ×{PORTAL_RATE_MULT}")
+            notes.append(f"portal ×{PORTAL_RATE_MULT} ({card['portal']} confirmed)")
         note = "; ".join(notes)
         eligible = [cat] if cat in buckets else []
         eligible += [b for b, bk in buckets.items()
@@ -413,30 +488,54 @@ def score_credits(cards: list, profile: dict, mode: str, programs: dict,
     spend. Draw order is deterministic: file order within a card, card-id order
     across the portfolio.
 
+    Gate order per credit (plan 07): expires → usage gate → unlock_spend_usd →
+    valuation. The usage gate: a credit with usage_keys is $0 unless the user
+    confirmed at least one key (anyOf) in user.confirmed_usage; confirmed
+    credits use the softer CONFIRMED_CREDIT_CAPTURE table (the questionnaire
+    answered "do they use it at all"; the haircut covers residual breakage),
+    keyless credits keep the conservative CREDIT_CAPTURE.
+
     Credit variants beyond the classic USD statement credit:
       - unlock_spend_usd: the credit is $0 unless the user's per-period total
         spend can plausibly reach the unlock threshold (same optimistic
         feasibility rule as signup bonuses — all spend could go on this card).
       - amount_points: points-denominated drops (anniversary miles), valued via
-        the card's program cpp; they don't offset spend, so no tracker draw.
+        the card's loyalty-aware program cpp; they don't offset spend, so no
+        tracker draw.
       - kind: in_kind: amount_usd is a curator estimate (free nights, companion
         certificates), so the capture haircut always applies, even uncategorized.
       - expires: promotional credits are $0 once past the as-of date, mirroring
         the signup-bonus expiry rule.
+      - usage_keys × category: both gates stack — a confirmed Uber credit with
+        no transit spend is still $0 via the tracker.
+      - uncategorized + usage_keys (confirmed): face × capture — a merchant
+        coupon, not near-cash. Full face value is reserved for automatic
+        credits (no keys, no category; anniversary points/cash).
     """
     tracker = {cat: float(v) for cat, v in profile["spend"].items()}
     total_spend = sum(profile["spend"].values())
+    confirmed = set(profile["user"]["confirmed_usage"])
+    unlocked = unlocked_programs(cards)
     results = []
     for card in sorted(cards, key=lambda c: c["id"]):
-        cpp = programs[card["currency"]["program"]][mode + "_cpp"]
+        cpp, _ = effective_cpp(card, mode, programs, confirmed, unlocked)
         for credit in card["credits"]:
             if "expires" in credit and date.fromisoformat(credit["expires"]) < as_of:
                 results.append({"card_id": card["id"], "name": credit["name"],
                                 "value": 0.0,
                                 "note": f"$0 — promo expired {credit['expires']}"})
                 continue
+            keys = credit.get("usage_keys")
+            if keys and not (set(keys) & confirmed):
+                results.append({"card_id": card["id"], "name": credit["name"],
+                                "value": 0.0,
+                                "note": f"$0 — requires confirmed use of one of: "
+                                        f"{', '.join(keys)} (user.confirmed_usage)"})
+                continue
             periods = PERIODS_PER_YEAR[credit["period"]]
-            capture = CREDIT_CAPTURE[credit["period"]]
+            capture = (CONFIRMED_CREDIT_CAPTURE if keys else CREDIT_CAPTURE)[credit["period"]]
+            usage_note = (f"; confirmed: {', '.join(sorted(set(keys) & confirmed))}"
+                          if keys else "")
             in_kind = credit.get("kind") == "in_kind"
 
             unlock = credit.get("unlock_spend_usd")
@@ -451,7 +550,8 @@ def score_credits(cards: list, profile: dict, mode: str, programs: dict,
                 face = credit["amount_points"] * periods * cpp / 100.0
                 value = face * capture if in_kind else face
                 note = (f"{credit['amount_points'] * periods:,.0f} pts/yr × {cpp}cpp"
-                        + (f" × capture {capture}" if in_kind else "") + unlock_note)
+                        + (f" × capture {capture}" if in_kind else "")
+                        + unlock_note + usage_note)
                 results.append({"card_id": card["id"], "name": credit["name"],
                                 "value": value, "note": note})
                 continue
@@ -462,11 +562,17 @@ def score_credits(cards: list, profile: dict, mode: str, programs: dict,
                 if in_kind:
                     results.append({"card_id": card["id"], "name": credit["name"],
                                     "value": face * capture,
-                                    "note": f"in-kind est. ${face:,.2f}/yr × capture {capture}{unlock_note}"})
+                                    "note": f"in-kind est. ${face:,.2f}/yr × capture {capture}{unlock_note}{usage_note}"})
+                elif keys:
+                    # A confirmed merchant coupon (Oura, StubHub, Walmart+) —
+                    # spendable only at that merchant, so never full face.
+                    results.append({"card_id": card["id"], "name": credit["name"],
+                                    "value": face * capture,
+                                    "note": f"face ${face:,.2f}/yr × capture {capture}{unlock_note}{usage_note}"})
                 else:
                     results.append({"card_id": card["id"], "name": credit["name"],
                                     "value": face,
-                                    "note": f"automatic (no category) — full face value{unlock_note}"})
+                                    "note": f"automatic — full face value{unlock_note}"})
                 continue
             available = tracker.get(cat, 0.0)
             if available <= EPS:
@@ -478,7 +584,7 @@ def score_credits(cards: list, profile: dict, mode: str, programs: dict,
             value = min(haircut, available)
             tracker[cat] = available - value
             kind_label = "in-kind est." if in_kind else "face"
-            note = f"{kind_label} ${face:,.2f}/yr × capture {capture}{unlock_note}"
+            note = f"{kind_label} ${face:,.2f}/yr × capture {capture}{unlock_note}{usage_note}"
             if haircut > available:
                 note += f" (capped by remaining '{cat}' spend)"
             results.append({"card_id": card["id"], "name": credit["name"],
@@ -487,7 +593,8 @@ def score_credits(cards: list, profile: dict, mode: str, programs: dict,
 
 
 def score_bonus(card: dict, profile: dict, mode: str, programs: dict, as_of: date,
-                card_earnings: float = 0.0) -> dict:
+                card_earnings: float = 0.0,
+                unlocked: frozenset = frozenset()) -> dict:
     """Signup-bonus value — counted once, year-1 only. A bonus's `value` may mix
     points and usd (both summed); `tiers` add tranches whose cumulative spend
     requirements are checked with the same feasibility rule as the base;
@@ -505,7 +612,8 @@ def score_bonus(card: dict, profile: dict, mode: str, programs: dict, as_of: dat
     window_spend = total_spend * bonus["window_months"] / 12.0
     if window_spend < bonus["spend_requirement_usd"] - EPS:
         return {"value": 0.0, "note": "$0 — spend requirement unreachable at your volume"}
-    cpp = programs[card["currency"]["program"]][mode + "_cpp"]
+    cpp, _ = effective_cpp(card, mode, programs,
+                           set(profile["user"]["confirmed_usage"]), unlocked)
 
     def usd_of(value):
         parts, worth = [], 0.0
@@ -545,9 +653,10 @@ def score_portfolio(cards: list, profile: dict, mode: str, programs: dict,
     """Jointly score a card subset: one shared spend assignment over all the
     subset's lines, plus credits (shared tracker), plus eligible signup bonuses
     (year-1 only), minus fees."""
+    unlocked = unlocked_programs(cards)
     lines = []
     for card in cards:
-        lines += build_lines(card, profile, mode, programs, buckets)
+        lines += build_lines(card, profile, mode, programs, buckets, unlocked)
     assignments, unassigned = assign_spend(lines, buckets)
     credits = score_credits(cards, profile, mode, programs, as_of)
     credits_total = sum(c["value"] for c in credits)
@@ -565,7 +674,7 @@ def score_portfolio(cards: list, profile: dict, mode: str, programs: dict,
             per_card_earnings[cid] = cap
     earnings = sum(per_card_earnings.values())
     bonuses = {card["id"]: score_bonus(card, profile, mode, programs, as_of,
-                                       per_card_earnings[card["id"]])
+                                       per_card_earnings[card["id"]], unlocked)
                for card in cards}
     bonus_total = sum(b["value"] for b in bonuses.values())
     # Card-exclusive membership costs (Robinhood Gold) count in both metrics —
@@ -649,20 +758,35 @@ def expand_choice_variants(cards: list, profile: dict) -> list:
 # ---------------------------------------------------------------------------
 
 def filter_cards(cards: list, profile: dict, programs: dict) -> tuple:
-    """Approval-tier filter plus the reward-preference filter: when the user asks
-    for concrete reward kinds (no 'total_value'), a card survives only if its
-    currency's redeems_for (data/meta/point-valuations.yaml) intersects them."""
+    """Approval-tier filter, brand-lock-in filter, and reward-preference filter.
+
+    Brand lock-in (plan 07 addendum): currencies with no cashback path (the
+    loyalty_keys programs — airline/hotel/merchant-restricted) tie their whole
+    reward value to one company. Unless the user opted in with
+    user.accepts_brand_lockin, those cards are excluded outright — being
+    willing to be restricted to a brand is a preference, distinct from
+    confirming you already use that brand (confirmed_usage).
+
+    Reward preference: when the user asks for concrete reward kinds (no
+    'total_value'), a card survives only if its currency's redeems_for
+    (data/meta/point-valuations.yaml) intersects them."""
     user_rank = TIER_ORDER.index(profile["user"]["credit_tier"])
     prefs = set(profile["user"]["reward_preferences"])
     kind_filter = prefs if "total_value" not in prefs else None
+    accepts_lockin = profile["user"]["accepts_brand_lockin"]
     eligible, excluded = [], []
     for card in sorted(cards, key=lambda c: c["id"]):
         program = card["currency"]["program"]
+        redeems = set(programs[program].get("redeems_for", []))
         if TIER_ORDER.index(card["approval"]["credit_tier"]) > user_rank:
             excluded.append({"id": card["id"],
                              "reason": f"requires credit tier '{card['approval']['credit_tier']}'"})
-        elif kind_filter is not None and not (
-                set(programs[program].get("redeems_for", [])) & kind_filter):
+        elif not accepts_lockin and "cashback" not in redeems:
+            excluded.append({"id": card["id"],
+                             "reason": f"currency '{program}' locks rewards to a single "
+                                       f"company — set user.accepts_brand_lockin: true "
+                                       f"to consider brand-restricted cards"})
+        elif kind_filter is not None and not (redeems & kind_filter):
             excluded.append({"id": card["id"],
                              "reason": f"currency '{program}' does not redeem for any of: "
                                        f"{', '.join(sorted(kind_filter))}"})
@@ -698,9 +822,25 @@ def prune_dominated_variants(variants: list, profile: dict, mode: str,
     (rule e), so the reported rank-1 portfolio is unchanged. Profile-aware and
     time-free: rates come from build_lines under this profile, and an expired
     bonus still blocks pruning. Returns (kept, pruned) where pruned is an
-    id-sorted list of {"id", "reason"} dicts."""
+    id-sorted list of {"id", "reason"} dicts.
+
+    Transfer-gateway safety (plan 07 addendum): a variant whose cpp is
+    context-dependent — optimistic mode, transfer_gateway_required program, not
+    itself a gateway — is priced here at its standalone floor, but its rates
+    rise when a gateway card joins the subset, so it is never pruned. Tables
+    are built with unlocked=∅ (build_lines default), which keeps every
+    DOMINATOR at its minimum rates — a safe under-statement. If a
+    first_year_match card were ever context-dependent its guard threshold
+    would be understated, so pruning bails out entirely (none exist today:
+    match cards are cash-back)."""
     buckets = build_buckets(profile, merchants)
     NEG = float("-inf")
+
+    def context_dependent(v):
+        prog = programs[v["currency"]["program"]]
+        return (mode == "optimistic" and prog.get("transfer_gateway_required")
+                and not v.get("unlocks_transfers"))
+
     tables = {}
     for v in variants:
         best_any, best_uncapped = {}, {}
@@ -719,12 +859,16 @@ def prune_dominated_variants(variants: list, profile: dict, mode: str,
             "fee": fees["annual_fee_usd"] + membership_fee(v),
             "year1_fee": (0 if fees.get("first_year_waived") else fees["annual_fee_usd"])
                          + membership_fee(v),
-            "plain": not v["credits"] and v["signup_bonus"] is None,
+            "plain": (not v["credits"] and v["signup_bonus"] is None
+                      and not context_dependent(v)),
             "clamped": v.get("max_annual_rewards_usd") is not None,
             "base_id": v.get("base_id", v["id"]),
         }
     match_ids = [v["id"] for v in variants
                  if (v["signup_bonus"] or {}).get("first_year_match")]
+    if any(context_dependent(v) for v in variants
+           if (v["signup_bonus"] or {}).get("first_year_match")):
+        return list(variants), []  # guard thresholds would be understated
     by_base = {}
     for cid, t in tables.items():
         by_base.setdefault(t["base_id"], []).append(cid)
@@ -856,6 +1000,11 @@ def run(dataset: dict, profile: dict, as_of: date, top: int) -> dict:
                          "first_year_waived": bool(card["fees"].get("first_year_waived"))},
                 "warnings": card_warnings(card, as_of),
             }
+            _, valuation_note = effective_cpp(
+                card, mode, programs, set(profile["user"]["confirmed_usage"]),
+                unlocked_programs(cards))
+            if valuation_note:
+                per_card[cid]["valuation_note"] = valuation_note
             if membership_fee(card):
                 per_card[cid]["fees"]["membership_fee_usd"] = _round2(membership_fee(card))
                 per_card[cid]["fees"]["membership_name"] = card["required_membership"]["name"]
@@ -878,6 +1027,8 @@ def run(dataset: dict, profile: dict, as_of: date, top: int) -> dict:
         "optimize_for": profile["user"]["optimize_for"],
         "max_cards": profile["user"]["max_cards"],
         "reward_preferences": list(profile["user"]["reward_preferences"]),
+        "confirmed_usage": list(profile["user"]["confirmed_usage"]),
+        "accepts_brand_lockin": profile["user"]["accepts_brand_lockin"],
         "cpp_table": {p: {"floor_cpp": v["floor_cpp"], "optimistic_cpp": v["optimistic_cpp"]}
                       for p, v in sorted(programs.items())},
         "policy_constants": policy_constants(),
@@ -900,7 +1051,12 @@ def render_text(bundle: dict) -> str:
     out.append(f"Credit-card portfolio optimizer — as of {bundle['as_of']}")
     out.append(f"Valuation mode: {bundle['valuation_mode']} | optimizing for: "
                f"{bundle['optimize_for']} | max cards: {bundle['max_cards']} | "
-               f"rewards wanted: {', '.join(bundle['reward_preferences'])}")
+               f"rewards wanted: {', '.join(bundle['reward_preferences'])} | "
+               f"brand lock-in ok: {'yes' if bundle['accepts_brand_lockin'] else 'no'}")
+    out.append("Confirmed usage: "
+               + (", ".join(bundle["confirmed_usage"]) or
+                  "none — merchant/portal/loyalty-gated value counts $0 "
+                  "(see data/meta/usage-questions.yaml)"))
     cpp_key = bundle["valuation_mode"] + "_cpp"
     cpp = ", ".join(f"{p} {v[cpp_key]}" for p, v in bundle["cpp_table"].items())
     out.append(f"Point valuations ({cpp_key}): {cpp}")
@@ -924,6 +1080,8 @@ def render_text(bundle: dict) -> str:
             chosen = (f" — choice category set to: {d['choice_category']}"
                       if "choice_category" in d else "")
             out.append(f"    {cid} — {d['name']}{chosen}")
+            if "valuation_note" in d:
+                out.append(f"      ⚠ {d['valuation_note']}")
             for a in d["assignments"]:
                 note = f"   [{a['note']}]" if a["note"] else ""
                 out.append(f"      earn: {a['bucket']:<16} ${a['usd_assigned']:>10,.2f} "
@@ -972,6 +1130,10 @@ def main(argv=None) -> int:
     parser.add_argument("--rewards", metavar="KIND[,KIND...]",
                         help="override the profile's user.reward_preferences — "
                              "comma-separated from: " + ", ".join(REWARD_PREF_CHOICES))
+    parser.add_argument("--confirm", metavar="KEY[,KEY...]",
+                        help="override the profile's user.confirmed_usage — "
+                             "comma-separated usage-questions item keys "
+                             "(data/meta/usage-questions.yaml)")
     parser.add_argument("--top", type=int, default=5,
                         help="number of ranked portfolios to show (default 5)")
     parser.add_argument("--json", action="store_true",
@@ -996,7 +1158,10 @@ def main(argv=None) -> int:
         if args.rewards is not None:
             profile["user"]["reward_preferences"] = [
                 s.strip() for s in args.rewards.split(",") if s.strip()]
-        validate_user(profile["user"])
+        if args.confirm is not None:
+            profile["user"]["confirmed_usage"] = [
+                s.strip() for s in args.confirm.split(",") if s.strip()]
+        validate_user(profile["user"], dataset["usage_keys"])
         if args.top < 1:
             raise InputError(f"--top must be >= 1, got {args.top}")
         if args.as_of is not None:

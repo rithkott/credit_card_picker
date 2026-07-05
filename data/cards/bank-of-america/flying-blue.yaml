@@ -18,6 +18,7 @@ credits:
   - name: Anniversary bonus miles
     amount_points: 5000       # "Anniversary bonus: 5,000 Miles annually after spending $50+ in that year"
     period: annual
+    automatic: true    # pays out with no merchant-specific action
     unlock_spend_usd: 50      # trivial $50 spend threshold
     realistic_capture_rate_note: >-
       Deposited each account anniversary once at least $50 has been spent that year — effectively

@@ -53,6 +53,7 @@ credits:
     amount_usd: 150             # in_kind: estimated value of a night up to the 35,000-point redemption ceiling
     kind: in_kind
     period: annual
+    usage_keys: [marriott]
     category: travel_hotels
     realistic_capture_rate_note: >-
       Automatic each cardmember anniversary, valid 12 months, resort fees still apply.
@@ -63,6 +64,7 @@ credits:
   - name: Airline purchase credit
     amount_usd: 50             # "$50 statement credit per half-year period after spending $250+ directly with airlines each half"
     period: semiannual
+    category: travel_flights
     requires_enrollment: true
     realistic_capture_rate_note: >-
       $50 per half-year (up to $100/year) after $250+ in direct airline spend that half;
@@ -72,6 +74,7 @@ credits:
   - name: DashPass DoorDash quarterly credit
     amount_usd: 10             # "$10 off quarterly on one DoorDash non-restaurant order while enrolled"
     period: quarterly
+    usage_keys: [doordash]
     requires_enrollment: true
     realistic_capture_rate_note: >-
       Requires activating complimentary DashPass and one qualifying DoorDash

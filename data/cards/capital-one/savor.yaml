@@ -3,6 +3,7 @@ id: savor
 name: Capital One Savor Rewards
 issuer: capital-one
 network: mastercard          # NOT stated in offer file — inferred (Savor is a Mastercard product); NEEDS human verification
+portal: capital_one_travel    # portal_only rates book through this portal
 currency:
   type: cash
   program: cash

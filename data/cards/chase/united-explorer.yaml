@@ -29,6 +29,7 @@ credits:
   - name: United TravelBank credit ($10k spend)
     amount_usd: 100             # "$100 annual TravelBank cash credit after $10,000 calendar-year spend"
     period: annual
+    usage_keys: [united]
     unlock_spend_usd: 10000
     realistic_capture_rate_note: >-
       $100 of TravelBank cash (usable toward United airfare) once per year, only after
@@ -37,6 +38,7 @@ credits:
   - name: United Hotels credit
     amount_usd: 100             # "Up to $100/year United Hotels statement credit ($50 each on first two prepaid $50+ stays via Pay Now)"
     period: annual
+    usage_keys: [united]
     realistic_capture_rate_note: >-
       $50 each on the first two prepaid ($50+) United Hotels "Pay Now" bookings, up to
       $100/year. Scoped to the United Hotels booking channel — captured only by those who
@@ -44,6 +46,7 @@ credits:
   - name: Rideshare credit
     amount_usd: 60             # "Up to $60/year rideshare statement credit ($5/month, enrollment required)"
     period: annual
+    usage_keys: [uber, lyft]
     requires_enrollment: true
     realistic_capture_rate_note: >-
       $5/month (up to $60/year) in rideshare statement credits, enrollment required,
@@ -52,6 +55,7 @@ credits:
   - name: Avis/Budget credit
     amount_usd: 50             # "Up to $50/year Avis/Budget statement credit ($25 each on first two qualifying rentals)"
     period: annual
+    usage_keys: [avis_budget]
     realistic_capture_rate_note: >-
       $25 each on the first two qualifying Avis/Budget rentals via cars.united.com with
       discount codes, up to $50/year. Scoped to that booking channel — captured only by
@@ -59,6 +63,7 @@ credits:
   - name: JSX credit
     amount_usd: 100            # "$100/year JSX statement credit"
     period: annual
+    usage_keys: [jsx]
     realistic_capture_rate_note: >-
       $100/year toward JSX (a semi-private hop-on-jet carrier serving limited routes).
       Captured only by the small set of flyers with access to JSX routes; near-zero for
@@ -66,6 +71,7 @@ credits:
   - name: Global Entry / TSA PreCheck / NEXUS fee credit
     amount_usd: 120            # "one statement credit up to $120 every 4 years"
     period: every_4_years
+    usage_keys: [global_entry_tsa]
     realistic_capture_rate_note: >-
       One statement credit up to $120 per 4-year cycle covering a trusted-traveler
       application fee. Captured only by travelers who apply/renew.

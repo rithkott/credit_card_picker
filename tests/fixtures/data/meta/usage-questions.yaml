@@ -1,0 +1,34 @@
+# FROZEN fixture copy (trimmed): only the groups/items the fixture cards and
+# golden tests need. Growth of the real registry must never touch goldens.
+groups:
+  travel_portals:
+    label: Issuer travel portals
+    prompt: "Do you book travel through a credit-card issuer's travel portal?"
+    items:
+      chase_travel: {label: "Chase Travel"}
+      capital_one_travel: {label: "Capital One Travel"}
+  airlines:
+    label: Airlines
+    prompt: "Do you fly regularly with any particular airline?"
+    items:
+      brandair: {label: "BrandAir (synthetic loyalty-test airline)"}
+  rideshare_car:
+    label: Rideshare & car rental
+    prompt: "Do you use rideshare apps or rent cars?"
+    items:
+      uber: {label: "Uber"}
+      lyft: {label: "Lyft"}
+  dining_delivery:
+    label: Food delivery & dining services
+    prompt: "Do you use food-delivery or dining apps/services?"
+    items:
+      grubhub: {label: "Grubhub"}
+      resy: {label: "Resy"}
+      dunkin: {label: "Dunkin'"}
+  streaming:
+    label: Streaming & digital subscriptions
+    prompt: "Do you pay for streaming or digital subscriptions?"
+    items:
+      disney_plus: {label: "Disney+"}
+      hulu: {label: "Hulu"}
+      espn: {label: "ESPN+"}

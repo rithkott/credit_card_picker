@@ -22,6 +22,7 @@ credits:
   - name: 20% Back on In-Flight Purchases
     amount_usd: 15           # uncapped % rebate on Delta in-flight F&B; modeled as a small realistic annual figure
     period: annual
+    usage_keys: [delta]
     realistic_capture_rate_note: >-
       20% statement credit on pre-purchased meals and in-flight food/beverage on
       Delta-operated flights (automatic, no enrollment). No stated cap, so value

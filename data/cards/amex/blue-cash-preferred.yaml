@@ -41,6 +41,7 @@ credits:
   - name: Disney Streaming Credit
     amount_usd: 10           # "up to $10/month ... ($120/year max)"
     period: monthly
+    usage_keys: [disney_plus, hulu, espn]
     category: streaming
     requires_enrollment: true
     realistic_capture_rate_note: >-

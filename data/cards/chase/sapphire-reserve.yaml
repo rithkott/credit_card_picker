@@ -3,6 +3,8 @@ id: sapphire-reserve
 name: Chase Sapphire Reserve
 issuer: chase
 network: visa                # NOT stated in offer file; Sapphire Reserve is a Visa Infinite — inference, NEEDS human verification
+portal: chase_travel    # portal_only rates book through this portal
+unlocks_transfers: true   # gateway: unlocks this program's transfer partners for the whole portfolio
 currency:
   type: points               # Ultimate Rewards points, transferable to airline/hotel partners
   program: chase_ur
@@ -46,6 +48,7 @@ credits:
   - name: The Edit prepaid-stay credit
     amount_usd: 250           # "$500 Credit for stays with The Edit ... up to $250 twice a year (starting 1/1/2026)"
     period: semiannual
+    usage_keys: [chase_travel]
     category: travel_hotels
     realistic_capture_rate_note: >-
       Up to $250 twice per year ($500/year) on prepaid 2+ night "Pay Now" stays booked via
@@ -54,6 +57,7 @@ credits:
   - name: Select-hotels Chase Travel credit (2026)
     amount_usd: 250           # "$250 Credit for select hotels through Chase Travel in 2026 ... up to $250 in calendar year 2026"
     period: annual
+    usage_keys: [chase_travel]
     category: travel_hotels
     expires: "2026-12-31"
     realistic_capture_rate_note: >-
@@ -72,6 +76,7 @@ credits:
   - name: StubHub / viagogo credit
     amount_usd: 150           # "$300 Annual StubHub/viagogo Credit ... up to $150 per half-year"
     period: semiannual
+    usage_keys: [stubhub]
     requires_enrollment: true
     expires: "2027-12-31"
     realistic_capture_rate_note: >-
@@ -81,6 +86,7 @@ credits:
   - name: Peloton Membership credit
     amount_usd: 10            # "$120 Annual Peloton Membership Credit ... up to $10/month"
     period: monthly
+    usage_keys: [peloton]
     requires_enrollment: true
     expires: "2027-12-31"
     realistic_capture_rate_note: >-
@@ -89,6 +95,7 @@ credits:
   - name: Lyft ride credit
     amount_usd: 10            # "$10 monthly Lyft credit (up to $120/year) through 9/30/2027"
     period: monthly
+    usage_keys: [lyft]
     category: transit
     expires: "2027-09-30"
     realistic_capture_rate_note: >-
@@ -97,12 +104,14 @@ credits:
   - name: Global Entry / TSA PreCheck / NEXUS application fee credit
     amount_usd: 120           # "one statement credit up to $120 every 4 years"
     period: every_4_years
+    usage_keys: [global_entry_tsa]
     realistic_capture_rate_note: >-
       Up to $120 once every 4 years for a trusted-traveler application fee. Captured only
       by travelers who enroll.
   - name: The Shops at Chase credit (at $75k annual spend)
     amount_usd: 250           # "$75,000/calendar-year spend unlocks ... $250 credit at The Shops at Chase"
     period: annual
+    automatic: true    # pays out with no merchant-specific action
     unlock_spend_usd: 75000
     realistic_capture_rate_note: >-
       Unlocked only after $75,000 in card spend per calendar year, then redeemable at The
@@ -111,6 +120,7 @@ credits:
   - name: Southwest Airlines Chase Travel credit (at $75k annual spend)
     amount_usd: 500           # "$75,000/calendar-year spend unlocks ... $500 Southwest Airlines Chase Travel credit"
     period: annual
+    usage_keys: [southwest]
     unlock_spend_usd: 75000
     category: travel_flights
     realistic_capture_rate_note: >-

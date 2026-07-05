@@ -3,6 +3,7 @@ id: venture-x
 name: Capital One Venture X Rewards
 issuer: capital-one
 network: visa                 # "Visa Infinite" stated in offer file
+portal: capital_one_travel    # portal_only rates book through this portal
 currency:
   type: points
   program: capital_one_miles
@@ -43,6 +44,7 @@ credits:
   - name: Capital One Travel credit
     amount_usd: 300
     period: annual
+    usage_keys: [capital_one_travel]
     realistic_capture_rate_note: >-
       Redeemable ONLY on bookings made through the Capital One Travel portal, where
       prices can exceed direct-booking rates. High capture for cardholders who book
@@ -53,6 +55,7 @@ credits:
   - name: Anniversary bonus miles
     amount_points: 10000
     period: annual
+    automatic: true    # pays out with no merchant-specific action
     realistic_capture_rate_note: >-
       Deposited automatically each account anniversary; essentially full capture, no
       enrollment or spend needed. Valued via the card's capital_one_miles program.
@@ -62,6 +65,7 @@ credits:
   - name: Global Entry / TSA PreCheck fee credit
     amount_usd: 120
     period: every_4_years
+    usage_keys: [global_entry_tsa]
     realistic_capture_rate_note: >-
       One statement credit per account every four years toward a Global Entry or TSA
       PreCheck application fee. Only captured by travelers who apply/renew; worthless

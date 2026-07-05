@@ -3,6 +3,7 @@ id: aadvantage-executive
 name: Citi / AAdvantage Executive World Elite Mastercard
 issuer: citi
 network: mastercard           # "World Elite Mastercard" stated in the card title
+portal: aadvantage_hotels    # portal_only rates book through this portal
 currency:
   type: points
   program: aa_advantage
@@ -37,6 +38,7 @@ credits:
   - name: Lyft credit
     amount_usd: 10            # "$10 credit after 3 Lyft rides paid with the card in a calendar month"
     period: monthly
+    usage_keys: [lyft]
     category: transit
     requires_enrollment: true
     realistic_capture_rate_note: >-
@@ -47,6 +49,7 @@ credits:
   - name: Grubhub credit
     amount_usd: 10            # "Up to $10 per monthly billing statement"
     period: monthly
+    usage_keys: [grubhub]
     category: dining
     requires_enrollment: true
     realistic_capture_rate_note: >-
@@ -56,6 +59,7 @@ credits:
   - name: Avis / Budget prepaid car rental credit
     amount_usd: 120          # "Up to $120/year Avis or Budget prepaid car rental statement credit"
     period: annual
+    usage_keys: [avis_budget]
     category: travel_other
     requires_enrollment: true
     realistic_capture_rate_note: >-
@@ -65,6 +69,7 @@ credits:
   - name: Global Entry / TSA PreCheck fee credit
     amount_usd: 120          # "one statement credit up to $120 every 4 years"
     period: every_4_years
+    usage_keys: [global_entry_tsa]
     realistic_capture_rate_note: >-
       One credit every 4 years toward whichever of Global Entry / TSA PreCheck is
       charged first. Only captured by travelers who apply/renew.

@@ -3,6 +3,7 @@ id: venture-one
 name: Capital One VentureOne Rewards
 issuer: capital-one
 network: visa                 # NOT stated in offer file — inferred (VentureOne is a Visa product); NEEDS human verification
+portal: capital_one_travel    # portal_only rates book through this portal
 currency:
   type: points
   program: capital_one_miles

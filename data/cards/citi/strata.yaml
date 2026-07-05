@@ -3,6 +3,7 @@ id: strata
 name: Citi Strata
 issuer: citi
 network: mastercard           # network not stated in offer file; Citi Strata is a Mastercard — inferred
+portal: citi_travel    # portal_only rates book through this portal
 currency:
   type: points
   program: citi_typ

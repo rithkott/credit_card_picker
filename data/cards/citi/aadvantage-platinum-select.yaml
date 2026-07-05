@@ -36,6 +36,7 @@ credits:
     amount_usd: 125          # "$125 American Airlines Flight Discount certificate after $20,000+ in purchases"
     kind: in_kind
     period: annual
+    usage_keys: [american_airlines]
     unlock_spend_usd: 20000
     realistic_capture_rate_note: >-
       Requires $20,000+ in card purchases within the cardmembership year; certificate
@@ -49,6 +50,7 @@ credits:
   - name: Turo credit (limited-time)
     amount_usd: 180          # "up to $180 back on Turo (Oct 19, 2025 - Oct 18, 2026): $30/trip up to 6"
     period: annual
+    usage_keys: [turo]
     category: travel_other
     requires_enrollment: true
     expires: "2026-10-18"

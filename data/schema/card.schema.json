@@ -37,6 +37,14 @@
       "description": "Catch-all earn rate applied to spend not matched by any category or merchant reward. For conditionally boosted base rates (Apple Card 2% via Apple Pay vs 1% physical) store the unconditional baseline here and the boost in base_rate_conditional"
     },
     "base_rate_conditional": { "$ref": "#/$defs/conditionalRate" },
+    "portal": {
+      "type": "string",
+      "description": "Usage-question item key (travel_portals group of data/meta/usage-questions.yaml) naming the issuer portal this card's portal_only rates book through. Required by the validator when any category reward has portal_only: true — the optimizer drops those lines unless the user confirmed this key in user.confirmed_usage. Card-level (not issuer-level) because e.g. Citi AAdvantage cards use aadvantage_hotels, not citi_travel"
+    },
+    "unlocks_transfers": {
+      "type": "boolean",
+      "description": "true = holding this card unlocks its currency's transfer partners for every card of the same program in the portfolio (Sapphire for Freedom-family UR, Strata Premier/Elite for TYP, Autograph Journey for WF Rewards). Only meaningful on programs marked transfer_gateway_required in point-valuations.yaml (validator-enforced); without a gateway in the scored portfolio those currencies are valued at floor_cpp even in optimistic mode"
+    },
     "required_membership": {
       "type": "object",
       "additionalProperties": false,
@@ -83,6 +91,16 @@
           "amount_points": { "type": "number", "exclusiveMinimum": 0, "description": "Points/miles granted per period instead of USD (anniversary bonus points, spend-triggered point drops). Points cards only — valued via the card's currency.program" },
           "period": { "enum": ["monthly", "quarterly", "semiannual", "annual", "every_4_years", "every_5_years"] },
           "category": { "type": "string", "description": "Optional canonical category this credit offsets" },
+          "usage_keys": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" },
+            "description": "Usage-question item keys (data/meta/usage-questions.yaml), anyOf semantics: the optimizer values this credit at $0 unless the user confirmed at least one of these keys in user.confirmed_usage. Use for merchant/service/brand-locked credits (DoorDash, Resy, Delta Stays, free-night certs). Membership in the registry is enforced by scripts/validate_cards.py"
+          },
+          "automatic": {
+            "type": "boolean",
+            "description": "true = the credit pays out with no merchant-specific action by the cardholder (anniversary bonus points, anniversary cash credits) — valued at full face, never usage-gated. Mutually exclusive with usage_keys and category (validator-enforced). Every credit must carry at least one of category / usage_keys / automatic"
+          },
           "unlock_spend_usd": {
             "type": "number",
             "exclusiveMinimum": 0,

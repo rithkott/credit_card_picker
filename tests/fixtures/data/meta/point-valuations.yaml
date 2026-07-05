@@ -18,6 +18,7 @@ programs:
   chase_ur:
     label: Chase Ultimate Rewards
     redeems_for: [cashback, flights, hotels]
+    transfer_gateway_required: true  # Freedom points reach partners only via a Sapphire
     floor_cpp: 1.0          # cash out / statement credit
     optimistic_cpp: 2.0     # transfer partners (Hyatt etc.), r/churning consensus range 1.8–2.2
   amex_mr:
@@ -28,6 +29,7 @@ programs:
   citi_typ:
     label: Citi ThankYou Points
     redeems_for: [cashback, flights, hotels]
+    transfer_gateway_required: true  # full partners require a premium TY card (none in fixtures)
     floor_cpp: 1.0          # cash back at 1cpp
     optimistic_cpp: 1.7     # transfer partners (requires a premium TY card)
   capital_one_miles:
@@ -40,3 +42,9 @@ programs:
     redeems_for: [cashback]
     floor_cpp: 1.0
     optimistic_cpp: 1.0
+  brandair_miles:
+    label: BrandAir Miles (synthetic lock-in currency for loyalty tests)
+    redeems_for: [flights]
+    loyalty_keys: [brandair]  # optimistic_cpp requires confirmed BrandAir loyalty
+    floor_cpp: 0.8
+    optimistic_cpp: 1.5

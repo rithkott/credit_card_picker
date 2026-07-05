@@ -29,6 +29,7 @@ credits:
   - name: Alaska Lounge+ Membership discount
     amount_usd: 100          # "$100 off an annual Alaska Lounge+ Membership purchased with the card"
     period: annual
+    usage_keys: [alaska_airlines]
     realistic_capture_rate_note: >-
       Captured only by cardholders who actually buy an Alaska Lounge+ membership (list price
       several hundred dollars) with the card each year; worthless to everyone else. Most
@@ -37,6 +38,7 @@ credits:
     kind: in_kind
     amount_usd: 150          # curator estimate of net value, NOT an issuer-stated figure — see notes
     period: annual
+    usage_keys: [alaska_airlines]
     unlock_spend_usd: 6000   # "after spending $6,000+ in the prior anniversary year"
     realistic_capture_rate_note: >-
       Requires $6,000+ prior-year spend to earn, then a paid second ticket ($99 + taxes from $23)

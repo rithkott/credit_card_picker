@@ -3,6 +3,8 @@ id: strata-elite
 name: Citi Strata Elite
 issuer: citi
 network: mastercard           # network not stated in offer file; Citi Strata Elite is a Mastercard — inferred
+portal: citi_travel    # portal_only rates book through this portal
+unlocks_transfers: true   # gateway: unlocks this program's transfer partners for the whole portfolio
 currency:
   type: points
   program: citi_typ
@@ -38,6 +40,7 @@ credits:
   - name: Annual hotel benefit (Citi Travel)
     amount_usd: 300          # "Up to $300/year hotel benefit via Citi Travel"
     period: annual
+    usage_keys: [citi_travel]
     category: travel_hotels
     realistic_capture_rate_note: >-
       Applies to 2+ night stays booked/prepaid through Citi Travel; unused portion carries
@@ -47,6 +50,7 @@ credits:
   - name: Splurge Credit
     amount_usd: 200          # "Up to $200/year Splurge Credit"
     period: annual
+    usage_keys: [ticketmaster, american_airlines]
     requires_enrollment: true
     realistic_capture_rate_note: >-
       Cardholder activates up to 2 merchants (citi.com/splurgecredit); credits post on
@@ -56,6 +60,7 @@ credits:
   - name: Blacklane chauffeur credit
     amount_usd: 100          # "Up to $200/year: up to $100 Jan-Jun and up to $100 Jul-Dec"
     period: semiannual
+    usage_keys: [blacklane]
     requires_enrollment: true
     realistic_capture_rate_note: >-
       Up to $100 per half-year (Jan-Jun, Jul-Dec) on direct Blacklane app/site bookings;
@@ -64,6 +69,7 @@ credits:
   - name: Global Entry / TSA PreCheck fee credit
     amount_usd: 120
     period: every_4_years
+    usage_keys: [global_entry_tsa]
     realistic_capture_rate_note: >-
       One credit every 4 years toward whichever of Global Entry / TSA PreCheck is charged
       first. Only captured by travelers who apply/renew.

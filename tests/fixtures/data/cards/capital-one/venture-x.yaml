@@ -4,6 +4,7 @@ id: venture-x
 name: Capital One Venture X
 issuer: capital-one
 network: visa
+portal: capital_one_travel
 currency:
   type: points
   program: capital_one_miles
@@ -22,6 +23,7 @@ credits:
   - name: Capital One Travel credit
     amount_usd: 300
     period: annual
+    usage_keys: [capital_one_travel]
     category: travel_other
     realistic_capture_rate_note: >-
       Only usable through the Capital One Travel portal, where prices can run above
@@ -29,6 +31,7 @@ credits:
   - name: Anniversary bonus miles
     amount_usd: 100
     period: annual
+    automatic: true
     realistic_capture_rate_note: >-
       10,000 miles each anniversary, valued here at the 1.0cpp travel-eraser rate;
       automatic, so capture is effectively 100% as long as the card is kept.

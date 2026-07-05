@@ -32,6 +32,7 @@ credits:
   - name: Dining credit (Grubhub, Cheesecake Factory, etc.)
     amount_usd: 10
     period: monthly
+    usage_keys: [grubhub]
     category: dining
     realistic_capture_rate_note: >-
       Restricted to specific partners and requires enrollment; users who don't
@@ -39,6 +40,7 @@ credits:
   - name: Uber Cash
     amount_usd: 10
     period: monthly
+    usage_keys: [uber]
     category: transit
     realistic_capture_rate_note: >-
       Deposited monthly into the linked Uber account, use-it-or-lose-it each month;
@@ -46,6 +48,7 @@ credits:
   - name: Resy dining credit
     amount_usd: 50
     period: semiannual
+    usage_keys: [resy]
     category: dining
     realistic_capture_rate_note: >-
       Requires dining at Resy-bookable restaurants twice a year; capture depends on
@@ -53,6 +56,7 @@ credits:
   - name: Dunkin' credit
     amount_usd: 7
     period: monthly
+    usage_keys: [dunkin]
     category: dining
     realistic_capture_rate_note: Only valuable for regular Dunkin' customers; requires enrollment.
 signup_bonus:

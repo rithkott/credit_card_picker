@@ -3,6 +3,8 @@ id: strata-premier
 name: Citi Strata Premier
 issuer: citi
 network: mastercard           # network not stated in offer file; Citi Strata Premier is a Mastercard — inferred
+portal: citi_travel    # portal_only rates book through this portal
+unlocks_transfers: true   # gateway: unlocks this program's transfer partners for the whole portfolio
 currency:
   type: points
   program: citi_typ
@@ -49,6 +51,7 @@ credits:
   - name: Annual hotel benefit (Citi Travel)
     amount_usd: 100          # "$100 off a single hotel stay of $500+ ... booked via Citi Travel"
     period: annual
+    usage_keys: [citi_travel]
     category: travel_hotels
     realistic_capture_rate_note: >-
       Once per calendar year, $100 off a single $500+ hotel stay booked and prepaid via

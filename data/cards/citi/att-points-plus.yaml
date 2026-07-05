@@ -27,6 +27,7 @@ credits:
   - name: Recurring statement credit ($1,000/cycle)
     amount_usd: 20           # "$20 per billing cycle when net new purchases reach $1,000+ in that cycle"
     period: monthly
+    usage_keys: [att]
     unlock_spend_usd: 1000
     realistic_capture_rate_note: >-
       $20 posts only in billing cycles where net new purchases (spend minus returns)

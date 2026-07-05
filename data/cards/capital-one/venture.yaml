@@ -3,6 +3,7 @@ id: venture
 name: Capital One Venture Rewards
 issuer: capital-one
 network: visa                 # NOT stated in offer file — inferred (Venture is a Visa Signature product); NEEDS human verification
+portal: capital_one_travel    # portal_only rates book through this portal
 currency:
   type: points
   program: capital_one_miles
@@ -38,6 +39,7 @@ credits:
   - name: Global Entry / TSA PreCheck fee credit
     amount_usd: 120
     period: every_4_years
+    usage_keys: [global_entry_tsa]
     realistic_capture_rate_note: >-
       Statement credit toward a Global Entry or TSA PreCheck application fee — only
       captured by travelers who apply/renew; worthless to those who don't.

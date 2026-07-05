@@ -29,12 +29,14 @@ credits:
   - name: Anniversary bonus points
     amount_points: 30000        # "30,000 bonus points each anniversary year after annual fee payment"
     period: annual
+    automatic: true    # pays out with no merchant-specific action
     realistic_capture_rate_note: >-
       30,000 Wyndham points each anniversary after the annual fee posts (up to ~4 free nights);
       captured by every renewing cardholder. Valued via the wyndham_rewards program.
   - name: Annual hotel credit
     amount_usd: 100             # "$100 annual credit for eligible hotel purchases ($100+ aggregate spend/calendar year)"
     period: annual
+    usage_keys: [wyndham]
     category: travel_hotels
     realistic_capture_rate_note: >-
       Scoped trigger: requires $100+ aggregate spend at eligible Wyndham brands (Wyndham,
@@ -43,6 +45,7 @@ credits:
   - name: Meal delivery credit
     amount_usd: 10              # "$120 annual meal delivery credit ... up to $10/month" -> per-month face
     period: monthly
+    usage_keys: [doordash, grubhub]
     category: dining
     realistic_capture_rate_note: >-
       Up to $10/month on third-party meal-delivery services (monthly forfeit, no rollover;
@@ -57,6 +60,7 @@ credits:
   - name: Wholesale club statement credit
     amount_usd: 65              # "$65 annual wholesale statement credit (including membership fees, $65+ aggregate spend/calendar year)"
     period: annual
+    usage_keys: [costco, sams_club]
     realistic_capture_rate_note: >-
       Scoped trigger: $65+ aggregate wholesale-club spend (including membership fees) in a
       calendar year — NOT total card spend, so unlock_spend_usd is unset. Captured by wholesale
@@ -64,12 +68,14 @@ credits:
   - name: Global Entry / TSA PreCheck fee credit
     amount_usd: 120             # "up to $120, resets every 4 years"
     period: every_4_years
+    usage_keys: [global_entry_tsa]
     realistic_capture_rate_note: >-
       One statement credit up to $120 per 4-year cycle for a Global Entry/TSA PreCheck fee.
       Captured only by travelers who apply/renew.
   - name: Free night after 5 nights stayed
     amount_usd: 210             # curator estimate: up to 30,000 Wyndham pts x 0.7cpp floor
     period: annual
+    usage_keys: [wyndham]
     kind: in_kind
     realistic_capture_rate_note: >-
       Non-spend trigger: 1 free night (up to 30,000 points) after 5+ paid nights stayed in a

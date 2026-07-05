@@ -18,6 +18,7 @@ credits:
   - name: Resy Credit
     amount_usd: 20           # "up to $20/month statement credit"
     period: monthly
+    usage_keys: [resy]
     category: dining
     requires_enrollment: true
     realistic_capture_rate_note: >-
@@ -27,12 +28,14 @@ credits:
   - name: 20% Back on In-Flight Purchases
     amount_usd: 15
     period: annual
+    usage_keys: [delta]
     realistic_capture_rate_note: >-
       20% statement credit on Delta in-flight food/beverage (automatic); uncapped but
       typically small — modeled at ~$15/yr.
   - name: Rideshare Credit
     amount_usd: 10
     period: monthly
+    usage_keys: [uber, lyft]
     category: transit
     requires_enrollment: true
     realistic_capture_rate_note: >-
@@ -41,6 +44,7 @@ credits:
   - name: Delta Stays Credit
     amount_usd: 200          # "up to $200/calendar year"
     period: annual
+    usage_keys: [delta]
     category: travel_hotels
     realistic_capture_rate_note: >-
       $200/yr on new prepaid Delta Stays bookings (delta.com/stays) only; excludes
@@ -49,6 +53,7 @@ credits:
   - name: Global Entry or TSA PreCheck Fee Credit
     amount_usd: 120
     period: every_4_years
+    usage_keys: [global_entry_tsa]
     category: travel_other
     realistic_capture_rate_note: >-
       One credit every 4 years, up to $120 (Global Entry) or $85 (TSA PreCheck).
@@ -57,6 +62,7 @@ credits:
     kind: in_kind
     amount_usd: 350          # estimated net value of a Delta Main/Comfort/Premium Select/First round-trip companion ticket
     period: annual
+    usage_keys: [delta]
     category: travel_flights
     realistic_capture_rate_note: >-
       One round-trip companion ticket/year (up through First class) to a US/Mexico/

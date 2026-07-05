@@ -35,6 +35,7 @@ credits:
     amount_usd: 150             # in_kind: estimated value of a redemption up to the 40,000-point ceiling
     kind: in_kind
     period: annual
+    usage_keys: [ihg]
     category: travel_hotels
     realistic_capture_rate_note: >-
       Automatic each cardmember anniversary, valid 12 months; captured by anyone who
@@ -45,6 +46,7 @@ credits:
   - name: Anniversary statement credit ($20k spend)
     amount_usd: 100             # "$100 statement credit ... each calendar year with $20,000+ spend"
     period: annual
+    automatic: true    # pays out with no merchant-specific action
     unlock_spend_usd: 20000     # requires $20,000 total card spend in the calendar year
     realistic_capture_rate_note: >-
       Pays only after $20,000 of card spend in a calendar year; captured only by heavy
@@ -52,6 +54,7 @@ credits:
   - name: Anniversary bonus points ($20k spend)
     amount_points: 10000        # "10,000 bonus points ... each calendar year with $20,000+ spend"
     period: annual
+    automatic: true    # pays out with no merchant-specific action
     unlock_spend_usd: 20000
     realistic_capture_rate_note: >-
       Pays only after $20,000 of card spend in a calendar year; captured only by heavy
@@ -59,6 +62,7 @@ credits:
   - name: United TravelBank deposit
     amount_usd: 25             # "$25 deposit twice yearly (Jan and July) into linked United MileagePlus account"
     period: semiannual
+    usage_keys: [united]
     requires_enrollment: true
     realistic_capture_rate_note: >-
       $25 into a linked United MileagePlus TravelBank account each January and July
@@ -68,12 +72,14 @@ credits:
   - name: Global Entry / TSA PreCheck / NEXUS fee credit
     amount_usd: 120            # "one statement credit up to $120 every 4 years"
     period: every_4_years
+    usage_keys: [global_entry_tsa]
     realistic_capture_rate_note: >-
       One statement credit up to $120 per 4-year cycle covering a trusted-traveler
       application fee. Captured only by travelers who apply/renew.
   - name: DashPass DoorDash quarterly credit
     amount_usd: 10            # "$10 off quarterly on one DoorDash non-restaurant order while enrolled"
     period: quarterly
+    usage_keys: [doordash]
     requires_enrollment: true
     realistic_capture_rate_note: >-
       Requires activating complimentary DashPass and one qualifying DoorDash
@@ -81,6 +87,7 @@ credits:
   - name: Instacart monthly credit
     amount_usd: 10            # "$10/month Instacart credit while active"
     period: monthly
+    usage_keys: [instacart]
     requires_enrollment: true
     realistic_capture_rate_note: >-
       Requires an active Instacart+ membership (3 months complimentary, then auto-renews

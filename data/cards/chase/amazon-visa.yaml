@@ -3,6 +3,7 @@ id: amazon-visa
 name: Amazon Visa
 issuer: chase
 network: visa                # NOT stated in offer file; the "Amazon Visa" name implies Visa — inference, NEEDS human verification
+portal: chase_travel    # portal_only rates book through this portal
 currency:
   type: cash                 # earns fixed-value reward points (1 pt = $0.01, no transfer partners) — modeled as cash
   program: cash

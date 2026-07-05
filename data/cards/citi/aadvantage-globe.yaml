@@ -3,6 +3,7 @@ id: aadvantage-globe
 name: Citi / AAdvantage Globe Mastercard
 issuer: citi
 network: mastercard           # "Mastercard®" stated in the card title
+portal: aadvantage_hotels    # portal_only rates book through this portal
 currency:
   type: points
   program: aa_advantage
@@ -41,6 +42,7 @@ credits:
   - name: AA inflight purchase credit
     amount_usd: 100          # "Up to $100/year statement credit on AA inflight purchases"
     period: annual
+    usage_keys: [american_airlines]
     realistic_capture_rate_note: >-
       Up to $100/year on American Airlines inflight purchases (domestic AA/American
       Eagle-operated flights only; excludes codeshares). Captured only by cardholders
@@ -49,6 +51,7 @@ credits:
     amount_usd: 100          # in-kind; estimated value of a $99-companion-fare certificate
     kind: in_kind
     period: annual
+    usage_keys: [american_airlines]
     realistic_capture_rate_note: >-
       $99 domestic economy companion fare (plus taxes/fees), issued annually after
       renewal; 48-contiguous-states travel only, not valid on oneworld carriers or AA
@@ -62,6 +65,7 @@ credits:
     amount_usd: 100          # in-kind; 4 digital day-passes/year, conservatively valued
     kind: in_kind
     period: annual
+    usage_keys: [american_airlines]
     realistic_capture_rate_note: >-
       Four digital Admirals Club "Globe Passes"/year (each admits cardmember + up to 3
       adults for 24 hours); unused passes forfeit at year end and require a same-day
@@ -74,6 +78,7 @@ credits:
   - name: Turo credit
     amount_usd: 240          # "Up to $240/year on Turo: $30/trip up to 8 trips"
     period: annual
+    usage_keys: [turo]
     category: travel_other
     requires_enrollment: true
     realistic_capture_rate_note: >-
@@ -83,6 +88,7 @@ credits:
   - name: Splurge Credit
     amount_usd: 100          # "Up to $100/year Splurge Credit"
     period: annual
+    usage_keys: [ticketmaster, american_airlines]
     requires_enrollment: true
     realistic_capture_rate_note: >-
       Cardholder activates up to 2 merchants (citi.com/splurgecredit); credits post on
@@ -91,6 +97,7 @@ credits:
   - name: Global Entry / TSA PreCheck fee credit
     amount_usd: 120
     period: every_4_years
+    usage_keys: [global_entry_tsa]
     realistic_capture_rate_note: >-
       One credit every 4 years toward whichever of Global Entry / TSA PreCheck is
       charged first. Only captured by travelers who apply/renew.

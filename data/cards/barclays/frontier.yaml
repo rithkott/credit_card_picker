@@ -21,6 +21,7 @@ credits:
   - name: Anniversary flight voucher
     amount_usd: 100             # "$100 flight voucher every account anniversary after spending $2,500+"
     period: annual
+    usage_keys: [frontier]
     kind: in_kind               # Frontier-only flight voucher, redemption-restricted
     unlock_spend_usd: 2500      # total card spend in the cardmembership year
     realistic_capture_rate_note: >-

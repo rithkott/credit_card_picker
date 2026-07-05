@@ -3,6 +3,7 @@ id: double-cash
 name: Citi Double Cash
 issuer: citi
 network: mastercard           # network not stated in offer file; Citi Double Cash is a Mastercard — inferred
+portal: citi_travel    # portal_only rates book through this portal
 currency:
   type: points
   program: citi_typ

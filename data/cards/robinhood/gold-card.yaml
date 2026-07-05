@@ -3,6 +3,7 @@ id: gold-card
 name: Robinhood Gold Card
 issuer: robinhood
 network: visa                # "issued by Coastal Community Bank, pursuant to a license from Visa U.S.A. Inc." (offer file line 31)
+portal: robinhood_travel    # portal_only rates book through this portal
 currency:
   type: points
   program: robinhood_points   # 1 pt = $0.01 deposited into the linked Robinhood brokerage account (offer file line 25)

@@ -3,6 +3,7 @@ id: quicksilver
 name: Capital One Quicksilver Cash Rewards
 issuer: capital-one
 network: mastercard          # NOT stated in offer file — inferred (Quicksilver is a Mastercard product); NEEDS human verification
+portal: capital_one_travel    # portal_only rates book through this portal
 currency:
   type: cash
   program: cash

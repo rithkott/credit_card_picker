@@ -3,6 +3,7 @@ id: instacart-mastercard
 name: Instacart Mastercard
 issuer: chase
 network: mastercard          # "Instacart Mastercard" — stated in the card name
+portal: chase_travel    # portal_only rates book through this portal
 currency:
   type: cash                 # earns fixed-value reward points (1 pt = $0.01, no transfer partners) — modeled as cash
   program: cash

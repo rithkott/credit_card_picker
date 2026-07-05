@@ -3,6 +3,7 @@ id: gold
 name: American Express Gold Card
 issuer: amex
 network: amex
+portal: amex_travel    # portal_only rates book through this portal
 currency:
   type: points
   program: amex_mr
@@ -49,6 +50,7 @@ credits:
   - name: Resy Credit
     amount_usd: 50           # "up to $50 semiannual statement credit (Jan-Jun, Jul-Dec)"
     period: semiannual
+    usage_keys: [resy]
     category: dining
     requires_enrollment: true
     realistic_capture_rate_note: >-
@@ -58,6 +60,7 @@ credits:
   - name: Dining Credit
     amount_usd: 10           # "up to $10/month statement credit"
     period: monthly
+    usage_keys: [grubhub]
     category: dining
     requires_enrollment: true
     realistic_capture_rate_note: >-
@@ -68,6 +71,7 @@ credits:
   - name: Uber Cash
     amount_usd: 10           # "$10/month in Uber Cash (US only)"
     period: monthly
+    usage_keys: [uber]
     category: transit
     requires_enrollment: true
     realistic_capture_rate_note: >-
@@ -77,6 +81,7 @@ credits:
   - name: Dunkin' Credit
     amount_usd: 7            # "up to $7/month statement credit at US Dunkin' locations"
     period: monthly
+    usage_keys: [dunkin]
     category: dining
     requires_enrollment: true
     realistic_capture_rate_note: >-

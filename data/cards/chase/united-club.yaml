@@ -35,6 +35,7 @@ credits:
   - name: Renowned Hotels and Resorts credit
     amount_usd: 200             # "Up to $200/year Renowned Hotels and Resorts statement credit (prepaid via Chase Travel)"
     period: annual
+    usage_keys: [united]
     realistic_capture_rate_note: >-
       Up to $200/year on prepaid Renowned Hotels and Resorts bookings via Chase Travel.
       Scoped to that portal/program — captured only by those who book qualifying luxury
@@ -42,30 +43,35 @@ credits:
   - name: Rideshare credit
     amount_usd: 150             # "Up to $150/year rideshare statement credit ($12/month Jan-Nov, $18 in December)"
     period: annual
+    usage_keys: [uber, lyft]
     realistic_capture_rate_note: >-
       $12/month Jan-Nov and $18 in December, up to $150/year in rideshare statement
       credits. Captured only by regular rideshare users; monthly amounts don't roll over.
   - name: JSX credit
     amount_usd: 200            # "$200/year JSX statement credit"
     period: annual
+    usage_keys: [jsx]
     realistic_capture_rate_note: >-
       $200/year toward JSX (a semi-private carrier serving limited routes). Captured only
       by the small set of flyers with JSX access; near-zero for most cardholders.
   - name: Avis/Budget credit
     amount_usd: 100            # "Up to $100/year Avis/Budget statement credit ($50 each on first two qualifying rentals)"
     period: annual
+    usage_keys: [avis_budget]
     realistic_capture_rate_note: >-
       $50 each on the first two qualifying Avis/Budget rentals via cars.united.com with
       discount codes, up to $100/year. Scoped to that booking channel — car renters only.
   - name: Global Entry / TSA PreCheck / NEXUS fee credit
     amount_usd: 120            # "one statement credit up to $120 every 4 years"
     period: every_4_years
+    usage_keys: [global_entry_tsa]
     realistic_capture_rate_note: >-
       One statement credit up to $120 per 4-year cycle covering a trusted-traveler
       application fee. Captured only by travelers who apply/renew.
   - name: Instacart monthly credit
     amount_usd: 10            # "two $10/month Instacart credits while active"
     period: monthly
+    usage_keys: [instacart]
     requires_enrollment: true
     realistic_capture_rate_note: >-
       Offer file states two $10/month Instacart credits while an Instacart+ membership is

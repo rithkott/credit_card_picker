@@ -16,6 +16,18 @@ Checks, per card file:
      in the optimizer). Registry integrity: every merchants.yaml entry maps to
      a real (non-pseudo) category, and every point-valuations.yaml program has
      numeric floor_cpp / optimistic_cpp and a valid redeems_for list.
+     Confirmed-usage gating (plan 07): every credit carries at least one of
+     usage_keys / category / automatic (else it would be free money for every
+     user); automatic is exclusive of the other two; usage_keys / portal /
+     loyalty_keys must be usage-questions.yaml items (which must themselves be
+     statement-descriptors.yaml keys); non-cashback programs require
+     loyalty_keys and cashback programs may not carry them; cards with
+     portal_only reward lines must declare their portal; unlocks_transfers is
+     allowed only on transfer_gateway_required programs. Warnings: a monthly/
+     quarterly USD statement credit that is category-only (probably needs
+     usage_keys), a portal with no portal_only lines, any questionnaire
+     item nothing references, and a transfer_gateway_required program
+     whose cards include no gateway card (optimistic_cpp unreachable).
   4. `verification.last_verified_date` is not in the future and not stale
      (> STALE_DAYS old → warning; CI stays green so staleness nags, not blocks).
   5. The card is listed in docs/card-backlog.md — the backlog is the tracking
@@ -57,11 +69,42 @@ def main() -> int:
     merchants = set(merchants_registry)
     programs_registry = load_yaml(META_DIR / "point-valuations.yaml")["programs"]
     programs = set(programs_registry)
+    descriptors = set(load_yaml(META_DIR / "statement-descriptors.yaml")["descriptors"])
+    questions_registry = load_yaml(META_DIR / "usage-questions.yaml")["groups"]
 
     backlog = BACKLOG_PATH.read_text() if BACKLOG_PATH.exists() else ""
 
     errors: list[str] = []
     warnings: list[str] = []
+
+    # usage-questions.yaml is the confirmation vocabulary for credits[].usage_keys,
+    # card portal, program loyalty_keys, and user.confirmed_usage — the optimizer
+    # and UI both trust it, so its integrity is checked before any card is.
+    usage_keys_all: set[str] = set()
+    portal_keys: set[str] = set()
+    for gname in sorted(questions_registry):
+        group = questions_registry[gname] or {}
+        items = group.get("items")
+        if not group.get("label") or not group.get("prompt") or not items:
+            errors.append(
+                f"data/meta/usage-questions.yaml: group '{gname}' must have a label, "
+                f"a prompt, and a non-empty items map")
+            continue
+        for key in items:
+            if key in usage_keys_all:
+                errors.append(
+                    f"data/meta/usage-questions.yaml: item key '{key}' appears in more "
+                    f"than one group — keys must be globally unique")
+            usage_keys_all.add(key)
+            if key not in descriptors:
+                errors.append(
+                    f"data/meta/usage-questions.yaml: item '{key}' (group '{gname}') is "
+                    f"not a key in statement-descriptors.yaml")
+            if not (items[key] or {}).get("label"):
+                errors.append(
+                    f"data/meta/usage-questions.yaml: item '{key}' (group '{gname}') "
+                    f"is missing a label")
+    portal_keys = set((questions_registry.get("travel_portals") or {}).get("items") or {})
 
     # Every program must classify what its currency redeems for — the optimizer's
     # reward-preference filter (user.reward_preferences) depends on it — and carry
@@ -82,6 +125,24 @@ def main() -> int:
                 errors.append(
                     f"data/meta/point-valuations.yaml: program '{name}': {key} must be "
                     f"a number, got {v!r}")
+        # Lock-in currencies (no cash-out path) must say whose loyalty unlocks
+        # optimistic_cpp; cashback currencies must not — their floor is cash.
+        lk = entry.get("loyalty_keys")
+        if isinstance(rf, list) and "cashback" not in rf:
+            if not isinstance(lk, list) or not lk:
+                errors.append(
+                    f"data/meta/point-valuations.yaml: program '{name}' has no cashback "
+                    f"path and must carry non-empty loyalty_keys (usage-questions items)")
+            else:
+                for k in lk:
+                    if k not in usage_keys_all:
+                        errors.append(
+                            f"data/meta/point-valuations.yaml: program '{name}': "
+                            f"loyalty_keys entry '{k}' is not a usage-questions item")
+        elif lk is not None:
+            errors.append(
+                f"data/meta/point-valuations.yaml: program '{name}' redeems for cashback "
+                f"— loyalty_keys must be absent (no loyalty needed to realize cash)")
 
     # Every merchant must route to a real category — the optimizer moves
     # merchant-level spend out of that category bucket and crashes on a bad key.
@@ -98,6 +159,18 @@ def main() -> int:
         return 1
 
     seen_ids: dict[str, Path] = {}
+    # Keys actually used anywhere — seeded with program loyalty_keys; card
+    # usage_keys and portals are added in the loop. Unreferenced registry items
+    # are warned at the end: every questionnaire item must earn its question.
+    referenced_usage_keys: set[str] = {
+        k for entry in programs_registry.values()
+        for k in ((entry or {}).get("loyalty_keys") or [])}
+    # transfer_gateway_required programs (plan 07 addendum): track which get a
+    # gateway card, so an unreachable optimistic_cpp is flagged after the loop.
+    gateway_programs = {name for name, entry in programs_registry.items()
+                        if (entry or {}).get("transfer_gateway_required")}
+    programs_in_use: set[str] = set()
+    programs_with_gateway: set[str] = set()
 
     for path in card_files:
         rel = path.relative_to(ROOT)
@@ -126,6 +199,31 @@ def main() -> int:
             errors.append(f"{rel}: unknown point-valuation program '{card['currency']['program']}'")
         if card["currency"]["type"] == "cash" and card["currency"]["program"] != "cash":
             errors.append(f"{rel}: cash card must use program 'cash', got '{card['currency']['program']}'")
+        programs_in_use.add(card["currency"]["program"])
+        if card.get("unlocks_transfers"):
+            if card["currency"]["program"] not in gateway_programs:
+                errors.append(
+                    f"{rel}: unlocks_transfers on program '{card['currency']['program']}', "
+                    f"which is not transfer_gateway_required — either the currency "
+                    f"transfers natively (drop the flag) or the program entry in "
+                    f"point-valuations.yaml needs the gate")
+            else:
+                programs_with_gateway.add(card["currency"]["program"])
+        if "portal" in card:
+            referenced_usage_keys.add(card["portal"])
+        if "portal" in card and card["portal"] not in portal_keys:
+            errors.append(
+                f"{rel}: portal '{card['portal']}' is not an item of the travel_portals "
+                f"group in usage-questions.yaml")
+        has_portal_lines = any(cr.get("portal_only") for cr in card["category_rewards"])
+        if has_portal_lines and "portal" not in card:
+            errors.append(
+                f"{rel}: card has portal_only reward lines but no top-level portal key — "
+                f"the optimizer needs it to gate those lines on user.confirmed_usage")
+        elif "portal" in card and not has_portal_lines:
+            warnings.append(
+                f"{rel}: portal '{card['portal']}' declared but no reward line is "
+                f"portal_only — drop it or mark the portal lines")
 
         choice_rewards = 0
         for i, cr in enumerate(card["category_rewards"]):
@@ -162,6 +260,28 @@ def main() -> int:
                 errors.append(f"{rel}: credits[{i}]: '{cat}' is a pseudo-category and may not be a credit category")
             if "amount_points" in credit and card["currency"]["type"] != "points":
                 errors.append(f"{rel}: credits[{i}]: amount_points on a cash card — point-denominated credits need a points program to value them")
+            referenced_usage_keys.update(credit.get("usage_keys", []))
+            for k in credit.get("usage_keys", []):
+                if k not in usage_keys_all:
+                    errors.append(f"{rel}: credits[{i}]: usage_keys entry '{k}' is not a usage-questions item")
+            if credit.get("automatic") and (credit.get("usage_keys") or cat is not None):
+                errors.append(
+                    f"{rel}: credits[{i}]: automatic: true may not be combined with "
+                    f"usage_keys or category — an automatic credit needs no gate")
+            if not credit.get("automatic") and not credit.get("usage_keys") and cat is None:
+                errors.append(
+                    f"{rel}: credits[{i}] '{credit['name']}': un-gated credit — every credit "
+                    f"needs usage_keys (merchant/service/brand), a category (generic "
+                    f"spend-offset), or automatic: true (anniversary-style); otherwise the "
+                    f"optimizer would count it as free money for every user")
+            if (credit.get("period") in ("monthly", "quarterly")
+                    and credit.get("kind", "statement_credit") == "statement_credit"
+                    and "amount_usd" in credit
+                    and cat is not None and not credit.get("usage_keys")):
+                warnings.append(
+                    f"{rel}: credits[{i}] '{credit['name']}': {credit['period']} statement "
+                    f"credit with category but no usage_keys — short-cycle coupons are almost "
+                    f"always merchant-specific; verify it is genuinely merchant-agnostic")
             if "expires" in credit:
                 expires = date.fromisoformat(credit["expires"])
                 if expires < date.today():
@@ -246,6 +366,18 @@ def main() -> int:
             )
         if card["verification"]["confidence"] == "low":
             warnings.append(f"{rel}: confidence is 'low' — data needs human verification")
+
+    for prog in sorted((gateway_programs & programs_in_use) - programs_with_gateway):
+        warnings.append(
+            f"data/meta/point-valuations.yaml: program '{prog}' is "
+            f"transfer_gateway_required but no card in the dataset carries "
+            f"unlocks_transfers for it — its optimistic_cpp is unreachable")
+
+    for key in sorted(usage_keys_all - referenced_usage_keys):
+        warnings.append(
+            f"data/meta/usage-questions.yaml: item '{key}' is referenced by no card "
+            f"usage_keys, no card portal, and no program loyalty_keys — remove it so "
+            f"users aren't asked a question that can't change any recommendation")
 
     for w in warnings:
         print(f"WARNING: {w}")

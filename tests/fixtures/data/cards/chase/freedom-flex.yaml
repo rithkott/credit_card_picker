@@ -5,6 +5,7 @@ id: freedom-flex
 name: Chase Freedom Flex
 issuer: chase
 network: mastercard
+portal: chase_travel
 currency:
   type: points
   program: chase_ur
