@@ -65,12 +65,6 @@ descriptors:
       - "CITITRAVEL"
       - "ROCKET TRAVEL"
       - "AGODA"
-  us_bank_travel_center:
-    label: U.S. Bank Rewards Travel Center
-    benefit_context: "5x/5.5% prepaid travel (Altitude Connect, Cash+, Shopper Cash Rewards)"
-    statement_patterns:
-      - "US BANK TRAVEL"
-      - "REWARDS TRAVEL CENTER"
   bilt_travel:
     label: Bilt Travel portal
     benefit_context: "Bilt hotel credits ($100-$400) and portal earn (Bilt Blue/Obsidian/Palladium)"
@@ -87,12 +81,6 @@ descriptors:
     benefit_context: "up to 5x portal earn (Robinhood Gold Card)"
     statement_patterns:
       - "ROBINHOOD TRAVEL"
-  luxury_card_travel:
-    label: LuxuryCardTravel.com
-    benefit_context: "2x airfare/hotel portal earn + per-stay hotel benefits (Luxury Card Mastercards)"
-    statement_patterns:
-      - "LUXURYCARDTRAVEL"
-      - "LUXURY CARD TRAVEL"
   aadvantage_hotels:
     label: AAdvantage Hotels / Cars (Rocket Travel)
     benefit_context: "6x-10x hotels, 10x cars (Citi AAdvantage cards)"
@@ -340,18 +328,6 @@ descriptors:
       - "RCCL"
       - "CELEBRITY CRUISES"
       - "SILVERSEA"
-  disney_parks:
-    label: Disney (theme parks, resorts, cruise, shopDisney)
-    benefit_context: "Disney Rewards earn, park/resort spend credits, merch discounts (Chase Disney family)"
-    statement_patterns:
-      - "WALT DISNEY WORLD"
-      - "WDW"
-      - "DISNEYLAND"
-      - "DISNEY RESORT"
-      - "DISNEY CRUISE"
-      - "SHOPDISNEY"
-      - "DISNEY STORE"
-      - "AULANI"
   booking_com:
     label: Booking.com
     benefit_context: "3% Daily Cash Apple Pay partner (Apple Card)"
@@ -525,18 +501,11 @@ descriptors:
     statement_patterns:
       - "HOME CHEF"
       - "HOMECHEF"
-  starbucks:
-    label: Starbucks (incl. in-Target cafes)
-    benefit_context: "5% off at in-Target Starbucks (Target Circle Card)"
-    statement_patterns:
-      - "STARBUCKS"
-      - "STARBUCKS STORE"
-      - "SBX"
 
   # ── Grocery / retail / warehouse ──────────────────────────────────────
   amazon:
     label: Amazon.com (incl. Amazon Fresh, Amazon Go, Prime membership)
-    benefit_context: "5%/3% earn (Prime Visa / Amazon Visa / Prime Store Card); 6% choose-your-retailer (US Bank Shopper); Prime membership credit (NavyFed Flagship)"
+    benefit_context: "5%/3% earn (Prime Visa / Amazon Visa); Prime membership credit (NavyFed Flagship)"
     statement_patterns:
       - "AMZN MKTP"
       - "AMAZON.COM"
@@ -549,14 +518,14 @@ descriptors:
       - "AMAZON GO"
   whole_foods:
     label: Whole Foods Market
-    benefit_context: "5%/3% earn (Prime Visa / Amazon Visa / Prime Store Card)"
+    benefit_context: "5%/3% earn (Prime Visa / Amazon Visa)"
     statement_patterns:
       - "WHOLEFDS"
       - "WHOLE FOODS"
       - "WFM"
   walmart:
     label: Walmart (stores, Walmart.com)
-    benefit_context: "5%/3% earn (OnePay Walmart cards); 6% choose-your-retailer (US Bank Shopper); excluded from some grocery bonuses (Sapphire Preferred, Savor, Wyndham)"
+    benefit_context: "excluded from some grocery bonuses (Sapphire Preferred, Savor, Wyndham)"
     statement_patterns:
       - "WAL-MART"
       - "WALMART"
@@ -565,21 +534,21 @@ descriptors:
       - "WMT"
   walmart_plus:
     label: Walmart+ membership
-    benefit_context: "monthly membership credit (Amex Platinum); unlocks 5% at Walmart (OnePay Walmart MC)"
+    benefit_context: "monthly membership credit (Amex Platinum)"
     statement_patterns:
       - "WALMART PLUS"
       - "WMT PLUS"
       - "WALMART+"
   target:
     label: Target (stores, Target.com)
-    benefit_context: "5% off (Target Circle Card); 6% choose-your-retailer (US Bank Shopper); excluded from some grocery bonuses"
+    benefit_context: "excluded from some grocery bonuses"
     statement_patterns:
       - "TARGET "
       - "TARGET.COM"
       - "TARGET 000"
   costco:
     label: Costco (warehouse, gas, Costco.com, Costco Travel)
-    benefit_context: "2% warehouse / 4% gas / 3% travel (Citi Costco Anywhere); wholesale-club category example (US Bank Shopper)"
+    benefit_context: "2% warehouse / 4% gas / 3% travel (Citi Costco Anywhere)"
     statement_patterns:
       - "COSTCO WHSE"
       - "COSTCO GAS"
@@ -587,93 +556,20 @@ descriptors:
       - "COSTCO TRAVEL"
   sams_club:
     label: Sam's Club (club, SamsClub.com, fuel)
-    benefit_context: "3%/1% Sam's Cash (Synchrony Sam's Club MC); wholesale-club example (US Bank Shopper)"
+    benefit_context: "3%/1% Sam's Cash (Synchrony Sam's Club MC)"
     statement_patterns:
       - "SAMSCLUB"
       - "SAMS CLUB"
       - "SAM'S CLUB"
-  best_buy:
-    label: Best Buy
-    benefit_context: "5%-6% store-card rewards (Citi Best Buy); 6% choose-your-retailer (US Bank Shopper)"
-    statement_patterns:
-      - "BEST BUY"
-      - "BESTBUY"
-      - "BESTBUYCOM"
-  home_depot:
-    label: The Home Depot
-    benefit_context: "store-card financing/discount (Citi Home Depot); 6% choose-your-retailer (US Bank Shopper)"
-    statement_patterns:
-      - "THE HOME DEPOT"
-      - "HOME DEPOT"
-      - "HOMEDEPOT.COM"
-  lowes:
-    label: Lowe's
-    benefit_context: "5% off every purchase (Synchrony Lowe's Advantage); 6% choose-your-retailer (US Bank Shopper)"
-    statement_patterns:
-      - "LOWES"
-      - "LOWE'S"
-      - "LOWES.COM"
-  macys:
-    label: Macy's (incl. Backstage)
-    benefit_context: "Star Rewards store-card tiers (Citi Macy's); choose-your-retailer option (US Bank Shopper)"
-    statement_patterns:
-      - "MACYS"
-      - "MACY'S"
-      - "MACYS .COM"
-      - "MACYS BACKSTAGE"
-  kohls:
-    label: Kohl's
-    benefit_context: "7.5% Kohl's Card rewards (Cap One Kohl's); choose-your-retailer option (US Bank Shopper)"
-    statement_patterns:
-      - "KOHL'S"
-      - "KOHLS"
-      - "KOHLS.COM"
-  nordstrom:
-    label: Nordstrom / Nordstrom Rack
-    benefit_context: "1x-3x Nordy Club points + Rack 5% (TD Nordstrom cards); choose-your-retailer option (US Bank Shopper)"
-    statement_patterns:
-      - "NORDSTROM"
-      - "NORDSTROM.COM"
-      - "NORDSTROM RACK"
-      - "NORDSTROMRACK"
-  rei:
-    label: REI / REI.com
-    benefit_context: "5% earn (Cap One REI Co-op Mastercard)"
-    statement_patterns:
-      - "REI #"
-      - "REI.COM"
-      - "REI GREENVILLE"    # store descriptors are "REI #NNN CITY" or "REI CITY"
-  ikea:
-    label: IKEA
-    benefit_context: "choose-your-retailer option (US Bank Shopper)"
-    statement_patterns:
-      - "IKEA"
   ace_hardware:
     label: Ace Hardware
-    benefit_context: "3% Apple Pay partner (Apple Card); choose-your-retailer option (US Bank Shopper)"
+    benefit_context: "3% Apple Pay partner (Apple Card)"
     statement_patterns:
       - "ACE HARDWARE"
       - "ACE HDWE"
-  chewy:
-    label: Chewy.com
-    benefit_context: "choose-your-retailer option (US Bank Shopper)"
-    statement_patterns:
-      - "CHEWY.COM"
-      - "CHEWY INC"
-  wayfair:
-    label: Wayfair
-    benefit_context: "choose-your-retailer option (US Bank Shopper)"
-    statement_patterns:
-      - "WAYFAIR"
-      - "WAYFAIR*"
-  anthropologie:
-    label: Anthropologie
-    benefit_context: "choose-your-retailer option (US Bank Shopper)"
-    statement_patterns:
-      - "ANTHROPOLOGIE"
   apple:
     label: Apple (Apple Store, apple.com, App Store, Apple services billing)
-    benefit_context: "3% Daily Cash (Apple Card); choose-your-retailer option (US Bank Shopper); apple.com/bill also carries Apple Music/TV/One subscription credits (Chase Sapphire)"
+    benefit_context: "3% Daily Cash (Apple Card); apple.com/bill also carries Apple Music/TV/One subscription credits (Chase Sapphire)"
     statement_patterns:
       - "APPLE.COM/BILL"
       - "APPLE STORE"
@@ -728,7 +624,7 @@ descriptors:
   # ── Streaming / digital subscriptions ─────────────────────────────────
   netflix:
     label: Netflix
-    benefit_context: "self-select 3x streaming (Citi Strata); streaming credit example (US Bank Altitude Go)"
+    benefit_context: "self-select 3x streaming (Citi Strata)"
     statement_patterns:
       - "NETFLIX.COM"
       - "NETFLIX"
@@ -740,7 +636,7 @@ descriptors:
       - "HLU*HULU"
   disney_plus:
     label: Disney+ (incl. Disney Bundle)
-    benefit_context: "$7/mo Disney Bundle credit (Amex Blue Cash cards); self-select 3x (Citi Strata); 10% back (Chase Disney Premier)"
+    benefit_context: "$7/mo Disney Bundle credit (Amex Blue Cash cards); self-select 3x (Citi Strata)"
     statement_patterns:
       - "DISNEY PLUS"
       - "DISNEYPLUS"
@@ -797,7 +693,7 @@ descriptors:
       - "WARNERMEDIA"
   spotify:
     label: Spotify
-    benefit_context: "self-select 3x streaming (Citi Strata); streaming credit example (US Bank Altitude Go)"
+    benefit_context: "self-select 3x streaming (Citi Strata)"
     statement_patterns:
       - "SPOTIFY"
       - "SPOTIFY USA"
@@ -920,7 +816,7 @@ descriptors:
       - "CULTIVIST"
   gigsky:
     label: GigSky (travel eSIM data)
-    benefit_context: "complimentary global data plan (US Bank Altitude Connect, NavyFed Flagship)"
+    benefit_context: "complimentary global data plan (NavyFed Flagship)"
     statement_patterns:
       - "GIGSKY"
 
@@ -950,7 +846,7 @@ descriptors:
       - "CLEAR SECURE"
   global_entry_tsa:
     label: Global Entry / TSA PreCheck / NEXUS application fees
-    benefit_context: "application-fee statement credit (~$85-$120 every 4-4.5 yrs) — very widely offered (Amex, Chase, Citi, Cap One, BofA, US Bank, Barclays, WF, NavyFed, PenFed, Luxury Card)"
+    benefit_context: "application-fee statement credit (~$85-$120 every 4-4.5 yrs) — very widely offered (Amex, Chase, Citi, Cap One, BofA, Barclays, WF, NavyFed, PenFed)"
     statement_patterns:
       - "US CUSTOMS TTP"
       - "USCBP TTP"

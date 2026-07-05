@@ -22,3 +22,8 @@ user:
   optimize_for: ongoing   # ongoing | year1 (default ongoing)
   activates_rotating: true
   uses_travel_portal: false
+  reward_preferences: [total_value]  # any combination of: flights, hotels, cashback,
+                                     # total_value. Concrete kinds keep only cards whose
+                                     # currency redeems for one of them (see redeems_for
+                                     # in data/meta/point-valuations.yaml); total_value
+                                     # considers every card (default)

@@ -11,11 +11,13 @@ The optimizer is a pure function:
     recommendations = f(dataset, spend_profile, policy_constants, as_of_date)
 
 Identical inputs produce byte-identical output. `--as-of` (default: today) is the
-only time input, used solely for signup-bonus expiry and staleness warnings.
+only time input, used for signup-bonus expiry, promotional-credit expiry, and
+staleness warnings.
 
 Usage:
   python3 scripts/optimize.py --profile PATH [--mode floor|optimistic]
-      [--max-cards N] [--top N] [--json] [--as-of YYYY-MM-DD]
+      [--max-cards N] [--rewards KIND[,KIND...]] [--top N] [--json]
+      [--as-of YYYY-MM-DD]
 
 Flags override the profile's `user:` fields. Exit codes: 0 ok, 1 input
 (profile/CLI) error, 2 dataset error.
@@ -68,6 +70,12 @@ ROTATING_ELIGIBLE = ["dining", "drugstores", "gas", "groceries",
 
 TIER_ORDER = ["building", "fair", "good", "very_good", "excellent"]
 
+# Reward kinds a user may ask for (user.reward_preferences / --rewards). Concrete
+# kinds filter candidates by the program-level redeems_for classification in
+# data/meta/point-valuations.yaml; 'total_value' disables the filter entirely.
+REWARD_KINDS = ["cashback", "flights", "hotels"]
+REWARD_PREF_CHOICES = REWARD_KINDS + ["total_value"]
+
 # Exhaustive search scores every subset; each score_portfolio call costs
 # ~35-55 µs in pure Python. 2M subsets ≈ one to two minutes — the tolerable
 # ceiling for an interactive CLI. At max_cards=3 this admits ~229 variants
@@ -78,7 +86,8 @@ KIND_RANK = {"merchant": 0, "category": 1, "rotating": 2, "fallback": 3, "base":
 
 USER_DEFAULTS = {"valuation_mode": "floor", "max_cards": 3,
                  "optimize_for": "ongoing", "activates_rotating": True,
-                 "uses_travel_portal": False}
+                 "uses_travel_portal": False,
+                 "reward_preferences": ["total_value"]}
 
 EPS = 1e-9
 
@@ -220,6 +229,13 @@ def validate_user(user: dict) -> None:
     for flag in ("activates_rotating", "uses_travel_portal"):
         if not isinstance(user[flag], bool):
             raise InputError(f"profile: user.{flag} must be true or false, got {user[flag]!r}")
+    prefs = user["reward_preferences"]
+    if (not isinstance(prefs, list) or not prefs
+            or any(p not in REWARD_PREF_CHOICES for p in prefs)
+            or len(set(prefs)) != len(prefs)):
+        raise InputError(
+            f"profile: user.reward_preferences must be a non-empty list of unique "
+            f"values from {REWARD_PREF_CHOICES}, got {prefs!r}")
 
 
 # ---------------------------------------------------------------------------
@@ -390,7 +406,8 @@ def assign_spend(lines: list, buckets: dict) -> tuple:
 # Value model (spec §4)
 # ---------------------------------------------------------------------------
 
-def score_credits(cards: list, profile: dict, mode: str, programs: dict) -> list:
+def score_credits(cards: list, profile: dict, mode: str, programs: dict,
+                  as_of: date) -> list:
     """Value every credit across the portfolio against a shared per-category
     remaining-spend tracker, so stacked credits can never exceed the user's real
     spend. Draw order is deterministic: file order within a card, card-id order
@@ -404,6 +421,8 @@ def score_credits(cards: list, profile: dict, mode: str, programs: dict) -> list
         the card's program cpp; they don't offset spend, so no tracker draw.
       - kind: in_kind: amount_usd is a curator estimate (free nights, companion
         certificates), so the capture haircut always applies, even uncategorized.
+      - expires: promotional credits are $0 once past the as-of date, mirroring
+        the signup-bonus expiry rule.
     """
     tracker = {cat: float(v) for cat, v in profile["spend"].items()}
     total_spend = sum(profile["spend"].values())
@@ -411,6 +430,11 @@ def score_credits(cards: list, profile: dict, mode: str, programs: dict) -> list
     for card in sorted(cards, key=lambda c: c["id"]):
         cpp = programs[card["currency"]["program"]][mode + "_cpp"]
         for credit in card["credits"]:
+            if "expires" in credit and date.fromisoformat(credit["expires"]) < as_of:
+                results.append({"card_id": card["id"], "name": credit["name"],
+                                "value": 0.0,
+                                "note": f"$0 — promo expired {credit['expires']}"})
+                continue
             periods = PERIODS_PER_YEAR[credit["period"]]
             capture = CREDIT_CAPTURE[credit["period"]]
             in_kind = credit.get("kind") == "in_kind"
@@ -514,7 +538,7 @@ def score_portfolio(cards: list, profile: dict, mode: str, programs: dict,
     for card in cards:
         lines += build_lines(card, profile, mode, programs, buckets)
     assignments, unassigned = assign_spend(lines, buckets)
-    credits = score_credits(cards, profile, mode, programs)
+    credits = score_credits(cards, profile, mode, programs, as_of)
     credits_total = sum(c["value"] for c in credits)
     per_card_earnings = {card["id"]: 0.0 for card in cards}
     for a in assignments:
@@ -610,13 +634,24 @@ def expand_choice_variants(cards: list, profile: dict) -> list:
 # Filters and search (spec §6–7)
 # ---------------------------------------------------------------------------
 
-def filter_cards(cards: list, profile: dict) -> tuple:
+def filter_cards(cards: list, profile: dict, programs: dict) -> tuple:
+    """Approval-tier filter plus the reward-preference filter: when the user asks
+    for concrete reward kinds (no 'total_value'), a card survives only if its
+    currency's redeems_for (data/meta/point-valuations.yaml) intersects them."""
     user_rank = TIER_ORDER.index(profile["user"]["credit_tier"])
+    prefs = set(profile["user"]["reward_preferences"])
+    kind_filter = prefs if "total_value" not in prefs else None
     eligible, excluded = [], []
     for card in sorted(cards, key=lambda c: c["id"]):
+        program = card["currency"]["program"]
         if TIER_ORDER.index(card["approval"]["credit_tier"]) > user_rank:
             excluded.append({"id": card["id"],
                              "reason": f"requires credit tier '{card['approval']['credit_tier']}'"})
+        elif kind_filter is not None and not (
+                set(programs[program].get("redeems_for", [])) & kind_filter):
+            excluded.append({"id": card["id"],
+                             "reason": f"currency '{program}' does not redeem for any of: "
+                                       f"{', '.join(sorted(kind_filter))}"})
         else:
             eligible.append(card)
     return eligible, excluded
@@ -775,7 +810,7 @@ def run(dataset: dict, profile: dict, as_of: date, top: int) -> dict:
     mode = profile["user"]["valuation_mode"]
     programs = dataset["programs"]
     merchants = dataset["merchants"]
-    eligible, excluded = filter_cards(dataset["cards"], profile)
+    eligible, excluded = filter_cards(dataset["cards"], profile, programs)
     expanded = expand_choice_variants(eligible, profile)
     variants, pruned = prune_dominated_variants(expanded, profile, mode,
                                                 programs, merchants)
@@ -806,6 +841,8 @@ def run(dataset: dict, profile: dict, as_of: date, top: int) -> dict:
                          "first_year_waived": bool(card["fees"].get("first_year_waived"))},
                 "warnings": card_warnings(card, as_of),
             }
+            if cid in scored["reward_cap_clamps"]:
+                per_card[cid]["reward_cap_clamp"] = _round2(scored["reward_cap_clamps"][cid])
             if "choice_category" in card:
                 per_card[cid]["choice_category"] = card["choice_category"]
         portfolios.append({
@@ -822,6 +859,7 @@ def run(dataset: dict, profile: dict, as_of: date, top: int) -> dict:
         "valuation_mode": mode,
         "optimize_for": profile["user"]["optimize_for"],
         "max_cards": profile["user"]["max_cards"],
+        "reward_preferences": list(profile["user"]["reward_preferences"]),
         "cpp_table": {p: {"floor_cpp": v["floor_cpp"], "optimistic_cpp": v["optimistic_cpp"]}
                       for p, v in sorted(programs.items())},
         "policy_constants": policy_constants(),
@@ -843,7 +881,8 @@ def render_text(bundle: dict) -> str:
     out = []
     out.append(f"Credit-card portfolio optimizer — as of {bundle['as_of']}")
     out.append(f"Valuation mode: {bundle['valuation_mode']} | optimizing for: "
-               f"{bundle['optimize_for']} | max cards: {bundle['max_cards']}")
+               f"{bundle['optimize_for']} | max cards: {bundle['max_cards']} | "
+               f"rewards wanted: {', '.join(bundle['reward_preferences'])}")
     cpp_key = bundle["valuation_mode"] + "_cpp"
     cpp = ", ".join(f"{p} {v[cpp_key]}" for p, v in bundle["cpp_table"].items())
     out.append(f"Point valuations ({cpp_key}): {cpp}")
@@ -871,6 +910,9 @@ def render_text(bundle: dict) -> str:
                 note = f"   [{a['note']}]" if a["note"] else ""
                 out.append(f"      earn: {a['bucket']:<16} ${a['usd_assigned']:>10,.2f} "
                            f"@ {a['rate']}x × {a['cpp']}cpp = ${a['usd_value']:,.2f}{note}")
+            if "reward_cap_clamp" in d:
+                out.append(f"      ⚠ card-wide reward cap (max_annual_rewards_usd): "
+                           f"earnings above clamped by ${d['reward_cap_clamp']:,.2f}")
             for c in d["credits"]:
                 out.append(f"      credit: {c['name']} = ${c['value']:,.2f}   [{c['note']}]")
             bonus = d["bonus"]
@@ -906,13 +948,16 @@ def main(argv=None) -> int:
                         help="override the profile's user.valuation_mode")
     parser.add_argument("--max-cards", type=int,
                         help="override the profile's user.max_cards (1-5)")
+    parser.add_argument("--rewards", metavar="KIND[,KIND...]",
+                        help="override the profile's user.reward_preferences — "
+                             "comma-separated from: " + ", ".join(REWARD_PREF_CHOICES))
     parser.add_argument("--top", type=int, default=5,
                         help="number of ranked portfolios to show (default 5)")
     parser.add_argument("--json", action="store_true",
                         help="machine-readable output with sorted keys")
     parser.add_argument("--as-of", metavar="YYYY-MM-DD",
-                        help="the only time input: signup-bonus expiry and "
-                             "staleness warnings (default: today)")
+                        help="the only time input: signup-bonus expiry, promo-"
+                             "credit expiry, and staleness warnings (default: today)")
     args = parser.parse_args(argv)
 
     try:
@@ -927,6 +972,9 @@ def main(argv=None) -> int:
             profile["user"]["valuation_mode"] = args.mode
         if args.max_cards is not None:
             profile["user"]["max_cards"] = args.max_cards
+        if args.rewards is not None:
+            profile["user"]["reward_preferences"] = [
+                s.strip() for s in args.rewards.split(",") if s.strip()]
         validate_user(profile["user"])
         if args.top < 1:
             raise InputError(f"--top must be >= 1, got {args.top}")

@@ -1,0 +1,142 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Card Picker — test UI</title>
+<style>
+  /* deliberately unstyled proof-of-concept — do not invest in design here */
+  body { font-family: monospace; margin: 2em; max-width: 60em; }
+  fieldset { margin-bottom: 1em; }
+  label { display: inline-block; width: 22em; }
+  input[type=number] { width: 8em; }
+  .portfolio { border: 1px solid #888; padding: 0.8em; margin: 1em 0; }
+  .card { margin: 0.6em 0 0.6em 1.5em; }
+  .warn { color: #a60; }
+  .err { color: #c00; white-space: pre-wrap; }
+  table { border-collapse: collapse; }
+  td, th { border: 1px solid #ccc; padding: 2px 6px; text-align: right; }
+  td:first-child, th:first-child { text-align: left; }
+</style>
+</head>
+<body>
+<h1>credit_card_picker — test UI</h1>
+
+<form id="f">
+<fieldset>
+  <legend>Annual spend per category (USD)</legend>
+  <div><label>Groceries / supermarkets</label><input type="number" name="groceries" min="0" value="0"></div>
+  <div><label>Dining &amp; restaurants</label><input type="number" name="dining" min="0" value="0"></div>
+  <div><label>Travel — flights</label><input type="number" name="travel_flights" min="0" value="0"></div>
+  <div><label>Travel — hotels</label><input type="number" name="travel_hotels" min="0" value="0"></div>
+  <div><label>Travel — other (trains, car rental…)</label><input type="number" name="travel_other" min="0" value="0"></div>
+  <div><label>Gas stations / EV charging</label><input type="number" name="gas" min="0" value="0"></div>
+  <div><label>Transit &amp; rideshare</label><input type="number" name="transit" min="0" value="0"></div>
+  <div><label>Streaming services</label><input type="number" name="streaming" min="0" value="0"></div>
+  <div><label>Drugstores &amp; pharmacies</label><input type="number" name="drugstores" min="0" value="0"></div>
+  <div><label>Online shopping (general)</label><input type="number" name="online_shopping" min="0" value="0"></div>
+  <div><label>Entertainment</label><input type="number" name="entertainment" min="0" value="0"></div>
+  <div><label>Utilities &amp; phone</label><input type="number" name="utilities" min="0" value="0"></div>
+  <div><label>Everything else</label><input type="number" name="other" min="0" value="0"></div>
+</fieldset>
+
+<fieldset>
+  <legend>Rewards to prioritize</legend>
+  <label><input type="checkbox" name="pref" value="total_value" checked> Total value (everything)</label><br>
+  <label><input type="checkbox" name="pref" value="cashback"> Cash back</label><br>
+  <label><input type="checkbox" name="pref" value="flights"> Flights</label><br>
+  <label><input type="checkbox" name="pref" value="hotels"> Hotels</label>
+</fieldset>
+
+<fieldset>
+  <legend>Options</legend>
+  <div><label>Credit tier</label>
+    <select name="credit_tier">
+      <option>building</option><option>fair</option><option>good</option>
+      <option selected>very_good</option><option>excellent</option>
+    </select></div>
+  <div><label>Valuation mode</label>
+    <select name="valuation_mode"><option selected>floor</option><option>optimistic</option></select></div>
+  <div><label>Max cards</label>
+    <select name="max_cards"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></div>
+  <div><label>Optimize for</label>
+    <select name="optimize_for"><option selected>ongoing</option><option>year1</option></select></div>
+</fieldset>
+
+<button type="submit">Optimize</button> <span id="status"></span>
+</form>
+
+<div id="out"></div>
+
+<script>
+const CATS = ["groceries","dining","travel_flights","travel_hotels","travel_other","gas",
+  "transit","streaming","drugstores","online_shopping","entertainment","utilities","other"];
+const usd = n => "$" + Number(n).toLocaleString(undefined, {maximumFractionDigits: 0});
+
+document.getElementById("f").addEventListener("submit", async e => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const spend = {};
+  for (const c of CATS) {
+    const v = parseFloat(fd.get(c));
+    if (v > 0) spend[c] = v;
+  }
+  const prefs = fd.getAll("pref");
+  const body = {
+    spend,
+    user: {
+      credit_tier: fd.get("credit_tier"),
+      valuation_mode: fd.get("valuation_mode"),
+      max_cards: parseInt(fd.get("max_cards")),
+      optimize_for: fd.get("optimize_for"),
+      reward_preferences: prefs.length ? prefs : ["total_value"],
+    },
+  };
+  const status = document.getElementById("status");
+  const out = document.getElementById("out");
+  status.textContent = "running… (can take a minute at max_cards ≥ 3)";
+  out.innerHTML = "";
+  try {
+    const r = await fetch("/optimize", {method: "POST",
+      headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
+    const data = await r.json();
+    status.textContent = "";
+    if (!r.ok) { out.innerHTML = '<p class="err"></p>'; out.firstChild.textContent = data.error; return; }
+    render(data);
+  } catch (err) {
+    status.textContent = "";
+    out.innerHTML = '<p class="err">' + err + "</p>";
+  }
+});
+
+function render(d) {
+  const out = document.getElementById("out");
+  let h = `<p>as of ${d.as_of} — ${d.cards_eligible}/${d.cards_total} cards eligible, ` +
+          `mode=${d.valuation_mode}, rewards=${(d.reward_preferences||[]).join(",")}</p>`;
+  d.portfolios.forEach((p, i) => {
+    h += `<div class="portfolio"><b>#${i + 1}: ${p.cards.join(" + ")}</b>` +
+         ` — ongoing net ${usd(p.ongoing_net)}/yr, year-1 net ${usd(p.year1_net)}`;
+    for (const [id, c] of Object.entries(p.per_card)) {
+      h += `<div class="card"><b>${c.name}</b> (fee ${usd(c.fees.annual_fee_usd)}` +
+           `${c.fees.first_year_waived ? ", waived yr 1" : ""})`;
+      if (c.assignments.length) {
+        h += "<table><tr><th>spend bucket</th><th>rate</th><th>assigned</th><th>value/yr</th></tr>";
+        for (const a of c.assignments)
+          h += `<tr><td>${a.bucket}${a.note ? " — " + a.note : ""}</td><td>${a.rate}x` +
+               `${a.cpp !== 1 ? " @ " + a.cpp + "cpp" : ""}</td><td>${usd(a.usd_assigned)}</td><td>${usd(a.usd_value)}</td></tr>`;
+        h += "</table>";
+      }
+      if (c.bonus && c.bonus.value) h += `<div>signup bonus: ${usd(c.bonus.value)} (${c.bonus.note})</div>`;
+      for (const cr of c.credits || [])
+        h += `<div>credit: ${cr.name} — ${usd(cr.value)} <small>(${cr.note})</small></div>`;
+      for (const w of c.warnings || []) h += `<div class="warn">⚠ ${w}</div>`;
+      h += "</div>";
+    }
+    const un = Object.entries(p.unassigned_spend || {});
+    if (un.length) h += `<div class="warn">unassigned spend: ${un.map(([k, v]) => k + " " + usd(v)).join(", ")}</div>`;
+    h += "</div>";
+  });
+  out.innerHTML = h;
+}
+</script>
+</body>
+</html>

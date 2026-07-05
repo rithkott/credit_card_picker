@@ -14,11 +14,11 @@ Master checklist of cards to hand-curate into `data/cards/`, following [curation
 ---
 
 Scope notes:
-- **US consumer cards** in the main list, including **closed-loop store cards** (Target, Amazon Store Card, etc. — curated with the schema's `closed_loop` block) since they're worth recommending in combination with open-loop cards when a big share of someone's spend is at that merchant, and **credit-builder/secured cards** (curated with `approval.credit_tier: building`) so users with thin or damaged credit still get recommendations they can actually be approved for.
+- **Mainstream US consumer cards only.** The July 2026 scope cut removed the small, niche cards that only maximized point value for edge-case spenders: closed-loop store cards (Target, Amazon Store Card, Nordstrom, OnePay/Walmart, …), credit-builder/secured cards, standalone student cards, U.S. Bank's lineup, Luxury Card, small credit-union one-offs (Max Cash Preferred), theme-park-currency co-brands (Disney), and no-rewards balance-transfer cards (Slate Edge). Users steer recommendations with `reward_preferences` (flights / hotels / cashback / total_value) instead of the dataset carrying every niche product. The schema's `closed_loop` block and `approval.credit_tier: building` remain supported if scope ever widens again — but don't add such cards without revisiting this decision.
 - Cards no longer open to new applicants (e.g. Amex EveryDay, US Bank Altitude Reserve) are excluded; the optimizer recommends cards people can actually get. If one is re-opened, add it.
 - Product names, fees, and even issuers change (e.g. Bilt's issuer transition) — treat this list itself as needing verification during curation.
 
-Suggested priority: **Tier 1** (the flat-rate + everyday-category cards most Americans actually hold) → **Tier 2** (premium travel + points ecosystems) → **Tier 3** (co-branded airline/hotel, store cards) → **Tier 4** (student/secured/credit-builder, niche).
+Suggested priority: **Tier 1** (the flat-rate + everyday-category cards most Americans actually hold) → **Tier 2** (premium travel + points ecosystems) → **Tier 3** (co-branded airline/hotel/other, remaining niche).
 
 ---
 
@@ -29,7 +29,6 @@ Suggested priority: **Tier 1** (the flat-rate + everyday-category cards most Ame
 - [~] Freedom Rise — `freedom-rise`
 - [~] Sapphire Preferred — `sapphire-preferred`
 - [~] Sapphire Reserve — `sapphire-reserve`
-- [~] Slate Edge — `slate-edge`
 - [~] Prime Visa (Amazon) — `prime-visa`
 - [~] Amazon Visa (Amazon) — `amazon-visa`
 - [~] Instacart Mastercard — `instacart-mastercard`
@@ -51,9 +50,6 @@ Suggested priority: **Tier 1** (the flat-rate + everyday-category cards most Ame
 - [~] British Airways Visa Signature — `british-airways`
 - [~] Aer Lingus Visa Signature — `aer-lingus`
 - [~] Iberia Visa Signature — `iberia`
-- [~] Disney Visa — `disney-visa`
-- [~] Disney Premier Visa — `disney-premier`
-- [~] Disney Inspire Visa — `disney-inspire`
 
 ## American Express — `data/cards/amex/`
 
@@ -140,14 +136,6 @@ Bilt's three-card lineup ("Bilt Card 2.0") launched Feb 7, 2026, issued by Colum
 - [~] Bilt Obsidian Card ($95 AF) — `bilt-obsidian`
 - [~] Bilt Palladium Card ($495 AF) — `bilt-palladium`
 
-## U.S. Bank — `data/cards/us-bank/`
-
-- [~] Cash+ — `cash-plus`
-- [~] Altitude Go — `altitude-go`
-- [~] Altitude Connect — `altitude-connect`
-- [~] Shopper Cash Rewards — `shopper-cash-rewards`
-- [~] Smartly Visa — `smartly`
-
 ## Barclays — `data/cards/barclays/`
 
 - [~] JetBlue Card — `jetblue`
@@ -171,51 +159,6 @@ Bilt's three-card lineup ("Bilt Card 2.0") launched Feb 7, 2026, issued by Colum
 - [~] Verizon Visa — `verizon-visa`
 - [~] Sam's Club Mastercard — `sams-club-mastercard`
 
-## Store / closed-loop cards (use the schema's `closed_loop` block)
-
-Usable only at their merchant, but often 5%-level rewards there — recommendable alongside open-loop cards when a big share of the user's spend is at that merchant. Verify current issuers; store-card portfolios get sold between banks often.
-
-- [~] Target Circle Card (TD Bank) — `data/cards/td-bank/target-circle`
-- [~] Amazon Store Card / Prime Store Card (Synchrony) — `data/cards/synchrony/amazon-store`
-- [~] My Best Buy Card (Citi) — `data/cards/citi/best-buy`
-- [~] Lowe's Advantage Card (Synchrony) — `data/cards/synchrony/lowes-advantage`
-- [~] Home Depot Consumer Card (Citi) — `data/cards/citi/home-depot`
-- [~] Kohl's Card (Capital One) — `data/cards/capital-one/kohls`
-- [~] Macy's Card (Citi) — `data/cards/citi/macys`
-- [ ] Gap Good Rewards / Old Navy (Barclays) — `data/cards/barclays/gap-good-rewards`
-- [~] Nordstrom Card (TD Bank) — `data/cards/td-bank/nordstrom`
-- [~] Nordstrom Visa (open-loop) (TD Bank) — `data/cards/td-bank/nordstrom-visa`
-- [~] OnePay Walmart Credit Card (OnePay/Synchrony, launched Dec 2025) — `data/cards/synchrony/onepay-walmart` *(confirmed: two distinct products — closed-loop "OnePay Walmart Spend Card" and open-loop "OnePay CashRewards World Mastercard"; both terms sheets written)*
-- [~] OnePay CashRewards World Mastercard (open-loop) — `data/cards/synchrony/onepay-walmart-mastercard`
-- [~] REI Co-op Mastercard (Capital One) — `data/cards/capital-one/rei-co-op` *(open-loop, but REI-centric rewards)*
-
-> Note: many of these have both a store-only version and an open-loop Visa/Mastercard version (e.g. Nordstrom, Verizon historically). Curate them as separate files — one with `closed_loop`, one without.
-
-## Credit-builder & secured cards (use `approval.credit_tier: building`)
-
-In scope so users with thin/damaged credit get real recommendations. Rewards are secondary here; approval accessibility is the point.
-
-- [ ] Capital One Platinum Secured — `data/cards/capital-one/platinum-secured`
-- [ ] Capital One Quicksilver Secured — `data/cards/capital-one/quicksilver-secured`
-- [ ] Chime Credit Builder Visa — `data/cards/chime/credit-builder`
-- [ ] Self Visa Credit Card — `data/cards/self/visa`
-- [ ] OpenSky Secured Visa — `data/cards/opensky/secured-visa`
-- [ ] Mission Lane Visa — `data/cards/mission-lane/visa`
-- [ ] Petal 2 Visa — `data/cards/petal/petal-2` *(verify still open to new applicants)*
-- [ ] BankAmericard Secured — `data/cards/bank-of-america/bankamericard-secured`
-- [ ] U.S. Bank Cash+ Secured — `data/cards/us-bank/cash-plus-secured`
-
-## PNC — `data/cards/pnc/`
-
-- [ ] Cash Rewards Visa — `cash-rewards`
-- [ ] Cash Unlimited Visa — `cash-unlimited`
-- [ ] Spend Wise — `spend-wise` *(new 2026)*
-
-## USAA — `data/cards/usaa/` *(military members/families)*
-
-- [ ] Preferred Cash Rewards Visa — `preferred-cash-rewards`
-- [ ] Rate Advantage Visa — `rate-advantage`
-
 ## Other issuers
 
 - [~] Apple Card (Goldman Sachs — verify current issuer) — `data/cards/goldman-sachs/apple-card`
@@ -234,17 +177,3 @@ In scope so users with thin/damaged credit get real recommendations. Rewards are
 - [~] Truist Enjoy Cash (1.5% flat) — `data/cards/truist/enjoy-cash-1-5-flat`
 - [~] Upgrade Cash Rewards Visa — `data/cards/upgrade/upgrade-cash-rewards`
 - [~] Bread Cashback American Express (2%) — `data/cards/bread-financial/bread-cashback`
-- [~] Max Cash Preferred (Elan, via many credit unions) — `data/cards/elan/max-cash-preferred`
-- [~] Luxury Card Mastercard Titanium — `data/cards/luxury-card/titanium` *(niche premium; low priority)*
-- [~] Luxury Card Mastercard Gold — `data/cards/luxury-card/luxury-gold` *(niche premium; low priority)*
-- [~] Luxury Card Mastercard Black — `data/cards/luxury-card/black` *(niche premium; low priority)*
-
-
-
-## Student cards (Tier 4)
-
-- [~] Discover it Student Cash Back — `data/cards/discover/it-student-cash-back` *(also listed under Discover)*
-- [ ] Discover it Student Chrome — `data/cards/discover/it-student-chrome`
-- [ ] Capital One Savor Student — `data/cards/capital-one/savor-student`
-- [ ] Bank of America Customized Cash for Students — `data/cards/bank-of-america/customized-cash-students`
-- Chase Freedom Rise (listed under Chase — aimed at new-to-credit)

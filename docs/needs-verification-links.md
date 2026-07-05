@@ -9,7 +9,7 @@ Official product/rates-and-fees pages for the 33 offer files marked `NEEDS_VERIF
 - [Savor](https://www.capitalone.com/credit-cards/savor/) — `data/offer_files/capital-one/savor.txt`
 - [Quicksilver](https://www.capitalone.com/credit-cards/quicksilver/) — `data/offer_files/capital-one/quicksilver.txt`
 - [QuicksilverOne](https://www.capitalone.com/credit-cards/quicksilverone/) — `data/offer_files/capital-one/quicksilver-one.txt`
-- [Platinum](https://www.capitalone.com/credit-cards/platinum/) — `data/offer_files/capital-one/platinum.txt`
+- [Platinum](https://www.capitalone.com/credit-cards/platinum/) — `data/offer_files/capital-one/capital-one-platinum.txt`
 
 ## Discover
 - [it Cash Back](https://www.discover.com/credit-cards/cash-back/it-card/) — `data/offer_files/discover/it-cash-back.txt`
@@ -34,10 +34,3 @@ Official product/rates-and-fees pages for the 33 offer files marked `NEEDS_VERIF
 - [Autograph Journey](https://www.wellsfargo.com/credit-cards/autograph-journey-visa/terms/) ([benefits](https://www.wellsfargo.com/credit-cards/autograph-journey-visa/guide-to-benefits/)) — `data/offer_files/wells-fargo/autograph-journey.txt`
 - [Choice Privileges](https://creditcards.wellsfargo.com/choice-hotel-privileges-mastercard) ([agreement](https://www.wellsfargo.com/credit-cards/agreements/choice-agreement/)) — `data/offer_files/wells-fargo/choice-privileges.txt`
 - [Choice Privileges Select](https://creditcards.wellsfargo.com/choice-hotels-privileges-select-mastercard) ([benefits](https://www.wellsfargo.com/credit-cards/choice-select/guide-to-benefits/)) — `data/offer_files/wells-fargo/choice-privileges-select.txt`
-
-## U.S. Bank
-- [Altitude Connect](https://www.usbank.com/credit-cards/altitude-connect-visa-signature-credit-card.html) — `data/offer_files/us-bank/altitude-connect.txt`
-- [Altitude Go](https://www.usbank.com/credit-cards/altitude-go-visa-signature-credit-card.html) — `data/offer_files/us-bank/altitude-go.txt`
-- [Cash+](https://www.usbank.com/credit-cards/cash-plus-visa-signature-credit-card.html) — `data/offer_files/us-bank/cash-plus.txt`
-- [Shopper Cash Rewards](https://www.usbank.com/credit-cards/shopper-cash-rewards-visa-signature-credit-card.html) — `data/offer_files/us-bank/shopper-cash-rewards.txt`
-- [Smartly Visa](https://www.usbank.com/credit-cards/bank-smartly-visa-signature-credit-card.html) — `data/offer_files/us-bank/smartly.txt`

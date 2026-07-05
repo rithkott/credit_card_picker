@@ -12,25 +12,31 @@
 programs:
   cash:
     label: Cash back
+    redeems_for: [cashback]
     floor_cpp: 1.0
     optimistic_cpp: 1.0
   chase_ur:
     label: Chase Ultimate Rewards
+    redeems_for: [cashback, flights, hotels]
     floor_cpp: 1.0          # cash out / statement credit
     optimistic_cpp: 2.0     # transfer partners (Hyatt etc.), r/churning consensus range 1.8–2.2
   amex_mr:
     label: American Express Membership Rewards
+    redeems_for: [cashback, flights, hotels]
     floor_cpp: 0.6          # statement credit rate is poor; 1.0 only via Schwab/portal paths
     optimistic_cpp: 1.9     # airline transfer partners
   citi_typ:
     label: Citi ThankYou Points
+    redeems_for: [cashback, flights, hotels]
     floor_cpp: 1.0          # cash back at 1cpp
     optimistic_cpp: 1.7     # transfer partners (requires a premium TY card)
   capital_one_miles:
     label: Capital One Miles
+    redeems_for: [cashback, flights, hotels]
     floor_cpp: 0.5          # cash-out rate is 0.5; 1.0 as travel eraser
     optimistic_cpp: 1.7     # transfer partners
   discover_cashback:
     label: Discover Cashback Bonus
+    redeems_for: [cashback]
     floor_cpp: 1.0
     optimistic_cpp: 1.0

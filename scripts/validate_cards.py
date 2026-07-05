@@ -11,7 +11,11 @@ Checks, per card file:
      >= 2 members with identical period and max_spend_usd; point-denominated
      credits (amount_points) only on points cards; signup-bonus tier spend
      requirements exceed the base requirement and strictly ascend;
-     conditional_rate / base_rate_conditional strictly exceed their baseline rate.
+     conditional_rate / base_rate_conditional strictly exceed their baseline rate;
+     rotating rewards carry a quarterly cap (uncapped rotating is a hard error
+     in the optimizer). Registry integrity: every merchants.yaml entry maps to
+     a real (non-pseudo) category, and every point-valuations.yaml program has
+     numeric floor_cpp / optimistic_cpp and a valid redeems_for list.
   4. `verification.last_verified_date` is not in the future and not stale
      (> STALE_DAYS old → warning; CI stays green so staleness nags, not blocks).
   5. The card is listed in docs/card-backlog.md — the backlog is the tracking
@@ -49,18 +53,50 @@ def main() -> int:
     categories_registry = load_yaml(META_DIR / "categories.yaml")["categories"]
     categories = set(categories_registry)
     pseudo_categories = {k for k, v in categories_registry.items() if (v or {}).get("pseudo")}
-    merchants = set(load_yaml(META_DIR / "merchants.yaml")["merchants"])
-    programs = set(load_yaml(META_DIR / "point-valuations.yaml")["programs"])
+    merchants_registry = load_yaml(META_DIR / "merchants.yaml")["merchants"]
+    merchants = set(merchants_registry)
+    programs_registry = load_yaml(META_DIR / "point-valuations.yaml")["programs"]
+    programs = set(programs_registry)
 
     backlog = BACKLOG_PATH.read_text() if BACKLOG_PATH.exists() else ""
+
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    # Every program must classify what its currency redeems for — the optimizer's
+    # reward-preference filter (user.reward_preferences) depends on it — and carry
+    # both cpp figures, which the optimizer reads unconditionally for every card.
+    reward_kinds = {"cashback", "flights", "hotels"}
+    for name in sorted(programs):
+        entry = programs_registry[name] or {}
+        rf = entry.get("redeems_for")
+        if (not isinstance(rf, list) or any(k not in reward_kinds for k in rf)
+                or len(set(rf)) != len(rf)):
+            errors.append(
+                f"data/meta/point-valuations.yaml: program '{name}': redeems_for must be "
+                f"a list of unique values from {sorted(reward_kinds)} (empty allowed for "
+                f"merchant-restricted currencies), got {rf!r}")
+        for key in ("floor_cpp", "optimistic_cpp"):
+            v = entry.get(key)
+            if isinstance(v, bool) or not isinstance(v, (int, float)):
+                errors.append(
+                    f"data/meta/point-valuations.yaml: program '{name}': {key} must be "
+                    f"a number, got {v!r}")
+
+    # Every merchant must route to a real category — the optimizer moves
+    # merchant-level spend out of that category bucket and crashes on a bad key.
+    for name in sorted(merchants):
+        cat = (merchants_registry[name] or {}).get("category")
+        if cat not in categories or cat in pseudo_categories:
+            errors.append(
+                f"data/meta/merchants.yaml: merchant '{name}': category must be a real "
+                f"(non-pseudo) category from categories.yaml, got {cat!r}")
 
     card_files = sorted(CARDS_DIR.glob("*/*.yaml"))
     if not card_files:
         print(f"ERROR: no card files found under {CARDS_DIR}")
         return 1
 
-    errors: list[str] = []
-    warnings: list[str] = []
     seen_ids: dict[str, Path] = {}
 
     for path in card_files:
@@ -104,6 +140,12 @@ def main() -> int:
                         errors.append(f"{rel}: category_rewards[{i}]: choice.options[{j}]: '{opt}' is a pseudo-category and may not be a choice option")
             elif "choice" in cr:
                 errors.append(f"{rel}: category_rewards[{i}]: a choice block is only allowed on the 'choice' pseudo-category")
+            if cr["category"] == "rotating":
+                cap = cr.get("cap")
+                if not cap:
+                    errors.append(f"{rel}: category_rewards[{i}]: rotating reward has no cap — an uncapped rotating reward is a hard error that kills every optimizer run")
+                elif cap.get("period") != "quarterly":
+                    errors.append(f"{rel}: category_rewards[{i}]: rotating cap period must be 'quarterly' (the optimizer models rotating room as four quarterly windows), got {cap.get('period')!r}")
         if choice_rewards > 1:
             errors.append(f"{rel}: {choice_rewards} 'choice' category rewards — the optimizer supports at most one per card")
         for i, mr in enumerate(card["merchant_rewards"]):

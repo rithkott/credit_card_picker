@@ -10,6 +10,16 @@
 # credit), floor_cpp is the most conservative realistic redemption instead — the
 # comment on each entry says which redemption that is.
 #
+# redeems_for classifies what each currency is genuinely good for, so users can ask
+# the optimizer for specific reward kinds (flights / hotels / cashback). Rule:
+#   - cashback: the program has a cash / statement-credit / deposit redemption path
+#   - flights, hotels: the currency is an airline/hotel currency, or has a
+#     flight/hotel redemption path (transfer partners, travel eraser, portal boost)
+#     whose cpp BEATS its own cash-out cpp — fixed-value 1cpp-everywhere bank points
+#     are classified cashback only, since travel adds no upside over cash
+#   - []: merchant-restricted currencies (store credit, cruise/theme-park dollars) —
+#     they match only a 'total_value' (unfiltered) run
+#
 # NOTE: optimistic values are inherently judgment calls; sources and reasoning belong
 # in the comments next to each program. Verify alongside card data (confidence applies).
 # Airline/hotel values below were drafted from early-2026 consensus (TPG / r/churning
@@ -18,154 +28,180 @@
 programs:
   cash:
     label: Cash back
+    redeems_for: [cashback]
     floor_cpp: 1.0
     optimistic_cpp: 1.0
 
   # ---- Transferable bank currencies ------------------------------------------
   chase_ur:
     label: Chase Ultimate Rewards
+    redeems_for: [cashback, flights, hotels]
     floor_cpp: 1.0          # cash out / statement credit
     optimistic_cpp: 2.0     # transfer partners (Hyatt etc.), r/churning consensus range 1.8–2.2
   amex_mr:
     label: American Express Membership Rewards
+    redeems_for: [cashback, flights, hotels]
     floor_cpp: 0.6          # statement credit rate is poor; 1.0 only via Schwab/portal paths
     optimistic_cpp: 1.9     # airline transfer partners
   citi_typ:
     label: Citi ThankYou Points
+    redeems_for: [cashback, flights, hotels]
     floor_cpp: 1.0          # cash back at 1cpp
     optimistic_cpp: 1.7     # transfer partners (requires a premium TY card)
   capital_one_miles:
     label: Capital One Miles
+    redeems_for: [cashback, flights, hotels]
     floor_cpp: 0.5          # cash-out rate is 0.5; 1.0 as travel eraser
     optimistic_cpp: 1.7     # transfer partners
   wells_fargo_rewards:
     label: Wells Fargo Rewards
+    redeems_for: [cashback, flights, hotels]
     floor_cpp: 1.0          # cash redemption at 1cpp
     optimistic_cpp: 1.3     # transfer partners exist but the list is thin and gated to Autograph Journey
   bilt_points:
     label: Bilt Rewards
+    redeems_for: [cashback, flights, hotels]
     floor_cpp: 0.55         # cash-equivalent rent-credit redemption rate
     optimistic_cpp: 1.9     # strong transfer partners (Hyatt, AA, Alaska)
 
   # ---- Fixed-value bank currencies (no meaningful transfer upside) -----------
   discover_cashback:
     label: Discover Cashback Bonus
+    redeems_for: [cashback]
     floor_cpp: 1.0
     optimistic_cpp: 1.0
   bofa_premium_rewards:
     label: Bank of America Premium Rewards points
+    redeems_for: [cashback]
     floor_cpp: 1.0          # cash/statement-credit redemption at full 1cpp (Premium Rewards + Elite)
     optimistic_cpp: 1.0
   bofa_travel_rewards:
     label: Bank of America Travel Rewards points
+    redeems_for: [cashback, flights, hotels]
     floor_cpp: 0.6          # cash/gift-card redemption rate; 1cpp only as travel-purchase eraser
     optimistic_cpp: 1.0     # 1cpp erasing travel purchases
-  us_bank_points:
-    label: U.S. Bank Altitude points
-    floor_cpp: 1.0          # Altitude Go/Connect redeem at a flat 1cpp
-    optimistic_cpp: 1.0
   navy_federal_rewards:
     label: Navy Federal Rewards points
+    redeems_for: [cashback]
     floor_cpp: 1.0          # NFCU markets points at 1cpp ("35,000 points valued at $350")
     optimistic_cpp: 1.0
   penfed_points:
     label: PenFed Rewards points
+    redeems_for: [cashback, flights, hotels]
     floor_cpp: 0.85         # gift-card/cash rates commonly cited below 1cpp — NEEDS human verification (penfed.org blocked fetches during research)
     optimistic_cpp: 1.0     # travel redemptions at ~1cpp
   fidelity_rewards:
     label: Fidelity Rewards points
+    redeems_for: [cashback]
     floor_cpp: 1.0          # 1cpp deposited into a Fidelity account; other redemption paths are worse
     optimistic_cpp: 1.0
   sofi_points:
     label: SoFi Rewards points
+    redeems_for: [cashback]
     floor_cpp: 1.0          # 1cpp redeemed into a SoFi account (cardholders already have one); statement-credit rate may be lower — see offer file
     optimistic_cpp: 1.0
   robinhood_points:
     label: Robinhood Gold points
+    redeems_for: [cashback]
     floor_cpp: 1.0          # 1cpp deposited into the linked brokerage account
     optimistic_cpp: 1.0
-  luxury_card_points:
-    label: Luxury Card points
-    floor_cpp: 1.0          # statement-credit rate; varies by tier (Gold redeems cash at 2cpp) — split into per-tier keys at conversion time if it matters
-    optimistic_cpp: 2.0     # 2cpp toward airfare via LuxuryCardTravel.com (all tiers)
 
   # ---- Airline programs -------------------------------------------------------
   delta_skymiles:
     label: Delta SkyMiles
+    redeems_for: [flights]
     floor_cpp: 1.0          # Pay with Miles guarantees 1cpp toward Delta tickets for cardholders
     optimistic_cpp: 1.3     # SkyMiles Deals / flash-sale awards
   united_mileageplus:
     label: United MileagePlus
+    redeems_for: [flights]
     floor_cpp: 0.8          # no cash-out; low-end saver economy redemptions
     optimistic_cpp: 1.3     # saver/partner awards
   southwest_rapid_rewards:
     label: Southwest Rapid Rewards
+    redeems_for: [flights]
     floor_cpp: 1.3          # near-fixed value pegged to Wanna Get Away fares (~1.35)
     optimistic_cpp: 1.4
   jetblue_trueblue:
     label: JetBlue TrueBlue
+    redeems_for: [flights]
     floor_cpp: 1.2          # near-fixed value pegged to Blue fares
     optimistic_cpp: 1.35
   aa_advantage:
     label: American Airlines AAdvantage
+    redeems_for: [flights]
     floor_cpp: 0.8          # no cash-out; Web Special economy awards
     optimistic_cpp: 1.5     # saver/partner awards (oneworld premium cabins)
   aeroplan:
     label: Air Canada Aeroplan
+    redeems_for: [flights]
     floor_cpp: 1.0          # distance-based chart keeps a decent baseline
     optimistic_cpp: 1.4     # partner awards / stopover tricks
   avios:
     label: Avios (British Airways / Iberia / Aer Lingus)
+    redeems_for: [flights]
     floor_cpp: 0.8          # one key for all three — Avios move 1:1 between BA/Iberia/Aer Lingus
     optimistic_cpp: 1.4     # short-haul partner awards and off-peak Iberia pricing
   flying_blue:
     label: Air France-KLM Flying Blue
+    redeems_for: [flights]
     floor_cpp: 0.9
     optimistic_cpp: 1.3     # monthly Promo Rewards
   emirates_skywards:
     label: Emirates Skywards
+    redeems_for: [flights]
     floor_cpp: 0.8          # cash+miles on Emirates fares
     optimistic_cpp: 1.2     # premium-cabin Emirates awards
   frontier_miles:
     label: Frontier Miles
+    redeems_for: [flights]
     floor_cpp: 0.6          # low fares make miles hard to use well; short expiration risk
     optimistic_cpp: 1.0
   miles_and_more:
     label: Lufthansa Miles & More
+    redeems_for: [flights]
     floor_cpp: 0.7          # heavy surcharges on most awards
     optimistic_cpp: 1.2
   atmos_rewards:
     label: Atmos Rewards (Alaska / Hawaiian)
+    redeems_for: [flights]
     floor_cpp: 1.0          # merged Alaska+Hawaiian program (2025 rebrand of Mileage Plan)
     optimistic_cpp: 1.6     # oneworld partner awards — historically among the strongest mile currencies
   allegiant_points:
     label: Allegiant Allways Rewards
+    redeems_for: [flights]
     floor_cpp: 1.0          # fixed 1cpp toward Allegiant bookings only; no cash-out
     optimistic_cpp: 1.0
 
   # ---- Hotel programs ---------------------------------------------------------
   world_of_hyatt:
     label: World of Hyatt
+    redeems_for: [hotels]
     floor_cpp: 1.2          # low-end category redemptions
     optimistic_cpp: 2.0     # consensus top hotel currency
   marriott_bonvoy:
     label: Marriott Bonvoy
+    redeems_for: [hotels]
     floor_cpp: 0.6
     optimistic_cpp: 0.9
   hilton_honors:
     label: Hilton Honors
+    redeems_for: [hotels]
     floor_cpp: 0.4
     optimistic_cpp: 0.6
   ihg_one_rewards:
     label: IHG One Rewards
+    redeems_for: [hotels]
     floor_cpp: 0.4
     optimistic_cpp: 0.7
   wyndham_rewards:
     label: Wyndham Rewards
+    redeems_for: [hotels]
     floor_cpp: 0.7          # go free awards at fixed point prices
     optimistic_cpp: 1.1     # Vacasa vacation-rental redemptions
   choice_privileges:
     label: Choice Privileges
+    redeems_for: [hotels]
     floor_cpp: 0.5
     optimistic_cpp: 0.8
 
@@ -174,41 +210,21 @@ programs:
   # on the assumption the cardholder shops there anyway (they hold the card).
   mycruise_points:
     label: MyCruise points (Royal Caribbean / Celebrity / Silversea)
+    redeems_for: []
     floor_cpp: 1.0          # 1cpp toward cruises and onboard credit only
-    optimistic_cpp: 1.0
-  disney_rewards:
-    label: Disney Rewards Dollars
-    floor_cpp: 1.0          # 1cpp toward Disney parks/merch/cruises only
     optimistic_cpp: 1.0
   gm_rewards:
     label: My GM Rewards points
+    redeems_for: []
     floor_cpp: 1.0          # nominal 1cpp toward GM vehicles/service — NEEDS human verification of current redemption caps
     optimistic_cpp: 1.0
   verizon_dollars:
     label: Verizon Dollars
+    redeems_for: []
     floor_cpp: 1.0          # 1cpp toward Verizon bill/devices — near-cash for Verizon customers
-    optimistic_cpp: 1.0
-  nordstrom_notes:
-    label: Nordstrom Notes
-    floor_cpp: 1.0          # 1,000 points = $10 Note, Nordstrom only
-    optimistic_cpp: 1.0
-  macys_star_money:
-    label: Macy's Star Money
-    floor_cpp: 1.0          # 1,000 points = $10 Star Money, Macy's only
-    optimistic_cpp: 1.0
-  best_buy_rewards:
-    label: My Best Buy rewards
-    floor_cpp: 2.0          # 250 points = $5 certificate ⇒ 2cpp; card earns 2.5 pts/$ (= 5% back)
-    optimistic_cpp: 2.0
-  rei_rewards:
-    label: REI Co-op Mastercard Rewards
-    floor_cpp: 1.0          # store credit at REI; requires active Co-op membership
-    optimistic_cpp: 1.0
-  kohls_rewards:
-    label: Kohl's Rewards
-    floor_cpp: 1.0          # issued as Kohl's Cash, Kohl's only
     optimistic_cpp: 1.0
   rci_rewards:
     label: RCI Elite Rewards
+    redeems_for: []
     floor_cpp: 1.0          # "5,000 Rewards worth $50" toward RCI fees/travel — NEEDS human verification of redemption options
     optimistic_cpp: 1.0

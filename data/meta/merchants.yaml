@@ -10,12 +10,6 @@ merchants:
   whole_foods:
     label: Whole Foods Market
     category: groceries
-  walmart:
-    label: Walmart
-    category: groceries
-  target:
-    label: Target
-    category: groceries
   costco:
     label: Costco
     category: groceries
@@ -25,6 +19,3 @@ merchants:
   lyft:
     label: Lyft
     category: transit
-  dunkin:
-    label: Dunkin'
-    category: dining

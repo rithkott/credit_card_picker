@@ -320,6 +320,22 @@ class TestCreditVariants(unittest.TestCase):
         self.assertAlmostEqual(score([card], prof, "floor")["credits"][0]["value"], 100.0)
         self.assertAlmostEqual(score([card], prof, "optimistic")["credits"][0]["value"], 200.0)
 
+    def test_expired_credit_valued_zero(self):
+        # Promo credits carry `expires`; past the as-of date they are $0 with
+        # an explanatory note, mirroring the signup-bonus expiry rule.
+        credit = {"name": "promo credit", "amount_usd": 10, "period": "monthly",
+                  "category": "streaming", "expires": "2026-12-31",
+                  "realistic_capture_rate_note": "x"}
+        card = synth_card(credits=[credit])
+        prof = make_profile({"streaming": 1200, "other": 5000})
+        live = score([card], prof)  # AS_OF 2026-07-03: promo still live
+        self.assertAlmostEqual(live["credits"][0]["value"], 60.0)  # 120 face × 0.5 capture
+        buckets = opt.build_buckets(prof, DATASET["merchants"])
+        expired = opt.score_portfolio([card], prof, "floor", DATASET["programs"],
+                                      buckets, date(2027, 1, 1))
+        self.assertEqual(expired["credits"][0]["value"], 0.0)
+        self.assertIn("expired 2026-12-31", expired["credits"][0]["note"])
+
     def test_in_kind_credit_always_haircut(self):
         # Uncategorized statement credits pay full face; in_kind gets the
         # period capture haircut even without a category (annual = 0.9).
@@ -340,6 +356,28 @@ class TestRewardCapAndPeriods(unittest.TestCase):
         r = score([card], make_profile({"other": 2000}))
         self.assertAlmostEqual(r["earnings"], 100.0)
         self.assertEqual(r["reward_cap_clamps"], {})
+
+    def test_reward_cap_clamp_surfaced_in_bundle(self):
+        # The output contract carries the clamp so a consumer can reconcile
+        # per-line usd_value sums against the portfolio's clamped earnings.
+        dataset = {"categories": DATASET["categories"],
+                   "merchants": DATASET["merchants"],
+                   "programs": DATASET["programs"],
+                   "cards": [synth_card(id="capped", name="Capped", base_rate=5,
+                                        max_annual_rewards_usd=300)]}
+        prof = make_profile({"other": 10000})
+        bundle = opt.run(dataset, prof, AS_OF, 1)
+        per_card = bundle["portfolios"][0]["per_card"]["capped"]
+        self.assertEqual(per_card["reward_cap_clamp"], 200.0)
+        line_sum = sum(a["usd_value"] for a in per_card["assignments"])
+        self.assertAlmostEqual(line_sum - per_card["reward_cap_clamp"],
+                               bundle["portfolios"][0]["earnings"])
+        self.assertIn("clamped by $200.00", opt.render_text(bundle))
+        # Unclamped cards must not carry the key at all.
+        dataset["cards"] = [synth_card(id="uncapped", name="Uncapped", base_rate=2)]
+        bundle = opt.run(dataset, prof, AS_OF, 1)
+        self.assertNotIn("reward_cap_clamp",
+                         bundle["portfolios"][0]["per_card"]["uncapped"])
 
     def test_clamped_earnings_feed_first_year_match(self):
         card = synth_card(base_rate=5, max_annual_rewards_usd=300,
@@ -479,16 +517,53 @@ class TestChooseYourOwnCategory(unittest.TestCase):
 class TestFiltersAndSearch(unittest.TestCase):
     def test_tier_filter_excludes_venture_x(self):
         prof = make_profile(P30K, credit_tier="good")
-        eligible, excluded = opt.filter_cards(DATASET["cards"], prof)
+        eligible, excluded = opt.filter_cards(DATASET["cards"], prof, DATASET["programs"])
         self.assertEqual([e["id"] for e in excluded], ["venture-x"])
         self.assertEqual(len(eligible), 7)
+
+    def test_reward_preference_filter_flights(self):
+        # Pure-cash cards can't serve a flights-only user; transferable
+        # currencies (chase_ur, amex_mr, citi_typ, capital_one_miles) can.
+        prof = make_profile(P30K, reward_preferences=["flights"])
+        eligible, excluded = opt.filter_cards(DATASET["cards"], prof, DATASET["programs"])
+        self.assertEqual(sorted(e["id"] for e in excluded),
+                         ["active-cash", "blue-cash-preferred"])
+        for e in excluded:
+            self.assertIn("does not redeem for any of: flights", e["reason"])
+        self.assertEqual(len(eligible), 6)
+
+    def test_reward_preference_multi_select_unions(self):
+        prof = make_profile(P30K, reward_preferences=["flights", "cashback"])
+        _, excluded = opt.filter_cards(DATASET["cards"], prof, DATASET["programs"])
+        self.assertEqual(excluded, [])
+
+    def test_total_value_disables_reward_filter(self):
+        prof = make_profile(P30K, reward_preferences=["flights", "total_value"])
+        _, excluded = opt.filter_cards(DATASET["cards"], prof, DATASET["programs"])
+        self.assertEqual(excluded, [])
+
+    def test_merchant_restricted_currency_matches_nothing(self):
+        # redeems_for: [] (store credit) survives only a total_value run.
+        programs = {**DATASET["programs"],
+                    "store": {"label": "Store credit", "redeems_for": [],
+                              "floor_cpp": 1.0, "optimistic_cpp": 1.0}}
+        card = synth_card(currency={"type": "points", "program": "store"})
+        for kind in ("cashback", "flights", "hotels"):
+            prof = make_profile(P30K, reward_preferences=[kind])
+            eligible, excluded = opt.filter_cards([card], prof, programs)
+            self.assertEqual(eligible, [])
+            self.assertEqual(len(excluded), 1)
+        prof = make_profile(P30K)  # default: total_value
+        eligible, excluded = opt.filter_cards([card], prof, programs)
+        self.assertEqual([c["id"] for c in eligible], ["synth"])
+        self.assertEqual(excluded, [])
 
     def test_search_is_exhaustive_and_ranked(self):
         # 7 eligible cards; custom-cash expands to 2 variants (dining, groceries)
         # → 8 variants, minus combos pairing both custom-cash variants:
         # C(8,1) + C(8,2)-1 + C(8,3)-6 = 8 + 27 + 50 = 85.
         prof = make_profile(P30K, credit_tier="good")
-        eligible, _ = opt.filter_cards(DATASET["cards"], prof)
+        eligible, _ = opt.filter_cards(DATASET["cards"], prof, DATASET["programs"])
         variants = opt.expand_choice_variants(eligible, prof)
         results = opt.search(variants, prof, "floor", DATASET["programs"],
                              DATASET["merchants"], AS_OF)
@@ -541,6 +616,13 @@ class TestProfileValidation(unittest.TestCase):
     def test_missing_credit_tier_rejected(self):
         self.assert_rejected({"spend": {"groceries": 100}, "user": {}},
                              "credit_tier is required")
+
+    def test_bad_reward_preferences_rejected(self):
+        for bad in ([], ["cruises"], ["flights", "flights"], "flights"):
+            self.assert_rejected({"spend": {"groceries": 100},
+                                  "user": {"credit_tier": "good",
+                                           "reward_preferences": bad}},
+                                 "reward_preferences")
 
 
 class TestSubsetBudget(unittest.TestCase):
