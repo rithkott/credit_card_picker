@@ -57,4 +57,4 @@ cp examples/spend-profile.example.yaml my-profile.yaml   # then edit in your num
 python3 scripts/optimize.py --profile my-profile.yaml
 ```
 
-Ranks every 1–`max_cards` portfolio of cards you can get approved for by net annual value (`--mode floor|optimistic`, `--json` for machine output, `--as-of` for reproducible runs). Deterministic by design: identical inputs produce byte-identical output, and every valuation assumption is echoed in the run header. Design spec: [docs/plans/02-optimizer.md](docs/plans/02-optimizer.md).
+Ranks every 1–`max_cards` portfolio of cards you can get approved for by net annual value (`--json` for machine output, `--as-of` for reproducible runs; points priced at each program's engaged-average cpp — see docs/plans/08-simplified-valuation.md). Deterministic by design: identical inputs produce byte-identical output, and every valuation assumption is echoed in the run header. Design spec: [docs/plans/02-optimizer.md](docs/plans/02-optimizer.md).

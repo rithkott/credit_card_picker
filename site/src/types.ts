@@ -18,7 +18,6 @@ export interface Config {
   usage_questions: UsageGroup[]
   tier_order: string[]
   user_defaults: {
-    valuation_mode: 'floor' | 'optimistic'
     max_cards: number
     optimize_for: 'ongoing' | 'year1'
     activates_rotating: boolean
@@ -33,7 +32,6 @@ export interface Config {
 
 export interface ProfileUser {
   credit_tier: string
-  valuation_mode: 'floor' | 'optimistic'
   max_cards: number
   optimize_for: 'ongoing' | 'year1'
   activates_rotating: boolean
@@ -85,15 +83,18 @@ export interface Portfolio {
   per_card: Record<string, PerCard>
 }
 
+export interface BestBySize extends Portfolio {
+  size: number
+}
+
 export interface OptimizeBundle {
   as_of: string
-  valuation_mode: 'floor' | 'optimistic'
   optimize_for: 'ongoing' | 'year1'
   max_cards: number
   reward_preferences: string[]
   confirmed_usage: string[]
   accepts_brand_lockin: boolean
-  cpp_table: Record<string, { floor_cpp: number; optimistic_cpp: number }>
+  cpp_table: Record<string, { floor_cpp: number; optimistic_cpp: number; avg_cpp: number }>
   policy_constants: Record<string, unknown>
   cards_total: number
   cards_eligible: number
@@ -101,5 +102,6 @@ export interface OptimizeBundle {
   card_variants_pruned: number
   pruned: { id: string; reason: string }[]
   excluded: { id: string; reason: string }[]
+  best_by_size: BestBySize[]
   portfolios: Portfolio[]
 }

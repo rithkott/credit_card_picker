@@ -2,8 +2,9 @@ import type { OptimizeBundle, Portfolio } from '../../types'
 import { formatUsd } from '../../lib/money'
 import { CardDetail } from './CardDetail'
 
-export function PortfolioCard({ rank, portfolio, bundle }: {
-  rank: number
+export function PortfolioCard({ title, gain, portfolio, bundle }: {
+  title: string
+  gain: number | null
   portfolio: Portfolio
   bundle: OptimizeBundle
 }) {
@@ -12,7 +13,8 @@ export function PortfolioCard({ rank, portfolio, bundle }: {
   return (
     <div className="portfolio">
       <h3>
-        #{rank} — {portfolio.cards.map((id) => portfolio.per_card[id]?.name ?? id).join(' + ')}
+        {title} — {portfolio.cards.map((id) => portfolio.per_card[id]?.name ?? id).join(' + ')}
+        {gain !== null && <span className="gain"> (+{formatUsd(gain)}/yr over the previous)</span>}
       </h3>
       <div className="nets">
         <span className={primary === 'ongoing_net' ? 'primary-metric' : ''}>

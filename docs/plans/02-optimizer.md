@@ -55,6 +55,12 @@ user:
 > `user.confirmed_usage`, a list of usage-questions item keys; portal-only
 > lines now gate on the card's `portal` key being confirmed. See
 > `docs/plans/07-confirmed-usage.md`.
+>
+> **Superseded (plan 08):** `user.valuation_mode` (and `--mode`) were removed —
+> points are valued at each program's engaged average, (floor_cpp +
+> optimistic_cpp)/2, dropping to floor_cpp when a loyalty/transfer gate is
+> unconfirmed; `run()` additionally emits `best_by_size`. See
+> `docs/plans/08-simplified-valuation.md`.
 
 Rules, enforced at load with hand-rolled checks in the style of
 `validate_cards.py`'s registry checks (exit 1 with a clear message on violation):
@@ -321,7 +327,7 @@ inputs ⇒ identical bytes.
   data error. Pure functions: `load_dataset`, `load_profile`, `build_lines`,
   `assign_spend`, `score_portfolio`, `search`, `render_text`, `render_json`.
 - CLI:
-  `python3 scripts/optimize.py --profile PATH [--mode floor|optimistic]
+  `python3 scripts/optimize.py --profile PATH  <!-- --mode removed by plan 08 -->
   [--max-cards N] [--top N] [--json] [--as-of YYYY-MM-DD]`
   — flags override the profile's `user:` fields.
 - Tests: new `tests/test_optimizer.py` using stdlib `unittest` (no pytest

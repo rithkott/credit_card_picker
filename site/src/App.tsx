@@ -29,11 +29,8 @@ export default function App() {
   const [unit, setUnit] = useState<Unit>('monthly')
   const [spend, setSpend] = useState<SpendState>({ categoryCents: {}, merchantCents: {} })
   const [user, setUser] = useState<UserState>({
-    credit_tier: null,
-    valuation_mode: 'floor',
-    max_cards: 3,
+    credit_tier: 'good',
     optimize_for: 'ongoing',
-    activates_rotating: true,
     accepts_brand_lockin: false,
     rewardKinds: { cashback: true, flights: true, hotels: true },
     confirmed_usage: new Set(),
@@ -49,10 +46,7 @@ export default function App() {
         // Seed the option defaults the server declares (single source of truth).
         setUser((u) => ({
           ...u,
-          valuation_mode: config.user_defaults.valuation_mode,
-          max_cards: config.user_defaults.max_cards,
           optimize_for: config.user_defaults.optimize_for,
-          activates_rotating: config.user_defaults.activates_rotating,
           accepts_brand_lockin: config.user_defaults.accepts_brand_lockin,
         }))
       })
@@ -161,7 +155,7 @@ export default function App() {
             </button>
             {run.phase === 'running' && (
               <span className="status">
-                scoring portfolios — {elapsed}s (can take a minute or two at max cards ≥ 4)
+                scoring every 1–3 card portfolio — {elapsed}s
               </span>
             )}
             {run.phase === 'error' && !run.unreachable && (

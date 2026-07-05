@@ -17,10 +17,7 @@ const LABELS = { groceries: 'Groceries / supermarkets', transit: 'Transit & ride
 
 const baseUser = (): UserState => ({
   credit_tier: 'very_good',
-  valuation_mode: 'floor',
-  max_cards: 3,
   optimize_for: 'ongoing',
-  activates_rotating: true,
   accepts_brand_lockin: false,
   rewardKinds: { cashback: true, flights: true, hotels: true },
   confirmed_usage: new Set(['doordash', 'chase_travel']),
@@ -114,10 +111,9 @@ describe('profile emission (plan 03 §2 rules)', () => {
     expect(p.merchant_spend).toEqual({ costco: 3000 })
     expect(p.user).toEqual({
       credit_tier: 'very_good',
-      valuation_mode: 'floor',
-      max_cards: 3,
+      max_cards: 3, // fixed (plan 08): the results view escalates sizes 1-3
       optimize_for: 'ongoing',
-      activates_rotating: true,
+      activates_rotating: true, // assumed on; no longer asked in the UI
       accepts_brand_lockin: false,
       confirmed_usage: ['chase_travel', 'doordash'], // sorted
       reward_preferences: ['cashback', 'flights', 'hotels'],

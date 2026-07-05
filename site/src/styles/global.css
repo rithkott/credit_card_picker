@@ -155,6 +155,7 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   border-radius: var(--radius); padding: 1em 1.2em; margin-bottom: 1em;
 }
 .portfolio h3 { margin: 0 0 0.3em; }
+.portfolio h3 .gain { color: var(--ok); font-size: 0.85em; font-weight: 600; }
 .nets { display: flex; gap: 2em; margin: 0.3em 0 0.8em; }
 .nets .primary-metric { font-weight: 700; }
 .card-detail { border-top: 1px solid var(--border); padding: 0.7em 0; }

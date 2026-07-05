@@ -10,14 +10,17 @@ import type { SpendState } from './validation'
 
 export interface UserState {
   credit_tier: string | null
-  valuation_mode: 'floor' | 'optimistic'
-  max_cards: number
   optimize_for: 'ongoing' | 'year1'
-  activates_rotating: boolean
   accepts_brand_lockin: boolean
   rewardKinds: Record<string, boolean>
   confirmed_usage: Set<string>
 }
+
+/** Fixed for the product UI (plan 08): the engine searches sizes 1..3 and the
+ * results view escalates best-1 → best-2 → best-3; rotating activation is
+ * assumed (the engine already discounts rotating room by ROTATING_OVERLAP). */
+export const MAX_CARDS = 3
+const ACTIVATES_ROTATING = true
 
 function nonzeroDollars(cents: Record<string, number | null>): Record<string, number> {
   const out: Record<string, number> = {}
@@ -32,10 +35,9 @@ export function buildProfile(spend: SpendState, user: UserState): Profile {
     spend: nonzeroDollars(spend.categoryCents),
     user: {
       credit_tier: user.credit_tier ?? '',
-      valuation_mode: user.valuation_mode,
-      max_cards: user.max_cards,
+      max_cards: MAX_CARDS,
       optimize_for: user.optimize_for,
-      activates_rotating: user.activates_rotating,
+      activates_rotating: ACTIVATES_ROTATING,
       accepts_brand_lockin: user.accepts_brand_lockin,
       confirmed_usage: [...user.confirmed_usage].sort(),
       reward_preferences: Object.entries(user.rewardKinds)

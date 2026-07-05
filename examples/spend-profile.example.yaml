@@ -17,7 +17,9 @@ merchant_spend:           # optional carve-outs, keys from data/meta/merchants.y
 
 user:
   credit_tier: very_good  # required: building | fair | good | very_good | excellent
-  valuation_mode: floor   # floor | optimistic (default floor)
+                          # (points are valued at each program's average cpp —
+                          # mean of floor and optimistic — no mode to choose;
+                          # see docs/plans/08-simplified-valuation.md)
   max_cards: 3            # 1-5 (default 3)
   optimize_for: ongoing   # ongoing | year1 (default ongoing)
   activates_rotating: true

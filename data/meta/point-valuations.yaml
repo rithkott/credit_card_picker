@@ -1,9 +1,12 @@
 # Shared cents-per-point valuation table.
 # Every points card references one program key here (currency.program) instead of
 # embedding its own valuation, so "how much is a point worth" is a single global,
-# user-visible assumption with two modes:
+# user-visible assumption with two anchors:
 #   floor_cpp      — conservative: what you can always get (cash-out / statement credit)
 #   optimistic_cpp — realistic upside via transfer partners / portal boosts
+# The optimizer values points at the ENGAGED AVERAGE of the two —
+# (floor_cpp + optimistic_cpp) / 2 — dropping to floor_cpp when a loyalty or
+# transfer-gateway gate is unconfirmed (plan 08); there is no user-chosen mode.
 # All values in US cents per point. `cash` is the identity program for cash-back cards.
 #
 # For currencies with no cash-out path at all (airline miles, hotel points, store
