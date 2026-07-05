@@ -594,7 +594,7 @@ descriptors:
     statement_patterns:
       - "EXXON"
       - "EXXONMOBIL"
-      - "MOBIL"
+      - "MOBIL "        # trailing space: bare MOBIL false-matches "...MOBILE" (verified against real export)
   verizon:
     label: Verizon (Wireless, Fios)
     benefit_context: "4% Verizon Dollars on Verizon purchases + bill-pay earn (Synchrony Verizon Visa)"

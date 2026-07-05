@@ -12,7 +12,7 @@ import { StatementParseError } from './types'
 import type { FileError, ParsedFile } from './types'
 
 export const MAX_FILE_BYTES = 10 * 1024 * 1024
-export const MAX_FILES = 20
+export const MAX_FILES = 50 // two cards x 24 monthly PDFs must fit in one batch
 export const MAX_TXNS_TOTAL = 50_000
 
 export interface FileInput { name: string; bytes: Uint8Array }

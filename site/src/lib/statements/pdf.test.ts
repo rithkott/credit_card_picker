@@ -72,6 +72,37 @@ describe('extractFromLines', () => {
     ])
   })
 
+  it('parses long-form dates and month-name periods (Bilt/BofA layouts)', () => {
+    const out = extractFromLines([
+      'Apr 24 – May 23, 2026',
+      'Payments and credits -$2,675.00',
+      'Purchases (Including New Card Purchases) $2,680.43',
+      'May 1, 2026 BILT RENT CHARGE ADJUSTMENT -$2,675.00',
+      'May 1, 2026 BPS*BILT HOUSING 31 Bond St New York 10012 NY $2,675.00',
+      'May 9, 2026 ROBLOX 1.888.858.2569 SAN MATEO $5.43',
+      'Total new charges in this period $2,680.43',
+    ], 'bilt.pdf')
+    expect(out.rangeStart).toBe('2026-04-24')
+    expect(out.rangeEnd).toBe('2026-05-23')
+    expect(out.periodCount).toBe(1)
+    expect(out.statementTotals).toEqual({ paymentsAndCreditsCents: 267500, purchasesCents: 268043 })
+    expect(out.txns.map((t) => [t.dateISO, t.amountCents, t.kind])).toEqual([
+      ['2026-05-01', -267500, 'refund'],
+      ['2026-05-01', 267500, 'purchase'],
+      ['2026-05-09', 543, 'purchase'],
+    ])
+  })
+
+  it('counts distinct periods so combined multi-statement PDFs can warn', () => {
+    const out = extractFromLines([
+      'February 23 - March 22, 2026',
+      '02/25 KROGER #1 $10.00',
+      'March 23 - April 22, 2026',
+      '03/25 KROGER #1 $10.00',
+    ], 'combined.pdf')
+    expect(out.periodCount).toBe(2)
+  })
+
   it('handles explicit years without a period line', () => {
     const out = extractFromLines(['03/05/2026 KROGER #442 $74.15'], 'x.pdf')
     expect(out.txns[0]).toMatchObject({ dateISO: '2026-03-05', amountCents: 7415 })

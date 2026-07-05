@@ -25,14 +25,15 @@ export function aggregate(files: ParsedFile[], matcher: Matcher): ImportResult {
   const warnings: ImportWarning[] = []
 
   for (const file of files) {
-    const fileSums: Record<'purchases' | 'paymentsAndCredits' | 'fees' | 'interest', number> =
-      { purchases: 0, paymentsAndCredits: 0, fees: 0, interest: 0 }
+    const fileSums: Record<'purchases' | 'paymentsAndCredits' | 'fees' | 'interest' | 'transfers', number> =
+      { purchases: 0, paymentsAndCredits: 0, fees: 0, interest: 0, transfers: 0 }
 
     for (const txn of file.txns) {
       if (txn.kind === 'payment' || txn.kind === 'refund') {
         fileSums.paymentsAndCredits += Math.abs(txn.amountCents)
       } else if (txn.kind === 'fee') fileSums.fees += Math.abs(txn.amountCents)
       else if (txn.kind === 'interest') fileSums.interest += Math.abs(txn.amountCents)
+      else if (txn.kind === 'transfer') fileSums.transfers += Math.abs(txn.amountCents)
       else if (txn.kind === 'purchase') fileSums.purchases += txn.amountCents
 
       if (txn.kind !== 'purchase' && txn.kind !== 'refund') {
@@ -69,6 +70,16 @@ export function aggregate(files: ParsedFile[], matcher: Matcher): ImportResult {
       }
     }
 
+    if ((file.summary.periodCount ?? 0) > 1) {
+      warnings.push({
+        code: 'W-multi-statement',
+        message:
+          `${file.summary.name} looks like several statements combined into one ` +
+          `PDF — transaction dates and totals can't be trusted; upload the ` +
+          `individual monthly statements instead.`,
+      })
+    }
+
     // Reconcile against the statement's own printed totals (PDF summary box).
     const declared = file.summary.statementTotals
     if (declared !== undefined) {
@@ -79,6 +90,11 @@ export function aggregate(files: ParsedFile[], matcher: Matcher): ImportResult {
         ['interest', declared.interestCents, fileSums.interest],
       ]
       for (const [what, stated, parsed] of checks) {
+        // Some issuers fold balance transfers into their printed "purchases"
+        // total (Bilt's "Including New Card Purchases"); we exclude transfers
+        // from spend, so either reading reconciles.
+        if (what === 'purchases' && stated !== undefined
+            && stated === parsed + fileSums.transfers) continue
         if (stated !== undefined && stated !== parsed) {
           warnings.push({
             code: 'W-reconcile',
@@ -135,8 +151,12 @@ export function aggregate(files: ParsedFile[], matcher: Matcher): ImportResult {
   return {
     categoryCents,
     merchantCents,
+    // Net-negative groups stay visible: an unmatched refund (a returned
+    // flight whose refund descriptor matches nothing) must reduce SOME
+    // bucket, or every total quietly overstates. The user can assign it;
+    // unassigned ones subtract from 'other' on Apply.
     uncategorized: [...groups.values()]
-      .filter((g) => g.rawCents > 0)
+      .filter((g) => g.rawCents !== 0)
       .sort((a, b) => b.rawCents - a.rawCents || (a.stem < b.stem ? -1 : 1)),
     usageSuggestions: Object.entries(rawUsage)
       .map(([key, raw]) => ({
@@ -174,11 +194,15 @@ export function applyReview(
   for (const group of base.uncategorized) {
     const target = assignments[group.stem]
     if (target !== undefined && !excludedCategories.has(target)) {
+      // Negative groups (unmatched refunds) legitimately subtract.
       categoryCents[target] = (categoryCents[target] ?? 0)
-        + Math.max(0, annualize(group.rawCents, base.coverageDays))
+        + annualize(group.rawCents, base.coverageDays)
     } else if (target === undefined) {
       leftoverGroups.push(group)
     }
+  }
+  for (const [cat, cents] of Object.entries(categoryCents)) {
+    if (cents <= 0) delete categoryCents[cat]
   }
   for (const cat of excludedCategories) delete categoryCents[cat]
 
@@ -207,11 +231,14 @@ export function toSpendState(
   const { categoryCents, merchantCents, leftoverGroups } =
     applyReview(base, assignments, excludedCategories, merchants)
   if (!excludedCategories.has('other')) {
+    // Positive leftovers add to 'other'; negative ones (unmatched refunds)
+    // subtract from it, clamped at zero — never negative spend.
     const leftoverRaw = leftoverGroups
       .filter((g) => g.label === undefined)
       .reduce((s, g) => s + g.rawCents, 0)
-    const cents = Math.max(0, annualize(leftoverRaw, base.coverageDays))
-    if (cents > 0) categoryCents['other'] = (categoryCents['other'] ?? 0) + cents
+    const cents = Math.max(0, (categoryCents['other'] ?? 0) + annualize(leftoverRaw, base.coverageDays))
+    if (cents > 0) categoryCents['other'] = cents
+    else delete categoryCents['other']
   }
   return { categoryCents, merchantCents }
 }

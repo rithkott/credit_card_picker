@@ -95,18 +95,45 @@ export interface PdfExtract {
   rangeStart: string
   rangeEnd: string
   statementTotals: StatementTotals
+  /** Distinct statement-period lines seen — >1 means a combined multi-
+   * statement PDF that one period can't date correctly. */
+  periodCount: number
+}
+
+/** Month-name date support ("May 1, 2026", "February 23 - March 22, 2026" —
+ * Bilt and BofA layouts; matched by 3-letter prefix, so Sep/Sept/September
+ * all resolve). */
+const MONTH_NUM: Record<string, number> = {
+  jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6,
+  jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12,
+}
+const MONTH = '(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\\.?'
+
+/** "May 1, 2026" -> 2026-05-01 (null on garbage). */
+export function parseLongDate(month: string, day: string, year: string): string | null {
+  const mo = MONTH_NUM[month.slice(0, 3).toLowerCase()]
+  const d = Number(day)
+  if (mo === undefined || d < 1 || d > 31) return null
+  return `${year}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 }
 
 /** "Opening/Closing Date 12/06/25 - 01/05/26" / "Statement Period 1/1/2026 to 1/31/2026" */
-const PERIOD = /(\d{1,2}\/\d{1,2}\/\d{2,4})\s*(?:-|–|to|through)\s*(\d{1,2}\/\d{1,2}\/\d{2,4})/i
+const PERIOD = /(\d{1,2}\/\d{1,2}\/\d{2,4})\s*(?:-|–|—|to|through)\s*(\d{1,2}\/\d{1,2}\/\d{2,4})/i
+/** "February 23 - March 22, 2026" / "Apr 24 – May 23, 2026" (start year
+ * optional: inherits the end year, rolling back one across Dec-Jan). */
+const PERIOD_LONG = new RegExp(
+  `${MONTH}\\s+(\\d{1,2})(?:,\\s*(\\d{4}))?\\s*(?:-|–|—|to|through)\\s*${MONTH}\\s+(\\d{1,2}),\\s*(\\d{4})`, 'i')
 
 /** "12/18 WHOLEFDS #10236 SEATTLE WA $87.13", optional post date, optional
  * year on the transaction date, trailing CR/minus/parenthesized negatives. */
-const TXN_LINE = /^(\d{1,2}\/\d{1,2})(\/\d{2,4})?\s+(?:\d{1,2}\/\d{1,2}(?:\/\d{2,4})?\s+)?(.*?)\s+(-?\(?\$?[\d,]+\.\d{2}\)?(?:-|\s*CR)?)$/
+const TXN_LINE = /^(\d{1,2}\/\d{1,2})(\/\d{2,4})?\s+(?:\d{1,2}\/\d{1,2}(?:\/\d{2,4})?\s+)?(.*?)\s+(-?\(?\$?\s?[\d,]+\.\d{2}\)?(?:-|\s*CR)?)$/
+/** "May 1, 2026 BPS*BILT HOUSING 31 Bond St New York $2,675.00" (Bilt). */
+const TXN_LINE_LONG = new RegExp(
+  `^${MONTH}\\s+(\\d{1,2}),\\s*(\\d{4})\\s+(.*?)\\s+(-?\\(?\\$?\\s?[\\d,]+\\.\\d{2}\\)?(?:-|\\s*CR)?)$`, 'i')
 
 const TOTALS_PATTERNS: [keyof StatementTotals, RegExp][] = [
-  ['purchasesCents', /^[+\-]?\s*(?:total\s+)?purchases\b/i],
-  ['paymentsAndCreditsCents', /^[+\-]?\s*payments?\b(?:\s*(?:and|&|\/)\s*(?:other\s+)?credits)?\b/i],
+  ['purchasesCents', /^[+\-]?\s*(?:total\s+)?(?:purchases\b|new\s+charges\b)/i],
+  ['paymentsAndCreditsCents', /^[+\-]?\s*(?:total\s+)?payments?\b(?:\s*(?:and|&|\/)\s*(?:other\s+)?credits)?\b/i],
   ['feesCents', /^[+\-]?\s*(?:total\s+)?fees\s+charged\b/i],
   ['interestCents', /^[+\-]?\s*(?:total\s+)?interest\s+charged\b/i],
 ]
@@ -123,14 +150,37 @@ function mmddToISO(mmdd: string, periodEndISO: string): string | null {
 }
 
 export function extractFromLines(lines: string[], file: string): PdfExtract {
+  // First period line dates the MM/DD transactions; every DISTINCT period
+  // seen is counted, because >1 means a multi-statement combined PDF whose
+  // transactions can't all be dated by one period (surfaced as a warning).
   let periodStart: string | null = null
   let periodEnd: string | null = null
+  const periodsSeen = new Set<string>()
   for (const line of lines) {
+    let start: string | null = null
+    let end: string | null = null
     const m = PERIOD.exec(line)
     if (m) {
-      periodStart = parseDateToISO(m[1])
-      periodEnd = parseDateToISO(m[2])
-      if (periodStart && periodEnd) break
+      start = parseDateToISO(m[1])
+      end = parseDateToISO(m[2])
+    } else {
+      const ml = PERIOD_LONG.exec(line)
+      if (ml) {
+        const [, startMonth, startDay, startYear, endMonth, endDay, endYear] = ml
+        end = parseLongDate(endMonth, endDay, endYear)
+        start = parseLongDate(startMonth, startDay, startYear ?? endYear)
+        // "Dec 24 – Jan 23, 2026" without a start year spans the year boundary.
+        if (start && end && startYear === undefined && start > end) {
+          start = parseLongDate(startMonth, startDay, String(Number(endYear) - 1))
+        }
+      }
+    }
+    if (start && end) {
+      periodsSeen.add(`${start}..${end}`)
+      if (periodStart === null) {
+        periodStart = start
+        periodEnd = end
+      }
     }
   }
 
@@ -139,14 +189,28 @@ export function extractFromLines(lines: string[], file: string): PdfExtract {
   let rejectedRows = 0
 
   for (const line of lines) {
+    // Numeric (Chase/BofA "02/20 02/23 DESC ... 25.00") or long-form
+    // (Bilt "May 1, 2026 DESC ... $2,675.00") transaction lines.
+    let dateISO: string | null = null
+    let desc: string | undefined
+    let amountRaw: string | undefined
     const txnMatch = TXN_LINE.exec(line)
+    const longMatch = txnMatch ? null : TXN_LINE_LONG.exec(line)
     if (txnMatch) {
-      const [, mmdd, yearPart, desc, amountRaw] = txnMatch
-      const descriptor = desc.trim()
-      const amountCents = parseAmountToCents(amountRaw)
-      let dateISO: string | null = null
+      const [, mmdd, yearPart] = txnMatch
+      desc = txnMatch[3]
+      amountRaw = txnMatch[4]
       if (yearPart) dateISO = parseDateToISO(mmdd + yearPart)
       else if (periodEnd) dateISO = mmddToISO(mmdd, periodEnd)
+    } else if (longMatch) {
+      const [, month, day, year] = longMatch
+      desc = longMatch[4]
+      amountRaw = longMatch[5]
+      dateISO = parseLongDate(month, day, year)
+    }
+    if (txnMatch || longMatch) {
+      const descriptor = (desc ?? '').trim()
+      const amountCents = parseAmountToCents(amountRaw ?? '')
       if (dateISO === null || amountCents === null || descriptor === ''
           || /^[\d\s$,.()-]*$/.test(descriptor)) {
         rejectedRows++
@@ -188,6 +252,7 @@ export function extractFromLines(lines: string[], file: string): PdfExtract {
     rangeStart: periodStart ?? dates[0],
     rangeEnd: periodEnd ?? dates[dates.length - 1],
     statementTotals,
+    periodCount: periodsSeen.size,
   }
 }
 
@@ -235,6 +300,7 @@ export async function parsePdf(bytes: Uint8Array, file: string): Promise<ParsedF
         rangeStart: extract.rangeStart,
         rangeEnd: extract.rangeEnd,
         statementTotals: extract.statementTotals,
+        periodCount: extract.periodCount,
       },
       txns: extract.txns.map((t, i) => ({ ...t, source: { file, line: i + 1 } })),
     }

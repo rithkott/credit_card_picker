@@ -44,6 +44,9 @@ export interface FileSummary {
   rangeStart: string
   rangeEnd: string
   statementTotals?: StatementTotals
+  /** PDFs: distinct statement-period lines found. >1 = several statements
+   * combined into one PDF, which a single period can't date correctly. */
+  periodCount?: number
 }
 
 export interface ParsedFile {

@@ -93,7 +93,7 @@ const ISSUER_PROFILES: IssuerProfile[] = [
 
 const DATE_SYNONYMS = ['transaction date', 'trans. date', 'trans date', 'date', 'posted date', 'post date']
 const DESC_SYNONYMS = ['description', 'payee', 'merchant', 'name', 'details', 'memo']
-const AMOUNT_SYNONYMS = ['amount', 'transaction amount']
+const AMOUNT_SYNONYMS = ['amount', 'transaction amount', 'amount (usd)']
 const DEBIT_SYNONYMS = ['debit', 'withdrawals', 'charge']
 const CREDIT_SYNONYMS = ['credit', 'deposits']
 const CATEGORY_SYNONYMS = ['category']

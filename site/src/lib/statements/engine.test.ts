@@ -287,6 +287,56 @@ describe('applyReview / toSpendState', () => {
     expect(spend.categoryCents['other']).toBe(150000 * 5 + 21000)
   })
 
+  it('keeps net-negative groups visible; unmatched refunds subtract on assign', () => {
+    const withRefund = aggregate([file('a.csv', RANGE, [
+      txn('DELTA AIR LINES', { amountCents: 20000 }),
+      txn('SOME AIRLINE REFUND CO', { amountCents: -8000, kind: 'refund' }),
+    ])], MATCHER)
+    expect(withRefund.uncategorized).toEqual([
+      { stem: 'SOME AIRLINE REFUND', count: 1, rawCents: -8000 },
+    ])
+    const out = applyReview(withRefund, { 'SOME AIRLINE REFUND': 'travel_flights' },
+      new Set(), MERCHANTS)
+    expect(out.categoryCents).toEqual({ travel_flights: (20000 - 8000) * 5 })
+  })
+
+  it('unassigned negative leftovers reduce other, clamped at zero', () => {
+    const result = aggregate([file('a.csv', RANGE, [
+      txn('MYSTERY MERCHANT', { amountCents: 1000 }),
+      txn('MYSTERY REFUNDER', { amountCents: -9000, kind: 'refund' }),
+    ])], MATCHER)
+    const spend = toSpendState(result, {}, new Set(), MERCHANTS)
+    expect(spend.categoryCents['other']).toBeUndefined()
+  })
+
+  it('money conservation: fully-assigned review equals annualized net spend', () => {
+    const txns = [
+      txn('COSTCO WHSE #0021', { amountCents: 10000 }),
+      txn('DELTA AIR LINES', { amountCents: 20000 }),
+      txn('MYSTERY MERCHANT 71', { amountCents: 4200 }),
+      txn('BILT REWARDS', { amountCents: 150000 }),
+      txn('MYSTERY REFUNDER', { amountCents: -3000, kind: 'refund' }),
+      txn('PAYMENT THANK YOU', { amountCents: -50000, kind: 'payment' }),
+    ]
+    const result = aggregate([file('a.csv', RANGE, txns)], MATCHER)
+    const spend = toSpendState(result,
+      { bilt_rent: 'other', 'MYSTERY MERCHANT': 'dining', 'MYSTERY REFUNDER': 'dining' },
+      new Set(), MERCHANTS)
+    const total = Object.values(spend.categoryCents).reduce((s, c) => s! + (c ?? 0), 0)
+    const netSpendRaw = txns
+      .filter((t) => t.kind === 'purchase' || t.kind === 'refund')
+      .reduce((s, t) => s + t.amountCents, 0)
+    expect(total).toBe(netSpendRaw * 5) // every parsed cent lands in exactly one bucket
+  })
+
+  it('reconciles issuer purchases totals that fold in balance transfers', () => {
+    const result = aggregate([file('s.pdf', RANGE, [
+      txn('KROGER #1', { amountCents: 16771 }),
+      txn('CARD BALANCE TRANSFER', { amountCents: 55713, kind: 'transfer' }),
+    ], { purchasesCents: 72484 })], MATCHER)
+    expect(result.warnings.filter((w) => w.code === 'W-reconcile')).toEqual([])
+  })
+
   it('Apply output passes the form validation mirror unmodified', () => {
     const spend = toSpendState(base, { 'MYSTERY MERCHANT': 'dining' }, new Set(), MERCHANTS)
     const { errors } = validate(

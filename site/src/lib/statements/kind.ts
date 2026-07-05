@@ -10,10 +10,10 @@
 import type { TxnKind } from './types'
 
 const PAYMENT_PATTERNS = [
-  'PAYMENT THANK YOU', 'THANK YOU FOR YOUR PAYMENT', 'AUTOPAY', 'AUTO-PAY',
-  'AUTOMATIC PAYMENT', 'ONLINE PAYMENT', 'ACH PAYMENT', 'MOBILE PAYMENT',
-  'PAYMENT RECEIVED', 'ELECTRONIC PAYMENT', 'E-PAYMENT', 'DIRECTPAY',
-  'ONLINE TRANSFER TO', 'PYMT',
+  'PAYMENT THANK YOU', 'PAYMENT - THANK YOU', 'THANK YOU FOR YOUR PAYMENT',
+  'AUTOPAY', 'AUTO-PAY', 'AUTOMATIC PAYMENT', 'ONLINE PAYMENT', 'ACH PAYMENT',
+  'MOBILE PAYMENT', 'PAYMENT RECEIVED', 'ELECTRONIC PAYMENT', 'E-PAYMENT',
+  'DIRECTPAY', 'ONLINE TRANSFER TO', 'PAYMENT FROM CHK', 'PYMT',
 ]
 const INTEREST_PATTERNS = [
   'INTEREST CHARGE', 'PURCHASE INTEREST', 'INTEREST CHARGED', 'FINANCE CHARGE',
@@ -25,12 +25,15 @@ const FEE_PATTERNS = [
 ]
 const TRANSFER_PATTERNS = ['BALANCE TRANSFER', 'CASH ADVANCE']
 
-/** CSV Type-column values (Chase-style), lowercased. */
+/** CSV Type-column values (Chase/Apple-style), lowercased. */
 const CSV_TYPE_KINDS: Record<string, TxnKind> = {
   sale: 'purchase',
+  purchase: 'purchase',
   return: 'refund',
+  refund: 'refund',
   payment: 'payment',
   fee: 'fee',
+  interest: 'interest',
   adjustment: 'refund',
 }
 
@@ -59,6 +62,7 @@ export function classifyKind(
       : undefined
   if (explicit && explicit !== 'purchase' && explicit !== 'refund') return explicit
 
+  if (upper.trim() === 'PAYMENT') return 'payment' // Bilt prints bare "PAYMENT"
   if (INTEREST_PATTERNS.some((p) => upper.includes(p))) return 'interest'
   if (FEE_PATTERNS.some((p) => upper.includes(p))) return 'fee'
   if (TRANSFER_PATTERNS.some((p) => upper.includes(p))) return 'transfer'
