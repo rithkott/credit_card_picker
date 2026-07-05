@@ -6,6 +6,7 @@ import { buildProfile, type UserState } from './lib/profile'
 import { validate, type SpendState } from './lib/validation'
 import { AboutYou } from './components/AboutYou'
 import { ChecksPanel } from './components/ChecksPanel'
+import { StatementImport } from './components/import/StatementImport'
 import { RewardPreferences } from './components/RewardPreferences'
 import { ServerBanner } from './components/ServerBanner'
 import { SpendEntry } from './components/SpendEntry'
@@ -110,6 +111,18 @@ export default function App() {
 
       {cfg.phase === 'ready' && (
         <>
+          <StatementImport
+            config={cfg.config}
+            formNonEmpty={Object.values(spend.categoryCents)
+              .some((c) => c !== null && !Number.isNaN(c) && c > 0)}
+            onApply={(imported, usageKeys) => {
+              setSpend(imported)
+              setUser((u) => ({
+                ...u,
+                confirmed_usage: new Set([...u.confirmed_usage, ...usageKeys]),
+              }))
+            }}
+          />
           <SpendEntry
             config={cfg.config}
             spend={spend}

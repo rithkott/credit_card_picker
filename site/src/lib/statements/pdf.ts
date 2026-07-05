@@ -30,13 +30,10 @@ type Pdfjs = typeof import('pdfjs-dist')
 let browserWorker: Worker | null = null
 
 async function loadPdfjs(): Promise<Pdfjs> {
-  if (typeof Worker === 'undefined') {
-    // Node (vitest): the legacy build self-hosts a fake worker and needs no
-    // DOM globals for text extraction.
-    return (await import('pdfjs-dist/legacy/build/pdf.mjs')) as unknown as Pdfjs
-  }
+  // Under vitest this specifier is aliased to pdf.js's legacy build, whose
+  // fake worker runs in-process (node has no Worker global).
   const pdfjs = await import('pdfjs-dist')
-  if (!pdfjs.GlobalWorkerOptions.workerPort) {
+  if (typeof Worker !== 'undefined' && !pdfjs.GlobalWorkerOptions.workerPort) {
     const { default: PdfWorker } = await import('pdfjs-dist/build/pdf.worker.min.mjs?worker')
     browserWorker = new PdfWorker()
     pdfjs.GlobalWorkerOptions.workerPort = browserWorker
