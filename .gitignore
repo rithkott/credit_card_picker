@@ -5,3 +5,4 @@ server/debug-runs/
 site/node_modules/
 site/dist/
 docs/local/
+testdata/
