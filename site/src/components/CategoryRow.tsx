@@ -4,6 +4,13 @@ import type { SpendState } from '../lib/validation'
 import { displayFromAnnualCents, otherUnitAnnotation, parseToAnnualCents, type Unit } from '../lib/money'
 import { MerchantCarveouts } from './MerchantCarveouts'
 
+/** Merchant name without its parenthetical/domain qualifier — the closed
+ * disclosure lists every merchant it holds ("break out Costco, Whole Foods
+ * Market"), so users know the options exist before clicking. */
+function shortLabel(label: string): string {
+  return label.replace(/\s*\(.*\)$/, '').replace(/\.com$/, '')
+}
+
 interface Props {
   category: ConfigCategory
   merchants: ConfigMerchant[]
@@ -32,7 +39,9 @@ export function CategoryRow({ category, merchants, spend, unit, onCategoryChange
       <span className="annot">{otherUnitAnnotation(cents, unit)}</span>
       {merchants.length > 0 ? (
         <button type="button" className="disclose" onClick={() => setOpen(!open)}>
-          {open ? '▾ hide merchants' : '▸ break out specific merchants'}
+          {open
+            ? '▾ hide merchants'
+            : `▸ break out ${merchants.map((m) => shortLabel(m.label)).join(', ')}`}
         </button>
       ) : (
         <span />

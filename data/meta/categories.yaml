@@ -29,7 +29,11 @@ categories:
   drugstores:
     label: Drugstores & pharmacies
   online_shopping:
-    label: Online shopping (general)
+    # Key kept as online_shopping (card files reference it); the bucket is
+    # general shopping — online AND in-person retail (clothing, electronics,
+    # home goods) that isn't groceries/drugstores. Online-only card bonuses may
+    # slightly overvalue in-store spend entered here; accepted 2026-07-05.
+    label: Shopping (online & in-store retail)
   entertainment:
     label: Entertainment
   utilities:

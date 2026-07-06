@@ -72,24 +72,19 @@ groups:
       rci: {label: "RCI timeshare exchange"}
       royal_caribbean: {label: "Royal Caribbean / Celebrity / Silversea cruises"}
 
-  rideshare_car:
-    label: Rideshare & car rental
-    prompt: "Do you (or will you) use any of these rideshare or car-rental services?"
+  rideshare_delivery:
+    label: Rideshare, delivery & car rental
+    prompt: "Do you (or will you) use any of these rideshare, delivery, or car-rental services?"
     items:
       uber: {label: "Uber rides / Uber One"}
       lyft: {label: "Lyft"}
+      uber_eats: {label: "Uber Eats"}
+      doordash: {label: "DoorDash / DashPass"}
+      grubhub: {label: "Grubhub / Seamless"}
+      instacart: {label: "Instacart"}
       turo: {label: "Turo (car sharing)"}
       avis_budget: {label: "Avis / Budget"}
       blacklane: {label: "Blacklane (chauffeur)"}
-
-  food_delivery:
-    label: Food & grocery delivery
-    prompt: "Do you (or will you) use any of these delivery services?"
-    items:
-      doordash: {label: "DoorDash / DashPass"}
-      uber_eats: {label: "Uber Eats"}
-      grubhub: {label: "Grubhub / Seamless"}
-      instacart: {label: "Instacart"}
 
   streaming:
     label: Streaming & digital subscriptions
