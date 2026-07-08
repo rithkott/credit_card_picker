@@ -6,3 +6,4 @@ uvicorn[standard]
 pyyaml
 httpx  # only needed to run tests/test_server_api.py (FastAPI TestClient)
 scipy  # only needed to run tests/test_assign_exact.py (linprog oracle)
+numpy  # optional: vectorizes the bnb search bounds (pure-python fallback exists)

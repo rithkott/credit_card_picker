@@ -130,6 +130,54 @@ def masks_compatible(masks) -> bool:
     return True
 
 
+def solve_value(lines: list, buckets: dict, cache: dict = None) -> float:
+    """Exact optimum VALUE of the assignment LP, optionally memoized. The
+    reduced problem (plan 10 §2.3) depends only on the binding units' rooms
+    and profitable (rate, bucket) arcs plus the per-bucket alternative rates —
+    a signature that repeats heavily across the subsets of one run, so a
+    per-run cache (RunTables.assign_cache) turns most solves into a lookup.
+    Flows are not produced here; assign_spend re-solves for them only when
+    this value strictly beats greedy."""
+    if cache is None:
+        return solve_assignment(lines, buckets)[0]
+    live = sorted(live_bucket_keys(buckets))
+    if not live:
+        return 0.0
+    live_set = set(live)
+    units = binding_units(lines, buckets)
+    binding_lines = {i for u in units for i in u["lines"]}
+    alt_rate = {b: 0.0 for b in live}
+    for i, ln in enumerate(lines):
+        if i in binding_lines:
+            continue
+        r = ln["effective_rate"]
+        for b in ln["eligible"]:
+            if b in live_set and r > alt_rate[b] + PROFIT_EPS:
+                alt_rate[b] = r
+    unit_sigs = []
+    for u in units:
+        arcs = []
+        for i in u["lines"]:
+            rate = lines[i]["effective_rate"]
+            for b in lines[i]["eligible"]:
+                if b in live_set:
+                    p = rate - alt_rate[b]
+                    if p > PROFIT_EPS:
+                        arcs.append((rate, b))
+        unit_sigs.append((u["room"], tuple(sorted(arcs))))
+    base = sum(buckets[b]["amount"] * alt_rate[b] for b in live)
+    if not any(sig[1] for sig in unit_sigs):
+        return base
+    key = (tuple(sorted(unit_sigs)),
+           tuple(alt_rate[b] for b in live))
+    profit = cache.get(key)
+    if profit is None:
+        total, _flows = solve_assignment(lines, buckets)
+        profit = total - base
+        cache[key] = profit
+    return base + profit
+
+
 def solve_assignment(lines: list, buckets: dict) -> tuple:
     """Exact optimum of the assignment LP. Returns (total_value, flows) where
     flows maps (line_index, bucket_key) -> usd assigned, covering every line
@@ -190,7 +238,23 @@ def solve_assignment(lines: list, buckets: dict) -> tuple:
 
     flows = {}
     total = 0.0
-    if arc_pairs:
+    if arc_pairs and len(units) == 1:
+        # Single binding unit: a one-supply transportation problem, solved
+        # exactly by filling arcs in descending marginal profit (exchange
+        # argument / polymatroid greedy). Deterministic tie-breaks.
+        room = units[0]["room"]
+        remaining = {b: buckets[b]["amount"] for b in used_buckets}
+        for _u, i, b, p in sorted(arc_pairs, key=lambda t: (-t[3], t[1], t[2])):
+            if room <= EPS:
+                break
+            take = min(room, remaining[b])
+            if take <= EPS:
+                continue
+            room -= take
+            remaining[b] -= take
+            flows[(i, b)] = take
+            total += take * lines[i]["effective_rate"]
+    elif arc_pairs:
         # Node ids: 0 = source, units, binding lines, used buckets, sink —
         # a DAG in id order, which the potential-seeding DP relies on.
         line_ids = sorted(binding_lines)

@@ -125,6 +125,17 @@ def main() -> int:
                 errors.append(
                     f"data/meta/point-valuations.yaml: program '{name}': {key} must be "
                     f"a number, got {v!r}")
+        # The optimizer's branch-and-bound bound prices every card as if its
+        # transfer gateway were present, which is admissible only when
+        # unlocking never lowers value (plan 10 §3.2).
+        floor_v, opt_v = entry.get("floor_cpp"), entry.get("optimistic_cpp")
+        if (isinstance(floor_v, (int, float)) and not isinstance(floor_v, bool)
+                and isinstance(opt_v, (int, float)) and not isinstance(opt_v, bool)
+                and opt_v < floor_v):
+            errors.append(
+                f"data/meta/point-valuations.yaml: program '{name}': optimistic_cpp "
+                f"({opt_v}) must be >= floor_cpp ({floor_v}) — the search bound "
+                f"assumes unlocking transfers never lowers a point's value")
         # Lock-in currencies (no cash-out path) must say whose loyalty unlocks
         # optimistic_cpp; cashback currencies must not — their floor is cash.
         lk = entry.get("loyalty_keys")

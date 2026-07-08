@@ -1043,7 +1043,9 @@ class TestDominancePruning(unittest.TestCase):
                    "cards": [synth_card(id="better", name="Better", base_rate=2),
                              synth_card(id="worse", name="Worse", base_rate=1)]}
         prof = make_profile({"other": 10000})
-        bundle = opt.run(dataset, prof, AS_OF, 3)
+        # Pruning is the exhaustive engine's default (plan 10 SS3.4); under
+        # the bnb default it is off and the pruned surface must stay empty.
+        bundle = opt.run(dataset, prof, AS_OF, 3, engine="exhaustive")
         self.assertEqual(bundle["card_variants"], 2)
         self.assertEqual(bundle["card_variants_pruned"], 1)
         self.assertEqual(bundle["pruned"],
@@ -1051,6 +1053,13 @@ class TestDominancePruning(unittest.TestCase):
         text = opt.render_text(bundle)
         self.assertIn("1 pruned as dominated", text)
         self.assertIn("Pruned: worse (dominated by better)", text)
+
+        bnb = opt.run(dataset, prof, AS_OF, 3)  # default engine: bnb, no prune
+        self.assertEqual(bnb["card_variants_pruned"], 0)
+        self.assertEqual(bnb["pruned"], [])
+        # Same rank-1 answer either way; bnb keeps the dominated row visible.
+        self.assertEqual(bnb["best_by_size"][0]["cards"],
+                         bundle["best_by_size"][0]["cards"])
 
 
 class TestBestBySize(unittest.TestCase):

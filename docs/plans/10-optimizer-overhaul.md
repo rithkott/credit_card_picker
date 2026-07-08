@@ -206,32 +206,46 @@ Prerequisite (added to `validate_cards.py` as an **error**): every program
 has `optimistic_cpp >= floor_cpp`, so `avg_cpp >= floor_cpp` and unlocking
 a gateway can only raise a card's cpp.
 
-Per variant c, once per run (from `RunTables`):
+Per variant c, once per run (from `RunTables`, ctx=True entries):
 
 - `cpp⁺(c)`: `effective_cpp` with the gateway gate assumed satisfied. The
   loyalty gate is portfolio-independent and still applies. For every
   portfolio S: `cpp_S(c) ≤ cpp⁺(c)`.
-- `r̄_c(b) = max{ rate(l) · cpp⁺(c)/100 : l ∈ lines(c), b ∈ eligible(l) }`
-  — best headline effective rate per live bucket, caps ignored (portal
-  multiplier and rotating fallback are already inside the line rates;
-  closed-loop and rotating eligibility restrictions are already inside the
-  eligible sets).
+- `r̄_c(b) = max{ rate(l) · cpp⁺(c)/100 : l ∈ **uncapped** lines(c),
+  b ∈ eligible(l) }` — best uncapped effective rate per live bucket
+  (portal multiplier and rotating fallback are already inside the line
+  rates; closed-loop and rotating eligibility restrictions are already
+  inside the eligible sets; every capped line emits an uncapped fallback,
+  so r̄ is well-defined wherever the card earns at all).
+- `capbonus(c) = Σ over c's capped units u of min(room_u, reachable live
+  spend of u) × max(0, rate_u − min_{b ∈ eligible(u)} r̄_c(b))` — the most
+  extra value u can add on top of r̄-priced dollars. **Cap-awareness must
+  be additive like this**: pricing a capped rate into a per-bucket average
+  is NOT admissible (two subset cards with small caps on one bucket can
+  jointly beat any single card's averaged rate); the additive form is
+  sound because a capped assignment x on b earns
+  x·r̄_S(b) + x·(rate_u − r̄_S(b)) ≤ x·r̄_S(b) + x·(rate_u − r̄_c(b)), and
+  Σx over the unit is ≤ min(room, reachable). This tightening is what
+  makes k=5 tractable: it cut the full-pool k=5 wall clock ~10×.
 - `K(c)`: c's credits scored standalone at `cpp⁺` with a full tracker.
   Admissible: the shared tracker is only ever decremented, so in-portfolio
   availability ≤ standalone availability, and points-credits scale with
   cpp ≤ cpp⁺.
 - `B(c)`: signup bonus at `cpp⁺`, with `first_year_match` bounded by
-  `min(Σ_b s_b·r̄_c(b), max_annual_rewards_usd or ∞)` ≥ the card's actual
-  post-clamp earnings. Expiry and spend-feasibility gates are
-  portfolio-independent.
-- `x_on(c) = K(c) − fee_on(c)`, `x_y1(c) = K(c) + B(c) − fee_y1(c)` with
-  fees exact (incl. card-exclusive membership).
+  `min(Σ_b s_b·r̄_c(b) + capbonus(c), max_annual_rewards_usd or ∞)` ≥ the
+  card's actual post-clamp earnings. Expiry and spend-feasibility gates
+  are portfolio-independent.
+- `x_on(c) = capbonus(c) + K(c) − fee_on(c)`,
+  `x_y1(c) = capbonus(c) + K(c) + B(c) − fee_y1(c)` with fees exact
+  (incl. card-exclusive membership).
 
 **Lemma (single set).** For any portfolio S and either metric,
 `net(S) ≤ U(S) = Σ_b s_b · max_{c∈S} r̄_c(b) + Σ_{c∈S} x(c)`:
-every assigned dollar of bucket b earns at most the best headline rate of
-some subset card on b; reward-cap clamps only subtract; credits and bonus
-per the itemized bounds; fees are exact.
+every assigned dollar of bucket b earns at most the subset's best uncapped
+rate on b plus its unit's capbonus allowance; reward-cap clamps only
+subtract; credits and bonus per the itemized bounds; fees are exact.
+Property-tested by brute force over every fixture subset
+(tests/test_search_bnb.py::TestBoundAdmissible).
 
 **Prefix bound.** DFS over variants in a fixed static order (descending
 `m̂(c) = Σ_b s_b·r̄_c(b) + x(c)`, id tie-break), maintaining
@@ -249,9 +263,14 @@ Admissible because per-bucket maxima telescope into clipped marginals
 negative-marginal cards never lowers a max. A cheaper static screen
 `U(P) + suffix_topk[pos][k_left]` (precomputed from `m̂`, which dominates
 `m_P`) runs first; the refined pass only when the static screen fails to
-prune. (numpy note: the refined pass is a ~n×20 clipped dot; implement in
-pure Python first, vectorize only if profiling on the live pool says so —
-bound floats never reach output bytes either way.)
+prune. numpy vectorizes the marginal passes (a clipped `R @ s` per DFS
+frame) with a pure-stdlib fallback kept and pinned equivalent by test —
+bound floats feed pruning decisions only and never reach output bytes, so
+cross-engine byte-equivalence is untouched either way. The §2 solver adds a
+per-run reduced-problem value memo (`RunTables.assign_cache`): the flow
+optimum depends only on (binding units' rooms and profitable arcs, per-
+bucket alternative rates), a signature that repeats heavily across
+subsets.
 
 ### 3.3 Exactness of the full output contract
 
@@ -295,11 +314,15 @@ ms) so pruning bites from the first node.
   eliminated rather than re-documented. `--prune/--no-prune` overrides per
   engine. The bundle keys `pruned` / `card_variants_pruned` remain
   (empty/0 under bnb defaults) — contract shape unchanged.
-- Benchmark gate: if bnb-without-pruning exceeds ~5 s at `max_cards=5` on
-  the live worst-case profile, flip its default to ON (the caveat returns,
-  documented); second tightening lever: cap-aware `r̄` (price capped
-  headline room at `min(room, s_b)`, remainder at the card's best uncapped
-  rate — still admissible).
+- **Benchmark-gate outcome (measured, Apple Silicon, live worst-case
+  pool of 129 variants, exact assignment on):** bnb-without-pruning runs
+  `max_cards=3` in **0.85 s** (exhaustive: 9 s), `max_cards=4` in
+  **1.8 s** (exhaustive: exit 2), `max_cards=5` in **~28 s** (exhaustive:
+  exit 2). Pruning ON only shaves ~30% at k=5, so the gate's premise
+  (pruning rescues the 5 s target) fails and the default stays OFF —
+  fidelity wins; k=5 is a wait-once operation and the server result cache
+  (§5) makes repeats instant. The k=5 cost is dominated by exact-scoring
+  ~240k near-optimal candidates, ~80% of which need the flow solver.
 
 ## 4. Compiled SQLite artifact
 

@@ -93,7 +93,20 @@ REWARD_PREF_CHOICES = REWARD_KINDS + ["total_value"]
 # ~35-55 µs in pure Python. 2M subsets ≈ one to two minutes — the tolerable
 # ceiling for an interactive CLI. At max_cards=3 this admits ~229 variants
 # (C(229,3) ≈ 2M), matching 02-optimizer.md §6's ~200-card horizon.
+# Scoped to the exhaustive engine; bnb has its own node budget below.
 MAX_SCORED_SUBSETS = 2_000_000
+
+# Search engines (plan 10 §3): bnb is the product default — an exact
+# branch-and-bound that provably reproduces exhaustive's results; exhaustive
+# is kept verbatim as the verification oracle. Dominance pruning defaults OFF
+# under bnb (full ranked-rows fidelity) and ON under exhaustive (compat).
+ENGINES = ("bnb", "exhaustive")
+
+# Safety valve for the bnb engine: visited DFS nodes, not scored subsets.
+# Expected usage at ~129 variants / max_cards<=5 is 10^4-10^6 nodes; the
+# budget only exists so a pathological pool refuses (DataError, like the
+# exhaustive budget) instead of running unbounded.
+BNB_NODE_BUDGET = 25_000_000
 
 KIND_RANK = {"merchant": 0, "category": 1, "rotating": 2, "fallback": 3, "base": 4}
 
@@ -126,6 +139,7 @@ def policy_constants() -> dict:
         "TIER_ORDER": TIER_ORDER,
         "STALE_DAYS": STALE_DAYS,
         "MAX_SCORED_SUBSETS": MAX_SCORED_SUBSETS,
+        "BNB_NODE_BUDGET": BNB_NODE_BUDGET,
         # Documented formula, not a number: points are valued at the mean of
         # floor_cpp and optimistic_cpp, dropping to floor_cpp when a loyalty
         # or transfer-gateway gate is unconfirmed (plan 08).
@@ -443,7 +457,8 @@ def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
     return lines
 
 
-def assign_spend(lines: list, buckets: dict, greedy_exact=None) -> tuple:
+def assign_spend(lines: list, buckets: dict, greedy_exact=None,
+                 cache: dict = None) -> tuple:
     """Exact spend assignment (plan 10 §2): the greedy regret rule scores every
     subset first; when the conservative detector says its exactness argument
     does not apply (competing capped units, multi-line shared pools), the
@@ -457,8 +472,9 @@ def assign_spend(lines: list, buckets: dict, greedy_exact=None) -> tuple:
         greedy_exact = assign_exact.greedy_is_exact(lines, buckets)
     if not greedy_exact:
         greedy_total = sum(a["usd_value"] for a in assignments)
-        optimal_total, flows = assign_exact.solve_assignment(lines, buckets)
+        optimal_total = assign_exact.solve_value(lines, buckets, cache)
         if optimal_total > greedy_total + assign_exact.VALUE_EPS:
+            _total, flows = assign_exact.solve_assignment(lines, buckets)
             assignments, unassigned = _flow_assignments(lines, buckets, flows)
     return assignments, unassigned
 
@@ -760,6 +776,7 @@ class RunTables:
         self.credit_parts = {}
         self.bonus_static = {}
         self.unit_masks = {}
+        self.assign_cache = {}  # reduced-problem value memo (assign_exact.solve_value)
         self._gated_program = {}  # card id -> program key when ctx matters, else None
         # Live buckets are run-static, so each card's binding capped units
         # reduce to bitmasks and the per-subset exactness detector becomes a
@@ -840,7 +857,9 @@ def score_portfolio(cards: list, profile: dict, programs: dict,
             lines += build_lines(card, profile, programs, buckets, unlocked)
     hint = (tables.greedy_exact_hint(cards, unlocked)
             if tables is not None else None)
-    assignments, unassigned = assign_spend(lines, buckets, greedy_exact=hint)
+    cache = tables.assign_cache if tables is not None else None
+    assignments, unassigned = assign_spend(lines, buckets, greedy_exact=hint,
+                                           cache=cache)
     credits = score_credits(cards, profile, programs, as_of, tables=tables)
     credits_total = sum(c["value"] for c in credits)
     per_card_earnings = {card["id"]: 0.0 for card in cards}
@@ -1117,12 +1136,26 @@ def subset_budget(n_variants: int, max_cards: int) -> int:
 
 
 def search(variants: list, profile: dict, programs: dict,
-           merchants: dict, as_of: date, tables=None) -> list:
-    """Exhaustive over all subsets of eligible card variants, sizes
-    1..max_cards. Two variants of the same physical card (same base_id) are
-    mutually exclusive — you can only configure a choose-your-own card one way.
-    Returns (cards, ongoing_net, year1_net) tuples, ranked."""
+           merchants: dict, as_of: date, tables=None,
+           engine: str = "exhaustive", top: int = 5) -> list:
+    """Rank card-variant subsets, sizes 1..max_cards. Two variants of the same
+    physical card (same base_id) are mutually exclusive — you can only
+    configure a choose-your-own card one way.
+
+    engine="exhaustive": every subset scored, full ranked list returned (the
+    verification oracle, budget-gated by MAX_SCORED_SUBSETS). engine="bnb":
+    exact branch-and-bound (plan 10 §3) returning the top-`top` entries plus
+    the best entry per size — provably the same entries run() consumes from
+    the exhaustive list, in a fraction of the work."""
     buckets = build_buckets(profile, merchants)
+    if engine == "bnb":
+        if tables is None:
+            tables = RunTables(variants, profile, programs, buckets, as_of)
+        import search_bnb
+        return search_bnb.search_bnb(variants, profile, programs, buckets,
+                                     as_of, tables, top, BNB_NODE_BUDGET)
+    if engine != "exhaustive":
+        raise InputError(f"unknown engine {engine!r} — choose from {ENGINES}")
     by_id = {c["id"]: c for c in variants}
     base_of = {cid: by_id[cid].get("base_id", cid) for cid in by_id}
     ids = sorted(by_id)
@@ -1206,19 +1239,33 @@ def assemble_portfolio(entry: dict, by_id: dict, profile: dict, programs: dict,
     }
 
 
-def run(dataset: dict, profile: dict, as_of: date, top: int) -> dict:
-    """Produce the full output bundle rendered by render_text / render_json."""
+def run(dataset: dict, profile: dict, as_of: date, top: int,
+        engine: str = "bnb", prune=None) -> dict:
+    """Produce the full output bundle rendered by render_text / render_json.
+
+    `engine` picks the search (plan 10 §3): "bnb" (default, exact
+    branch-and-bound) or "exhaustive" (the oracle). `prune` overrides the
+    dominance-pruning default — None means engine default: OFF under bnb
+    (dominated variants only ever lost ranked-list rows below rank 1; with
+    bnb they cost nothing to keep, restoring full fidelity), ON under
+    exhaustive (compat with the 02.5 behavior)."""
+    if engine not in ENGINES:
+        raise InputError(f"unknown engine {engine!r} — choose from {ENGINES}")
     programs = dataset["programs"]
     merchants = dataset["merchants"]
     eligible, excluded = filter_cards(dataset["cards"], profile, programs)
     expanded = expand_choice_variants(eligible, profile)
     buckets = build_buckets(profile, merchants)
     tables = RunTables(expanded, profile, programs, buckets, as_of)
-    variants, pruned = prune_dominated_variants(expanded, profile,
-                                                programs, merchants,
-                                                tables=tables)
+    do_prune = prune if prune is not None else (engine == "exhaustive")
+    if do_prune:
+        variants, pruned = prune_dominated_variants(expanded, profile,
+                                                    programs, merchants,
+                                                    tables=tables)
+    else:
+        variants, pruned = list(expanded), []
     ranked = search(variants, profile, programs, merchants, as_of,
-                    tables=tables)
+                    tables=tables, engine=engine, top=top)
 
     by_id = {c["id"]: c for c in variants}
     portfolios = [assemble_portfolio(entry, by_id, profile, programs, buckets,
@@ -1364,6 +1411,12 @@ def main(argv=None) -> int:
                              "(data/meta/usage-questions.yaml)")
     parser.add_argument("--top", type=int, default=5,
                         help="number of ranked portfolios to show (default 5)")
+    parser.add_argument("--engine", choices=list(ENGINES), default="bnb",
+                        help="search engine: exact branch-and-bound (default) "
+                             "or the exhaustive verification oracle")
+    parser.add_argument("--prune", choices=["auto", "on", "off"], default="auto",
+                        help="dominance pruning: auto = engine default "
+                             "(off for bnb, on for exhaustive)")
     parser.add_argument("--json", action="store_true",
                         help="machine-readable output with sorted keys")
     parser.add_argument("--as-of", metavar="YYYY-MM-DD",
@@ -1402,7 +1455,9 @@ def main(argv=None) -> int:
         return 1
 
     try:
-        bundle = run(dataset, profile, as_of, args.top)
+        prune = None if args.prune == "auto" else (args.prune == "on")
+        bundle = run(dataset, profile, as_of, args.top,
+                     engine=args.engine, prune=prune)
     except DataError as e:
         print(f"ERROR: {e}", file=sys.stderr)
         return 2
