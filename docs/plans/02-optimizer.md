@@ -261,6 +261,11 @@ structure** (at most one capped wildcard per card, uncapped base lines guarantee
 coverage). Beyond that structure it is a documented heuristic; a tiny-LP (scipy)
 solver is the named future upgrade, but **v1 stays stdlib + pyyaml only**.
 
+> **Superseded:** assignment is now exact everywhere — the greedy stays the
+> fast path, a detector flags subsets outside its exactness envelope, and a
+> deterministic min-cost-flow solver rescues those; the stdlib-only policy is
+> relaxed (scipy as test oracle). See `docs/plans/10-optimizer-overhaul.md` §2.
+
 Invariants: every dollar of profile spend is assigned exactly once; base lines
 guarantee full coverage — except portfolios consisting only of closed-loop cards,
 where unassignable spend earns $0 and is reported as such.
@@ -285,6 +290,11 @@ edge), then beam search / branch-and-bound. **v1 ships exhaustive.**
 > subset-work budget (`MAX_SCORED_SUBSETS`) plus exact dominance pruning — see
 > `docs/plans/02.5-optimizer_improvements.md`. The search itself remains
 > exhaustive; beam search stays future work.
+
+> **Superseded again:** the default engine is now an exact branch-and-bound
+> (`--engine bnb`) that provably reproduces the exhaustive results while
+> making `max_cards: 4-5` interactive; exhaustive is kept as the verification
+> oracle. See `docs/plans/10-optimizer-overhaul.md` §3.
 
 ## 7. Filters and data-quality gating
 
