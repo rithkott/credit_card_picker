@@ -90,6 +90,10 @@ class TestServerAPI(unittest.TestCase):
         self.assertEqual(cfg["user_defaults"], opt.USER_DEFAULTS)
         self.assertEqual(cfg["reward_kinds"], opt.REWARD_KINDS)
         self.assertEqual(cfg["max_cards_range"], [1, 5])
+        self.assertEqual(
+            cfg["data_last_verified"],
+            max(c["verification"]["last_verified_date"]
+                for c in self.dataset["cards"]))
 
     def test_config_statement_import_mirrors_registries(self):
         cfg = self.client.get("/api/config").json()
@@ -182,6 +186,78 @@ class TestServerAPI(unittest.TestCase):
         self.assertEqual(record["request"], body)
         self.assertEqual(record["status"], 200)
         self.assertIn("portfolios", record["result"])
+
+    # -- result cache + hot reload (plan 10 §5) -------------------------------
+
+    def test_cache_hit_is_byte_identical_and_skips_dump(self):
+        body = {"spend": {"other": 2000}, "user": {"credit_tier": "good",
+                                                   "max_cards": 2},
+                "as_of": AS_OF}
+        first = self.client.post("/api/optimize", json=body)
+        self.assertEqual(first.status_code, 200)
+        before = set(Path(self._tmp.name).iterdir())
+        second = self.client.post("/api/optimize", json=body)
+        self.assertEqual(second.status_code, 200)
+        self.assertEqual(first.content, second.content)
+        # The replay was served from the cache: no new debug dump.
+        self.assertEqual(set(Path(self._tmp.name).iterdir()), before)
+
+    def test_reload_endpoint(self):
+        r = self.client.post("/api/reload")
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.json()["ok"])
+        self.assertEqual(r.json()["cards_total"],
+                         len(self.server_app.STATE["dataset"]["cards"]))
+        self.assertEqual(r.json()["dataset_hash"],
+                         self.server_app.STATE["dataset_hash"])
+
+
+@unittest.skipUnless(HAS_FASTAPI, "fastapi/httpx not installed (pip install -r server/requirements.txt)")
+class TestHotReload(unittest.TestCase):
+    """Editing a card YAML is picked up on the next request — no restart
+    (plan 10 §5). Runs against a temporary copy of the live dataset so the
+    repo stays untouched."""
+
+    def setUp(self):
+        import shutil
+        from fastapi.testclient import TestClient
+        sys.path.insert(0, str(ROOT / "server"))
+        import app as server_app
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        data = Path(self.tmp.name) / "data"
+        shutil.copytree(ROOT / "data" / "cards", data / "cards")
+        shutil.copytree(ROOT / "data" / "meta", data / "meta")
+        self.saved = (opt.CARDS_DIR, opt.META_DIR,
+                      server_app.DB_PATH, server_app.DEBUG_DIR)
+        opt.CARDS_DIR = data / "cards"
+        opt.META_DIR = data / "meta"
+        server_app.DB_PATH = data / "build" / "cards.sqlite"
+        server_app.DEBUG_DIR = Path(self.tmp.name) / "debug"
+        self.server_app = server_app
+        self.client = TestClient(server_app.app)
+        self.client.__enter__()
+        self.addCleanup(self.client.__exit__, None, None, None)
+        self.addCleanup(self._restore)
+
+    def _restore(self):
+        (opt.CARDS_DIR, opt.META_DIR, self.server_app.DB_PATH,
+         self.server_app.DEBUG_DIR) = self.saved
+
+    def test_card_edit_is_picked_up_without_restart(self):
+        before = self.client.get("/api/config").json()["data_last_verified"]
+        hash_before = self.server_app.STATE["dataset_hash"]
+        card_path = Path(opt.CARDS_DIR) / "wells-fargo" / "active-cash.yaml"
+        card = yaml.safe_load(card_path.read_text())
+        card["verification"]["last_verified_date"] = "2099-01-01"
+        card_path.write_text(yaml.safe_dump(card, sort_keys=False,
+                                            allow_unicode=True))
+        after = self.client.get("/api/config").json()["data_last_verified"]
+        self.assertNotEqual(before, after)
+        self.assertEqual(after, "2099-01-01")
+        # The reload minted a new dataset_hash and reset the result cache.
+        self.assertNotEqual(hash_before, self.server_app.STATE["dataset_hash"])
+        self.assertEqual(len(self.server_app.STATE["result_cache"]), 0)
 
 
 if __name__ == "__main__":

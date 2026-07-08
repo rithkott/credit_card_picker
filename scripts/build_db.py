@@ -234,18 +234,24 @@ def take(mapping: dict, context: str, *allowed) -> dict:
 
 
 def source_files() -> list:
-    files = sorted(CARDS_DIR.glob("*/*.yaml")) + sorted(META_DIR.glob("*.yaml"))
+    """[(logical path, file path)] — logical paths are location-independent
+    (cards/<issuer>/<file>, meta/<file>) so the dataset hash depends on
+    content only, not on where the tree happens to live."""
+    files = ([(f"cards/{p.parent.name}/{p.name}", p)
+              for p in sorted(CARDS_DIR.glob("*/*.yaml"))]
+             + [(f"meta/{p.name}", p)
+                for p in sorted(META_DIR.glob("*.yaml"))])
     if not files:
         raise BuildError(f"no source YAML found under {CARDS_DIR} / {META_DIR}")
     return files
 
 
 def dataset_manifest() -> tuple:
-    """[(repo-relative path, sha256)] plus the combined dataset hash."""
+    """[(logical path, sha256)] plus the combined dataset hash."""
     rows = []
-    for p in source_files():
+    for logical, p in source_files():
         digest = hashlib.sha256(p.read_bytes()).hexdigest()
-        rows.append((str(p.relative_to(ROOT)), digest))
+        rows.append((logical, digest))
     combined = hashlib.sha256(
         "\n".join(f"{path}:{digest}" for path, digest in rows).encode()
     ).hexdigest()

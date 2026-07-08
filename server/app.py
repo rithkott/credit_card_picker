@@ -18,10 +18,16 @@ computation engine; this file only maps HTTP to its functions:
                         DataError  -> 500 {"detail": msg}; the optimizer's
                         messages are already user-directed.
 
-The dataset is loaded once at startup — restart (or run uvicorn --reload)
-after editing card YAML. Every optimize call writes a gitignored debug dump to
-server/debug-runs/<timestamp>.yaml with the exact request and the full result
-(or error), same replay affordance as the retired POC server.
+The dataset loads from the compiled SQLite artifact (scripts/build_db.py,
+plan 10 §4-5), rebuilt automatically whenever the YAML sources change — a
+cheap stat signature is checked per request, so editing a card file is picked
+up on the next call, no restart. POST /api/reload forces it. Results are
+served from an LRU cache keyed by (profile, as_of, top, dataset_hash): the
+optimizer is a pure function, so identical inputs against identical data are
+safe to replay; cache hits skip the debug dump. Every computed optimize call
+still writes a gitignored debug dump to server/debug-runs/<timestamp>.yaml
+with the exact request and the full result (or error), same replay affordance
+as the retired POC server.
 
 v1 runs locally only:  pip install -r server/requirements.txt
                        python3 server/app.py          # http://localhost:8000
@@ -29,8 +35,10 @@ If site/dist exists (npm run build), it is served at / — the all-localhost
 mode that also sidesteps Safari's https->http://localhost restriction.
 """
 
+import hashlib
 import json
 import sys
+from collections import OrderedDict
 from contextlib import asynccontextmanager
 from datetime import date, datetime
 from pathlib import Path
@@ -42,6 +50,7 @@ from fastapi.staticfiles import StaticFiles
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
+import build_db  # noqa: E402
 import optimize as opt  # noqa: E402
 
 # Origins allowed to call the API: the GitHub Pages site (this repo's project
@@ -54,13 +63,41 @@ ALLOWED_ORIGINS = [
 
 DEBUG_DIR = Path(__file__).resolve().parent / "debug-runs"
 SITE_DIST = ROOT / "site" / "dist"
+DB_PATH = ROOT / "data" / "build" / "cards.sqlite"
+RESULT_CACHE_SIZE = 128
 
 STATE: dict = {}
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    STATE["dataset"] = opt.load_dataset()
+def _stat_signature() -> tuple:
+    """Cheap change detector over every dataset source file: (path, mtime_ns,
+    size) triples. ~120 stat calls per request — microseconds, not the full
+    sha256 manifest (that runs only when this signature moves)."""
+    sig = []
+    for p in (sorted(Path(opt.CARDS_DIR).glob("*/*.yaml"))
+              + sorted(Path(opt.META_DIR).glob("*.yaml"))):
+        st = p.stat()
+        sig.append((str(p), st.st_mtime_ns, st.st_size))
+    return tuple(sig)
+
+
+def load_state() -> None:
+    """(Re)load everything: rebuild the SQLite artifact when the YAML sources
+    changed, load the dataset from it (YAML fallback if the artifact cannot be
+    built), reset the result cache. Called at startup, on POST /api/reload,
+    and whenever the per-request stat signature moves."""
+    build_db.CARDS_DIR = Path(opt.CARDS_DIR)
+    build_db.META_DIR = Path(opt.META_DIR)
+    try:
+        if not build_db.is_fresh(DB_PATH):
+            build_db.build(DB_PATH)
+            sys.stderr.write(f"rebuilt {DB_PATH.name} from YAML sources\n")
+        STATE["dataset"] = opt.load_dataset_db(DB_PATH)
+        STATE["dataset_hash"] = build_db.stored_dataset_hash(DB_PATH)
+    except Exception as e:  # artifact problems must never take the API down
+        sys.stderr.write(f"DB artifact unavailable ({e}); loading YAML directly\n")
+        STATE["dataset"] = opt.load_dataset()
+        STATE["dataset_hash"] = build_db.dataset_manifest()[1]
     # Statement-import rules (plan 09): read only here, never by the optimizer.
     # opt.META_DIR (not a local constant) so tests that repoint the dataset
     # repoint these too.
@@ -69,6 +106,21 @@ async def lifespan(app: FastAPI):
         STATE["descriptors"] = yaml.safe_load(f)["descriptors"]
     with open(meta / "category-rules.yaml") as f:
         STATE["category_rules"] = yaml.safe_load(f)
+    STATE["stat_signature"] = _stat_signature()
+    STATE["result_cache"] = OrderedDict()
+
+
+def ensure_fresh() -> None:
+    """Per-request hot reload: if any source file's stat moved, reload (which
+    also invalidates the result cache via the new dataset_hash)."""
+    sig = _stat_signature()
+    if sig != STATE.get("stat_signature"):
+        load_state()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    load_state()
     yield
     STATE.clear()
 
@@ -105,9 +157,20 @@ def health() -> dict:
     return {"ok": True, "cards_total": len(STATE["dataset"]["cards"])}
 
 
+@app.post("/api/reload")
+def reload_dataset() -> dict:
+    """Force a dataset reload (rebuilds the SQLite artifact when stale). The
+    per-request stat check makes this mostly redundant, but it is the explicit
+    lever when file stats lie (e.g. a mounted volume with frozen mtimes)."""
+    load_state()
+    return {"ok": True, "cards_total": len(STATE["dataset"]["cards"]),
+            "dataset_hash": STATE["dataset_hash"]}
+
+
 @app.get("/api/config")
 def config() -> dict:
     """The form's single source of truth, straight from the registries."""
+    ensure_fresh()
     ds = STATE["dataset"]
     return {
         "categories": [
@@ -128,6 +191,10 @@ def config() -> dict:
         "reward_kinds": opt.REWARD_KINDS,
         "max_cards_range": [1, 5],
         "cards_total": len(ds["cards"]),
+        # Most recent hand-verification date across the dataset — the site's
+        # footer trust line quotes it instead of hardcoding a date.
+        "data_last_verified": max(
+            c["verification"]["last_verified_date"] for c in ds["cards"]),
         # Rules for the in-browser statement importer (plan 09). Rules travel
         # API -> browser; statement data never travels anywhere.
         "statement_import": {
@@ -161,16 +228,32 @@ def optimize(body: dict = Body(...)) -> dict:
     else:
         as_of = date.today()  # per request, so a long-lived server never serves stale expiry math
 
+    ensure_fresh()
     raw = {k: body[k] for k in ("spend", "merchant_spend", "user") if k in body}
     try:
         profile = opt.parse_profile(raw, STATE["dataset"])
+        # Purity makes replays safe: same profile + as_of + top against the
+        # same dataset_hash is byte-identical, so serve it from the LRU cache
+        # (and skip the debug dump — the computed run already recorded one).
+        cache = STATE["result_cache"]
+        key = hashlib.sha256(json.dumps(
+            {"profile": profile, "as_of": as_of.isoformat(), "top": top,
+             "dataset": STATE["dataset_hash"]},
+            sort_keys=True).encode()).hexdigest()
+        if key in cache:
+            cache.move_to_end(key)
+            sys.stderr.write(f"cache hit: {key[:12]}\n")
+            return cache[key]
         bundle = opt.run(STATE["dataset"], profile, as_of, top)
     except opt.InputError as e:
         dump_debug_run(body, 422, {"detail": str(e)})
         raise HTTPException(422, detail=str(e))
-    except opt.DataError as e:  # incl. the max_cards search-budget blowout
+    except opt.DataError as e:  # incl. the search-budget safety valves
         dump_debug_run(body, 500, {"detail": str(e)})
         raise HTTPException(500, detail=str(e))
+    cache[key] = bundle
+    while len(cache) > RESULT_CACHE_SIZE:
+        cache.popitem(last=False)
     dump_debug_run(body, 200, bundle)
     return bundle
 
