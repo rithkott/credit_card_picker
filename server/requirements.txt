@@ -1,6 +1,8 @@
 # Deps for the product API (server/app.py) only — the dataset/optimizer layer
-# stays stdlib + pyyaml + jsonschema (see CLAUDE.md).
+# runtime stays stdlib + pyyaml + jsonschema (see CLAUDE.md); scipy below is a
+# test-time LP oracle, never imported at runtime (plan 10 SS2).
 fastapi
 uvicorn[standard]
 pyyaml
 httpx  # only needed to run tests/test_server_api.py (FastAPI TestClient)
+scipy  # only needed to run tests/test_assign_exact.py (linprog oracle)

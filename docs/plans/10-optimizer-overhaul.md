@@ -113,31 +113,55 @@ would consume (the 02.5 §2.4 "third-order rerouting" honesty note).
 
 ### 2.2 Detector: `greedy_is_exact(lines, buckets)`
 
-Conservative sufficient condition, checked per subset in O(units² +
-lines):
+Only **binding** capped units matter: a unit whose room ≥ the total live
+spend it can reach has a slack constraint in every feasible solution and
+behaves exactly like uncapped lines, so it is filtered out first
+(`binding_units`). Conservative sufficient condition over the binding
+units:
 
-> For every pair of distinct capped units U₁ ≠ U₂ (across all cards in the
-> subset), the *live* eligible bucket sets (buckets with spend > EPS)
-> either do not intersect, or are equal singletons.
+> No binding unit spreads a shared pool across several lines AND several
+> live buckets, and every pair of binding units has live eligible sets
+> that either do not intersect or are equal singletons.
 
-If it holds, capped units interact only with uncapped lines, and the
+If it holds, binding units interact only with never-binding lines, and the
 regret rule's swap argument applies unit-by-unit → greedy is exact.
 Returns False ⇒ *maybe* inexact — never wrongly True. (Proof sketch:
-disjoint capped units decompose the LP into independent single-capped-unit
-subproblems over a field of uncapped lines; each is a fractional knapsack
-the regret ordering solves exactly. Equal-singleton units are a rate-sorted
-drain of one bucket.)
+disjoint binding units decompose the LP into independent single-capped-unit
+subproblems over a field of effectively-uncapped lines; each is a
+fractional knapsack the regret ordering solves exactly. Equal-singleton
+units are a rate-sorted drain of one bucket. A multi-line pool split
+across several buckets is *not* regret-managed — the rule orders buckets
+within one line only — hence the multiline condition.)
+
+Because live buckets are run-static, RunTables precomputes each card's
+binding units as bitmasks (`assign_exact.unit_masks`), and the per-subset
+check (`RunTables.greedy_exact_hint` → `masks_compatible`) is a handful of
+integer ANDs. A randomized test pins the bitmask path to the reference
+set-based detector.
 
 ### 2.3 Exact solver: pure-Python min-cost flow, scipy as oracle
 
-When the detector fires, the subset is re-solved exactly with a
-**successive-shortest-path max-profit flow** on the bipartite graph
-(source → capped units and an uncapped pseudo-unit per line → buckets →
-sink). Node count ≤ ~70; float capacities are fine (LP optimality needs no
-integrality; Bellman-Ford path search over ≤ ~70 nodes, deterministic
-tie-breaks by (unit key, bucket key)). Target ≈ 100 µs/subset — cheap
+When the detector fires, the subset is re-solved exactly on an
+**opportunity-cost reduction**: every displaced dollar of bucket b falls
+back to the best non-binding rate alt(b) (non-binding rooms can absorb
+their whole reachable spend simultaneously), so only binding units enter
+the network and arcs price the marginal profit rate − alt(b), dropping
+non-positive arcs. The reduced network (source → unit[room] → line →
+bucket[amount] → sink, typically ≤ ~15 nodes) is solved by successive
+most-profitable augmenting paths — Dijkstra with Johnson potentials seeded
+by one DP pass over the initial DAG; float capacities are fine (LP
+optimality needs no integrality). Measured ≈ 50 µs/flagged subset — cheap
 enough to run inline in the search loop, unlike `scipy.linprog` whose
-per-call wrapper overhead (~1 ms) would dominate.
+per-call wrapper overhead (~1 ms) would dominate (measured: ~608 µs/subset
+even for a hand-rolled full-graph Bellman-Ford variant; the reduction is
+what makes exactness affordable).
+
+Measured on the live worst-case pool (max_cards=3, 247k scored subsets):
+22% of subsets flagged, and greedy was *genuinely* suboptimal on ~1.8% —
+the flow solution was adopted there (none changed the reported top-5 or
+best-by-size on current data, but the exactness guarantee now holds
+subset-by-subset). Full-pool k=3 runtime: 6.7 s (greedy only) → 9.4 s
+(exact everywhere).
 
 Output policy, for byte stability and minimal golden churn:
 

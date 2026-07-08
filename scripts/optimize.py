@@ -34,6 +34,9 @@ from pathlib import Path
 
 import yaml
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import assign_exact
+
 ROOT = Path(__file__).resolve().parent.parent
 CARDS_DIR = ROOT / "data" / "cards"
 META_DIR = ROOT / "data" / "meta"
@@ -440,12 +443,57 @@ def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
     return lines
 
 
-def assign_spend(lines: list, buckets: dict) -> tuple:
+def assign_spend(lines: list, buckets: dict, greedy_exact=None) -> tuple:
+    """Exact spend assignment (plan 10 §2): the greedy regret rule scores every
+    subset first; when the conservative detector says its exactness argument
+    does not apply (competing capped units, multi-line shared pools), the
+    deterministic flow solver computes the true LP optimum, and its solution is
+    adopted only when it strictly beats greedy — otherwise the greedy
+    assignment is kept verbatim for byte-stable output. `greedy_exact` lets
+    score_portfolio pass the RunTables bitmask verdict instead of re-deriving
+    it per subset."""
+    assignments, unassigned = assign_spend_greedy(lines, buckets)
+    if greedy_exact is None:
+        greedy_exact = assign_exact.greedy_is_exact(lines, buckets)
+    if not greedy_exact:
+        greedy_total = sum(a["usd_value"] for a in assignments)
+        optimal_total, flows = assign_exact.solve_assignment(lines, buckets)
+        if optimal_total > greedy_total + assign_exact.VALUE_EPS:
+            assignments, unassigned = _flow_assignments(lines, buckets, flows)
+    return assignments, unassigned
+
+
+def _flow_assignments(lines: list, buckets: dict, flows: dict) -> tuple:
+    """Render a flow-solver solution in the greedy emission order (descending
+    effective rate, then card/kind/key, then bucket) so adopted-LP output is
+    deterministic and shaped exactly like greedy output."""
+    order = sorted(range(len(lines)),
+                   key=lambda i: (-lines[i]["effective_rate"], lines[i]["card_id"],
+                                  KIND_RANK[lines[i]["kind"]], lines[i]["key"]))
+    remaining = {b: bk["amount"] for b, bk in buckets.items()}
+    assignments = []
+    for i in order:
+        ln = lines[i]
+        for b in sorted(ln["eligible"]):
+            take = flows.get((i, b), 0.0)
+            if take <= EPS:
+                continue
+            remaining[b] -= take
+            assignments.append({"card_id": ln["card_id"], "bucket": b,
+                                "usd_assigned": take, "rate": ln["rate"],
+                                "cpp": ln["cpp"], "kind": ln["kind"],
+                                "usd_value": take * ln["effective_rate"],
+                                "note": ln["note"]})
+    unassigned = {b: amt for b, amt in sorted(remaining.items()) if amt > EPS}
+    return assignments, unassigned
+
+
+def assign_spend_greedy(lines: list, buckets: dict) -> tuple:
     """Greedy assignment over all lines of all candidate cards, in descending
-    effective USD rate, with deterministic tie-breaks (spec §5.5). Exact for the
-    current structure (at most one capped wildcard per card, uncapped base lines
-    guarantee coverage); beyond that it is a documented heuristic — a tiny-LP
-    solver is the named future upgrade, but v1 stays stdlib + pyyaml only."""
+    effective USD rate, with deterministic tie-breaks (spec §5.5). Exact when
+    assign_exact.greedy_is_exact holds — capped units competing for the same
+    buckets or splitting a shared pool across lines fall to the flow solver
+    via the assign_spend dispatcher (plan 10 §2)."""
     remaining = {b: bk["amount"] for b, bk in buckets.items()}
     order = sorted(lines, key=lambda ln: (-ln["effective_rate"], ln["card_id"],
                                           KIND_RANK[ln["kind"]], ln["key"]))
@@ -711,7 +759,13 @@ class RunTables:
         self.lines = {}
         self.credit_parts = {}
         self.bonus_static = {}
+        self.unit_masks = {}
         self._gated_program = {}  # card id -> program key when ctx matters, else None
+        # Live buckets are run-static, so each card's binding capped units
+        # reduce to bitmasks and the per-subset exactness detector becomes a
+        # few integer ANDs (assign_exact.masks_compatible).
+        bucket_bit = {b: 1 << i for i, b in enumerate(sorted(
+            b for b, bk in buckets.items() if bk["amount"] > EPS))}
         for card in variants:
             cid = card["id"]
             prog = card["currency"]["program"]
@@ -721,25 +775,41 @@ class RunTables:
             contexts = {False: frozenset()}
             if gated:
                 contexts[True] = frozenset({prog})
-            lines_by, parts_by, bonus_by = {}, {}, {}
+            lines_by, parts_by, bonus_by, masks_by = {}, {}, {}, {}
             for ctx, unlocked in contexts.items():
                 cpp, _ = effective_cpp(card, programs, confirmed, unlocked)
                 lines_by[ctx] = build_lines(card, profile, programs, buckets, unlocked)
                 parts_by[ctx] = credit_parts(card, cpp, profile, as_of)
                 bonus_by[ctx] = bonus_static(card, profile, programs, as_of, unlocked)
+                masks_by[ctx] = assign_exact.unit_masks(lines_by[ctx], buckets,
+                                                        bucket_bit)
             if not gated:
                 lines_by[True] = lines_by[False]
                 parts_by[True] = parts_by[False]
                 bonus_by[True] = bonus_by[False]
+                masks_by[True] = masks_by[False]
             self.lines[cid] = lines_by
             self.credit_parts[cid] = parts_by
             self.bonus_static[cid] = bonus_by
+            self.unit_masks[cid] = masks_by
 
     def ctx(self, card: dict, unlocked: frozenset) -> bool:
         """The scoring context of one card inside a subset whose gateway
         programs are `unlocked` — mirrors effective_cpp's gateway condition."""
         prog = self._gated_program[card["id"]]
         return prog is not None and prog in unlocked
+
+    def greedy_exact_hint(self, cards: list, unlocked: frozenset) -> bool:
+        """Subset-level greedy-exactness verdict from the per-card bitmasks —
+        the same answer assign_exact.greedy_is_exact would give, in a few
+        integer ANDs."""
+        masks = []
+        for card in cards:
+            cm = self.unit_masks[card["id"]][self.ctx(card, unlocked)]
+            if cm is False:
+                return False
+            masks.extend(cm)
+        return assign_exact.masks_compatible(masks)
 
 
 def membership_fee(card: dict) -> float:
@@ -768,7 +838,9 @@ def score_portfolio(cards: list, profile: dict, programs: dict,
             lines += tables.lines[card["id"]][tables.ctx(card, unlocked)]
         else:
             lines += build_lines(card, profile, programs, buckets, unlocked)
-    assignments, unassigned = assign_spend(lines, buckets)
+    hint = (tables.greedy_exact_hint(cards, unlocked)
+            if tables is not None else None)
+    assignments, unassigned = assign_spend(lines, buckets, greedy_exact=hint)
     credits = score_credits(cards, profile, programs, as_of, tables=tables)
     credits_total = sum(c["value"] for c in credits)
     per_card_earnings = {card["id"]: 0.0 for card in cards}
