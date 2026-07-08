@@ -184,6 +184,264 @@ def load_dataset() -> dict:
             "usage_questions": usage_questions, "usage_keys": usage_keys}
 
 
+def load_dataset_db(db_path: Path) -> dict:
+    """Load the dataset from the compiled SQLite artifact (plan 10 §4),
+    reconstructing the *identical* in-memory shape as load_dataset() — NULL
+    columns become absent keys, INTEGER 0/1 flags become bools — so nothing
+    downstream can tell the sources apart (pinned by tests/test_build_db.py's
+    deep-equality oracle). The artifact is a build product; YAML remains the
+    source of truth."""
+    import sqlite3
+    con = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+    con.row_factory = sqlite3.Row
+
+    def opt_set(target, key, value, wrap=None):
+        if value is not None:
+            target[key] = wrap(value) if wrap else value
+
+    try:
+        categories = {}
+        for r in con.execute("SELECT * FROM categories ORDER BY key"):
+            entry = {"label": r["label"]}
+            opt_set(entry, "pseudo", r["pseudo"], bool)
+            categories[r["key"]] = entry
+
+        merchants = {}
+        for r in con.execute("SELECT * FROM merchants ORDER BY key"):
+            merchants[r["key"]] = {"label": r["label"],
+                                   "category": r["category_key"]}
+
+        programs = {}
+        for r in con.execute("SELECT * FROM programs ORDER BY key"):
+            entry = {"label": r["label"],
+                     "redeems_for": [k[0] for k in con.execute(
+                         "SELECT kind FROM program_redeems_for "
+                         "WHERE program_key = ? ORDER BY position",
+                         (r["key"],))],
+                     "floor_cpp": r["floor_cpp"],
+                     "optimistic_cpp": r["optimistic_cpp"]}
+            loyalty = [k[0] for k in con.execute(
+                "SELECT usage_key FROM program_loyalty_keys "
+                "WHERE program_key = ? ORDER BY position", (r["key"],))]
+            if loyalty:
+                entry["loyalty_keys"] = loyalty
+            opt_set(entry, "transfer_gateway_required",
+                    r["transfer_gateway_required"], bool)
+            programs[r["key"]] = entry
+
+        usage_questions = {}
+        for g in con.execute("SELECT * FROM usage_groups ORDER BY position"):
+            items = {}
+            for i in con.execute(
+                    "SELECT * FROM usage_items WHERE group_key = ? "
+                    "ORDER BY position", (g["key"],)):
+                items[i["key"]] = {"label": i["label"]}
+            usage_questions[g["key"]] = {"label": g["label"],
+                                         "prompt": g["prompt"], "items": items}
+        usage_keys = {key for group in usage_questions.values()
+                      for key in (group.get("items") or {})}
+
+        caps = {}
+        for r in con.execute("SELECT * FROM caps"):
+            cap = {"period": r["period"], "max_spend_usd": r["max_spend_usd"],
+                   "fallback_rate": r["fallback_rate"]}
+            opt_set(cap, "shared_cap_id", r["shared_cap_id"])
+            caps[(r["reward_kind"], r["reward_id"])] = cap
+        conditionals = {}
+        for r in con.execute("SELECT * FROM reward_conditional_rates"):
+            cond = {"rate": r["rate"], "requires": r["requires"]}
+            opt_set(cond, "note", r["note"])
+            conditionals[(r["reward_kind"], r["reward_id"])] = cond
+        rotations = {}
+        for r in con.execute("SELECT * FROM rotations"):
+            rotations[r["reward_id"]] = {
+                "frequency": r["frequency"],
+                "requires_activation": bool(r["requires_activation"]),
+                "note": r["note"]}
+        choices = {}
+        for r in con.execute("SELECT * FROM choices"):
+            choices[r["reward_id"]] = {
+                "options": [o[0] for o in con.execute(
+                    "SELECT category_key FROM choice_options "
+                    "WHERE reward_id = ? ORDER BY position",
+                    (r["reward_id"],))],
+                "note": r["note"]}
+
+        cards = []
+        for c in con.execute("SELECT * FROM cards ORDER BY id"):
+            cid = c["id"]
+            card = {"id": cid, "name": c["name"], "issuer": c["issuer_slug"],
+                    "network": c["network"],
+                    "currency": {"type": c["currency_type"],
+                                 "program": c["currency_program"]},
+                    "base_rate": c["base_rate"]}
+            brc = con.execute("SELECT * FROM base_rate_conditionals "
+                              "WHERE card_id = ?", (cid,)).fetchone()
+            if brc:
+                entry = {"rate": brc["rate"], "requires": brc["requires"]}
+                opt_set(entry, "note", brc["note"])
+                card["base_rate_conditional"] = entry
+            opt_set(card, "portal", c["portal"])
+            opt_set(card, "unlocks_transfers", c["unlocks_transfers"], bool)
+            opt_set(card, "max_annual_rewards_usd", c["max_annual_rewards_usd"])
+
+            card["category_rewards"] = []
+            for r in con.execute("SELECT * FROM category_rewards "
+                                 "WHERE card_id = ? ORDER BY position", (cid,)):
+                cr = {"category": r["category_key"], "rate": r["rate"]}
+                if ("category", r["id"]) in caps:
+                    cr["cap"] = caps[("category", r["id"])]
+                if r["id"] in rotations:
+                    cr["rotation"] = rotations[r["id"]]
+                if r["id"] in choices:
+                    cr["choice"] = choices[r["id"]]
+                opt_set(cr, "portal_only", r["portal_only"], bool)
+                opt_set(cr, "requires_enrollment", r["requires_enrollment"], bool)
+                if ("category", r["id"]) in conditionals:
+                    cr["conditional_rate"] = conditionals[("category", r["id"])]
+                opt_set(cr, "notes", r["notes"])
+                card["category_rewards"].append(cr)
+
+            card["merchant_rewards"] = []
+            for r in con.execute("SELECT * FROM merchant_rewards "
+                                 "WHERE card_id = ? ORDER BY position", (cid,)):
+                mr = {"merchant": r["merchant_key"], "rate": r["rate"]}
+                if ("merchant", r["id"]) in caps:
+                    mr["cap"] = caps[("merchant", r["id"])]
+                if ("merchant", r["id"]) in conditionals:
+                    mr["conditional_rate"] = conditionals[("merchant", r["id"])]
+                opt_set(mr, "notes", r["notes"])
+                card["merchant_rewards"].append(mr)
+
+            card["credits"] = []
+            for r in con.execute("SELECT * FROM credits "
+                                 "WHERE card_id = ? ORDER BY position", (cid,)):
+                credit = {"name": r["name"]}
+                opt_set(credit, "kind", r["kind"])
+                opt_set(credit, "amount_usd", r["amount_usd"])
+                opt_set(credit, "amount_points", r["amount_points"])
+                credit["period"] = r["period"]
+                opt_set(credit, "category", r["category_key"])
+                keys = [k[0] for k in con.execute(
+                    "SELECT usage_key FROM credit_usage_keys "
+                    "WHERE credit_id = ? ORDER BY position", (r["id"],))]
+                if keys:
+                    credit["usage_keys"] = keys
+                opt_set(credit, "automatic", r["automatic"], bool)
+                opt_set(credit, "unlock_spend_usd", r["unlock_spend_usd"])
+                opt_set(credit, "requires_enrollment",
+                        r["requires_enrollment"], bool)
+                opt_set(credit, "expires", r["expires"])
+                credit["realistic_capture_rate_note"] = \
+                    r["realistic_capture_rate_note"]
+                opt_set(credit, "notes", r["notes"])
+                card["credits"].append(credit)
+
+            b = con.execute("SELECT * FROM signup_bonuses WHERE card_id = ?",
+                            (cid,)).fetchone()
+            if b is None:
+                card["signup_bonus"] = None
+            else:
+                bonus = {}
+                value = {}
+                opt_set(value, "points", b["points"])
+                opt_set(value, "usd", b["usd"])
+                if value:
+                    bonus["value"] = value
+                opt_set(bonus, "spend_requirement_usd",
+                        b["spend_requirement_usd"])
+                opt_set(bonus, "window_months", b["window_months"])
+                opt_set(bonus, "first_year_match", b["first_year_match"], bool)
+                opt_set(bonus, "limited_time", b["limited_time"], bool)
+                tiers = []
+                for t in con.execute("SELECT * FROM bonus_tiers "
+                                     "WHERE card_id = ? ORDER BY position",
+                                     (cid,)):
+                    tv = {}
+                    opt_set(tv, "points", t["points"])
+                    opt_set(tv, "usd", t["usd"])
+                    tiers.append({"value": tv,
+                                  "spend_requirement_usd":
+                                      t["spend_requirement_usd"]})
+                if tiers:
+                    bonus["tiers"] = tiers
+                opt_set(bonus, "expires", b["expires"])
+                opt_set(bonus, "notes", b["notes"])
+                card["signup_bonus"] = bonus
+
+            fees = {"annual_fee_usd": c["annual_fee_usd"]}
+            opt_set(fees, "first_year_waived", c["first_year_waived"], bool)
+            fees["foreign_transaction_pct"] = c["foreign_transaction_pct"]
+            card["fees"] = fees
+            approval = {"credit_tier": c["approval_credit_tier"]}
+            opt_set(approval, "estimated_min_score",
+                    c["approval_estimated_min_score"])
+            opt_set(approval, "notes", c["approval_notes"])
+            card["approval"] = approval
+
+            cl = con.execute("SELECT * FROM closed_loops WHERE card_id = ?",
+                             (cid,)).fetchone()
+            if cl:
+                entry = {"merchants": [m[0] for m in con.execute(
+                    "SELECT merchant_key FROM closed_loop_merchants "
+                    "WHERE card_id = ? ORDER BY position", (cid,))]}
+                opt_set(entry, "note", cl["note"])
+                card["closed_loop"] = entry
+            rm = con.execute("SELECT * FROM required_memberships "
+                             "WHERE card_id = ?", (cid,)).fetchone()
+            if rm:
+                entry = {"name": rm["name"]}
+                opt_set(entry, "annual_cost_usd", rm["annual_cost_usd"])
+                opt_set(entry, "card_exclusive", rm["card_exclusive"], bool)
+                entry["note"] = rm["note"]
+                card["required_membership"] = entry
+            rb = con.execute("SELECT * FROM relationship_boosts "
+                             "WHERE card_id = ?", (cid,)).fetchone()
+            if rb:
+                tiers = []
+                for t in con.execute("SELECT * FROM relationship_boost_tiers "
+                                     "WHERE card_id = ? ORDER BY position",
+                                     (cid,)):
+                    tier = {}
+                    opt_set(tier, "tier_name", t["tier_name"])
+                    opt_set(tier, "min_balance_usd", t["min_balance_usd"])
+                    opt_set(tier, "requirement", t["requirement"])
+                    tier["boost_pct"] = t["boost_pct"]
+                    tiers.append(tier)
+                card["relationship_boost"] = {"program": rb["program"],
+                                              "tiers": tiers,
+                                              "note": rb["note"]}
+
+            card["benefit_flags"] = [f[0] for f in con.execute(
+                "SELECT flag FROM benefit_flags WHERE card_id = ? "
+                "ORDER BY position", (cid,))]
+            card["sources"] = []
+            for src in con.execute("SELECT * FROM sources WHERE card_id = ? "
+                                   "ORDER BY position", (cid,)):
+                entry = {"url": src["url"],
+                         "supports": [s[0] for s in con.execute(
+                             "SELECT block FROM source_supports "
+                             "WHERE source_id = ? ORDER BY position",
+                             (src["id"],))],
+                         "accessed": src["accessed"],
+                         "added_by": src["added_by"]}
+                opt_set(entry, "note", src["note"])
+                card["sources"].append(entry)
+            card["verification"] = {
+                "last_verified_date": c["last_verified_date"],
+                "verified_by": c["verified_by"],
+                "confidence": c["confidence"]}
+            opt_set(card, "notes", c["notes"])
+            cards.append(card)
+    except sqlite3.Error as e:
+        raise DataError(f"cannot load dataset from {db_path}: {e}")
+    finally:
+        con.close()
+    return {"categories": categories, "merchants": merchants,
+            "programs": programs, "cards": cards,
+            "usage_questions": usage_questions, "usage_keys": usage_keys}
+
+
 def load_profile(path: Path, dataset: dict) -> dict:
     try:
         raw = load_yaml(path)
@@ -1422,10 +1680,13 @@ def main(argv=None) -> int:
     parser.add_argument("--as-of", metavar="YYYY-MM-DD",
                         help="the only time input: signup-bonus expiry, promo-"
                              "credit expiry, and staleness warnings (default: today)")
+    parser.add_argument("--db", metavar="PATH", type=Path,
+                        help="load the dataset from a compiled SQLite artifact "
+                             "(scripts/build_db.py) instead of the YAML sources")
     args = parser.parse_args(argv)
 
     try:
-        dataset = load_dataset()
+        dataset = load_dataset_db(args.db) if args.db else load_dataset()
     except DataError as e:
         print(f"ERROR: {e}", file=sys.stderr)
         return 2
