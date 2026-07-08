@@ -498,7 +498,7 @@ def assign_spend(lines: list, buckets: dict) -> tuple:
 # ---------------------------------------------------------------------------
 
 def score_credits(cards: list, profile: dict, programs: dict,
-                  as_of: date) -> list:
+                  as_of: date, tables=None) -> list:
     """Value every credit across the portfolio against a shared per-category
     remaining-spend tracker, so stacked credits can never exceed the user's real
     spend. Draw order is deterministic: file order within a card, card-id order
@@ -527,85 +527,109 @@ def score_credits(cards: list, profile: dict, programs: dict,
       - uncategorized + usage_keys (confirmed): face × capture — a merchant
         coupon, not near-cash. Full face value is reserved for automatic
         credits (no keys, no category; anniversary points/cash).
+
+    With `tables` (a RunTables), the per-credit gates/arithmetic come from the
+    per-run cache (credit_parts) and only the tracker draws run per subset —
+    same arithmetic, same strings, byte-identical output (plan 10 §1).
     """
     tracker = {cat: float(v) for cat, v in profile["spend"].items()}
-    total_spend = sum(profile["spend"].values())
     confirmed = set(profile["user"]["confirmed_usage"])
     unlocked = unlocked_programs(cards)
     results = []
     for card in sorted(cards, key=lambda c: c["id"]):
-        cpp, _ = effective_cpp(card, programs, confirmed, unlocked)
-        for credit in card["credits"]:
-            if "expires" in credit and date.fromisoformat(credit["expires"]) < as_of:
-                results.append({"card_id": card["id"], "name": credit["name"],
-                                "value": 0.0,
-                                "note": f"$0 — promo expired {credit['expires']}"})
+        if tables is not None:
+            parts = tables.credit_parts[card["id"]][tables.ctx(card, unlocked)]
+        else:
+            cpp, _ = effective_cpp(card, programs, confirmed, unlocked)
+            parts = credit_parts(card, cpp, profile, as_of)
+        for part in parts:
+            if part[0] == "final":
+                results.append(part[1])
                 continue
-            keys = credit.get("usage_keys")
-            if keys and not (set(keys) & confirmed):
-                results.append({"card_id": card["id"], "name": credit["name"],
-                                "value": 0.0,
-                                "note": f"$0 — requires confirmed use of one of: "
-                                        f"{', '.join(keys)} (user.confirmed_usage)"})
-                continue
-            periods = PERIODS_PER_YEAR[credit["period"]]
-            capture = (CONFIRMED_CREDIT_CAPTURE if keys else CREDIT_CAPTURE)[credit["period"]]
-            usage_note = (f"; confirmed: {', '.join(sorted(set(keys) & confirmed))}"
-                          if keys else "")
-            in_kind = credit.get("kind") == "in_kind"
-
-            unlock = credit.get("unlock_spend_usd")
-            if unlock is not None and total_spend / periods < unlock - EPS:
-                results.append({"card_id": card["id"], "name": credit["name"],
-                                "value": 0.0,
-                                "note": f"$0 — unlock spend ${unlock:,.0f}/{credit['period']} unreachable at your volume"})
-                continue
-            unlock_note = f"; unlocked (${unlock:,.0f}/{credit['period']} spend)" if unlock is not None else ""
-
-            if "amount_points" in credit:
-                face = credit["amount_points"] * periods * cpp / 100.0
-                value = face * capture if in_kind else face
-                note = (f"{credit['amount_points'] * periods:,.0f} pts/yr × {cpp}cpp"
-                        + (f" × capture {capture}" if in_kind else "")
-                        + unlock_note + usage_note)
-                results.append({"card_id": card["id"], "name": credit["name"],
-                                "value": value, "note": note})
-                continue
-
-            face = credit["amount_usd"] * periods
-            cat = credit.get("category")
-            if cat is None:
-                if in_kind:
-                    results.append({"card_id": card["id"], "name": credit["name"],
-                                    "value": face * capture,
-                                    "note": f"in-kind est. ${face:,.2f}/yr × capture {capture}{unlock_note}{usage_note}"})
-                elif keys:
-                    # A confirmed merchant coupon (Oura, StubHub, Walmart+) —
-                    # spendable only at that merchant, so never full face.
-                    results.append({"card_id": card["id"], "name": credit["name"],
-                                    "value": face * capture,
-                                    "note": f"face ${face:,.2f}/yr × capture {capture}{unlock_note}{usage_note}"})
-                else:
-                    results.append({"card_id": card["id"], "name": credit["name"],
-                                    "value": face,
-                                    "note": f"automatic — full face value{unlock_note}"})
-                continue
+            _, name, haircut, cat, note = part
             available = tracker.get(cat, 0.0)
             if available <= EPS:
-                results.append({"card_id": card["id"], "name": credit["name"],
+                results.append({"card_id": card["id"], "name": name,
                                 "value": 0.0,
                                 "note": f"$0 — no remaining spend in '{cat}'"})
                 continue
-            haircut = face * capture
             value = min(haircut, available)
             tracker[cat] = available - value
-            kind_label = "in-kind est." if in_kind else "face"
-            note = f"{kind_label} ${face:,.2f}/yr × capture {capture}{unlock_note}{usage_note}"
             if haircut > available:
                 note += f" (capped by remaining '{cat}' spend)"
-            results.append({"card_id": card["id"], "name": credit["name"],
+            results.append({"card_id": card["id"], "name": name,
                             "value": value, "note": note})
     return results
+
+
+def credit_parts(card, cpp: float, profile: dict, as_of: date) -> list:
+    """The portfolio-independent pieces of score_credits for one card (plan 10
+    §1): every gate, capture table, face value, and note string except the
+    shared-tracker draw. Each entry is ("final", result_dict) for credits whose
+    value is already settled, or ("draw", name, haircut, category, note) for
+    categorized credits that must still draw from the per-portfolio tracker.
+    `cpp` must be the card's effective cpp for the scoring context (locked or
+    gateway-unlocked)."""
+    total_spend = sum(profile["spend"].values())
+    confirmed = set(profile["user"]["confirmed_usage"])
+    parts = []
+
+    def final(name, value, note):
+        parts.append(("final", {"card_id": card["id"], "name": name,
+                                "value": value, "note": note}))
+
+    for credit in card["credits"]:
+        if "expires" in credit and date.fromisoformat(credit["expires"]) < as_of:
+            final(credit["name"], 0.0, f"$0 — promo expired {credit['expires']}")
+            continue
+        keys = credit.get("usage_keys")
+        if keys and not (set(keys) & confirmed):
+            final(credit["name"], 0.0,
+                  f"$0 — requires confirmed use of one of: "
+                  f"{', '.join(keys)} (user.confirmed_usage)")
+            continue
+        periods = PERIODS_PER_YEAR[credit["period"]]
+        capture = (CONFIRMED_CREDIT_CAPTURE if keys else CREDIT_CAPTURE)[credit["period"]]
+        usage_note = (f"; confirmed: {', '.join(sorted(set(keys) & confirmed))}"
+                      if keys else "")
+        in_kind = credit.get("kind") == "in_kind"
+
+        unlock = credit.get("unlock_spend_usd")
+        if unlock is not None and total_spend / periods < unlock - EPS:
+            final(credit["name"], 0.0,
+                  f"$0 — unlock spend ${unlock:,.0f}/{credit['period']} unreachable at your volume")
+            continue
+        unlock_note = f"; unlocked (${unlock:,.0f}/{credit['period']} spend)" if unlock is not None else ""
+
+        if "amount_points" in credit:
+            face = credit["amount_points"] * periods * cpp / 100.0
+            value = face * capture if in_kind else face
+            note = (f"{credit['amount_points'] * periods:,.0f} pts/yr × {cpp}cpp"
+                    + (f" × capture {capture}" if in_kind else "")
+                    + unlock_note + usage_note)
+            final(credit["name"], value, note)
+            continue
+
+        face = credit["amount_usd"] * periods
+        cat = credit.get("category")
+        if cat is None:
+            if in_kind:
+                final(credit["name"], face * capture,
+                      f"in-kind est. ${face:,.2f}/yr × capture {capture}{unlock_note}{usage_note}")
+            elif keys:
+                # A confirmed merchant coupon (Oura, StubHub, Walmart+) —
+                # spendable only at that merchant, so never full face.
+                final(credit["name"], face * capture,
+                      f"face ${face:,.2f}/yr × capture {capture}{unlock_note}{usage_note}")
+            else:
+                final(credit["name"], face,
+                      f"automatic — full face value{unlock_note}")
+            continue
+        haircut = face * capture
+        kind_label = "in-kind est." if in_kind else "face"
+        note = f"{kind_label} ${face:,.2f}/yr × capture {capture}{unlock_note}{usage_note}"
+        parts.append(("draw", credit["name"], haircut, cat, note))
+    return parts
 
 
 def score_bonus(card: dict, profile: dict, programs: dict, as_of: date,
@@ -622,8 +646,7 @@ def score_bonus(card: dict, profile: dict, programs: dict, as_of: date,
     if "expires" in bonus and date.fromisoformat(bonus["expires"]) < as_of:
         return {"value": 0.0, "note": f"$0 — offer expired {bonus['expires']}"}
     if bonus.get("first_year_match"):
-        return {"value": card_earnings,
-                "note": f"first-year match of this card's computed earnings (${card_earnings:,.2f})"}
+        return _match_bonus(card_earnings)
     total_spend = sum(profile["spend"].values())
     window_spend = total_spend * bonus["window_months"] / 12.0
     if window_spend < bonus["spend_requirement_usd"] - EPS:
@@ -653,6 +676,72 @@ def score_bonus(card: dict, profile: dict, programs: dict, as_of: date,
     return {"value": total, "note": note}
 
 
+def _match_bonus(card_earnings: float) -> dict:
+    return {"value": card_earnings,
+            "note": f"first-year match of this card's computed earnings (${card_earnings:,.2f})"}
+
+
+def bonus_static(card: dict, profile: dict, programs: dict, as_of: date,
+                 unlocked: frozenset) -> tuple:
+    """Portfolio-independent signup-bonus scoring (plan 10 §1). Returns
+    ("static", result) when the bonus value is settled without knowing the
+    card's in-portfolio earnings, or ("match",) for a live first_year_match
+    bonus, which score_portfolio finishes via _match_bonus."""
+    bonus = card["signup_bonus"]
+    if (bonus is not None and bonus.get("first_year_match")
+            and not ("expires" in bonus
+                     and date.fromisoformat(bonus["expires"]) < as_of)):
+        return ("match",)
+    return ("static", score_bonus(card, profile, programs, as_of, 0.0, unlocked))
+
+
+class RunTables:
+    """Per-run cache of everything score_portfolio needs that does not depend
+    on which other cards share the portfolio (plan 10 §1). The only binary
+    context is the transfer-gateway cpp: a card whose program is
+    transfer_gateway_required (and which is not itself a gateway) scores at
+    floor cpp standalone and at avg cpp when the subset holds a gateway — so
+    each card gets at most two precomputed variants, keyed False (locked) and
+    True (unlocked). Lines/parts are read-only downstream; entries are shared
+    across subsets, never mutated."""
+
+    def __init__(self, variants: list, profile: dict, programs: dict,
+                 buckets: dict, as_of: date):
+        confirmed = set(profile["user"]["confirmed_usage"])
+        self.lines = {}
+        self.credit_parts = {}
+        self.bonus_static = {}
+        self._gated_program = {}  # card id -> program key when ctx matters, else None
+        for card in variants:
+            cid = card["id"]
+            prog = card["currency"]["program"]
+            gated = bool(programs[prog].get("transfer_gateway_required")
+                         and not card.get("unlocks_transfers"))
+            self._gated_program[cid] = prog if gated else None
+            contexts = {False: frozenset()}
+            if gated:
+                contexts[True] = frozenset({prog})
+            lines_by, parts_by, bonus_by = {}, {}, {}
+            for ctx, unlocked in contexts.items():
+                cpp, _ = effective_cpp(card, programs, confirmed, unlocked)
+                lines_by[ctx] = build_lines(card, profile, programs, buckets, unlocked)
+                parts_by[ctx] = credit_parts(card, cpp, profile, as_of)
+                bonus_by[ctx] = bonus_static(card, profile, programs, as_of, unlocked)
+            if not gated:
+                lines_by[True] = lines_by[False]
+                parts_by[True] = parts_by[False]
+                bonus_by[True] = bonus_by[False]
+            self.lines[cid] = lines_by
+            self.credit_parts[cid] = parts_by
+            self.bonus_static[cid] = bonus_by
+
+    def ctx(self, card: dict, unlocked: frozenset) -> bool:
+        """The scoring context of one card inside a subset whose gateway
+        programs are `unlocked` — mirrors effective_cpp's gateway condition."""
+        prog = self._gated_program[card["id"]]
+        return prog is not None and prog in unlocked
+
+
 def membership_fee(card: dict) -> float:
     """Annual cost of a required membership that exists solely for the card
     (required_membership.card_exclusive, e.g. Robinhood Gold). Memberships with
@@ -665,16 +754,22 @@ def membership_fee(card: dict) -> float:
 
 
 def score_portfolio(cards: list, profile: dict, programs: dict,
-                    buckets: dict, as_of: date) -> dict:
+                    buckets: dict, as_of: date, tables=None) -> dict:
     """Jointly score a card subset: one shared spend assignment over all the
     subset's lines, plus credits (shared tracker), plus eligible signup bonuses
-    (year-1 only), minus fees."""
+    (year-1 only), minus fees. With `tables` (a RunTables built once per run),
+    the per-card lines/credit-parts/bonus-parts come from the cache instead of
+    being rebuilt per subset — identical arithmetic, byte-identical output
+    (plan 10 §1)."""
     unlocked = unlocked_programs(cards)
     lines = []
     for card in cards:
-        lines += build_lines(card, profile, programs, buckets, unlocked)
+        if tables is not None:
+            lines += tables.lines[card["id"]][tables.ctx(card, unlocked)]
+        else:
+            lines += build_lines(card, profile, programs, buckets, unlocked)
     assignments, unassigned = assign_spend(lines, buckets)
-    credits = score_credits(cards, profile, programs, as_of)
+    credits = score_credits(cards, profile, programs, as_of, tables=tables)
     credits_total = sum(c["value"] for c in credits)
     per_card_earnings = {card["id"]: 0.0 for card in cards}
     for a in assignments:
@@ -689,9 +784,16 @@ def score_portfolio(cards: list, profile: dict, programs: dict,
             reward_cap_clamps[cid] = round(per_card_earnings[cid] - cap, 2)
             per_card_earnings[cid] = cap
     earnings = sum(per_card_earnings.values())
-    bonuses = {card["id"]: score_bonus(card, profile, programs, as_of,
-                                       per_card_earnings[card["id"]], unlocked)
-               for card in cards}
+    bonuses = {}
+    for card in cards:
+        cid = card["id"]
+        if tables is not None:
+            static = tables.bonus_static[cid][tables.ctx(card, unlocked)]
+            bonuses[cid] = (_match_bonus(per_card_earnings[cid])
+                            if static[0] == "match" else static[1])
+        else:
+            bonuses[cid] = score_bonus(card, profile, programs, as_of,
+                                       per_card_earnings[cid], unlocked)
     bonus_total = sum(b["value"] for b in bonuses.values())
     # Card-exclusive membership costs (Robinhood Gold) count in both metrics —
     # a fee waiver never covers the separate membership.
@@ -827,7 +929,8 @@ def card_warnings(card: dict, as_of: date) -> list:
 
 
 def prune_dominated_variants(variants: list, profile: dict,
-                             programs: dict, merchants: dict) -> tuple:
+                             programs: dict, merchants: dict,
+                             tables=None) -> tuple:
     """Exact pre-search pass (plan 02.5 §2): drop variants provably unable to
     appear in an optimal portfolio. B dominates A only when A is plain (no
     credits, no signup bonus), every live bucket A can win is covered by an
@@ -857,10 +960,12 @@ def prune_dominated_variants(variants: list, profile: dict,
         return bool(prog.get("transfer_gateway_required")
                     and not v.get("unlocks_transfers"))
 
-    tables = {}
+    rate_tables = {}
     for v in variants:
         best_any, best_uncapped = {}, {}
-        for ln in build_lines(v, profile, programs, buckets):
+        v_lines = (tables.lines[v["id"]][False] if tables is not None
+                   else build_lines(v, profile, programs, buckets))
+        for ln in v_lines:
             for b in ln["eligible"]:
                 if buckets[b]["amount"] <= EPS:
                     continue
@@ -870,7 +975,7 @@ def prune_dominated_variants(variants: list, profile: dict,
                 if ln["room"] is None and r > best_uncapped.get(b, NEG):
                     best_uncapped[b] = r
         fees = v["fees"]
-        tables[v["id"]] = {
+        rate_tables[v["id"]] = {
             "best_any": best_any, "best_uncapped": best_uncapped,
             "fee": fees["annual_fee_usd"] + membership_fee(v),
             "year1_fee": (0 if fees.get("first_year_waived") else fees["annual_fee_usd"])
@@ -886,13 +991,13 @@ def prune_dominated_variants(variants: list, profile: dict,
            if (v["signup_bonus"] or {}).get("first_year_match")):
         return list(variants), []  # guard thresholds would be understated
     by_base = {}
-    for cid, t in tables.items():
+    for cid, t in rate_tables.items():
         by_base.setdefault(t["base_id"], []).append(cid)
 
     def covers(b_id, a_id):
         """Conditions (a), (c), (d), (g) for one candidate dominator (or one of
         its siblings) b_id versus plain variant a_id."""
-        A, B = tables[a_id], tables[b_id]
+        A, B = rate_tables[a_id], rate_tables[b_id]
         if B["clamped"]:  # (d)
             return False
         if B["fee"] > A["fee"] + EPS or B["year1_fee"] > A["year1_fee"] + EPS:  # (c)
@@ -903,14 +1008,14 @@ def prune_dominated_variants(variants: list, profile: dict,
         for m_id in match_ids:  # (g) match-interception guard
             if m_id in (a_id, b_id):
                 continue
-            for b, rate_m in tables[m_id]["best_any"].items():
+            for b, rate_m in rate_tables[m_id]["best_any"].items():
                 if (B["best_any"].get(b, NEG) > rate_m - EPS  # B out-rates M (ties count)
                         and A["best_uncapped"].get(b, NEG) < rate_m - EPS):  # A didn't already
                     return False
         return True
 
     def dominates(b_id, a_id):
-        A, B = tables[a_id], tables[b_id]
+        A, B = rate_tables[a_id], rate_tables[b_id]
         for sib in by_base[B["base_id"]]:  # (s) — includes b_id itself
             if sib != a_id and not covers(sib, a_id):
                 return False
@@ -919,10 +1024,10 @@ def prune_dominated_variants(variants: list, profile: dict,
                          for b, rate_a in A["best_any"].items()))
         return strict or b_id < a_id  # (e) exact clones: smaller id survives
 
-    ids = sorted(tables)
+    ids = sorted(rate_tables)
     pruned = []
     for a_id in ids:
-        if not tables[a_id]["plain"]:  # (b)
+        if not rate_tables[a_id]["plain"]:  # (b)
             continue
         for b_id in ids:  # ascending: first hit is the smallest dominator
             if b_id != a_id and dominates(b_id, a_id):
@@ -940,7 +1045,7 @@ def subset_budget(n_variants: int, max_cards: int) -> int:
 
 
 def search(variants: list, profile: dict, programs: dict,
-           merchants: dict, as_of: date) -> list:
+           merchants: dict, as_of: date, tables=None) -> list:
     """Exhaustive over all subsets of eligible card variants, sizes
     1..max_cards. Two variants of the same physical card (same base_id) are
     mutually exclusive — you can only configure a choose-your-own card one way.
@@ -958,12 +1063,14 @@ def search(variants: list, profile: dict, programs: dict,
             f"{budget:,} subsets to score, over the exhaustive-search budget "
             f"MAX_SCORED_SUBSETS = {MAX_SCORED_SUBSETS:,}; lower user.max_cards "
             "(or --max-cards) to bring the search back under budget")
+    if tables is None:  # after the budget gate: no per-card work on refusal
+        tables = RunTables(variants, profile, programs, buckets, as_of)
     for k in range(1, max_cards + 1):
         for combo in itertools.combinations(ids, k):
             if len({base_of[c] for c in combo}) < k:
                 continue  # two configurations of the same physical card
             scored = score_portfolio([by_id[i] for i in combo], profile,
-                                     programs, buckets, as_of)
+                                     programs, buckets, as_of, tables=tables)
             results.append({"cards": list(combo),
                             "ongoing_net": scored["ongoing_net"],
                             "year1_net": scored["year1_net"]})
@@ -981,10 +1088,11 @@ def _round2(x: float) -> float:
 
 
 def assemble_portfolio(entry: dict, by_id: dict, profile: dict, programs: dict,
-                       buckets: dict, as_of: date) -> dict:
+                       buckets: dict, as_of: date, tables=None) -> dict:
     """Full detail for one ranked entry — the per-portfolio output block."""
     cards = [by_id[i] for i in entry["cards"]]
-    scored = score_portfolio(cards, profile, programs, buckets, as_of)
+    scored = score_portfolio(cards, profile, programs, buckets, as_of,
+                             tables=tables)
     per_card = {}
     for card in cards:
         cid = card["id"]
@@ -1032,13 +1140,17 @@ def run(dataset: dict, profile: dict, as_of: date, top: int) -> dict:
     merchants = dataset["merchants"]
     eligible, excluded = filter_cards(dataset["cards"], profile, programs)
     expanded = expand_choice_variants(eligible, profile)
+    buckets = build_buckets(profile, merchants)
+    tables = RunTables(expanded, profile, programs, buckets, as_of)
     variants, pruned = prune_dominated_variants(expanded, profile,
-                                                programs, merchants)
-    ranked = search(variants, profile, programs, merchants, as_of)
+                                                programs, merchants,
+                                                tables=tables)
+    ranked = search(variants, profile, programs, merchants, as_of,
+                    tables=tables)
 
     by_id = {c["id"]: c for c in variants}
-    buckets = build_buckets(profile, merchants)
-    portfolios = [assemble_portfolio(entry, by_id, profile, programs, buckets, as_of)
+    portfolios = [assemble_portfolio(entry, by_id, profile, programs, buckets,
+                                     as_of, tables=tables)
                   for entry in ranked[:top]]
 
     # Best portfolio per exact size 1..max_cards (plan 08): the ranked list is
@@ -1054,7 +1166,8 @@ def run(dataset: dict, profile: dict, as_of: date, top: int) -> dict:
         seen_sizes.add(size)
         best_by_size.append({"size": size,
                              **assemble_portfolio(entry, by_id, profile,
-                                                  programs, buckets, as_of)})
+                                                  programs, buckets, as_of,
+                                                  tables=tables)})
     best_by_size.sort(key=lambda b: b["size"])
 
     return {
