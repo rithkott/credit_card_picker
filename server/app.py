@@ -92,22 +92,33 @@ def load_state() -> None:
         if not build_db.is_fresh(DB_PATH):
             build_db.build(DB_PATH)
             sys.stderr.write(f"rebuilt {DB_PATH.name} from YAML sources\n")
-        STATE["dataset"] = opt.load_dataset_db(DB_PATH)
-        STATE["dataset_hash"] = build_db.stored_dataset_hash(DB_PATH)
+        dataset = opt.load_dataset_db(DB_PATH)
+        dataset_hash = build_db.stored_dataset_hash(DB_PATH)
     except Exception as e:  # artifact problems must never take the API down
         sys.stderr.write(f"DB artifact unavailable ({e}); loading YAML directly\n")
-        STATE["dataset"] = opt.load_dataset()
-        STATE["dataset_hash"] = build_db.dataset_manifest()[1]
+        dataset = opt.load_dataset()
+        dataset_hash = build_db.dataset_manifest()[1]
     # Statement-import rules (plan 09): read only here, never by the optimizer.
     # opt.META_DIR (not a local constant) so tests that repoint the dataset
     # repoint these too.
     meta = Path(opt.META_DIR)
     with open(meta / "statement-descriptors.yaml") as f:
-        STATE["descriptors"] = yaml.safe_load(f)["descriptors"]
+        descriptors = yaml.safe_load(f)["descriptors"]
     with open(meta / "category-rules.yaml") as f:
-        STATE["category_rules"] = yaml.safe_load(f)
+        category_rules = yaml.safe_load(f)
+    # Requests run concurrently in FastAPI's threadpool. The snapshot is
+    # swapped in with ONE assignment (atomic under the GIL) so no request can
+    # ever observe a new dataset paired with an old dataset_hash — that mix
+    # could cache a result under a hash that recurs if sources are reverted.
+    STATE["snapshot"] = {"dataset": dataset, "dataset_hash": dataset_hash,
+                         "result_cache": OrderedDict()}
+    # Aliases point at the same objects — kept for tests and simple reads.
+    STATE["dataset"] = dataset
+    STATE["dataset_hash"] = dataset_hash
+    STATE["result_cache"] = STATE["snapshot"]["result_cache"]
+    STATE["descriptors"] = descriptors
+    STATE["category_rules"] = category_rules
     STATE["stat_signature"] = _stat_signature()
-    STATE["result_cache"] = OrderedDict()
 
 
 def ensure_fresh() -> None:
@@ -229,22 +240,25 @@ def optimize(body: dict = Body(...)) -> dict:
         as_of = date.today()  # per request, so a long-lived server never serves stale expiry math
 
     ensure_fresh()
+    # One snapshot read (atomic) — dataset, its hash, and its cache always
+    # belong together even if a reload swaps them mid-flight.
+    snap = STATE["snapshot"]
+    dataset, cache = snap["dataset"], snap["result_cache"]
     raw = {k: body[k] for k in ("spend", "merchant_spend", "user") if k in body}
     try:
-        profile = opt.parse_profile(raw, STATE["dataset"])
+        profile = opt.parse_profile(raw, dataset)
         # Purity makes replays safe: same profile + as_of + top against the
         # same dataset_hash is byte-identical, so serve it from the LRU cache
         # (and skip the debug dump — the computed run already recorded one).
-        cache = STATE["result_cache"]
         key = hashlib.sha256(json.dumps(
             {"profile": profile, "as_of": as_of.isoformat(), "top": top,
-             "dataset": STATE["dataset_hash"]},
+             "dataset": snap["dataset_hash"]},
             sort_keys=True).encode()).hexdigest()
         if key in cache:
             cache.move_to_end(key)
             sys.stderr.write(f"cache hit: {key[:12]}\n")
             return cache[key]
-        bundle = opt.run(STATE["dataset"], profile, as_of, top)
+        bundle = opt.run(dataset, profile, as_of, top)
     except opt.InputError as e:
         dump_debug_run(body, 422, {"detail": str(e)})
         raise HTTPException(422, detail=str(e))
