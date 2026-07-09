@@ -567,6 +567,44 @@ class TestRewardCapAndPeriods(unittest.TestCase):
         self.assertNotIn("reward_cap_clamp",
                          bundle["portfolios"][0]["per_card"]["uncapped"])
 
+    def test_flow_adoption_compares_post_clamp_value(self):
+        # Plan 11 U1: score_portfolio clamps per-card earnings AFTER the
+        # assignment, so the flow-LP solution (which maximizes PRE-clamp
+        # value) can score below plain greedy once a clamp binds — the LP's
+        # extra dollars on the clamped card are wasted while greedy left them
+        # earning elsewhere. The adoption test must compare post-clamp totals.
+        # Shapes: w-pool's two lines share one $1,000 pool (detector says
+        # greedy may be inexact ⇒ flow solver runs); greedy sends the pool to
+        # dining (key order) starving c-cap, the LP reroutes it to groceries
+        # so c-cap earns $29 of dining — a $1 pre-clamp win ($87 vs $86) that
+        # a $15 clamp on c-cap turns into a $13 loss ($73 vs $86).
+        pool = {"period": "annual", "max_spend_usd": 1000, "fallback_rate": 0,
+                "shared_cap_id": "pool"}
+        def cards(clamp):
+            w = synth_card(id="w-pool", base_rate=0, category_rewards=[
+                {"category": "groceries", "rate": 3, "cap": dict(pool)},
+                {"category": "dining", "rate": 3, "cap": dict(pool)}])
+            c = synth_card(id="c-cap", base_rate=0, category_rewards=[
+                {"category": "dining", "rate": 2.9,
+                 "cap": {"period": "annual", "max_spend_usd": 1000,
+                         "fallback_rate": 0}}])
+            if clamp is not None:
+                c["max_annual_rewards_usd"] = clamp
+            d = synth_card(id="d-groc", base_rate=0, category_rewards=[
+                {"category": "groceries", "rate": 2.8}])
+            return [w, c, d]
+
+        prof = make_profile({"groceries": 2000, "dining": 1000}, max_cards=3)
+        # No clamp: the LP strictly beats greedy pre-clamp and is adopted.
+        r = score(cards(None), prof)
+        self.assertAlmostEqual(r["earnings"], 87.0)
+        # Clamp $15 on c-cap: the adopted LP would score 30 + 15 + 28 = 73
+        # post-clamp; greedy (30 + 0 + 56 = 86, clamp never binds) must be
+        # kept verbatim instead.
+        r = score(cards(15), prof)
+        self.assertAlmostEqual(r["earnings"], 86.0)
+        self.assertEqual(r["reward_cap_clamps"], {})
+
     def test_clamped_earnings_feed_first_year_match(self):
         card = synth_card(base_rate=5, max_annual_rewards_usd=300,
                           signup_bonus={"first_year_match": True})

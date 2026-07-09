@@ -719,7 +719,7 @@ def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
 
 
 def assign_spend(lines: list, buckets: dict, greedy_exact=None,
-                 cache: dict = None) -> tuple:
+                 cache: dict = None, clamps: dict = None) -> tuple:
     """Exact spend assignment (plan 10 §2): the greedy regret rule scores every
     subset first; when the conservative detector says its exactness argument
     does not apply (competing capped units, multi-line shared pools), the
@@ -727,17 +727,40 @@ def assign_spend(lines: list, buckets: dict, greedy_exact=None,
     adopted only when it strictly beats greedy — otherwise the greedy
     assignment is kept verbatim for byte-stable output. `greedy_exact` lets
     score_portfolio pass the RunTables bitmask verdict instead of re-deriving
-    it per subset."""
+    it per subset.
+
+    `clamps` maps card_id -> max_annual_rewards_usd for subset cards carrying
+    the card-wide reward cap: score_portfolio clamps per-card spend earnings
+    AFTER assignment, so the flow solution (which maximizes pre-clamp value)
+    can score below greedy post-clamp — LP dollars rerouted onto a clamped
+    card above its cap are wasted while greedy left them earning elsewhere
+    (plan 11 U1). The adoption test therefore compares post-clamp totals;
+    with no clamps that reduces exactly to the pre-clamp comparison."""
     assignments, unassigned = assign_spend_greedy(lines, buckets)
     if greedy_exact is None:
         greedy_exact = assign_exact.greedy_is_exact(lines, buckets)
     if not greedy_exact:
-        greedy_total = sum(a["usd_value"] for a in assignments)
+        greedy_total = _clamped_value(assignments, clamps)
         optimal_total = assign_exact.solve_value(lines, buckets, cache)
         if optimal_total > greedy_total + assign_exact.VALUE_EPS:
             _total, flows = assign_exact.solve_assignment(lines, buckets)
-            assignments, unassigned = _flow_assignments(lines, buckets, flows)
+            flow_asg, flow_unasg = _flow_assignments(lines, buckets, flows)
+            if (_clamped_value(flow_asg, clamps)
+                    > greedy_total + assign_exact.VALUE_EPS):
+                assignments, unassigned = flow_asg, flow_unasg
     return assignments, unassigned
+
+
+def _clamped_value(assignments: list, clamps: dict) -> float:
+    """Total assignment value as score_portfolio will count it: per-card sums
+    clamped at max_annual_rewards_usd. No clamps ⇒ the plain sum."""
+    if not clamps:
+        return sum(a["usd_value"] for a in assignments)
+    per_card = {}
+    for a in assignments:
+        per_card[a["card_id"]] = per_card.get(a["card_id"], 0.0) + a["usd_value"]
+    return sum(min(v, clamps[cid]) if cid in clamps else v
+               for cid, v in per_card.items())
 
 
 def _flow_assignments(lines: list, buckets: dict, flows: dict) -> tuple:
@@ -1119,8 +1142,10 @@ def score_portfolio(cards: list, profile: dict, programs: dict,
     hint = (tables.greedy_exact_hint(cards, unlocked)
             if tables is not None else None)
     cache = tables.assign_cache if tables is not None else None
+    clamps = {c["id"]: c["max_annual_rewards_usd"] for c in cards
+              if c.get("max_annual_rewards_usd") is not None}
     assignments, unassigned = assign_spend(lines, buckets, greedy_exact=hint,
-                                           cache=cache)
+                                           cache=cache, clamps=clamps)
     credits = score_credits(cards, profile, programs, as_of, tables=tables)
     credits_total = sum(c["value"] for c in credits)
     per_card_earnings = {card["id"]: 0.0 for card in cards}
