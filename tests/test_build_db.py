@@ -67,6 +67,27 @@ class TestRoundTripLive(BuildDbBase):
         self.assertEqual(h1, h2)
         self.assertEqual(bytes1, self.db_path.read_bytes())
 
+    def test_failed_build_preserves_existing_artifact(self):
+        # Plan 11 R3: build() writes to a temp path and os.replace()s into
+        # place — a failed rebuild must leave the existing artifact byte-intact
+        # and no temp file behind (the old in-place write unlinked first, so
+        # readers could observe a half-built DB).
+        build_db.build(self.db_path)
+        bytes_before = self.db_path.read_bytes()
+        saved = build_db._insert_cards
+
+        def boom(con):
+            raise build_db.BuildError("injected mid-build failure")
+
+        build_db._insert_cards = boom
+        self.addCleanup(setattr, build_db, "_insert_cards", saved)
+        with self.assertRaises(build_db.BuildError):
+            build_db.build(self.db_path)
+        self.assertEqual(self.db_path.read_bytes(), bytes_before)
+        leftovers = [p for p in self.db_path.parent.iterdir()
+                     if p.name != self.db_path.name]
+        self.assertEqual(leftovers, [])
+
     def test_freshness_tracks_sources(self):
         build_db.build(self.db_path)
         self.assertTrue(build_db.is_fresh(self.db_path))

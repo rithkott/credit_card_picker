@@ -23,6 +23,7 @@ Exit codes: 0 ok, 2 dataset/build error.
 
 import argparse
 import hashlib
+import os
 import sqlite3
 import sys
 from pathlib import Path
@@ -259,13 +260,15 @@ def dataset_manifest() -> tuple:
 
 
 def build(out_path: Path) -> str:
-    """Compile the dataset; returns the dataset_hash."""
+    """Compile the dataset; returns the dataset_hash. Writes to a temp path
+    and os.replace()s into place, so a concurrent reader never observes a
+    half-built artifact (DDL committed, inserts pending) and a failed build
+    leaves any existing artifact untouched."""
     manifest, dataset_hash = dataset_manifest()
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    if out_path.exists():
-        out_path.unlink()
-    con = sqlite3.connect(out_path)
+    tmp_path = out_path.with_name(f"{out_path.name}.tmp.{os.getpid()}")
+    con = sqlite3.connect(tmp_path)
     try:
         con.execute("PRAGMA page_size = 4096")
         con.execute(f"PRAGMA application_id = {APPLICATION_ID}")
@@ -279,8 +282,12 @@ def build(out_path: Path) -> str:
         violations = con.execute("PRAGMA foreign_key_check").fetchall()
         if violations:
             raise BuildError(f"foreign key violations: {violations[:5]}")
-    finally:
+    except BaseException:
         con.close()
+        tmp_path.unlink(missing_ok=True)
+        raise
+    con.close()
+    os.replace(tmp_path, out_path)
     return dataset_hash
 
 

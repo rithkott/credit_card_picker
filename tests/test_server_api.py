@@ -259,6 +259,65 @@ class TestHotReload(unittest.TestCase):
         self.assertNotEqual(hash_before, self.server_app.STATE["dataset_hash"])
         self.assertEqual(len(self.server_app.STATE["result_cache"]), 0)
 
+    def _write_verified_date(self, d):
+        card_path = Path(opt.CARDS_DIR) / "wells-fargo" / "active-cash.yaml"
+        card = yaml.safe_load(card_path.read_text())
+        card["verification"]["last_verified_date"] = d
+        card_path.write_text(yaml.safe_dump(card, sort_keys=False,
+                                            allow_unicode=True))
+
+    def test_mid_load_write_is_not_masked(self):
+        # Plan 11 R4: the stat signature is captured BEFORE the sources are
+        # read, so a write landing during load_state (rapid double-save) leaves
+        # the stored signature stale and the next request reloads. Recording
+        # it after the load would absorb the mid-load write and serve the
+        # stale dataset indefinitely.
+        orig = opt.load_dataset_db
+        fired = []
+
+        def racy(db_path):
+            ds = orig(db_path)
+            if not fired:
+                fired.append(True)
+                self._write_verified_date("2098-01-01")  # mid-load write
+            return ds
+
+        opt.load_dataset_db = racy
+        self.addCleanup(setattr, opt, "load_dataset_db", orig)
+        self._write_verified_date("2097-01-01")  # triggers the reload
+        self.client.get("/api/config")  # loads 2097, absorbs the 2098 write
+        self.assertTrue(fired)
+        after = self.client.get("/api/config").json()["data_last_verified"]
+        self.assertEqual(after, "2098-01-01")
+
+    def test_concurrent_stale_requests_reload_once(self):
+        # Plan 11 R3: two threadpool requests that both see a moved stat
+        # signature must trigger exactly one load_state (double-checked lock) —
+        # unserialized, both would rebuild the same cards.sqlite in place and
+        # one could install an empty snapshot from a half-built artifact.
+        import threading
+        import time
+        server_app = self.server_app
+        orig = server_app.load_state
+        calls = []
+        entered = threading.Event()
+
+        def slow_load():
+            calls.append(1)
+            entered.set()
+            time.sleep(0.2)  # hold the lock so the second request overlaps
+            orig()
+
+        server_app.load_state = slow_load
+        self.addCleanup(setattr, server_app, "load_state", orig)
+        self._write_verified_date("2096-01-01")
+        t = threading.Thread(target=server_app.ensure_fresh)
+        t.start()
+        self.assertTrue(entered.wait(5))
+        server_app.ensure_fresh()  # overlapping stale check
+        t.join()
+        self.assertEqual(len(calls), 1)
+
 
 if __name__ == "__main__":
     unittest.main()

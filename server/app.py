@@ -38,6 +38,7 @@ mode that also sidesteps Safari's https->http://localhost restriction.
 import hashlib
 import json
 import sys
+import threading
 from collections import OrderedDict
 from contextlib import asynccontextmanager
 from datetime import date, datetime
@@ -68,6 +69,12 @@ RESULT_CACHE_SIZE = 128
 
 STATE: dict = {}
 
+# Serializes load_state: FastAPI runs sync endpoints in a threadpool, so two
+# concurrent requests can both see a moved stat signature — without the lock
+# both would rebuild the same cards.sqlite and one could read a half-built
+# artifact (empty tables, no meta row) and install an empty snapshot.
+_RELOAD_LOCK = threading.Lock()
+
 
 def _stat_signature() -> tuple:
     """Cheap change detector over every dataset source file: (path, mtime_ns,
@@ -85,7 +92,14 @@ def load_state() -> None:
     """(Re)load everything: rebuild the SQLite artifact when the YAML sources
     changed, load the dataset from it (YAML fallback if the artifact cannot be
     built), reset the result cache. Called at startup, on POST /api/reload,
-    and whenever the per-request stat signature moves."""
+    and whenever the per-request stat signature moves. Callers serialize via
+    _RELOAD_LOCK (ensure_fresh, /api/reload, startup)."""
+    # Capture the signature BEFORE reading any source: a file written during
+    # the ~1s load window then leaves the stored signature stale, so the next
+    # request reloads and converges — recording it after the load would absorb
+    # the write into the signature while the snapshot still reflects the old
+    # content, masking the change until some unrelated edit (plan 11 R4).
+    sig = _stat_signature()
     build_db.CARDS_DIR = Path(opt.CARDS_DIR)
     build_db.META_DIR = Path(opt.META_DIR)
     try:
@@ -118,20 +132,25 @@ def load_state() -> None:
     STATE["result_cache"] = STATE["snapshot"]["result_cache"]
     STATE["descriptors"] = descriptors
     STATE["category_rules"] = category_rules
-    STATE["stat_signature"] = _stat_signature()
+    STATE["stat_signature"] = sig
 
 
 def ensure_fresh() -> None:
     """Per-request hot reload: if any source file's stat moved, reload (which
-    also invalidates the result cache via the new dataset_hash)."""
-    sig = _stat_signature()
-    if sig != STATE.get("stat_signature"):
-        load_state()
+    also invalidates the result cache via the new dataset_hash). Double-checked
+    locking: the lock-free stat check keeps the hot path at ~µs, and re-checking
+    under the lock means concurrent stale requests trigger exactly one reload."""
+    if _stat_signature() == STATE.get("stat_signature"):
+        return
+    with _RELOAD_LOCK:
+        if _stat_signature() != STATE.get("stat_signature"):
+            load_state()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    load_state()
+    with _RELOAD_LOCK:
+        load_state()
     yield
     STATE.clear()
 
@@ -173,7 +192,8 @@ def reload_dataset() -> dict:
     """Force a dataset reload (rebuilds the SQLite artifact when stale). The
     per-request stat check makes this mostly redundant, but it is the explicit
     lever when file stats lie (e.g. a mounted volume with frozen mtimes)."""
-    load_state()
+    with _RELOAD_LOCK:
+        load_state()
     return {"ok": True, "cards_total": len(STATE["dataset"]["cards"]),
             "dataset_hash": STATE["dataset_hash"]}
 
