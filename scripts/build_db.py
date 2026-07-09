@@ -8,7 +8,10 @@ integrity (a belt-and-suspenders check on validate_cards.py), a `manifest`
 table recording each source file's sha256, and a `meta.dataset_hash` that is
 the staleness/determinism contract. Rebuilding from unchanged sources yields
 a byte-identical file: fixed PRAGMAs, one transaction, rows inserted in
-sorted (file, position) order, explicit integer keys, no timestamps.
+deterministic order (sorted card files; registries in curated file order,
+preserved via position columns — the loader must reconstruct load_dataset()'s
+dict iteration order, which /api/config exposes as UI display order),
+explicit integer keys, no timestamps.
 
 Every YAML mapping is decomposed with a closed key set — an unexpected key is
 a hard build error, so schema drift breaks the build instead of silently
@@ -35,7 +38,7 @@ CARDS_DIR = ROOT / "data" / "cards"
 META_DIR = ROOT / "data" / "meta"
 DEFAULT_OUT = ROOT / "data" / "build" / "cards.sqlite"
 
-DB_SCHEMA_VERSION = 1
+DB_SCHEMA_VERSION = 2  # v2: position columns on categories/merchants/programs
 APPLICATION_ID = 0xCA4D5DB  # "card s db", stamped into the SQLite header
 
 DDL = """
@@ -43,12 +46,13 @@ CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL) WITHOUT ROWID;
 CREATE TABLE manifest (path TEXT PRIMARY KEY, sha256 TEXT NOT NULL) WITHOUT ROWID;
 
 CREATE TABLE categories (
-  key TEXT PRIMARY KEY, label TEXT NOT NULL, pseudo INTEGER) WITHOUT ROWID;
+  key TEXT PRIMARY KEY, position INTEGER NOT NULL,
+  label TEXT NOT NULL, pseudo INTEGER) WITHOUT ROWID;
 CREATE TABLE merchants (
-  key TEXT PRIMARY KEY, label TEXT NOT NULL,
+  key TEXT PRIMARY KEY, position INTEGER NOT NULL, label TEXT NOT NULL,
   category_key TEXT NOT NULL REFERENCES categories(key)) WITHOUT ROWID;
 CREATE TABLE programs (
-  key TEXT PRIMARY KEY, label TEXT NOT NULL,
+  key TEXT PRIMARY KEY, position INTEGER NOT NULL, label TEXT NOT NULL,
   floor_cpp, optimistic_cpp,
   transfer_gateway_required INTEGER) WITHOUT ROWID;
 CREATE TABLE program_redeems_for (
@@ -299,17 +303,19 @@ def _insert_meta(con, manifest, dataset_hash):
 
 
 def _insert_registries(con):
+    # Registry file order is curated display order (the UI renders
+    # /api/config lists verbatim) — store it, like usage_groups/items do.
     categories = load_yaml(META_DIR / "categories.yaml")["categories"]
-    for key in sorted(categories):
+    for pos, key in enumerate(categories):
         entry = take(categories[key], f"categories.{key}", "label", "pseudo")
-        con.execute("INSERT INTO categories VALUES (?, ?, ?)",
-                    (key, entry["label"], entry.get("pseudo")))
+        con.execute("INSERT INTO categories VALUES (?, ?, ?, ?)",
+                    (key, pos, entry["label"], entry.get("pseudo")))
 
     merchants = load_yaml(META_DIR / "merchants.yaml")["merchants"]
-    for key in sorted(merchants):
+    for pos, key in enumerate(merchants):
         entry = take(merchants[key], f"merchants.{key}", "label", "category")
-        con.execute("INSERT INTO merchants VALUES (?, ?, ?)",
-                    (key, entry["label"], entry["category"]))
+        con.execute("INSERT INTO merchants VALUES (?, ?, ?, ?)",
+                    (key, pos, entry["label"], entry["category"]))
 
     groups = load_yaml(META_DIR / "usage-questions.yaml")["groups"]
     for g_pos, g_key in enumerate(groups):  # file order is display order
@@ -324,12 +330,12 @@ def _insert_registries(con):
                         (i_key, g_key, i_pos, item["label"]))
 
     programs = load_yaml(META_DIR / "point-valuations.yaml")["programs"]
-    for key in sorted(programs):
+    for pos, key in enumerate(programs):
         entry = take(programs[key], f"point-valuations.{key}",
                      "label", "redeems_for", "floor_cpp", "optimistic_cpp",
                      "loyalty_keys", "transfer_gateway_required")
-        con.execute("INSERT INTO programs VALUES (?, ?, ?, ?, ?)",
-                    (key, entry["label"], entry["floor_cpp"],
+        con.execute("INSERT INTO programs VALUES (?, ?, ?, ?, ?, ?)",
+                    (key, pos, entry["label"], entry["floor_cpp"],
                      entry["optimistic_cpp"],
                      _b(entry.get("transfer_gateway_required"))))
         for pos, kind in enumerate(entry.get("redeems_for") or []):
@@ -591,13 +597,24 @@ def stored_dataset_hash(db_path: Path) -> str:
 
 def is_fresh(db_path: Path) -> bool:
     """True when the artifact at db_path was built from the current YAML
-    sources (manifest hash comparison, ~ms)."""
+    sources (manifest hash comparison, ~ms) by the current schema version —
+    a schema bump makes every older artifact stale so it rebuilds instead of
+    failing in the loader."""
     if not Path(db_path).exists():
         return False
     try:
-        stored = stored_dataset_hash(db_path)
+        con = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+        try:
+            rows = dict(con.execute(
+                "SELECT key, value FROM meta "
+                "WHERE key IN ('schema_version', 'dataset_hash')").fetchall())
+        finally:
+            con.close()
     except sqlite3.Error:
         return False
+    if rows.get("schema_version") != str(DB_SCHEMA_VERSION):
+        return False
+    stored = rows.get("dataset_hash", "")
     return bool(stored) and stored == dataset_manifest()[1]
 
 

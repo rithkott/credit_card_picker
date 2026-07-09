@@ -200,19 +200,22 @@ def load_dataset_db(db_path: Path) -> dict:
             target[key] = wrap(value) if wrap else value
 
     try:
+        # Registries load ORDER BY position: dict insertion order is part of
+        # what load_dataset() reads (curated YAML file order), observable
+        # through /api/config as the UI's display order (plan 11 R2).
         categories = {}
-        for r in con.execute("SELECT * FROM categories ORDER BY key"):
+        for r in con.execute("SELECT * FROM categories ORDER BY position"):
             entry = {"label": r["label"]}
             opt_set(entry, "pseudo", r["pseudo"], bool)
             categories[r["key"]] = entry
 
         merchants = {}
-        for r in con.execute("SELECT * FROM merchants ORDER BY key"):
+        for r in con.execute("SELECT * FROM merchants ORDER BY position"):
             merchants[r["key"]] = {"label": r["label"],
                                    "category": r["category_key"]}
 
         programs = {}
-        for r in con.execute("SELECT * FROM programs ORDER BY key"):
+        for r in con.execute("SELECT * FROM programs ORDER BY position"):
             entry = {"label": r["label"],
                      "redeems_for": [k[0] for k in con.execute(
                          "SELECT kind FROM program_redeems_for "

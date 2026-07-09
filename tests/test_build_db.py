@@ -24,6 +24,24 @@ REPO_DATA = Path(__file__).resolve().parent.parent / "data"
 FIXTURE_DATA = Path(__file__).resolve().parent / "fixtures" / "data"
 
 
+def assert_key_order(tc, from_yaml, from_db):
+    """dict == is insertion-order-blind, but registry key iteration order is
+    part of what load_dataset() reads (curated file order, served verbatim by
+    /api/config as UI display order — plan 11 R2), so pin it explicitly for
+    every dict-valued registry, including usage-question item order. Field
+    order WITHIN an entry is not checked — the loader constructs entries in a
+    fixed field order and nothing observes it."""
+    for key, val in from_yaml.items():
+        if not isinstance(val, dict):
+            continue
+        tc.assertEqual(list(val), list(from_db[key]),
+                       msg=f"dataset[{key!r}] key order differs")
+    for gkey, group in from_yaml["usage_questions"].items():
+        tc.assertEqual(list(group["items"]),
+                       list(from_db["usage_questions"][gkey]["items"]),
+                       msg=f"usage_questions[{gkey!r}] item order differs")
+
+
 class BuildDbBase(unittest.TestCase):
     cards_dir = REPO_DATA / "cards"
     meta_dir = REPO_DATA / "meta"
@@ -54,6 +72,7 @@ class TestRoundTripLive(BuildDbBase):
         for key in from_yaml:
             self.assertEqual(from_yaml[key], from_db[key],
                              msg=f"dataset[{key!r}] differs")
+        assert_key_order(self, from_yaml, from_db)
         # Type fidelity spot-checks == cannot see: bool vs int, int vs float.
         for a, b in zip(from_yaml["cards"], from_db["cards"]):
             self.assertEqual(type(a["base_rate"]), type(b["base_rate"]),
@@ -96,6 +115,18 @@ class TestRoundTripLive(BuildDbBase):
         build_db.META_DIR = FIXTURE_DATA / "meta"
         self.assertFalse(build_db.is_fresh(self.db_path))
 
+    def test_schema_version_bump_reads_as_stale(self):
+        # Plan 11 R2 shipped a schema change (registry position columns): an
+        # artifact built by an older schema must rebuild, not fail the loader.
+        build_db.build(self.db_path)
+        self.assertTrue(build_db.is_fresh(self.db_path))
+        con = sqlite3.connect(self.db_path)
+        with con:
+            con.execute("UPDATE meta SET value = '0' "
+                        "WHERE key = 'schema_version'")
+        con.close()
+        self.assertFalse(build_db.is_fresh(self.db_path))
+
     def test_fk_integrity_enforced(self):
         build_db.build(self.db_path)
         con = sqlite3.connect(self.db_path)
@@ -105,7 +136,7 @@ class TestRoundTripLive(BuildDbBase):
             con.execute("PRAGMA foreign_keys = ON")
             with self.assertRaises(sqlite3.IntegrityError):
                 con.execute("INSERT INTO merchants VALUES "
-                            "('bogus', 'Bogus', 'no-such-category')")
+                            "('bogus', 999, 'Bogus', 'no-such-category')")
         finally:
             con.close()
 
@@ -131,7 +162,10 @@ class TestRoundTripFixture(BuildDbBase):
 
     def test_loader_deep_equals_yaml(self):
         build_db.build(self.db_path)
-        self.assertEqual(opt.load_dataset(), opt.load_dataset_db(self.db_path))
+        from_yaml = opt.load_dataset()
+        from_db = opt.load_dataset_db(self.db_path)
+        self.assertEqual(from_yaml, from_db)
+        assert_key_order(self, from_yaml, from_db)
 
 
 if __name__ == "__main__":
