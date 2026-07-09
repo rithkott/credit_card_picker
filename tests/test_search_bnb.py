@@ -113,6 +113,69 @@ class TestEngineEquivalence(unittest.TestCase):
                 sys.modules["numpy"] = saved
         self.assertEqual(with_np, without_np)
 
+    def test_flow_adoption_with_match_and_clamp(self):
+        # Plan 11 R1 regression: score_portfolio is card-order-sensitive when
+        # the flow assignment is adopted (solve_assignment breaks rate ties by
+        # line-list position, shifting residual attribution into
+        # first_year_match bonuses and max_annual_rewards_usd clamps), so bnb
+        # must score subsets in sorted-id order like exhaustive does. This pool
+        # combines a shared-cap pool (forces flow adoption) with a match card
+        # and a reward-clamped card — the structure the fixture dataset and the
+        # random pools above never produce together.
+        def synth(cid, base, rewards, bonus=None, clamp=None):
+            card = {
+                "id": cid, "name": cid, "issuer": "test", "network": "visa",
+                "currency": {"type": "cash", "program": "cash"},
+                "base_rate": base,
+                "category_rewards": rewards, "merchant_rewards": [],
+                "credits": [], "signup_bonus": bonus,
+                "fees": {"annual_fee_usd": 0, "foreign_transaction_pct": 0},
+                "approval": {"credit_tier": "good"}, "benefit_flags": [],
+                "verification": {"last_verified_date": "2026-07-03",
+                                 "verified_by": "test", "confidence": "high"},
+            }
+            if clamp is not None:
+                card["max_annual_rewards_usd"] = clamp
+            return card
+
+        pool_cap = {"period": "annual", "max_spend_usd": 1000,
+                    "fallback_rate": 1, "shared_cap_id": "pool"}
+        cards = [
+            synth("a-pool", 1, [
+                {"category": "groceries", "rate": 5, "cap": dict(pool_cap)},
+                {"category": "dining", "rate": 4, "cap": dict(pool_cap)}]),
+            synth("b-cap", 1, [
+                {"category": "dining", "rate": 4.9,
+                 "cap": {"period": "annual", "max_spend_usd": 1000,
+                         "fallback_rate": 1}}]),
+            synth("c-groc", 1, [{"category": "groceries", "rate": 4.8}]),
+            synth("m-match", 1, [], bonus={"first_year_match": True}),
+            synth("z-clamp", 1, [{"category": "other", "rate": 5}],
+                  clamp=100),
+        ]
+        dataset = {**{k: DATASET[k] for k in
+                      ("categories", "merchants", "programs",
+                       "usage_questions", "usage_keys")},
+                   "cards": cards}
+        spend = {"dining": 2000, "groceries": 1000, "other": 5000}
+        for optimize_for in ("year1", "ongoing"):
+            for max_cards in (3, 4, 5):
+                prof = opt.parse_profile(
+                    {"spend": spend,
+                     "user": {"credit_tier": "excellent",
+                              "max_cards": max_cards,
+                              "optimize_for": optimize_for}},
+                    dataset)
+                with self.subTest(optimize_for=optimize_for,
+                                  max_cards=max_cards):
+                    for prune in (False, True):
+                        a = opt.render_json(opt.run(dataset, prof, AS_OF, 5,
+                                                    engine="bnb", prune=prune))
+                        b = opt.render_json(opt.run(dataset, prof, AS_OF, 5,
+                                                    engine="exhaustive",
+                                                    prune=prune))
+                        self.assertEqual(a, b, msg=f"prune={prune}")
+
     def test_random_synthetic_pools(self):
         rng = random.Random(20260709)
         cats = ["dining", "groceries", "gas", "online_shopping", "other"]

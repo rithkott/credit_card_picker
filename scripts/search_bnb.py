@@ -132,7 +132,13 @@ def search_bnb(variants: list, profile: dict, programs: dict, buckets: dict,
         return (-e[primary], -e["year1_net"], tuple(e["cards"]))
 
     def exact(card_ids):
-        cards = [by_id[c] for c in card_ids]
+        # Canonical sorted-id order, exactly like exhaustive enumeration —
+        # score_portfolio is card-order-sensitive when the flow assignment is
+        # adopted (solve_assignment breaks rate ties by line-list position,
+        # shifting residual attribution into first_year_match bonuses and
+        # max_annual_rewards_usd clamps), so visitation order here would
+        # diverge byte-wise from the oracle.
+        cards = [by_id[c] for c in sorted(card_ids)]
         sc = opt.score_portfolio(cards, profile, programs, buckets, as_of,
                                  tables=tables)
         return {"cards": sc["cards"], "ongoing_net": sc["ongoing_net"],
