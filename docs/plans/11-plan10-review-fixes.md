@@ -1,6 +1,6 @@
 # Plan 11 — Plan-10 review fixes
 
-**Status: findings confirmed, fixes not yet implemented.**
+**Status: implemented 2026-07-09** — R1 (`510e718`), R3+R4 (`44f7763`), R2 (`4e53e0f`), U1 (`aaeae2f`). U1 was verified before fixing: a 20k-trial randomized search over shared-cap + clamped synthetic pools reproduced the post-clamp regression repeatedly (CONFIRMED, not just plausible); the fix compares post-clamp totals at adoption and the same search finds 0 counterexamples after it. R1's test-gap fixture was realized as a deterministic in-test synthetic pool in `tests/test_search_bnb.py` (shared-cap + first_year_match + max_annual_rewards_usd) rather than a new card in `tests/fixtures/data/cards`, to avoid churning every hand-computed golden in `tests/test_optimizer.py`.
 
 Source: adversarial multi-agent review of the plan-10 optimizer overhaul (`git diff 2308d2d^..HEAD`, 7 commits), run 2026-07-08. Six review dimensions (bound admissibility, assignment exactness, precompute fidelity, DB roundtrip, server cache/reload, contract & tests), each finding independently verified by an adversarial agent instructed to refute it. Result: **7 findings confirmed, 0 refuted**, plus 1 unverified minor. The 7 confirmed findings collapse into 4 root causes.
 
