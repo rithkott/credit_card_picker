@@ -484,5 +484,119 @@ class TestCategorize(unittest.TestCase):
         self.assertEqual((m["layer"], m["method"]), (1, "exact"))
 
 
+class TestCategorizeGoldenTable(unittest.TestCase):
+    """Matcher golden table ported from the retired engine.test.ts — inline
+    registries shaped exactly like the YAML files, pinning prefix stripping,
+    longest-pattern wins, tie-breaks, fallbacks, and labeled unmapped keys."""
+
+    @classmethod
+    def setUpClass(cls):
+        from statements.categorize import Matcher
+        descriptors = {
+            "delta": {"label": "Delta Air Lines",
+                      "statement_patterns": ["DELTA AIR LINES", "DELTA 006"]},
+            "doordash": {"label": "DoorDash",
+                         "statement_patterns": ["DD *DOORDASH", "DOORDASH"]},
+            "uber": {"label": "Uber (rides)",
+                     "statement_patterns": ["UBER *TRIP", "UBER TRIP"]},
+            "uber_eats": {"label": "Uber Eats",
+                          "statement_patterns": ["UBER *EATS", "UBER EATS"]},
+            "costco": {"label": "Costco",
+                       "statement_patterns": ["COSTCO WHSE", "COSTCO GAS"]},
+            "whole_foods": {"label": "Whole Foods Market",
+                            "statement_patterns": ["WHOLEFDS"]},
+            "netflix": {"label": "Netflix", "statement_patterns": ["NETFLIX"]},
+            "apple": {"label": "Apple",
+                      "statement_patterns": ["APPLE.COM/BILL", "APPLE STORE"]},
+            "apple_music": {"label": "Apple Music",
+                            "statement_patterns": ["APPLE.COM/BILL"]},
+            "paypal": {"label": "PayPal", "statement_patterns": ["PAYPAL *", "PP*"]},
+            "toast_prefix": {"label": "Toast-acquired restaurants",
+                             "statement_patterns": ["TST*"]},
+            "square_prefix": {"label": "Square-acquired merchants",
+                              "statement_patterns": ["SQ *"]},
+            "bilt_rent": {"label": "Bilt rent/housing payments",
+                          "statement_patterns": ["BILT"]},
+        }
+        rules = {
+            "descriptor_categories": {
+                "delta": "travel_flights", "doordash": "dining", "uber": "transit",
+                "uber_eats": "dining", "costco": "groceries",
+                "whole_foods": "groceries", "netflix": "streaming",
+                "apple": "online_shopping", "apple_music": "streaming"},
+            "aggregator_prefixes": {
+                "paypal": {}, "square_prefix": {},
+                "toast_prefix": {"fallback_category": "dining"}},
+            "unmapped": ["bilt_rent"],
+            "keywords": {"groceries": ["KROGER"], "gas": ["SHELL"],
+                         "dining": ["CAFE "]},
+            "issuer_categories": {"dining": "dining", "gasoline": "gas"},
+            "mcc": [{"from": 5812, "to": 5814, "category": "dining"}],
+        }
+        merchants = {"costco": {}, "whole_foods": {}, "uber": {}}
+        usage_questions = {"g": {"items": {
+            "delta": {"label": "Delta"},
+            "doordash": {"label": "DoorDash / DashPass"},
+            "costco": {"label": "Costco"},
+            "uber": {"label": "Uber rides / Uber One"}}}}
+        cls.matcher = Matcher(descriptors, rules, merchants, usage_questions)
+
+    CASES = [
+        # (descriptor, issuer_category, mcc, expected subset of the match)
+        ("DELTA AIR LINES ATLANTA", None, None,
+         {"category": "travel_flights", "layer": 1, "usage_key": "delta",
+          "descriptor_key": "delta"}),
+        ("COSTCO WHSE #0021", None, None,
+         {"category": "groceries", "layer": 1, "merchant_key": "costco",
+          "usage_key": "costco", "descriptor_key": "costco"}),
+        # Longest pattern: uber_eats, not uber.
+        ("UBER *EATS PENDING", None, None,
+         {"category": "dining", "layer": 1, "descriptor_key": "uber_eats"}),
+        # Identical patterns tie-break by key asc -> apple.
+        ("APPLE.COM/BILL 866-712-7753", None, None,
+         {"category": "online_shopping", "layer": 1, "descriptor_key": "apple"}),
+        # Prefix strip -> inner descriptor match.
+        ("PAYPAL *DD *DOORDASH", None, None,
+         {"category": "dining", "layer": 1, "usage_key": "doordash",
+          "descriptor_key": "doordash"}),
+        # Prefix strip -> inner keyword match.
+        ("PAYPAL *KROGER 442", None, None, {"category": "groceries", "layer": 2}),
+        # Prefix, unknown remainder -> fallback.
+        ("TST* JOES CRAB SHACK", None, None,
+         {"category": "dining", "layer": 1, "descriptor_key": "toast_prefix"}),
+        # Prefix, unknown remainder, no fallback.
+        ("SQ *UNKNOWN VENDOR", None, None, {"category": None, "layer": None}),
+        # Explicitly unmapped -> labeled group.
+        ("BILT REWARDS 000123", None, None,
+         {"category": None, "layer": None, "descriptor_key": "bilt_rent",
+          "descriptor_label": "Bilt rent/housing payments"}),
+        ("KROGER #442 SPRINGFIELD", None, None,
+         {"category": "groceries", "layer": 2}),
+        ("MYSTERY MERCHANT", "dining", None, {"category": "dining", "layer": 3}),
+        ("MYSTERY MERCHANT", None, 5813, {"category": "dining", "layer": 4}),
+        ("MYSTERY MERCHANT", None, None, {"category": None, "layer": None}),
+    ]
+
+    def test_golden_table(self):
+        from statements.categorize import match_txn
+        for descriptor, issuer_category, mcc, expected in self.CASES:
+            with self.subTest(descriptor=descriptor):
+                match = match_txn(self.matcher, descriptor, issuer_category, mcc)
+                for key, value in expected.items():
+                    self.assertEqual(match.get(key), value,
+                                     f"{descriptor}: {key}")
+
+    def test_normalize_and_stem(self):
+        from statements.categorize import descriptor_stem, match_txn, normalize_descriptor
+        self.assertEqual(normalize_descriptor("  netflix.COM   ca "), "NETFLIX.COM CA")
+        self.assertEqual(match_txn(self.matcher, "netflix.com", None, None)["category"],
+                         "streaming")
+        self.assertEqual(descriptor_stem("KWIK-E-MART #442 SPRINGFIELD"),
+                         descriptor_stem("KWIK-E-MART #187 SPRINGFIELD"))
+        self.assertEqual(descriptor_stem("KWIK-E-MART #442 SPRINGFIELD"),
+                         "KWIK-E-MART SPRINGFIELD")
+        self.assertEqual(descriptor_stem("12345"), "12345")  # all-numeric falls back
+
+
 if __name__ == "__main__":
     unittest.main()

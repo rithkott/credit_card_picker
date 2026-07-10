@@ -1,4 +1,5 @@
 import type { AssumptionsResponse, CardsResponse, Config, OptimizeBundle, Profile } from './types'
+import type { WireParsedFile } from './lib/statements/types'
 
 /** API base URL. Production builds default to '' (same-origin — Vercel
  * serves the API as a Python function next to the static site, and the local
@@ -11,12 +12,15 @@ export const API_URL: string =
   ?? (import.meta.env.DEV ? 'http://localhost:8000' : '')
 
 /** Error carrying the server's {"detail": ...} message (422/500) so the UI
- * can render the optimizer's own user-directed text verbatim. */
+ * can render the server's own user-directed text verbatim. `code` is set by
+ * the statement-parse endpoint's error taxonomy (scanned_pdf, too_large, ...). */
 export class ApiError extends Error {
   status: number
-  constructor(status: number, detail: string) {
+  code?: string
+  constructor(status: number, detail: string, code?: string) {
     super(detail)
     this.status = status
+    this.code = code
   }
 }
 
@@ -24,13 +28,15 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const resp = await fetch(`${API_URL}${path}`, init)
   if (!resp.ok) {
     let detail = `${resp.status} ${resp.statusText}`
+    let code: string | undefined
     try {
-      const body = (await resp.json()) as { detail?: string }
+      const body = (await resp.json()) as { detail?: string; code?: string }
       if (body.detail) detail = body.detail
+      code = body.code
     } catch {
       /* non-JSON error body: keep the status text */
     }
-    throw new ApiError(resp.status, detail)
+    throw new ApiError(resp.status, detail, code)
   }
   return (await resp.json()) as T
 }
@@ -57,4 +63,15 @@ export function optimize(profile: Profile, top = 5): Promise<OptimizeBundle> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ...profile, top }),
   })
+}
+
+/** One statement file -> parsed + categorized transactions (plan 12). The
+ * server holds the bytes in memory for the request and stores nothing. No
+ * Content-Type header: the browser sets the multipart boundary itself. */
+export function parseStatement(name: string, bytes: Uint8Array): Promise<WireParsedFile> {
+  const form = new FormData()
+  // The bytes always come from File.arrayBuffer(), so the buffer is a real
+  // ArrayBuffer — the cast only papers over TS's SharedArrayBuffer caution.
+  form.append('file', new Blob([bytes as Uint8Array<ArrayBuffer>]), name)
+  return request('/api/statements/parse', { method: 'POST', body: form })
 }

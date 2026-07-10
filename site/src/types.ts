@@ -12,21 +12,6 @@ export interface ConfigMerchant { key: string; label: string; category: string }
 export interface UsageItem { key: string; label: string }
 export interface UsageGroup { key: string; label: string; prompt: string; items: UsageItem[] }
 
-/** Statement-import rules (data/meta/category-rules.yaml +
- * statement-descriptors.yaml) served by /api/config for the in-browser
- * importer. Rules travel API -> browser; statement data never travels. */
-export interface ConfigDescriptor { key: string; label: string; patterns: string[] }
-export interface MccRange { from: number; to: number; category: string }
-export interface StatementImportRules {
-  descriptors: ConfigDescriptor[]
-  descriptor_categories: Record<string, string>
-  aggregator_prefixes: Record<string, { fallback_category?: string }>
-  unmapped: string[]
-  keywords: Record<string, string[]>
-  issuer_categories: Record<string, string>
-  mcc: MccRange[]
-}
-
 export interface Config {
   categories: ConfigCategory[]
   merchants: ConfigMerchant[]
@@ -47,7 +32,6 @@ export interface Config {
    * server-side from the card files — quoted by the footer trust line instead
    * of a hardcoded date. Null only if no card carries a date. */
   data_last_verified: string | null
-  statement_import: StatementImportRules
 }
 
 /** GET /api/cards — one row per card file, for the Data-sources page. */
