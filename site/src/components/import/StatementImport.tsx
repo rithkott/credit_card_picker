@@ -91,7 +91,7 @@ export function StatementImport({ config, formNonEmpty, onApply }: {
         <span className="spacer" />
         <span className="privacy-pill">
           <span className="dot" />
-          Everything runs on your device — your data never leaves
+          Parsed on your device — statements are never uploaded
         </span>
       </div>
       <p className="why">

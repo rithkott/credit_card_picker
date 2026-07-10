@@ -35,6 +35,7 @@ mode that also sidesteps Safari's https->http://localhost restriction.
 """
 
 import json
+import os
 import sys
 from contextlib import asynccontextmanager
 from datetime import date, datetime
@@ -88,7 +89,15 @@ app.add_middleware(
 
 def dump_debug_run(request_body: dict, status: int, payload: dict) -> None:
     """One YAML per optimize call — the exact request plus the full result or
-    error. A debugging aid must never break the request itself."""
+    error. A debugging aid must never break the request itself.
+
+    LOCAL-ONLY BY POLICY: on the hosted deployment (Vercel sets VERCEL=1)
+    dumps are disabled outright — the privacy promise is that user spend
+    totals are computed on and discarded, never written anywhere. The
+    read-only serverless filesystem would make the write fail anyway; this
+    guard makes no-storage a guarantee instead of an accident."""
+    if os.environ.get("VERCEL"):
+        return
     try:
         DEBUG_DIR.mkdir(exist_ok=True)
         now = datetime.now()

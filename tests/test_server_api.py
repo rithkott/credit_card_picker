@@ -223,6 +223,22 @@ class TestServerAPI(unittest.TestCase):
         self.assertEqual(record["status"], 200)
         self.assertIn("portfolios", record["result"])
 
+    def test_debug_dump_disabled_on_vercel(self):
+        """The hosted deployment must never write user spend anywhere —
+        the privacy claim depends on this, not on the FS being read-only."""
+        import os
+        before = set(Path(self._tmp.name).iterdir())
+        body = {"spend": {"other": 1000}, "user": {"credit_tier": "good",
+                                                   "max_cards": 1},
+                "as_of": AS_OF}
+        os.environ["VERCEL"] = "1"
+        try:
+            r = self.client.post("/api/optimize", json=body)
+        finally:
+            del os.environ["VERCEL"]
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(set(Path(self._tmp.name).iterdir()), before)
+
 
 if __name__ == "__main__":
     unittest.main()
