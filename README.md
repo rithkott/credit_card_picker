@@ -9,7 +9,7 @@ Most card-recommendation sites rank whatever pays them the highest affiliate com
 ## What it does
 
 - **Enter your spending** by category (groceries, dining, gas, travel, …) — or import it straight from your card statements (PDF/CSV) and let the tool categorize it.
-- **Answer a few honesty questions** — would you really use an airline credit? carry a portal habit? — so credits and perks are only counted when you'd actually redeem them.
+- **Answer a few honesty questions** — would you really use an airline credit? keep a DoorDash habit? — so credits and perks are only counted when you'd actually redeem them.
 - **Get a ranked list of card portfolios** (1 up to N cards), each with its net annual value: rewards earned minus fees, with every assumption shown. It tells you which card to swipe for which category.
 - **Read the receipts**: the site's How-it-works, Data-sources, and Assumptions pages show the full methodology, every card file's verification status, and the exact point valuations used — served live from the same data the optimizer scores.
 

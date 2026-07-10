@@ -48,7 +48,6 @@ credits:
   - name: The Edit prepaid-stay credit
     amount_usd: 250           # "$500 Credit for stays with The Edit ... up to $250 twice a year (starting 1/1/2026)"
     period: semiannual
-    usage_keys: [chase_travel]
     category: travel_hotels
     realistic_capture_rate_note: >-
       Up to $250 twice per year ($500/year) on prepaid 2+ night "Pay Now" stays booked via
@@ -57,7 +56,6 @@ credits:
   - name: Select-hotels Chase Travel credit (2026)
     amount_usd: 250           # "$250 Credit for select hotels through Chase Travel in 2026 ... up to $250 in calendar year 2026"
     period: annual
-    usage_keys: [chase_travel]
     category: travel_hotels
     expires: "2026-12-31"
     realistic_capture_rate_note: >-

@@ -1,12 +1,8 @@
 # FROZEN fixture copy (trimmed): only the groups/items the fixture cards and
 # golden tests need. Growth of the real registry must never touch goldens.
+# Issuer travel portals are not questionnaire items: the optimizer assumes a
+# user books through the portal of whichever card they hold.
 groups:
-  travel_portals:
-    label: Issuer travel portals
-    prompt: "Do you book travel through a credit-card issuer's travel portal?"
-    items:
-      chase_travel: {label: "Chase Travel"}
-      capital_one_travel: {label: "Capital One Travel"}
   airlines:
     label: Airlines
     prompt: "Do you fly regularly with any particular airline?"

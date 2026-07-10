@@ -27,12 +27,12 @@ user:
                                # with one company (airline miles, hotel points, store
                                # credit) — often higher point value, but you're locked
                                # to that brand. Default false: cash-path cards only
-  confirmed_usage: []     # services/portals/brands you ALREADY use (or will) — item keys
+  confirmed_usage: []     # services/brands you ALREADY use (or will) — item keys
                           # from data/meta/usage-questions.yaml. A merchant credit counts
-                          # $0 unless its service is listed here; portal-only earn rates
-                          # need their portal key; airline/hotel points get optimistic
-                          # value only with the brand key. Example:
-                          #   confirmed_usage: [chase_travel, doordash, delta, global_entry_tsa]
+                          # $0 unless its service is listed here; airline/hotel points get
+                          # optimistic value only with the brand key. (Issuer travel-portal
+                          # use is assumed for every held card — no key needed.) Example:
+                          #   confirmed_usage: [doordash, delta, global_entry_tsa]
   reward_preferences: [total_value]  # any combination of: flights, hotels, cashback,
                                      # total_value. Concrete kinds keep only cards whose
                                      # currency redeems for one of them (see redeems_for

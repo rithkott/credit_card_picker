@@ -130,30 +130,21 @@ class TestSingleCardGolden(unittest.TestCase):
             self.assertIn("requires confirmed use", c["note"])
         self.assertAlmostEqual(r["ongoing_net"], 862.5 - 325.0)
 
-    def test_sapphire_preferred_portal_unconfirmed(self):
-        # chase_travel not confirmed: the portal-only 5x travel_other line is
-        # dropped (falls to base 1x) AND the portal-locked hotel credit is $0.
-        # CSP is its own UR gateway → avg cpp (1.0+2.0)/2 = 1.5: all lines
-        # scale the 1.0cpp sums by 1.5 → earnings 420*1.5 = 630;
-        # ongoing 630+0-95=535; bonus 60000*.015=900 → year1 1435.
+    def test_sapphire_preferred_portal_assumed(self):
+        # Portal use is assumed (no questionnaire gate): the portal-only 5x
+        # travel_other line applies at 5*0.75=3.75x. CSP is its own UR
+        # gateway → avg cpp (1.0+2.0)/2 = 1.5: earnings 447.5*1.5 = 671.25.
+        # The hotel credit is keyless (category-gated only) → conservative
+        # CREDIT_CAPTURE: min(50*0.9, 2000)=45; ongoing 671.25+45-95=621.25;
+        # bonus 60000*.015=900 → year1 1521.25.
         prof = make_profile({"dining": 4000, "groceries": 6000, "travel_hotels": 2000,
                              "travel_other": 1000, "other": 7000})
         r = score(["sapphire-preferred"], prof)
-        self.assertAlmostEqual(r["earnings"], 630.0)
-        self.assertAlmostEqual(r["ongoing_net"], 535.0)
-        self.assertAlmostEqual(r["year1_net"], 1435.0)
-        self.assertIn("requires confirmed use", r["credits"][0]["note"])
-
-    def test_sapphire_preferred_portal_confirmed(self):
-        # chase_travel confirmed: travel_other kept at 5*0.75=3.75x; at avg
-        # cpp 1.5 earnings are 447.5*1.5 = 671.25; hotel credit
-        # min(50*0.95, 2000)=47.5; ongoing 671.25+47.5-95=623.75.
-        prof = make_profile({"dining": 4000, "groceries": 6000, "travel_hotels": 2000,
-                             "travel_other": 1000, "other": 7000},
-                            confirmed_usage=["chase_travel"])
-        r = score(["sapphire-preferred"], prof)
         self.assertAlmostEqual(r["earnings"], 671.25)
-        self.assertAlmostEqual(r["ongoing_net"], 623.75)
+        self.assertAlmostEqual(r["ongoing_net"], 621.25)
+        self.assertAlmostEqual(r["year1_net"], 1521.25)
+        notes = "; ".join(a.get("note", "") for a in r["assignments"])
+        self.assertIn("use assumed", notes)
 
     def test_freedom_flex_rotating_activated(self):
         # Rotating room 1500*4*0.75=4500 @5x. Regret rule fills gas (alt 1%)
@@ -177,31 +168,20 @@ class TestSingleCardGolden(unittest.TestCase):
         r = score(["freedom-flex"], prof)
         self.assertAlmostEqual(r["ongoing_net"], 280.0)
 
-    def test_venture_x_portal_unconfirmed(self):
-        # capital_one_travel not confirmed: both portal-only lines drop → all
-        # 20000 at base 2x * avg 1.1cpp = 2.2% → 440; the portal-locked travel
-        # credit is $0, only the automatic anniversary $100 survives. ongoing
-        # 440+100-395=145; bonus 75000*.011=825 → year1 970.
+    def test_venture_x_portal_assumed(self):
+        # Portal use is assumed; avg cpp 1.1: hotels 2000@10*0.75=7.5x*.011=165,
+        # flights 3000@5*0.75=3.75x*.011=123.75, base 15000@2.2%=330 → 618.75.
+        # Credits: the travel credit is keyless (category-gated only) →
+        # CREDIT_CAPTURE: min(300*0.9, travel_other 1000)=270, plus automatic
+        # anniversary 100 = 370. ongoing 618.75+370-395=593.75;
+        # bonus 75000*.011=825 → year1 1418.75.
         prof = make_profile({"travel_flights": 3000, "travel_hotels": 2000,
                              "travel_other": 1000, "other": 14000})
         r = score(["venture-x"], prof)
-        self.assertAlmostEqual(r["earnings"], 440.0)
-        self.assertAlmostEqual(sum(c["value"] for c in r["credits"]), 100.0)
-        self.assertAlmostEqual(r["ongoing_net"], 145.0)
-        self.assertAlmostEqual(r["year1_net"], 970.0)
-
-    def test_venture_x_portal_confirmed(self):
-        # avg cpp 1.1: hotels 2000@7.5x*.011=165, flights 3000@3.75x*.011=123.75,
-        # base 15000@2.2%=330 → 618.75. Credits: travel credit
-        # min(300*0.95, travel_other 1000)=285 + anniversary 100 = 385.
-        # ongoing 618.75+385-395=608.75.
-        prof = make_profile({"travel_flights": 3000, "travel_hotels": 2000,
-                             "travel_other": 1000, "other": 14000},
-                            confirmed_usage=["capital_one_travel"])
-        r = score(["venture-x"], prof)
         self.assertAlmostEqual(r["earnings"], 618.75)
-        self.assertAlmostEqual(sum(c["value"] for c in r["credits"]), 385.0)
-        self.assertAlmostEqual(r["ongoing_net"], 608.75)
+        self.assertAlmostEqual(sum(c["value"] for c in r["credits"]), 370.0)
+        self.assertAlmostEqual(r["ongoing_net"], 593.75)
+        self.assertAlmostEqual(r["year1_net"], 1418.75)
 
 
 class TestCreditsAndBonus(unittest.TestCase):
@@ -491,7 +471,7 @@ class TestTransferGateway(unittest.TestCase):
             self.assertEqual(a["cpp"], 1.0)
 
     def test_pairing_with_sapphire_unlocks_optimistic(self):
-        prof = make_profile(self.FLEX_PROF, confirmed_usage=["chase_travel"])
+        prof = make_profile(self.FLEX_PROF)
         r = score(["freedom-flex", "sapphire-preferred"], prof)
         for a in r["assignments"]:  # BOTH cards' UR now price at avg 1.5cpp
             self.assertEqual(a["cpp"], 1.5, a)
@@ -513,8 +493,7 @@ class TestTransferGateway(unittest.TestCase):
         self.assertIn("gateway card", note)
         # With the Sapphire in the pool the top portfolio pairs them: no note.
         dataset["cards"] = [seed_card("freedom-flex"), seed_card("sapphire-preferred")]
-        prof = make_profile(self.FLEX_PROF,
-                            max_cards=2, confirmed_usage=["chase_travel"])
+        prof = make_profile(self.FLEX_PROF, max_cards=2)
         bundle = opt.run(dataset, prof, AS_OF, 1)
         top = bundle["portfolios"][0]
         self.assertEqual(top["cards"], ["freedom-flex", "sapphire-preferred"])
