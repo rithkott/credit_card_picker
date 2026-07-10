@@ -1,6 +1,6 @@
-# Data Infrastructure & Schema Architecture
+# System Architecture
 
-Current state of what's actually built (dataset layer + validation pipeline + optimization engine — the spend-entry UI and site are planned but not built, so they don't appear here).
+Current state of what's actually built: dataset layer + validation pipeline + optimization engine + the product web UI (React SPA with in-browser statement import, FastAPI wrapper, and the Vercel deployment serving both — live at https://creditcardpicker.vercel.app).
 
 > **Maintenance rule:** this diagram must be updated in the same change as any edit to `data/schema/card.schema.json`, the `data/meta/` registries, `scripts/validate_cards.py`, `scripts/optimize.py`, `.github/workflows/validate-data.yml`, or the repo's data layout. See `CLAUDE.md`.
 

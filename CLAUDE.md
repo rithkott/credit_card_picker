@@ -4,7 +4,7 @@ Deterministic credit-card portfolio optimizer built on a hand-curated YAML datas
 
 ## Architecture diagram maintenance (required)
 
-`docs/architecture.md` contains a Mermaid diagram of the data infrastructure and schema, annotated with why each field exists. **Any change to the architecture must update this diagram in the same commit/PR.** That means edits to any of:
+`docs/architecture.md` contains a Mermaid diagram of the whole system — data infrastructure, schema, optimizer, web UI, and Vercel deployment — annotated with why each piece exists. **Any change to the architecture must update this diagram in the same commit/PR.** That means edits to any of:
 
 - `data/schema/card.schema.json` (fields added/removed/changed — the diagram explains every block)
 - `data/meta/` registries (new registry files, or structural changes to existing ones)

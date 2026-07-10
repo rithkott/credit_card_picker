@@ -4,7 +4,7 @@
 
 Most card-recommendation sites rank whatever pays them the highest affiliate commission. This tool does the opposite: you tell it how you actually spend, and it computes — deterministically, from a hand-curated dataset — the single best card *or combination of cards* for you, netting out reward rates, category caps, annual fees, signup bonuses, and the credits you'd realistically use.
 
-**Try it:** deployed on Vercel (see [Deployment](#deployment)) — no install, no clone. Or run everything locally (see [Getting started](#getting-started)).
+**Try it now: [creditcardpicker.vercel.app](https://creditcardpicker.vercel.app)** — no install, no clone, no account. Or run everything locally (see [Getting started](#getting-started)).
 
 ## What it does
 
@@ -60,7 +60,7 @@ An annotated diagram of the whole system — data schema, validation pipeline, o
 
 ```
 docs/research.md          competitive research + product decisions
-docs/architecture.md      annotated diagram of the data infra & schema (kept current, built-only)
+docs/architecture.md      annotated diagram of the whole system — data, optimizer, web, deploy (kept current, built-only)
 docs/curation-guide.md    how to write & verify card files (start here to contribute data)
 docs/plans/               design specs (02 = optimizer, 04 = tech stack, ...)
 data/schema/              JSON Schema every card file must conform to
@@ -90,7 +90,9 @@ python3 scripts/validate_cards.py
 
 ## Deployment
 
-The site deploys to Vercel as a static Vite build plus one Python serverless function running the exact same `server/app.py` (via the `api/index.py` shim — the API has one definition everywhere). `vercel.json` carries the whole config: build commands, SPA rewrites, and the function's `excludeFiles`; root `requirements.txt` lists the function's dependencies.
+Live at **https://creditcardpicker.vercel.app**. The site deploys to Vercel as a static Vite build plus one Python serverless function running the exact same `server/app.py` (via the `api/index.py` shim — the API has one definition everywhere). `vercel.json` carries the whole config: build commands, SPA rewrites, and the function's `excludeFiles`; root `requirements.txt` lists the function's dependencies.
+
+Deploys happen automatically via Vercel's git integration on push. For manual deploys:
 
 ```sh
 npm i -g vercel
