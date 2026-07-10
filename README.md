@@ -1,6 +1,6 @@
 # Credit Card Picker
 
-**Find the credit cards that actually pay you the most — based on your real spending, with zero sales pitch.**
+**Find the credit card that actually pays you the most based on your real spending**
 
 Most card-recommendation sites rank whatever pays them the highest affiliate commission. This tool does the opposite: you tell it how you actually spend, and it computes — deterministically, from a hand-curated dataset — the single best card *or combination of cards* for you, netting out reward rates, category caps, annual fees, signup bonuses, and the credits you'd realistically use.
 
@@ -19,10 +19,6 @@ Most card-recommendation sites rank whatever pays them the highest affiliate com
 - The website is a static page; it computes nothing and stores nothing remotely. All optimization runs on a small server **on your own computer** (`localhost`).
 - Statement imports are parsed locally in your browser and sent only to that local server — never to any third party.
 - No accounts, no cookies, no analytics, no tracking.
-
-## No conflicts of interest
-
-There are no affiliate links, sponsored placements, or monetization of any kind — by design, permanently. Rankings are pure arithmetic over your numbers. See [docs/research.md](docs/research.md) for why this matters in this industry.
 
 ## Getting started
 
