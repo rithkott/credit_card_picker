@@ -121,6 +121,35 @@ body {
 .nav-pill nav a { color: rgba(242, 243, 247, 0.65); text-decoration: none; }
 .nav-pill nav a:hover { color: var(--text); }
 
+/* Corner GitHub / open-source button */
+.github-corner {
+  position: fixed;
+  top: 24px; right: 24px;
+  z-index: 20;
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  color: rgba(242, 243, 247, 0.75);
+  font-size: 13px; font-weight: 600;
+  text-decoration: none;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.github-corner:hover {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.github-corner svg { display: block; flex-shrink: 0; }
+@media (max-width: 900px) {
+  /* The centered nav pill reaches the top corners below ~800px, so the
+     button moves to the bottom corner instead of fighting it for space. */
+  .github-corner { top: auto; bottom: 16px; right: 16px; padding: 10px; }
+  .github-corner span { display: none; }
+}
+
 /* Hero */
 .hero { text-align: center; padding: 58px 40px 20px; }
 .hero h1 {
@@ -685,6 +714,8 @@ footer.site .fine {
   font-size: 12px; color: var(--text-faint); line-height: 1.7;
   max-width: 640px; margin: 0 auto;
 }
+footer.site .fine a { color: var(--text-muted); text-decoration: underline; }
+footer.site .fine a:hover { color: var(--text); }
 footer.site nav {
   margin-top: 10px;
   display: flex; justify-content: center; gap: 18px;
