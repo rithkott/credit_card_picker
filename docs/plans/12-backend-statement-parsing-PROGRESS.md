@@ -1,0 +1,19 @@
+# v1.2.0 backend statement parsing — execution progress
+
+Tracks step-by-step progress so a partial session can resume. Full design: `12-backend-statement-parsing.md`.
+Branch: `statement-backend-v1.2` (worktree `.claude/worktrees/statement-backend-v1.2`). Push after every commit.
+
+## Steps
+
+- [x] 1. Core parsers ported to `server/statements/`: types.py, detect.py, kind.py, csv_parse.py, ofx.py (+ columns.py inference) — direct ports of site/src/lib/statements TS. Smoke-tested against all 10 text fixtures + 3 synthetic inference cases (headerless, unknown headers, debit/credit pair).
+- [ ] 2. pdf.py (pdfplumber, regex path + layout-band fallback)
+- [ ] 3. categorize.py (4 registry layers + rapidfuzz layer 5) compiled from lifespan registries
+- [ ] 4. API route POST /api/statements/parse + tests/test_statements.py + test_server_api.py additions; statement_import removed from /api/config
+- [ ] 5. Frontend swap: upload loop in index.ts, delete client parsers + pdfjs-dist, aggregate consumes txn.match, types.ts/api.ts/StatementImport.tsx/FileDrop.tsx updates, privacy copy
+- [ ] 6. Deploy config (requirements.txt, vercel.json memory/maxDuration) + docs (CLAUDE.md privacy rule, README Privacy, docs/architecture.md diagram, types.ts header)
+- [ ] 7. Push branch, Vercel preview checklist, corpus rerun via server/statements/cli.py (local, ~/Desktop/Personal)
+- [ ] 8. After user preview approval: merge to main, verify prod, tag v1.2.0
+
+## Resume notes
+
+(append notes here as steps complete)
