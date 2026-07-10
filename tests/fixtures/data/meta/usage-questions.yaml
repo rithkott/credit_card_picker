@@ -1,8 +1,7 @@
 # FROZEN fixture copy (trimmed): only the groups/items the fixture cards and
 # golden tests need. Growth of the real registry must never touch goldens.
-# Issuer travel portals are deliberately absent (mirrors the real registry):
-# the optimizer assumes portal use for any held card, so portal_only rates and
-# portal credits are never questionnaire-gated.
+# Issuer travel portals are not questionnaire items: the optimizer assumes a
+# user books through the portal of whichever card they hold.
 groups:
   airlines:
     label: Airlines

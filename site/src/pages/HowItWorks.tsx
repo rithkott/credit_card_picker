@@ -60,8 +60,9 @@ export function HowItWorks() {
           The engine scores every eligible combination of cards up to the portfolio size cap.
           For each combination it assigns every dollar of your spending to whichever card in
           the set earns the most on it, honoring category caps (spend past a cap falls back
-          to the lower rate), portal price premiums (portal-only rates are discounted, since
-          portal fares often run above direct booking), and card-wide reward ceilings.
+          to the lower rate), the portal-price haircut on portal-only rates (booking through
+          the issuer's portal is assumed, but portal fares often run above direct booking),
+          and card-wide reward ceilings.
         </p>
         <p>
           Points are converted to dollars using the shared valuation table: each program has

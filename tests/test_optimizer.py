@@ -131,21 +131,20 @@ class TestSingleCardGolden(unittest.TestCase):
         self.assertAlmostEqual(r["ongoing_net"], 862.5 - 325.0)
 
     def test_sapphire_preferred_portal_assumed(self):
-        # Portal use is assumed for any held card (no questionnaire gate): the
-        # portal-only 5x travel_other line always applies at 5*0.75=3.75x.
-        # CSP is its own UR gateway → avg cpp (1.0+2.0)/2 = 1.5: earnings
-        # 447.5*1.5 = 671.25. The hotel credit is category-gated and keyless
-        # (CREDIT_CAPTURE): min(50*0.9, 2000)=45. ongoing 671.25+45-95=621.25;
+        # Portal use is assumed (no questionnaire gate): the portal-only 5x
+        # travel_other line applies at 5*0.75=3.75x. CSP is its own UR
+        # gateway → avg cpp (1.0+2.0)/2 = 1.5: earnings 447.5*1.5 = 671.25.
+        # The hotel credit is keyless (category-gated only) → conservative
+        # CREDIT_CAPTURE: min(50*0.9, 2000)=45; ongoing 671.25+45-95=621.25;
         # bonus 60000*.015=900 → year1 1521.25.
         prof = make_profile({"dining": 4000, "groceries": 6000, "travel_hotels": 2000,
                              "travel_other": 1000, "other": 7000})
         r = score(["sapphire-preferred"], prof)
         self.assertAlmostEqual(r["earnings"], 671.25)
-        self.assertAlmostEqual(sum(c["value"] for c in r["credits"]), 45.0)
         self.assertAlmostEqual(r["ongoing_net"], 621.25)
         self.assertAlmostEqual(r["year1_net"], 1521.25)
-        self.assertTrue(any("use assumed" in a.get("note", "")
-                            for a in r["assignments"]))
+        notes = "; ".join(a.get("note", "") for a in r["assignments"])
+        self.assertIn("use assumed", notes)
 
     def test_freedom_flex_rotating_activated(self):
         # Rotating room 1500*4*0.75=4500 @5x. Regret rule fills gas (alt 1%)
@@ -170,12 +169,12 @@ class TestSingleCardGolden(unittest.TestCase):
         self.assertAlmostEqual(r["ongoing_net"], 280.0)
 
     def test_venture_x_portal_assumed(self):
-        # Portal lines score without confirmation, still ×0.75: at avg cpp 1.1
-        # hotels 2000@10*0.75=7.5x*.011=165, flights 3000@5*0.75=3.75x*.011=
-        # 123.75, base 15000@2.2%=330 → 618.75. Credits: the portal travel
-        # credit is category-gated and keyless: min(300*0.9, travel_other
-        # 1000)=270 + automatic anniversary 100 = 370.
-        # ongoing 618.75+370-395=593.75; bonus 75000*.011=825 → year1 1418.75.
+        # Portal use is assumed; avg cpp 1.1: hotels 2000@10*0.75=7.5x*.011=165,
+        # flights 3000@5*0.75=3.75x*.011=123.75, base 15000@2.2%=330 → 618.75.
+        # Credits: the travel credit is keyless (category-gated only) →
+        # CREDIT_CAPTURE: min(300*0.9, travel_other 1000)=270, plus automatic
+        # anniversary 100 = 370. ongoing 618.75+370-395=593.75;
+        # bonus 75000*.011=825 → year1 1418.75.
         prof = make_profile({"travel_flights": 3000, "travel_hotels": 2000,
                              "travel_other": 1000, "other": 14000})
         r = score(["venture-x"], prof)

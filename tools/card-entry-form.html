@@ -363,12 +363,12 @@ const CAP_PERIODS = ["monthly","quarterly","annual"];
 /* point-valuations.yaml programs with transfer_gateway_required — the only
    programs unlocks_transfers may appear on (sync when the registry changes). */
 const GATEWAY_PROGRAMS = ["chase_ur","citi_typ","wells_fargo_rewards"];
-/* Issuer-portal keys for the card-level portal field — these are
-   statement-descriptors.yaml keys (portal use is assumed by the optimizer;
-   portals are NOT usage-questions items — sync when the descriptors change). */
+/* Portal keys for the card-level portal field — statement-descriptors.yaml keys
+   (portals are NOT usage-questions items: portal use is assumed by the optimizer).
+   Sync when the descriptor registry changes. */
 const PORTAL_KEYS = ["chase_travel","amex_travel","capital_one_travel","citi_travel","bilt_travel","sofi_travel","robinhood_travel","aadvantage_hotels"];
-/* data/meta/usage-questions.yaml item keys — the vocabulary for
-   credits[].usage_keys (sync when the registry changes). */
+/* data/meta/usage-questions.yaml item keys — the vocabulary for credits[].usage_keys
+   (sync when the registry changes). */
 const USAGE_KEYS = [
   "delta","united","american_airlines","southwest","jetblue","alaska_airlines","air_canada","british_airways","aer_lingus","iberia","air_france_klm","emirates","lufthansa","frontier","allegiant","jsx",
   "hilton","marriott","hyatt","ihg","wyndham","choice_hotels","rci",

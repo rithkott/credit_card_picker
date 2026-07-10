@@ -1,15 +1,15 @@
 # Credit Card Picker
 
-**Find the credit cards that actually pay you the most — based on your real spending, with zero sales pitch.**
+**Find the credit card that actually pays you the most based on your real spending**
 
-Most card-recommendation sites rank whatever pays them the highest affiliate commission. This tool does the opposite: you tell it how you actually spend, and it computes — deterministically, from a hand-curated dataset — the single best card *or combination of cards* for you, netting out reward rates, category caps, annual fees, signup bonuses, and the credits you'd realistically use.
+Most card recommendation sites rank whatever pays them the highest commission, this tool tells you exactly which card is the best for you
 
 **Try it now: [creditcardpicker.vercel.app](https://creditcardpicker.vercel.app)** — no install, no clone, no account. Or run everything locally (see [Getting started](#getting-started)).
 
 ## What it does
 
 - **Enter your spending** by category (groceries, dining, gas, travel, …) — or import it straight from your card statements (PDF/CSV) and let the tool categorize it.
-- **Answer a few honesty questions** — would you really use an airline credit? a food-delivery perk? — so credits and perks are only counted when you'd actually redeem them.
+- **Answer a few honesty questions** — would you really use an airline credit? keep a DoorDash habit? — so credits and perks are only counted when you'd actually redeem them.
 - **Get a ranked list of card portfolios** (1 up to N cards), each with its net annual value: rewards earned minus fees, with every assumption shown. It tells you which card to swipe for which category.
 - **Read the receipts**: the site's How-it-works, Data-sources, and Assumptions pages show the full methodology, every card file's verification status, and the exact point valuations used — served live from the same data the optimizer scores.
 
@@ -20,10 +20,6 @@ Most card-recommendation sites rank whatever pays them the highest affiliate com
 - Statement imports (PDF/CSV/OFX) are parsed entirely in your browser — the files are never uploaded anywhere. Only the resulting per-category dollar totals are sent to the optimizer API to be scored, and nothing is stored.
 - No accounts, no cookies, no analytics, no tracking.
 - Want even the category totals to stay on your machine? Run the optimizer locally (below) — the same site works against `localhost`, and the command-line mode needs no server at all.
-
-## No conflicts of interest
-
-There are no affiliate links, sponsored placements, or monetization of any kind — by design, permanently. Rankings are pure arithmetic over your numbers. See [docs/research.md](docs/research.md) for why this matters in this industry.
 
 ## Getting started
 
@@ -50,7 +46,7 @@ python3 scripts/optimize.py --profile my-profile.yaml
 
 - **Hand-curated data.** Every card is a human-maintained YAML file with sources, verification date, and a confidence grade — never scraped or AI-generated on the fly. CI re-flags any card not re-checked in 6 months. `confidence: low` marks data still awaiting human verification against issuer terms.
 - **Deterministic.** Identical inputs produce byte-identical output. Every valuation assumption (point values, credit usage, caps) is echoed in the run header so you can audit the math.
-- **Honest valuation.** Points are priced at each program's engaged-average cents-per-point, statement credits only count if you said you'd use them, and issuer-portal earn rates are discounted for the price premiums portals charge.
+- **Honest valuation.** Points are priced at each program's engaged-average cents-per-point, and statement credits only count if you said you'd use them.
 
 ---
 
