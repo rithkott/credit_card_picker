@@ -19,6 +19,17 @@
 # earn rates and portal credits are valued without confirmation (the card-level
 # `portal` field is validated against statement-descriptors.yaml instead).
 #
+# Groups may carry `assumed_reward_kind: flights|hotels`. Those groups are the
+# BRAND-LOYALTY questions (airlines, hotels): whether the user flies or stays
+# in hotels at all is already answered by user.reward_preferences, and a user
+# is assumed to book whichever brand gives the best value. So when the matching
+# reward kind (or total_value) is in reward_preferences, the group's items are
+# treated as assumed-usable for credit gating — at the conservative
+# CREDIT_CAPTURE haircut. An explicitly checked item still means brand loyalty:
+# it unlocks the program's optimistic cpp (loyalty_keys) and the softer
+# CONFIRMED_CREDIT_CAPTURE. Groups without the field keep strict gating:
+# unconfirmed = $0.
+#
 # Invariants (enforced by scripts/validate_cards.py):
 #   - every item key exists in data/meta/statement-descriptors.yaml
 #   - every item key is referenced by >=1 card usage_keys, card portal, or
@@ -31,7 +42,8 @@
 groups:
   airlines:
     label: Airlines
-    prompt: "Do you (or will you) fly regularly with any of these airlines?"
+    prompt: "Are you loyal to any of these airlines — a frequent-flyer program you stick with?"
+    assumed_reward_kind: flights
     items:
       delta: {label: "Delta"}
       united: {label: "United"}
@@ -52,7 +64,8 @@ groups:
 
   hotels:
     label: Hotel chains & cruises
-    prompt: "Do you (or will you) stay regularly with any of these hotel chains or cruise lines?"
+    prompt: "Are you loyal to any of these hotel chains or cruise lines?"
+    assumed_reward_kind: hotels
     items:
       hilton: {label: "Hilton (Waldorf, Conrad, Hampton, DoubleTree, ...)"}
       marriott: {label: "Marriott (Ritz-Carlton, Westin, Sheraton, Courtyard, ...)"}

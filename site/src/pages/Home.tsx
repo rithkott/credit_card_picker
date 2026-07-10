@@ -5,6 +5,7 @@ import type { Unit } from '../lib/money'
 import { buildProfile, type UserState } from '../lib/profile'
 import { validate, type SpendState } from '../lib/validation'
 import { AboutYou } from '../components/AboutYou'
+import { BrandLoyalty } from '../components/BrandLoyalty'
 import { ChecksPanel } from '../components/ChecksPanel'
 import { StatementImport } from '../components/import/StatementImport'
 import { RewardPreferences } from '../components/RewardPreferences'
@@ -65,6 +66,16 @@ export function Home({ cfg, onRetryConfig }: {
     return validate(spend, cfg.config.merchants, user.credit_tier, user.rewardKinds, categoryLabels)
   }, [cfg, spend, user.credit_tier, user.rewardKinds, categoryLabels])
 
+  // Shared by the Brand loyalty block and the usage questionnaire — both edit
+  // the same user.confirmed_usage set (keys are globally unique across groups).
+  const toggleUsage = (key: string, on: boolean) =>
+    setUser((u) => {
+      const next = new Set(u.confirmed_usage)
+      if (on) next.add(key)
+      else next.delete(key)
+      return { ...u, confirmed_usage: next }
+    })
+
   const onRun = () => {
     setElapsed(0)
     setRun({ phase: 'running', startedAt: Date.now() })
@@ -118,6 +129,11 @@ export function Home({ cfg, onRetryConfig }: {
             onChange={(kind, on) =>
               setUser((u) => ({ ...u, rewardKinds: { ...u.rewardKinds, [kind]: on } }))}
           />
+          <BrandLoyalty
+            config={cfg.config}
+            confirmed={user.confirmed_usage}
+            onToggle={toggleUsage}
+          />
           <SpendEntry
             config={cfg.config}
             spend={spend}
@@ -132,13 +148,7 @@ export function Home({ cfg, onRetryConfig }: {
           <UsageQuestionnaire
             config={cfg.config}
             confirmed={user.confirmed_usage}
-            onToggle={(key, on) =>
-              setUser((u) => {
-                const next = new Set(u.confirmed_usage)
-                if (on) next.add(key)
-                else next.delete(key)
-                return { ...u, confirmed_usage: next }
-              })}
+            onToggle={toggleUsage}
           />
           <AboutYou
             config={cfg.config}

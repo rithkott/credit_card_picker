@@ -187,6 +187,10 @@ def config() -> dict:
             for key, entry in ds["merchants"].items()],
         "usage_questions": [
             {"key": gkey, "label": group["label"], "prompt": group["prompt"],
+             # Brand-loyalty groups (airlines/hotels): the UI renders these in
+             # their own "brand loyalty" block, and the optimizer assumes their
+             # items usable when the kind is in reward_preferences.
+             "assumed_reward_kind": group.get("assumed_reward_kind"),
              "items": [{"key": ikey, "label": item["label"]}
                        for ikey, item in group["items"].items()]}
             for gkey, group in ds["usage_questions"].items()],

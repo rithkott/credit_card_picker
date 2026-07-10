@@ -5,7 +5,8 @@
 groups:
   airlines:
     label: Airlines
-    prompt: "Do you fly regularly with any particular airline?"
+    prompt: "Are you loyal to any particular airline?"
+    assumed_reward_kind: flights
     items:
       brandair: {label: "BrandAir (synthetic loyalty-test airline)"}
   rideshare_car:

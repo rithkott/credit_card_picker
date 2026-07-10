@@ -91,6 +91,15 @@ def main() -> int:
                 f"data/meta/usage-questions.yaml: group '{gname}' must have a label, "
                 f"a prompt, and a non-empty items map")
             continue
+        # Brand-loyalty groups: assumed_reward_kind marks the group's items as
+        # assumed-usable for credit gating when the matching reward kind is in
+        # user.reward_preferences (the optimizer's assumed_usage()); only
+        # flights/hotels make sense — "would book whichever brand is best".
+        assumed = group.get("assumed_reward_kind")
+        if assumed is not None and assumed not in ("flights", "hotels"):
+            errors.append(
+                f"data/meta/usage-questions.yaml: group '{gname}': "
+                f"assumed_reward_kind must be 'flights' or 'hotels', got {assumed!r}")
         for key in items:
             if key in usage_keys_all:
                 errors.append(

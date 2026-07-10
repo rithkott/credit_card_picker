@@ -10,7 +10,16 @@
 export interface ConfigCategory { key: string; label: string }
 export interface ConfigMerchant { key: string; label: string; category: string }
 export interface UsageItem { key: string; label: string }
-export interface UsageGroup { key: string; label: string; prompt: string; items: UsageItem[] }
+export interface UsageGroup {
+  key: string
+  label: string
+  prompt: string
+  /** Set on brand-loyalty groups (airlines → 'flights', hotels → 'hotels'):
+   * the UI renders them in the Brand loyalty block, and the optimizer treats
+   * their items as assumed-usable when the kind is in reward_preferences. */
+  assumed_reward_kind: string | null
+  items: UsageItem[]
+}
 
 /** Statement-import rules (data/meta/category-rules.yaml +
  * statement-descriptors.yaml) served by /api/config for the in-browser
@@ -143,6 +152,9 @@ export interface OptimizeBundle {
   max_cards: number
   reward_preferences: string[]
   confirmed_usage: string[]
+  /** Derived, not user input: airline/hotel usage keys treated as usable
+   * because the matching reward kind is in reward_preferences. */
+  assumed_usage: string[]
   accepts_brand_lockin: boolean
   cpp_table: Record<string, { floor_cpp: number; optimistic_cpp: number; avg_cpp: number }>
   policy_constants: Record<string, unknown>
