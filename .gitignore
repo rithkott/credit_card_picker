@@ -9,3 +9,4 @@ testdata/
 data/build/
 Design-Handoff-package.zip
 design-handoff-extracted/
+.vercel

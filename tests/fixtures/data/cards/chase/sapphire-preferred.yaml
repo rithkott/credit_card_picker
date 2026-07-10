@@ -33,7 +33,6 @@ credits:
   - name: Annual hotel credit (Chase Travel)
     amount_usd: 50
     period: annual
-    usage_keys: [chase_travel]
     category: travel_hotels
     realistic_capture_rate_note: >-
       Requires booking a hotel through Chase Travel, where prices can exceed direct

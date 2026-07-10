@@ -39,7 +39,7 @@
     "base_rate_conditional": { "$ref": "#/$defs/conditionalRate" },
     "portal": {
       "type": "string",
-      "description": "Usage-question item key (travel_portals group of data/meta/usage-questions.yaml) naming the issuer portal this card's portal_only rates book through. Required by the validator when any category reward has portal_only: true — the optimizer drops those lines unless the user confirmed this key in user.confirmed_usage. Card-level (not issuer-level) because e.g. Citi AAdvantage cards use aadvantage_hotels, not citi_travel"
+      "description": "statement-descriptors.yaml key naming the issuer portal this card's portal_only rates book through. Required by the validator when any category reward has portal_only: true. Portal use is assumed by the optimizer (a user books through the portal of whichever card they hold), so this is not a questionnaire item — it names the portal in the discounted-rate note and lets statement import categorize portal purchases. Card-level (not issuer-level) because e.g. Citi AAdvantage cards use aadvantage_hotels, not citi_travel"
     },
     "unlocks_transfers": {
       "type": "boolean",

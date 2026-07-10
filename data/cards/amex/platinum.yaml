@@ -117,7 +117,6 @@ credits:
   - name: Hotel Credit
     amount_usd: 300          # "up to $300 semiannually ($600/year)"
     period: semiannual
-    usage_keys: [amex_travel]
     category: travel_hotels
     realistic_capture_rate_note: >-
       $300 twice a year on prepaid Fine Hotels+Resorts / The Hotel Collection bookings

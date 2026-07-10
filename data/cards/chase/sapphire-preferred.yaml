@@ -53,7 +53,6 @@ credits:
   - name: Annual Chase Travel Hotel Credit
     amount_usd: 100           # "$100 Annual Chase Travel Hotel Credit ... up to $100/year"
     period: annual
-    usage_keys: [chase_travel]
     category: travel_hotels
     realistic_capture_rate_note: >-
       Automatic statement credit on the first $100/year of hotel purchases booked through

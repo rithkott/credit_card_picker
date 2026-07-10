@@ -11,9 +11,13 @@
 #
 # Item keys are globally unique across groups and are the vocabulary for:
 #   - credits[].usage_keys in card files (anyOf: one confirmed key unlocks it)
-#   - the card-level `portal` field (gates portal_only earn rates)
 #   - loyalty_keys in data/meta/point-valuations.yaml (gates optimistic cpp
 #     for lock-in currencies)
+#
+# Issuer travel portals are deliberately NOT asked about: the optimizer assumes
+# a user books through the portal of whichever card they hold, so portal_only
+# earn rates and portal credits are valued without confirmation (the card-level
+# `portal` field is validated against statement-descriptors.yaml instead).
 #
 # Invariants (enforced by scripts/validate_cards.py):
 #   - every item key exists in data/meta/statement-descriptors.yaml
@@ -25,19 +29,6 @@
 # prompt; a single-item group renders as one checkbox labeled by the prompt.
 
 groups:
-  travel_portals:
-    label: Issuer travel portals
-    prompt: "Do you (or will you) book travel through any of these issuer portals?"
-    items:
-      chase_travel: {label: "Chase Travel"}
-      amex_travel: {label: "Amex Travel (AmexTravel.com)"}
-      capital_one_travel: {label: "Capital One Travel / Entertainment"}
-      citi_travel: {label: "Citi Travel"}
-      bilt_travel: {label: "Bilt Travel"}
-      sofi_travel: {label: "SoFi Travel"}
-      robinhood_travel: {label: "Robinhood travel portal"}
-      aadvantage_hotels: {label: "AAdvantage Hotels / Cars"}
-
   airlines:
     label: Airlines
     prompt: "Do you (or will you) fly regularly with any of these airlines?"

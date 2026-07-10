@@ -20,7 +20,7 @@ const baseUser = (): UserState => ({
   optimize_for: 'ongoing',
   accepts_brand_lockin: false,
   rewardKinds: { cashback: true, flights: true, hotels: true },
-  confirmed_usage: new Set(['doordash', 'chase_travel']),
+  confirmed_usage: new Set(['doordash', 'delta']),
 })
 
 const spendOf = (cats: Record<string, number | null>, mers: Record<string, number | null> = {}): SpendState => ({
@@ -119,7 +119,7 @@ describe('profile emission (plan 03 §2 rules)', () => {
       optimize_for: 'ongoing',
       activates_rotating: true, // assumed on; no longer asked in the UI
       accepts_brand_lockin: false,
-      confirmed_usage: ['chase_travel', 'doordash'], // sorted
+      confirmed_usage: ['delta', 'doordash'], // sorted
       reward_preferences: ['cashback', 'flights', 'hotels'],
     })
   })

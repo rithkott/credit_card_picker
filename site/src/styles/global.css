@@ -120,6 +120,8 @@ body {
 .nav-pill nav { display: flex; gap: 20px; font-size: 13px; }
 .nav-pill nav a { color: rgba(242, 243, 247, 0.65); text-decoration: none; }
 .nav-pill nav a:hover { color: var(--text); }
+.nav-pill nav a.active { color: var(--accent-text); font-weight: 600; }
+.nav-pill a.wordmark { color: var(--text); text-decoration: none; }
 
 /* Corner GitHub / open-source button */
 .github-corner {
@@ -697,6 +699,60 @@ details.disclosure pre {
   color: var(--text-2); margin: 0.4em 0 0;
 }
 .reason-list { font-size: 12.5px; color: var(--text-muted); display: grid; gap: 3px; }
+
+/* Content pages (How it works / Data sources / Assumptions) */
+.hero.compact { padding: 46px 40px 14px; }
+.hero.compact h1 { font-size: 38px; }
+.content-page section.block.prose { max-width: 860px; margin-left: auto; margin-right: auto; }
+section.block.prose p {
+  margin: 0.85em 0 0;
+  font-size: 14px; line-height: 1.65;
+  color: var(--text-2);
+  max-width: 68ch;
+}
+section.block.prose p strong { color: var(--text); }
+section.block.prose a { color: var(--accent); }
+.src-link { font-size: 13px; }
+.dataset-count {
+  text-align: center; margin: 22px 0 4px;
+  font-family: var(--mono); font-size: 12px;
+  color: var(--text-faint);
+}
+.issuer-group .panel-head h2 { margin: 0; }
+.table-scroll { overflow-x: auto; margin-top: 14px; }
+table.data-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+table.data-table th {
+  text-align: left;
+  font-size: 11.5px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-faint);
+  padding: 6px 14px 8px 0;
+  border-bottom: 1px solid var(--hairline-strong);
+}
+table.data-table td {
+  padding: 8px 14px 8px 0;
+  border-bottom: 1px solid var(--hairline);
+  color: var(--text-2);
+  vertical-align: baseline;
+}
+table.data-table tr:last-child td { border-bottom: none; }
+table.data-table td:first-child { color: var(--text); font-weight: 600; }
+table.data-table td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.data-table a { color: var(--accent); font-size: 12.5px; }
+table.data-table .dim { color: var(--text-faint); font-size: 12.5px; }
+.conf {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 1px 10px;
+  font-size: 11px; font-weight: 600;
+  white-space: nowrap;
+}
+.conf-low { border: 1px solid rgba(232, 196, 122, 0.5); color: var(--warn); }
+.conf-ok { border: 1px solid rgba(143, 168, 255, 0.5); color: var(--accent-text); }
 
 /* Footer */
 footer.site {

@@ -4,8 +4,13 @@
 Wraps scripts/optimize.py IN-PROCESS — the optimizer stays the repo's single
 computation engine; this file only maps HTTP to its functions:
 
-  GET  /api/health    — liveness probe for the frontend's server banner.
-  GET  /api/config    — everything the form needs in one call (categories,
+  GET  /api/health      — liveness probe for the frontend's server banner.
+  GET  /api/cards       — card-summary list for the site's Data-sources page:
+                          identity, fee, currency, and the verification block,
+                          straight from the loaded card files.
+  GET  /api/assumptions — the point-valuation table (data/meta/
+                          point-valuations.yaml) for the Assumptions page.
+  GET  /api/config      — everything the form needs in one call (categories,
                         merchants, usage-question groups, tier order, user
                         defaults, reward kinds, statement-import rules), built
                         from the loaded dataset and optimize.py constants. The
@@ -30,6 +35,7 @@ mode that also sidesteps Safari's https->http://localhost restriction.
 """
 
 import json
+import os
 import sys
 from contextlib import asynccontextmanager
 from datetime import date, datetime
@@ -38,7 +44,6 @@ from pathlib import Path
 import yaml
 from fastapi import Body, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -84,7 +89,15 @@ app.add_middleware(
 
 def dump_debug_run(request_body: dict, status: int, payload: dict) -> None:
     """One YAML per optimize call — the exact request plus the full result or
-    error. A debugging aid must never break the request itself."""
+    error. A debugging aid must never break the request itself.
+
+    LOCAL-ONLY BY POLICY: on the hosted deployment (Vercel sets VERCEL=1)
+    dumps are disabled outright — the privacy promise is that user spend
+    totals are computed on and discarded, never written anywhere. The
+    read-only serverless filesystem would make the write fail anyway; this
+    guard makes no-storage a guarantee instead of an accident."""
+    if os.environ.get("VERCEL"):
+        return
     try:
         DEBUG_DIR.mkdir(exist_ok=True)
         now = datetime.now()
@@ -105,11 +118,65 @@ def health() -> dict:
     return {"ok": True, "cards_total": len(STATE["dataset"]["cards"])}
 
 
+@app.get("/api/cards")
+def cards() -> dict:
+    """Card summaries for the Data-sources page — one row per card file,
+    including the verification block so the page can be honest about
+    confidence. No registry copy: labels come from the loaded dataset."""
+    ds = STATE["dataset"]
+    programs = ds["programs"]
+    out = []
+    for card in ds["cards"]:
+        cur = card["currency"]
+        ver = card.get("verification", {})
+        out.append({
+            "id": card["id"],
+            "name": card["name"],
+            "issuer": card["issuer"],
+            "network": card.get("network"),
+            "annual_fee_usd": card["fees"]["annual_fee_usd"],
+            "currency": {
+                "type": cur["type"],
+                "program": cur["program"],
+                "program_label": programs[cur["program"]].get("label", cur["program"]),
+            },
+            "base_rate": card.get("base_rate"),
+            "verification": {
+                "last_verified_date": ver.get("last_verified_date"),
+                "confidence": ver.get("confidence"),
+                "verified_by": ver.get("verified_by"),
+            },
+        })
+    return {"cards": out, "total": len(out)}
+
+
+@app.get("/api/assumptions")
+def assumptions() -> dict:
+    """The shared valuation table for the Assumptions page — the exact
+    numbers the optimizer uses, straight from point-valuations.yaml."""
+    ds = STATE["dataset"]
+    return {
+        "programs": [
+            {"key": key,
+             "label": entry.get("label", key),
+             "redeems_for": entry.get("redeems_for", []),
+             "floor_cpp": entry["floor_cpp"],
+             "optimistic_cpp": entry["optimistic_cpp"],
+             "transfer_gateway_required": entry.get("transfer_gateway_required", False),
+             "loyalty_keys": entry.get("loyalty_keys", [])}
+            for key, entry in ds["programs"].items()],
+    }
+
+
 @app.get("/api/config")
 def config() -> dict:
     """The form's single source of truth, straight from the registries."""
     ds = STATE["dataset"]
+    verified_dates = [
+        d for d in ((c.get("verification") or {}).get("last_verified_date")
+                    for c in ds["cards"]) if d]
     return {
+        "data_last_verified": max(verified_dates) if verified_dates else None,
         "categories": [
             {"key": key, "label": entry.get("label", key)}
             for key, entry in ds["categories"].items()
@@ -175,11 +242,20 @@ def optimize(body: dict = Body(...)) -> dict:
     return bundle
 
 
-# Serve the built site when present (npm run build) — mounted after the API
-# routes so /api/* always wins. This is the fully-local mode: everything on
-# http://localhost:8000, no Pages, no cross-origin.
+# Serve the built site when present (npm run build) — registered after the
+# API routes so /api/* always wins. This is the fully-local mode: everything
+# on http://localhost:8000, no cross-origin. The catch-all (instead of a
+# plain StaticFiles mount) gives the SPA history-router fallback: client
+# routes like /how-it-works serve index.html, real files serve themselves.
 if SITE_DIST.is_dir():
-    app.mount("/", StaticFiles(directory=SITE_DIST, html=True), name="site")
+    from fastapi.responses import FileResponse
+
+    @app.get("/{path:path}", include_in_schema=False)
+    def spa(path: str) -> FileResponse:
+        file = (SITE_DIST / path).resolve()
+        if path and file.is_relative_to(SITE_DIST) and file.is_file():
+            return FileResponse(file)
+        return FileResponse(SITE_DIST / "index.html")
 
 
 if __name__ == "__main__":

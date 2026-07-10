@@ -66,7 +66,9 @@ PERIODS_PER_YEAR = {"monthly": 12, "quarterly": 4, "semiannual": 2,
 CAP_PERIODS_PER_YEAR = {"monthly": 12, "quarterly": 4, "annual": 1}
 
 # Deterministic proxy for portal price premiums (portal fares often run above
-# direct booking, eroding the headline multiplier).
+# direct booking, eroding the headline multiplier). Applied to every
+# portal_only line: a user is assumed to book through the portal of whatever
+# card they hold, so portal rates need no questionnaire confirmation.
 PORTAL_RATE_MULT = 0.75
 
 # Fraction of a rotating card's theoretical annual cap room assumed usable,
@@ -225,9 +227,9 @@ def parse_profile(raw, dataset: dict) -> dict:
         raise InputError("profile: 'user' must be a mapping and include credit_tier")
     if "uses_travel_portal" in user_raw:
         raise InputError(
-            "profile: user.uses_travel_portal was removed — list the issuer portals "
-            "you actually book through in user.confirmed_usage instead "
-            "(see data/meta/usage-questions.yaml, travel_portals group)")
+            "profile: user.uses_travel_portal was removed — issuer-portal use is "
+            "now assumed for every held card, so portal_only rates apply "
+            "automatically (discounted by PORTAL_RATE_MULT); drop the key")
     if "valuation_mode" in user_raw:
         raise InputError(
             "profile: user.valuation_mode was removed — points are now valued at "
@@ -415,10 +417,10 @@ def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
         rate = cr["rate"]
         notes = ["chosen category"] if cr.get("_chosen") else []
         if cr.get("portal_only"):
-            if card.get("portal") not in confirmed:
-                continue  # portal unconfirmed — dropped; spend falls through to the next line
+            # Portal use is assumed for any held card (the questionnaire no
+            # longer asks); the multiplier still discounts portal price premiums.
             rate = rate * PORTAL_RATE_MULT
-            notes.append(f"portal ×{PORTAL_RATE_MULT} ({card['portal']} confirmed)")
+            notes.append(f"portal ×{PORTAL_RATE_MULT} ({card['portal']}, use assumed)")
         note = "; ".join(notes)
         eligible = [cat] if cat in buckets else []
         eligible += [b for b, bk in buckets.items()
@@ -1093,7 +1095,7 @@ def render_text(bundle: dict) -> str:
                f"brand lock-in ok: {'yes' if bundle['accepts_brand_lockin'] else 'no'}")
     out.append("Confirmed usage: "
                + (", ".join(bundle["confirmed_usage"]) or
-                  "none — merchant/portal/loyalty-gated value counts $0 "
+                  "none — merchant/loyalty-gated value counts $0 "
                   "(see data/meta/usage-questions.yaml)"))
     cpp = ", ".join(f"{p} {v['avg_cpp']}" for p, v in bundle["cpp_table"].items())
     out.append(f"Point valuations (avg_cpp = mean of floor and optimistic; "

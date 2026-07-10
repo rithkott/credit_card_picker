@@ -1,0 +1,4 @@
+# Runtime deps for the Vercel Python function (api/index.py -> server/app.py).
+# Local development instead uses server/requirements.txt (adds uvicorn/httpx).
+fastapi
+pyyaml

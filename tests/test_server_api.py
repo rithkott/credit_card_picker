@@ -90,6 +90,46 @@ class TestServerAPI(unittest.TestCase):
         self.assertEqual(cfg["user_defaults"], opt.USER_DEFAULTS)
         self.assertEqual(cfg["reward_kinds"], opt.REWARD_KINDS)
         self.assertEqual(cfg["max_cards_range"], [1, 5])
+        # data_last_verified = the newest verification date across all cards.
+        real_dates = [(c.get("verification") or {}).get("last_verified_date")
+                      for c in self.dataset["cards"]]
+        self.assertEqual(cfg["data_last_verified"],
+                         max(d for d in real_dates if d))
+
+    def test_cards_mirrors_card_files(self):
+        body = self.client.get("/api/cards").json()
+        self.assertEqual(body["total"], len(self.dataset["cards"]))
+        self.assertEqual([c["id"] for c in body["cards"]],
+                         [c["id"] for c in self.dataset["cards"]])
+        by_id = {c["id"]: c for c in self.dataset["cards"]}
+        for row in body["cards"]:
+            src = by_id[row["id"]]
+            self.assertEqual(row["name"], src["name"])
+            self.assertEqual(row["issuer"], src["issuer"])
+            self.assertEqual(row["annual_fee_usd"], src["fees"]["annual_fee_usd"])
+            self.assertEqual(row["currency"]["program"], src["currency"]["program"])
+            self.assertEqual(
+                row["currency"]["program_label"],
+                self.dataset["programs"][src["currency"]["program"]].get(
+                    "label", src["currency"]["program"]))
+            ver = src.get("verification", {})
+            self.assertEqual(row["verification"]["confidence"],
+                             ver.get("confidence"))
+            self.assertEqual(row["verification"]["last_verified_date"],
+                             ver.get("last_verified_date"))
+
+    def test_assumptions_mirrors_point_valuations(self):
+        body = self.client.get("/api/assumptions").json()
+        programs = self.dataset["programs"]
+        self.assertEqual([p["key"] for p in body["programs"]], list(programs))
+        for p in body["programs"]:
+            src = programs[p["key"]]
+            self.assertEqual(p["floor_cpp"], src["floor_cpp"])
+            self.assertEqual(p["optimistic_cpp"], src["optimistic_cpp"])
+            self.assertEqual(p["redeems_for"], src.get("redeems_for", []))
+            self.assertEqual(p["transfer_gateway_required"],
+                             src.get("transfer_gateway_required", False))
+            self.assertEqual(p["loyalty_keys"], src.get("loyalty_keys", []))
 
     def test_config_statement_import_mirrors_registries(self):
         cfg = self.client.get("/api/config").json()
@@ -182,6 +222,22 @@ class TestServerAPI(unittest.TestCase):
         self.assertEqual(record["request"], body)
         self.assertEqual(record["status"], 200)
         self.assertIn("portfolios", record["result"])
+
+    def test_debug_dump_disabled_on_vercel(self):
+        """The hosted deployment must never write user spend anywhere —
+        the privacy claim depends on this, not on the FS being read-only."""
+        import os
+        before = set(Path(self._tmp.name).iterdir())
+        body = {"spend": {"other": 1000}, "user": {"credit_tier": "good",
+                                                   "max_cards": 1},
+                "as_of": AS_OF}
+        os.environ["VERCEL"] = "1"
+        try:
+            r = self.client.post("/api/optimize", json=body)
+        finally:
+            del os.environ["VERCEL"]
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(set(Path(self._tmp.name).iterdir()), before)
 
 
 if __name__ == "__main__":
