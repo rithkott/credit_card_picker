@@ -9,7 +9,7 @@ Most card-recommendation sites rank whatever pays them the highest affiliate com
 ## What it does
 
 - **Enter your spending** by category (groceries, dining, gas, travel, …) — or import it straight from your card statements (PDF/CSV) and let the tool categorize it.
-- **Answer a few honesty questions** — would you really use an airline credit? carry a portal habit? — so credits and perks are only counted when you'd actually redeem them.
+- **Answer a few honesty questions** — would you really use an airline credit? a food-delivery perk? — so credits and perks are only counted when you'd actually redeem them.
 - **Get a ranked list of card portfolios** (1 up to N cards), each with its net annual value: rewards earned minus fees, with every assumption shown. It tells you which card to swipe for which category.
 - **Read the receipts**: the site's How-it-works, Data-sources, and Assumptions pages show the full methodology, every card file's verification status, and the exact point valuations used — served live from the same data the optimizer scores.
 
@@ -50,7 +50,7 @@ python3 scripts/optimize.py --profile my-profile.yaml
 
 - **Hand-curated data.** Every card is a human-maintained YAML file with sources, verification date, and a confidence grade — never scraped or AI-generated on the fly. CI re-flags any card not re-checked in 6 months. `confidence: low` marks data still awaiting human verification against issuer terms.
 - **Deterministic.** Identical inputs produce byte-identical output. Every valuation assumption (point values, credit usage, caps) is echoed in the run header so you can audit the math.
-- **Honest valuation.** Points are priced at each program's engaged-average cents-per-point, and statement credits only count if you said you'd use them.
+- **Honest valuation.** Points are priced at each program's engaged-average cents-per-point, statement credits only count if you said you'd use them, and issuer-portal earn rates are discounted for the price premiums portals charge.
 
 ---
 

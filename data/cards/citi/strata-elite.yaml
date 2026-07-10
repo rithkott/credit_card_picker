@@ -40,7 +40,6 @@ credits:
   - name: Annual hotel benefit (Citi Travel)
     amount_usd: 300          # "Up to $300/year hotel benefit via Citi Travel"
     period: annual
-    usage_keys: [citi_travel]
     category: travel_hotels
     realistic_capture_rate_note: >-
       Applies to 2+ night stays booked/prepaid through Citi Travel; unused portion carries

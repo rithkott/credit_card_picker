@@ -44,7 +44,7 @@ credits:
   - name: Capital One Travel credit
     amount_usd: 300
     period: annual
-    usage_keys: [capital_one_travel]
+    category: travel_other
     realistic_capture_rate_note: >-
       Redeemable ONLY on bookings made through the Capital One Travel portal, where
       prices can exceed direct-booking rates. High capture for cardholders who book

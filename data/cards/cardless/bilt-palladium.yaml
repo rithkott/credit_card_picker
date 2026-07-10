@@ -30,7 +30,6 @@ credits:
   - name: Bilt Travel Hotel Credit
     amount_usd: 200          # "$200 per half-year (Jan-Jun / Jul-Dec)"; face value per period
     period: semiannual
-    usage_keys: [bilt_travel]
     category: travel_hotels
     requires_enrollment: true  # "must opt in at checkout"
     realistic_capture_rate_note: >-

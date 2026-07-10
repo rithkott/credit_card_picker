@@ -5,7 +5,7 @@ import type { Config } from '../types'
  * name, a selected-count badge in accent when >0, and the option chips
  * (all of them; they wrap — the design mock's "+ N more" condensation is
  * mock-only). Checked keys become user.confirmed_usage: they unlock merchant
- * credits, portal earn rates, and airline/hotel point value. */
+ * credits and airline/hotel point value. */
 export function UsageQuestionnaire({ config, confirmed, onToggle }: {
   config: Config
   confirmed: Set<string>
@@ -15,7 +15,7 @@ export function UsageQuestionnaire({ config, confirmed, onToggle }: {
     <section className="block">
       <h2>Things you already use (or would)</h2>
       <p className="why">
-        Card credits, travel portals, and airline or hotel points only count if you'd actually
+        Card credits and airline or hotel points only count if you'd actually
         use them. Anything unchecked is valued at $0 — so the results never assume habits you
         don't have.
       </p>

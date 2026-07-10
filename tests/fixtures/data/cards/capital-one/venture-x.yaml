@@ -23,7 +23,6 @@ credits:
   - name: Capital One Travel credit
     amount_usd: 300
     period: annual
-    usage_keys: [capital_one_travel]
     category: travel_other
     realistic_capture_rate_note: >-
       Only usable through the Capital One Travel portal, where prices can run above

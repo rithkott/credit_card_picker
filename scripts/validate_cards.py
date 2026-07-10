@@ -18,9 +18,11 @@ Checks, per card file:
      numeric floor_cpp / optimistic_cpp and a valid redeems_for list.
      Confirmed-usage gating (plan 07): every credit carries at least one of
      usage_keys / category / automatic (else it would be free money for every
-     user); automatic is exclusive of the other two; usage_keys / portal /
-     loyalty_keys must be usage-questions.yaml items (which must themselves be
-     statement-descriptors.yaml keys); non-cashback programs require
+     user); automatic is exclusive of the other two; usage_keys / loyalty_keys
+     must be usage-questions.yaml items (which must themselves be
+     statement-descriptors.yaml keys); the card-level portal must be a
+     statement-descriptors.yaml key (portal use is assumed by the optimizer,
+     so portals are not questionnaire items); non-cashback programs require
      loyalty_keys and cashback programs may not carry them; cards with
      portal_only reward lines must declare their portal; unlocks_transfers is
      allowed only on transfer_gateway_required programs. Warnings: a monthly/
@@ -78,10 +80,9 @@ def main() -> int:
     warnings: list[str] = []
 
     # usage-questions.yaml is the confirmation vocabulary for credits[].usage_keys,
-    # card portal, program loyalty_keys, and user.confirmed_usage — the optimizer
-    # and UI both trust it, so its integrity is checked before any card is.
+    # program loyalty_keys, and user.confirmed_usage — the optimizer and UI both
+    # trust it, so its integrity is checked before any card is.
     usage_keys_all: set[str] = set()
-    portal_keys: set[str] = set()
     for gname in sorted(questions_registry):
         group = questions_registry[gname] or {}
         items = group.get("items")
@@ -104,7 +105,6 @@ def main() -> int:
                 errors.append(
                     f"data/meta/usage-questions.yaml: item '{key}' (group '{gname}') "
                     f"is missing a label")
-    portal_keys = set((questions_registry.get("travel_portals") or {}).get("items") or {})
 
     # Every program must classify what its currency redeems for — the optimizer's
     # reward-preference filter (user.reward_preferences) depends on it — and carry
@@ -244,8 +244,8 @@ def main() -> int:
 
     seen_ids: dict[str, Path] = {}
     # Keys actually used anywhere — seeded with program loyalty_keys; card
-    # usage_keys and portals are added in the loop. Unreferenced registry items
-    # are warned at the end: every questionnaire item must earn its question.
+    # usage_keys are added in the loop. Unreferenced registry items are
+    # warned at the end: every questionnaire item must earn its question.
     referenced_usage_keys: set[str] = {
         k for entry in programs_registry.values()
         for k in ((entry or {}).get("loyalty_keys") or [])}
@@ -293,17 +293,18 @@ def main() -> int:
                     f"point-valuations.yaml needs the gate")
             else:
                 programs_with_gateway.add(card["currency"]["program"])
-        if "portal" in card:
-            referenced_usage_keys.add(card["portal"])
-        if "portal" in card and card["portal"] not in portal_keys:
+        # Portal use is assumed by the optimizer (no questionnaire gate), but the
+        # key must still name a real descriptor so statement import categorizes
+        # portal purchases and typos don't slip through.
+        if "portal" in card and card["portal"] not in descriptors:
             errors.append(
-                f"{rel}: portal '{card['portal']}' is not an item of the travel_portals "
-                f"group in usage-questions.yaml")
+                f"{rel}: portal '{card['portal']}' is not a key in "
+                f"statement-descriptors.yaml")
         has_portal_lines = any(cr.get("portal_only") for cr in card["category_rewards"])
         if has_portal_lines and "portal" not in card:
             errors.append(
                 f"{rel}: card has portal_only reward lines but no top-level portal key — "
-                f"the optimizer needs it to gate those lines on user.confirmed_usage")
+                f"the optimizer names it in the portal-rate note")
         elif "portal" in card and not has_portal_lines:
             warnings.append(
                 f"{rel}: portal '{card['portal']}' declared but no reward line is "
@@ -460,7 +461,7 @@ def main() -> int:
     for key in sorted(usage_keys_all - referenced_usage_keys):
         warnings.append(
             f"data/meta/usage-questions.yaml: item '{key}' is referenced by no card "
-            f"usage_keys, no card portal, and no program loyalty_keys — remove it so "
+            f"usage_keys and no program loyalty_keys — remove it so "
             f"users aren't asked a question that can't change any recommendation")
 
     for w in warnings:
