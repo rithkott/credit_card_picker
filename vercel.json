@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "cd site && npm ci",
+  "buildCommand": "cd site && npm run build",
+  "outputDirectory": "site/dist",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ],
+  "functions": {
+    "api/index.py": {
+      "excludeFiles": "{site/**,testdata/**,tests/**,data/offer_files/**,design-handoff-extracted/**,Design-Handoff-package.zip,v2_considerations/**,examples/**,docs/**,tools/**,.github/**,server/debug-runs/**}"
+    }
+  }
+}

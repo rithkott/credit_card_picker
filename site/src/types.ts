@@ -43,11 +43,42 @@ export interface Config {
   reward_kinds: string[]
   max_cards_range: [number, number]
   cards_total: number
-  /** Most recent hand-verification date across the dataset (YYYY-MM-DD) —
-   * quoted by the footer trust line instead of a hardcoded date. */
-  data_last_verified: string
+  /** Most recent verification date across the dataset (YYYY-MM-DD), computed
+   * server-side from the card files — quoted by the footer trust line instead
+   * of a hardcoded date. Null only if no card carries a date. */
+  data_last_verified: string | null
   statement_import: StatementImportRules
 }
+
+/** GET /api/cards — one row per card file, for the Data-sources page. */
+export interface CardSummary {
+  id: string
+  name: string
+  issuer: string
+  network: string | null
+  annual_fee_usd: number
+  currency: { type: string; program: string; program_label: string }
+  base_rate: number | null
+  verification: {
+    last_verified_date: string | null
+    confidence: string | null
+    verified_by: string | null
+  }
+}
+export interface CardsResponse { cards: CardSummary[]; total: number }
+
+/** GET /api/assumptions — the shared point-valuation table
+ * (data/meta/point-valuations.yaml), exactly as the optimizer uses it. */
+export interface AssumptionProgram {
+  key: string
+  label: string
+  redeems_for: string[]
+  floor_cpp: number
+  optimistic_cpp: number
+  transfer_gateway_required: boolean
+  loyalty_keys: string[]
+}
+export interface AssumptionsResponse { programs: AssumptionProgram[] }
 
 export interface ProfileUser {
   credit_tier: string

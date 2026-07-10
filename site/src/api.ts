@@ -1,11 +1,14 @@
-import type { Config, OptimizeBundle, Profile } from './types'
+import type { AssumptionsResponse, CardsResponse, Config, OptimizeBundle, Profile } from './types'
 
-/** API base URL. http://localhost:8000 is correct in every v1 mode: Vite dev,
- * the GitHub Pages build (the user runs the API locally), and the server's
- * own static mount of site/dist (same origin, but the absolute URL still
- * resolves to itself). Override with VITE_API_URL at build time. */
+/** API base URL. Production builds default to '' (same-origin — Vercel
+ * serves the API as a Python function next to the static site, and the local
+ * server's static mount of site/dist is same-origin too). Dev keeps the
+ * explicit localhost:8000 so the Vite dev server talks to the local API
+ * directly. Override with VITE_API_URL at build time (e.g. a GitHub Pages
+ * build pointing at a locally-run API). */
 export const API_URL: string =
-  (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:8000'
+  (import.meta.env.VITE_API_URL as string | undefined)
+  ?? (import.meta.env.DEV ? 'http://localhost:8000' : '')
 
 /** Error carrying the server's {"detail": ...} message (422/500) so the UI
  * can render the optimizer's own user-directed text verbatim. */
@@ -38,6 +41,14 @@ export function getHealth(): Promise<{ ok: boolean; cards_total: number }> {
 
 export function getConfig(): Promise<Config> {
   return request('/api/config')
+}
+
+export function getCards(): Promise<CardsResponse> {
+  return request('/api/cards')
+}
+
+export function getAssumptions(): Promise<AssumptionsResponse> {
+  return request('/api/assumptions')
 }
 
 export function optimize(profile: Profile, top = 5): Promise<OptimizeBundle> {
