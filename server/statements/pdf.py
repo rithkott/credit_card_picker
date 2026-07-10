@@ -369,10 +369,13 @@ def parse_pdf(data: bytes, file: str) -> ParsedFile:
     import pdfplumber  # lazy: keep optimizer-only cold starts fast
     from pdfminer.pdfexceptions import PDFException
     from pdfminer.psexceptions import PSException
+    from pdfplumber.utils.exceptions import PdfminerException
 
+    unreadable = (PdfminerException, PDFException, PSException,
+                  ValueError, KeyError, TypeError)
     try:
         pdf = pdfplumber.open(io.BytesIO(data))
-    except (PDFException, PSException, ValueError, KeyError, TypeError):
+    except unreadable:
         # Corrupt/encrypted/unreadable PDF — a per-file, user-renderable error.
         raise StatementParseError(
             f"{file}: couldn't read this PDF — download the CSV export from "
@@ -384,7 +387,7 @@ def parse_pdf(data: bytes, file: str) -> ParsedFile:
         for page in pdf.pages:
             try:
                 extracted = page.extract_words()
-            except (PDFException, PSException, ValueError, KeyError, TypeError):
+            except unreadable:
                 continue  # one broken page shouldn't kill the statement
             base = page.page_number * 100_000  # keep pages in order, tops page-local
             words.extend(

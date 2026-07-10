@@ -131,31 +131,73 @@ class TestServerAPI(unittest.TestCase):
                              src.get("transfer_gateway_required", False))
             self.assertEqual(p["loyalty_keys"], src.get("loyalty_keys", []))
 
-    def test_config_statement_import_mirrors_registries(self):
+    def test_config_has_no_statement_import_block(self):
+        """Since plan 12 the server parses AND categorizes statements itself
+        (POST /api/statements/parse); the rule registries stay server-side
+        and must not ship to the browser anymore."""
         cfg = self.client.get("/api/config").json()
-        si = cfg["statement_import"]
-        descriptors = yaml.safe_load(
-            (ROOT / "data" / "meta" / "statement-descriptors.yaml").read_text()
-        )["descriptors"]
-        rules = yaml.safe_load(
-            (ROOT / "data" / "meta" / "category-rules.yaml").read_text())
-        # Descriptors mirror the registry exactly, key order preserved.
-        self.assertEqual([d["key"] for d in si["descriptors"]], list(descriptors))
-        for d in si["descriptors"]:
-            self.assertEqual(d["patterns"],
-                             descriptors[d["key"]]["statement_patterns"])
-            self.assertEqual(d["label"], descriptors[d["key"]]["label"])
-        # Rule blocks are passed through verbatim.
-        for block in ("descriptor_categories", "aggregator_prefixes", "unmapped",
-                      "keywords", "issuer_categories", "mcc"):
-            self.assertEqual(si[block], rules[block], block)
-        # Bridge integrity as served: every bridge key resolves to a descriptor
-        # and every descriptor key is accounted for in exactly one block.
-        served_keys = {d["key"] for d in si["descriptors"]}
-        assigned = (list(si["descriptor_categories"])
-                    + list(si["aggregator_prefixes"]) + list(si["unmapped"]))
-        self.assertEqual(len(assigned), len(set(assigned)))
-        self.assertTrue(set(assigned) <= served_keys)
+        self.assertNotIn("statement_import", cfg)
+
+    # -- statements/parse (plan 12) -------------------------------------------
+
+    FIXTURES = ROOT / "tests" / "fixtures" / "statements"
+
+    def upload(self, name, data):
+        return self.client.post("/api/statements/parse",
+                                files={"file": (name, data, "application/octet-stream")})
+
+    def test_parse_csv_upload(self):
+        r = self.upload("chase.csv", (self.FIXTURES / "chase.csv").read_bytes())
+        self.assertEqual(r.status_code, 200, r.text)
+        body = r.json()
+        self.assertEqual(body["summary"]["format"], "csv")
+        self.assertEqual(body["summary"]["txns"], 7)
+        self.assertEqual(len(body["txns"]), 7)
+        # Every txn is categorized (match present, exact or a miss).
+        for t in body["txns"]:
+            self.assertIn("match", t)
+            self.assertIn("stem", t["match"])
+        uber = next(t for t in body["txns"] if "UBER" in t["descriptor"])
+        self.assertEqual(uber["match"]["category"], "transit")
+        self.assertEqual(uber["match"]["method"], "exact")
+
+    def test_parse_ofx_upload(self):
+        r = self.upload("sgml.ofx", (self.FIXTURES / "sgml.ofx").read_bytes())
+        self.assertEqual(r.status_code, 200, r.text)
+        self.assertEqual(r.json()["summary"]["format"], "ofx")
+
+    def test_parse_pdf_upload(self):
+        import importlib.util
+        if importlib.util.find_spec("pdfplumber") is None:
+            self.skipTest("pdfplumber not installed")
+        import base64
+        data = base64.b64decode((self.FIXTURES / "statement.pdf.b64").read_text())
+        r = self.upload("statement.pdf", data)
+        self.assertEqual(r.status_code, 200, r.text)
+        body = r.json()
+        self.assertEqual(body["summary"]["format"], "pdf")
+        self.assertEqual(body["summary"]["extraction"], "regex")
+        self.assertEqual(body["summary"]["statement_totals"]["purchases_cents"], 22331)
+
+    def test_parse_unknown_format_422_with_code(self):
+        r = self.upload("junk.bin", bytes([0, 1, 2]))
+        self.assertEqual(r.status_code, 422)
+        self.assertEqual(r.json()["code"], "unrecognized_format")
+        self.assertIn("detail", r.json())
+
+    def test_parse_oversize_413(self):
+        import statements as stmts
+        r = self.upload("big.csv", b"a,b\n" * (stmts.MAX_FILE_BYTES // 4 + 1))
+        self.assertEqual(r.status_code, 413)
+        self.assertEqual(r.json()["code"], "too_large")
+
+    def test_parse_never_writes_debug_dumps(self):
+        """EPHEMERAL BY POLICY: statement uploads must never produce a debug
+        dump (unlike /api/optimize locally) — not on success, not on error."""
+        before = set(Path(self._tmp.name).iterdir())
+        self.upload("chase.csv", (self.FIXTURES / "chase.csv").read_bytes())
+        self.upload("junk.bin", bytes([0, 1, 2]))
+        self.assertEqual(set(Path(self._tmp.name).iterdir()), before)
 
     # -- optimize: golden equivalence ----------------------------------------
 
