@@ -10,3 +10,7 @@ data/build/
 Design-Handoff-package.zip
 design-handoff-extracted/
 .vercel
+
+# local tooling
+.gitnexus/
+.claude/worktrees/
