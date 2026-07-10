@@ -6,7 +6,7 @@ Branch: `statement-backend-v1.2` (worktree `.claude/worktrees/statement-backend-
 ## Steps
 
 - [x] 1. Core parsers ported to `server/statements/`: types.py, detect.py, kind.py, csv_parse.py, ofx.py (+ columns.py inference) — direct ports of site/src/lib/statements TS. Smoke-tested against all 10 text fixtures + 3 synthetic inference cases (headerless, unknown headers, debit/credit pair).
-- [ ] 2. pdf.py (pdfplumber, regex path + layout-band fallback)
+- [x] 2. pdf.py (pdfplumber, regex path + layout-band fallback). Verified: statement.pdf fixture (7 txns, year rollback, summary-box totals), scanned.pdf rejection, synthetic balance-column layout fallback.
 - [ ] 3. categorize.py (4 registry layers + rapidfuzz layer 5) compiled from lifespan registries
 - [ ] 4. API route POST /api/statements/parse + tests/test_statements.py + test_server_api.py additions; statement_import removed from /api/config
 - [ ] 5. Frontend swap: upload loop in index.ts, delete client parsers + pdfjs-dist, aggregate consumes txn.match, types.ts/api.ts/StatementImport.tsx/FileDrop.tsx updates, privacy copy
