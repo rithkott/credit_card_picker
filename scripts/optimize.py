@@ -243,6 +243,7 @@ def parse_profile(raw, dataset: dict) -> dict:
         raise InputError("profile: user.credit_tier is required")
     user = {**USER_DEFAULTS, **user_raw}
     validate_user(user, dataset["usage_keys"])
+    user["assumed_usage"] = assumed_usage(user, dataset["usage_questions"])
 
     return {"spend": dict(sorted(spend.items())),
             "merchant_spend": dict(sorted(merchant_spend.items())),
@@ -280,6 +281,24 @@ def validate_user(user: dict, usage_keys: set) -> None:
         raise InputError(
             f"profile: user.reward_preferences must be a non-empty list of unique "
             f"values from {REWARD_PREF_CHOICES}, got {prefs!r}")
+
+
+def assumed_usage(user: dict, usage_questions: dict) -> list:
+    """Usage keys assumed usable without explicit confirmation (derived, never
+    a profile input). Brand-loyalty groups in usage-questions.yaml carry
+    assumed_reward_kind (airlines→flights, hotels→hotels): whether the user
+    flies or stays in hotels at all is already declared by reward_preferences,
+    and they're assumed to book whichever brand gives the best value. Assumed
+    keys unlock usage-gated credits at the conservative CREDIT_CAPTURE haircut;
+    only explicit confirmation (brand loyalty) unlocks loyalty-gated optimistic
+    cpp and the softer CONFIRMED_CREDIT_CAPTURE."""
+    prefs = set(user["reward_preferences"])
+    keys = set()
+    for group in usage_questions.values():
+        kind = (group or {}).get("assumed_reward_kind")
+        if kind and (kind in prefs or "total_value" in prefs):
+            keys.update(group.get("items") or {})
+    return sorted(keys)
 
 
 # ---------------------------------------------------------------------------
@@ -508,10 +527,12 @@ def score_credits(cards: list, profile: dict, programs: dict,
 
     Gate order per credit (plan 07): expires → usage gate → unlock_spend_usd →
     valuation. The usage gate: a credit with usage_keys is $0 unless the user
-    confirmed at least one key (anyOf) in user.confirmed_usage; confirmed
-    credits use the softer CONFIRMED_CREDIT_CAPTURE table (the questionnaire
-    answered "do they use it at all"; the haircut covers residual breakage),
-    keyless credits keep the conservative CREDIT_CAPTURE.
+    confirmed at least one key (anyOf) in user.confirmed_usage — or the key is
+    in the derived assumed_usage set (brand-loyalty groups whose reward kind is
+    in reward_preferences; see assumed_usage()). Confirmed credits use the
+    softer CONFIRMED_CREDIT_CAPTURE table (the questionnaire answered "do they
+    use it at all"; the haircut covers residual breakage); merely-assumed
+    credits and keyless credits keep the conservative CREDIT_CAPTURE.
 
     Credit variants beyond the classic USD statement credit:
       - unlock_spend_usd: the credit is $0 unless the user's per-period total
@@ -533,6 +554,7 @@ def score_credits(cards: list, profile: dict, programs: dict,
     tracker = {cat: float(v) for cat, v in profile["spend"].items()}
     total_spend = sum(profile["spend"].values())
     confirmed = set(profile["user"]["confirmed_usage"])
+    assumed = set(profile["user"].get("assumed_usage", []))
     unlocked = unlocked_programs(cards)
     results = []
     for card in sorted(cards, key=lambda c: c["id"]):
@@ -544,16 +566,24 @@ def score_credits(cards: list, profile: dict, programs: dict,
                                 "note": f"$0 — promo expired {credit['expires']}"})
                 continue
             keys = credit.get("usage_keys")
-            if keys and not (set(keys) & confirmed):
+            keys_confirmed = set(keys or []) & confirmed
+            keys_assumed = set(keys or []) & assumed
+            if keys and not keys_confirmed and not keys_assumed:
                 results.append({"card_id": card["id"], "name": credit["name"],
                                 "value": 0.0,
                                 "note": f"$0 — requires confirmed use of one of: "
                                         f"{', '.join(keys)} (user.confirmed_usage)"})
                 continue
             periods = PERIODS_PER_YEAR[credit["period"]]
-            capture = (CONFIRMED_CREDIT_CAPTURE if keys else CREDIT_CAPTURE)[credit["period"]]
-            usage_note = (f"; confirmed: {', '.join(sorted(set(keys) & confirmed))}"
-                          if keys else "")
+            capture = (CONFIRMED_CREDIT_CAPTURE if keys_confirmed else CREDIT_CAPTURE)[credit["period"]]
+            if keys_confirmed:
+                usage_note = f"; confirmed: {', '.join(sorted(keys_confirmed))}"
+            elif keys_assumed:
+                usage_note = (f"; assumed usable: {', '.join(sorted(keys_assumed))} "
+                              f"(reward preferences imply you'd book the best-value "
+                              f"brand; confirm loyalty for fuller capture)")
+            else:
+                usage_note = ""
             in_kind = credit.get("kind") == "in_kind"
 
             unlock = credit.get("unlock_spend_usd")
@@ -1030,6 +1060,10 @@ def assemble_portfolio(entry: dict, by_id: dict, profile: dict, programs: dict,
 
 def run(dataset: dict, profile: dict, as_of: date, top: int) -> dict:
     """Produce the full output bundle rendered by render_text / render_json."""
+    # Recompute here (parse_profile also sets it) so CLI --rewards overrides
+    # applied after parsing can never leave a stale derived set.
+    profile["user"]["assumed_usage"] = assumed_usage(
+        profile["user"], dataset.get("usage_questions") or {})
     programs = dataset["programs"]
     merchants = dataset["merchants"]
     eligible, excluded = filter_cards(dataset["cards"], profile, programs)
@@ -1065,6 +1099,7 @@ def run(dataset: dict, profile: dict, as_of: date, top: int) -> dict:
         "max_cards": profile["user"]["max_cards"],
         "reward_preferences": list(profile["user"]["reward_preferences"]),
         "confirmed_usage": list(profile["user"]["confirmed_usage"]),
+        "assumed_usage": list(profile["user"]["assumed_usage"]),
         "accepts_brand_lockin": profile["user"]["accepts_brand_lockin"],
         "cpp_table": {p: {"floor_cpp": v["floor_cpp"],
                           "optimistic_cpp": v["optimistic_cpp"],
@@ -1097,6 +1132,9 @@ def render_text(bundle: dict) -> str:
                + (", ".join(bundle["confirmed_usage"]) or
                   "none — merchant/loyalty-gated value counts $0 "
                   "(see data/meta/usage-questions.yaml)"))
+    out.append("Assumed usage (reward preferences imply best-value airline/hotel "
+               "booking; loyalty still unconfirmed): "
+               + (", ".join(bundle["assumed_usage"]) or "none"))
     cpp = ", ".join(f"{p} {v['avg_cpp']}" for p, v in bundle["cpp_table"].items())
     out.append(f"Point valuations (avg_cpp = mean of floor and optimistic; "
                f"floor applies when a loyalty/gateway gate is unconfirmed): {cpp}")

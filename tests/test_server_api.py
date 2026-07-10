@@ -85,7 +85,14 @@ class TestServerAPI(unittest.TestCase):
         for g in cfg["usage_questions"]:
             reg = self.dataset["usage_questions"][g["key"]]
             self.assertEqual(g["prompt"], reg["prompt"])
+            self.assertEqual(g["assumed_reward_kind"], reg.get("assumed_reward_kind"))
             self.assertEqual([i["key"] for i in g["items"]], list(reg["items"]))
+        # Brand-loyalty groups (assumed_reward_kind) exist in the real registry
+        # — the UI's Brand loyalty block depends on them.
+        self.assertEqual(
+            {g["key"]: g["assumed_reward_kind"] for g in cfg["usage_questions"]
+             if g["assumed_reward_kind"]},
+            {"airlines": "flights", "hotels": "hotels"})
         self.assertEqual(cfg["tier_order"], opt.TIER_ORDER)
         self.assertEqual(cfg["user_defaults"], opt.USER_DEFAULTS)
         self.assertEqual(cfg["reward_kinds"], opt.REWARD_KINDS)

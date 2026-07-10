@@ -16,7 +16,11 @@ export function RewardPreferences({ config, kinds, onChange }: {
   return (
     <section className="block">
       <h2>What rewards do you want to prioritize?</h2>
-      <p className="why">Check all that apply — all three means every kind of value counts.</p>
+      <p className="why">
+        Check all that apply — all three means every kind of value counts. Checking
+        flights or hotels also tells us you fly or stay in hotels, so airline and hotel
+        perks count without you naming a brand.
+      </p>
       <div className="chips lg" style={{ marginTop: 14 }}>
         {config.reward_kinds.map((kind) => (
           <label key={kind} className="chip">

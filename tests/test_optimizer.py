@@ -393,7 +393,9 @@ class TestConfirmedUsage(unittest.TestCase):
         prof = make_profile({"other": 5000}, confirmed_usage=["brandair"])
         r = score([card], prof)
         self.assertAlmostEqual(r["credits"][0]["value"], 142.5)  # 150 × 0.95
-        unconfirmed = score([card], make_profile({"other": 5000}))
+        # Unconfirmed, cashback-only prefs: brandair is not assumed → $0.
+        unconfirmed = score([card], make_profile(
+            {"other": 5000}, reward_preferences=["cashback"]))
         self.assertEqual(unconfirmed["credits"][0]["value"], 0.0)
 
     def brandair_card(self, **overrides):
@@ -456,6 +458,76 @@ class TestConfirmedUsage(unittest.TestCase):
 
     def test_confirmed_capture_in_policy_constants(self):
         self.assertIn("CONFIRMED_CREDIT_CAPTURE", opt.policy_constants())
+
+
+class TestAssumedUsage(unittest.TestCase):
+    """Brand-loyalty split: airline/hotel usage keys (groups carrying
+    assumed_reward_kind in usage-questions.yaml) are assumed usable for credit
+    gating when the matching reward kind — or total_value — is in
+    reward_preferences. The user is assumed to book whichever brand gives the
+    best value; explicit confirmation now means brand loyalty."""
+
+    CREDIT = {"name": "flight credit", "amount_usd": 100, "period": "annual",
+              "usage_keys": ["brandair"], "realistic_capture_rate_note": "x"}
+
+    def test_assumed_key_unlocks_credit_at_conservative_capture(self):
+        # Fixture airlines group: assumed_reward_kind: flights. Default prefs
+        # (total_value) imply flights → brandair assumed: 100 × 0.9, not the
+        # confirmed 0.95, and the note says so.
+        r = score([synth_card(credits=[dict(self.CREDIT)])],
+                  make_profile({"other": 5000}))
+        self.assertAlmostEqual(r["credits"][0]["value"], 90.0)
+        self.assertIn("assumed usable: brandair", r["credits"][0]["note"])
+
+    def test_concrete_flights_pref_also_unlocks(self):
+        r = score([synth_card(credits=[dict(self.CREDIT)])],
+                  make_profile({"other": 5000}, reward_preferences=["flights"]))
+        self.assertAlmostEqual(r["credits"][0]["value"], 90.0)
+
+    def test_no_flights_pref_keeps_strict_gate(self):
+        r = score([synth_card(credits=[dict(self.CREDIT)])],
+                  make_profile({"other": 5000}, reward_preferences=["cashback"]))
+        self.assertEqual(r["credits"][0]["value"], 0.0)
+        self.assertIn("requires confirmed use", r["credits"][0]["note"])
+
+    def test_confirmation_beats_assumption(self):
+        # Loyal user: CONFIRMED_CREDIT_CAPTURE (0.95) wins over assumed (0.9).
+        r = score([synth_card(credits=[dict(self.CREDIT)])],
+                  make_profile({"other": 5000}, confirmed_usage=["brandair"]))
+        self.assertAlmostEqual(r["credits"][0]["value"], 95.0)
+        self.assertIn("confirmed: brandair", r["credits"][0]["note"])
+
+    def test_non_loyalty_groups_never_assumed(self):
+        # uber is in a group without assumed_reward_kind — strict gate stands
+        # even in a total_value run.
+        credit = {"name": "ride credit", "amount_usd": 100, "period": "annual",
+                  "usage_keys": ["uber"], "realistic_capture_rate_note": "x"}
+        r = score([synth_card(credits=[credit])], make_profile({"other": 5000}))
+        self.assertEqual(r["credits"][0]["value"], 0.0)
+
+    def test_assumption_never_unlocks_loyalty_cpp(self):
+        # Point valuation is a loyalty question, not a usage question: a
+        # merely-assumed brandair still prices at floor 0.8cpp (the companion
+        # golden test_lockin_currency_floored_without_loyalty pins the same).
+        card = synth_card(currency={"type": "points", "program": "brandair_miles"})
+        r = score([card], make_profile({"other": 10000}))  # total_value default
+        self.assertAlmostEqual(r["earnings"], 80.0)  # floor, not avg 1.15
+
+    def test_parse_profile_derives_assumed_usage(self):
+        prof = make_profile({"other": 5000})
+        self.assertEqual(prof["user"]["assumed_usage"], ["brandair"])
+        prof = make_profile({"other": 5000}, reward_preferences=["cashback"])
+        self.assertEqual(prof["user"]["assumed_usage"], [])
+
+    def test_assumed_usage_is_not_a_profile_input(self):
+        with self.assertRaises(opt.InputError):
+            make_profile({"other": 5000}, assumed_usage=["brandair"])
+
+    def test_bundle_and_text_surface_assumed_usage(self):
+        prof = make_profile({"other": 5000})
+        bundle = opt.run(DATASET, prof, AS_OF, 1)
+        self.assertEqual(bundle["assumed_usage"], ["brandair"])
+        self.assertIn("Assumed usage", opt.render_text(bundle))
 
 
 class TestTransferGateway(unittest.TestCase):

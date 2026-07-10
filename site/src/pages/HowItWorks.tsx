@@ -49,6 +49,13 @@ export function HowItWorks() {
           count for nothing.
         </p>
         <p>
+          Airlines and hotels are the one exception: if flights or hotels are among your
+          reward priorities, you're assumed to book whichever brand gives the best value,
+          so brand-specific airline and hotel credits count (at a conservative capture rate)
+          without you naming a brand. Declaring loyalty to a specific brand upgrades it:
+          its points are valued at their higher loyal-use rate and its credits at full capture.
+        </p>
+        <p>
           Statement files never leave your browser: PDF, CSV, and OFX parsing runs entirely
           on your machine, and only the resulting category totals are sent to the optimizer.
         </p>
