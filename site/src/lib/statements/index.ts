@@ -17,6 +17,10 @@ export const MAX_TXNS_TOTAL = 50_000
 
 export interface FileInput { name: string; bytes: Uint8Array }
 
+/** Per-file progress: `done` files finished out of `total`, `current` is the
+ * file being read next (undefined once the batch is complete). */
+export type ParseProgress = (done: number, total: number, current?: string) => void
+
 export interface ParseBatchResult {
   files: ParsedFile[]
   errors: FileError[]
@@ -30,14 +34,24 @@ async function sha256Hex(bytes: Uint8Array): Promise<string> {
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('')
 }
 
-export async function parseFiles(inputs: FileInput[]): Promise<ParseBatchResult> {
+export async function parseFiles(
+  inputs: FileInput[], onProgress?: ParseProgress,
+): Promise<ParseBatchResult> {
   const files: ParsedFile[] = []
   const errors: FileError[] = []
   const duplicates: string[] = []
   const seenHashes = new Set<string>()
   let txnsTotal = 0
 
-  for (const input of inputs.slice(0, MAX_FILES)) {
+  const batch = inputs.slice(0, MAX_FILES)
+  let done = 0
+  for (const input of batch) {
+    if (onProgress) {
+      onProgress(done, batch.length, input.name)
+      // Yield a macrotask so the UI can paint the progress update — CSV/OFX
+      // parsing is synchronous and would otherwise block the frame.
+      await new Promise((r) => setTimeout(r, 0))
+    }
     try {
       if (input.bytes.byteLength > MAX_FILE_BYTES) {
         throw new StatementParseError(
@@ -78,8 +92,11 @@ export async function parseFiles(inputs: FileInput[]): Promise<ParseBatchResult>
         ? e.message
         : `${input.name}: unexpected parse failure.`
       errors.push({ name: input.name, message })
+    } finally {
+      done += 1
     }
   }
+  onProgress?.(done, batch.length)
   for (const skipped of inputs.slice(MAX_FILES)) {
     errors.push({ name: skipped.name, message: `Batch limit is ${MAX_FILES} files — ${skipped.name} was not read.` })
   }

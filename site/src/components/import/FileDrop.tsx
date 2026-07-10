@@ -1,13 +1,15 @@
 import { useRef, useState } from 'react'
 
 /** Multi-file picker + drag-drop target for statement exports. Reads nothing
- * itself — hands File objects up and lets the lib do the work. */
-export function FileDrop({ parsing, onFiles }: {
-  parsing: boolean
+ * itself — hands File objects up and lets the lib do the work. While a batch
+ * is parsing, `progress` replaces the picker with a per-file progress bar. */
+export function FileDrop({ progress, onFiles }: {
+  progress: { done: number; total: number; current?: string } | null
   onFiles: (files: File[]) => void
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
+  const parsing = progress !== null
 
   return (
     <div
@@ -31,8 +33,25 @@ export function FileDrop({ parsing, onFiles }: {
           e.target.value = '' // same files can be re-picked after a discard
         }}
       />
-      {parsing ? (
-        <span className="status">Reading statements in your browser…</span>
+      {progress !== null ? (
+        <div className="parse-progress">
+          <span className="status">
+            Reading statements in your browser… {Math.min(progress.done + 1, progress.total)} of {progress.total}
+          </span>
+          <div
+            className="parse-bar"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={progress.total}
+            aria-valuenow={progress.done}
+          >
+            <div
+              className="parse-bar-fill"
+              style={{ width: `${progress.total === 0 ? 0 : (progress.done / progress.total) * 100}%` }}
+            />
+          </div>
+          {progress.current && <span className="parse-file">{progress.current}</span>}
+        </div>
       ) : (
         <>
           <div className="choose">

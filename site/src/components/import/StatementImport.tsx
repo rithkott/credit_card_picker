@@ -16,7 +16,7 @@ import { ImportReview } from './ImportReview'
 
 type Phase =
   | { phase: 'idle' }
-  | { phase: 'parsing'; count: number }
+  | { phase: 'parsing'; done: number; total: number; current?: string }
   | { phase: 'review'; batch: ParseBatchResult; result: ImportResult }
   | { phase: 'applied'; summary: string }
 
@@ -38,14 +38,15 @@ export function StatementImport({ config, formNonEmpty, onApply }: {
 
   const onFiles = async (files: File[]) => {
     if (files.length === 0) return
-    setState({ phase: 'parsing', count: files.length })
+    setState({ phase: 'parsing', done: 0, total: files.length })
     setAssignments({})
     setExcluded(new Set())
     try {
       const inputs = await Promise.all(files.map(async (f) => ({
         name: f.name, bytes: new Uint8Array(await f.arrayBuffer()),
       })))
-      const batch = await parseFiles(inputs)
+      const batch = await parseFiles(inputs, (done, total, current) =>
+        setState({ phase: 'parsing', done, total, current }))
       const result = aggregate(batch.files, matcher)
       // Suggestions start checked; the user unchecks what they don't use.
       setUsageChecks(Object.fromEntries(result.usageSuggestions.map((s) => [s.key, true])))
@@ -100,7 +101,10 @@ export function StatementImport({ config, formNonEmpty, onApply }: {
       </p>
 
       {(state.phase === 'idle' || state.phase === 'parsing') && (
-        <FileDrop parsing={state.phase === 'parsing'} onFiles={onFiles} />
+        <FileDrop
+          progress={state.phase === 'parsing' ? state : null}
+          onFiles={onFiles}
+        />
       )}
 
       {state.phase === 'review' && reviewTotals !== null && (

@@ -411,6 +411,24 @@ button.linklike {
 .filedrop .choose { display: flex; align-items: center; gap: 10px; }
 .filedrop .formats { font-family: var(--mono); font-size: 11px; color: var(--text-faint); }
 .filedrop .status { font-size: 13px; color: rgba(242, 243, 247, 0.5); }
+.parse-progress {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  width: 100%; max-width: 26em;
+}
+.parse-bar {
+  width: 100%; height: 6px; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+.parse-bar-fill {
+  height: 100%; border-radius: inherit;
+  background: var(--accent-border);
+  transition: width 0.2s ease;
+}
+.parse-file {
+  font-family: var(--mono); font-size: 11px; color: var(--text-faint);
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .file-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 0.6em; }
 .file-chip {
   font-size: 12px;
