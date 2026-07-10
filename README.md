@@ -8,7 +8,6 @@ A deterministic credit-card portfolio optimizer: given your real spending profil
 docs/research.md          competitive research + product decisions
 docs/architecture.md      annotated diagram of the data infra & schema (kept current, built-only)
 docs/curation-guide.md    how to write & verify card files (start here to contribute data)
-docs/card-backlog.md      checklist of cards to curate, grouped by issuer
 docs/plans/               design specs (02 = optimizer, 04 = tech stack, ...)
 data/schema/              JSON Schema every card file must conform to
 data/cards/<issuer>/      one hand-curated YAML file per card (source of truth)
