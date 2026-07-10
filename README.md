@@ -2,7 +2,7 @@
 
 **Find the credit card that actually pays you the most based on your real spending**
 
-Most card-recommendation sites rank whatever pays them the highest affiliate commission. This tool does the opposite: you tell it how you actually spend, and it computes — deterministically, from a hand-curated dataset — the single best card *or combination of cards* for you, netting out reward rates, category caps, annual fees, signup bonuses, and the credits you'd realistically use.
+Most card recommendation sites rank whatever pays them the highest commission, this tool tells you exactly which card is the best for you
 
 **Try it:** <https://rithkott.github.io/credit_card_picker/>
 
