@@ -7,9 +7,14 @@ export function ExcludedPruned({ bundle }: { bundle: OptimizeBundle }) {
   return (
     <details className="disclosure">
       <summary>
-        {bundle.excluded.length} excluded · {bundle.pruned.length} pruned as dominated
+        <span>
+          {bundle.excluded.length} cards were excluded and {bundle.pruned.length} pruned
+          — every single reason is listed
+        </span>
+        <span className="spacer" />
+        <span className="show">show</span>
       </summary>
-      <div className="reason-list">
+      <div className="body reason-list">
         {bundle.excluded.map((e) => (
           <div key={`x-${e.id}`}>{e.id}: {e.reason}</div>
         ))}

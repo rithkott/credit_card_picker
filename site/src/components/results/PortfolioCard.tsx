@@ -1,38 +1,166 @@
-import type { OptimizeBundle, Portfolio } from '../../types'
-import { formatUsd } from '../../lib/money'
-import { CardDetail } from './CardDetail'
+import { useState } from 'react'
+import type { BestBySize, OptimizeBundle, PerCard } from '../../types'
+import { formatNumber, formatUsd } from '../../lib/money'
 
-export function PortfolioCard({ title, gain, portfolio, bundle }: {
-  title: string
-  gain: number | null
-  portfolio: Portfolio
-  bundle: OptimizeBundle
-}) {
-  const primary = bundle.optimize_for === 'ongoing' ? 'ongoing_net' : 'year1_net'
-  const unassigned = Object.entries(portfolio.unassigned_spend)
+const SIZE_WORDS = ['', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE']
+
+function totalFees(card: PerCard): number {
+  return card.fees.annual_fee_usd + (card.fees.membership_fee_usd ?? 0)
+}
+
+/** Deterministic dark hue family per card id, for the CSS card render. */
+function hueOf(id: string): number {
+  let h = 0
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) % 360
+  return h
+}
+
+/** One credit-card render: the optional art file (site/public/cards/<id>.png)
+ * when present, otherwise a pure-CSS card in the id's hue family. */
+function CardRender({ id, name }: { id: string; name: string }) {
+  const [artFailed, setArtFailed] = useState(false)
+  const h = hueOf(id)
   return (
-    <div className="portfolio">
-      <h3>
-        {title} — {portfolio.cards.map((id) => portfolio.per_card[id]?.name ?? id).join(' + ')}
-        {gain !== null && <span className="gain"> (+{formatUsd(gain)}/yr over the previous)</span>}
-      </h3>
-      <div className="nets">
-        <span className={primary === 'ongoing_net' ? 'primary-metric' : ''}>
-          ongoing net {formatUsd(portfolio.ongoing_net)}/yr
-        </span>
-        <span className={primary === 'year1_net' ? 'primary-metric' : ''}>
-          year-1 net {formatUsd(portfolio.year1_net)}
-        </span>
-      </div>
-      {portfolio.cards.map((id) => (
-        <CardDetail key={id} id={id} card={portfolio.per_card[id]} />
-      ))}
-      {unassigned.length > 0 && (
-        <div className="warn-note">
-          ⚠ unassignable spend earning $0 (closed-loop-only portfolio):{' '}
-          {unassigned.map(([bucket, v]) => `${bucket} ${formatUsd(v)}`).join(', ')}
-        </div>
+    <div
+      className="card-render"
+      style={{
+        background: `linear-gradient(120deg, hsl(${h} 24% 18%), hsl(${h} 22% 9%) 60%, hsl(${(h + 24) % 360} 22% 14%))`,
+      }}
+    >
+      {!artFailed && (
+        <img
+          className="art"
+          src={`${import.meta.env.BASE_URL}cards/${id}.png`}
+          alt=""
+          onError={() => setArtFailed(true)}
+        />
+      )}
+      {artFailed && (
+        <>
+          <span className="sheen" />
+          <span className="cchip" />
+          <span className="cname">{name}</span>
+        </>
       )}
     </div>
+  )
+}
+
+function CardBar({ id, name, kind }: { id: string; name: string; kind: 'mid' | 'bottom' }) {
+  const h = hueOf(id)
+  return (
+    <div
+      className={`card-bar ${kind}`}
+      style={{ background: `linear-gradient(120deg, hsl(${h} 20% 16%), hsl(${h} 20% 8%))` }}
+    >
+      {name}
+    </div>
+  )
+}
+
+/** The receipt panel: eyebrow, big shimmer net, the four receipt rows, and
+ * the stacked credit-card renders for the selected portfolio. Every number
+ * derives from the bundle's per_card blocks — earnings are assignment
+ * usd_values, credits are credit values, fees are annual + membership. */
+export function PortfolioCard({ portfolio, bundle, isBest, stack }: {
+  portfolio: BestBySize
+  bundle: OptimizeBundle
+  isBest: boolean
+  stack: string[]
+}) {
+  const cards = portfolio.cards.map((id) => portfolio.per_card[id]).filter(Boolean)
+  // Assignment usd_values are pre-clamp; card-wide reward caps subtract from
+  // earnings (optimize.py reward_cap_clamps), so the receipt rows sum to net.
+  const earnings = cards.reduce(
+    (sum, c) => sum + c.assignments.reduce((s, a) => s + a.usd_value, 0)
+      - (c.reward_cap_clamp ?? 0), 0)
+  const credits = cards.reduce(
+    (sum, c) => sum + c.credits.reduce((s, cr) => s + cr.value, 0), 0)
+  const fees = cards.reduce((sum, c) => sum + totalFees(c), 0)
+  const bonuses = cards.reduce((sum, c) => sum + c.bonus.value, 0)
+  const spendTotal =
+    cards.reduce((sum, c) => sum + c.assignments.reduce((s, a) => s + a.usd_assigned, 0), 0) +
+    Object.values(portfolio.unassigned_spend).reduce((s, v) => s + v, 0)
+
+  const size = portfolio.size
+  const word = SIZE_WORDS[size] ?? String(size)
+  const eyebrow = size === 1
+    ? 'WITH JUST ONE CARD'
+    : `WITH ${isBest && size > 2 ? 'ALL ' : ''}${word} CARDS`
+
+  // "after the Gold membership" when the only cost is a single membership;
+  // the generic phrase otherwise.
+  const memberships = cards.filter((c) => c.fees.membership_fee_usd !== undefined)
+  const annualFees = cards.reduce((sum, c) => sum + c.fees.annual_fee_usd, 0)
+  const feePhrase = fees === 0
+    ? 'with no fees to cover'
+    : annualFees === 0 && memberships.length === 1
+      ? `after the ${memberships[0].fees.membership_name ?? 'required'} membership`
+      : 'after fees and memberships'
+
+  const year1 = bundle.optimize_for === 'year1'
+  const netMain = year1 ? portfolio.year1_net : portfolio.ongoing_net
+  const bonusPhrase = bonuses > 0
+    ? year1
+      ? `$${formatNumber(Math.round(portfolio.ongoing_net))} each year after the bonuses`
+      : `$${formatNumber(Math.round(portfolio.year1_net))} in year one with the signup bonus${cards.filter((c) => c.bonus.value > 0).length > 1 ? 'es' : ''}`
+    : 'no signup bonuses in this combination'
+  const netSub = `left over ${year1 ? 'in year one' : 'each year'}, ${feePhrase} · ${bonusPhrase}`
+
+  const unassigned = Object.entries(portfolio.unassigned_spend)
+  const stackCards = stack
+    .map((id) => ({ id, card: portfolio.per_card[id] }))
+    .filter((s) => s.card)
+
+  return (
+    <section className="block receipt">
+      <div className="receipt-grid">
+        <div className="receipt-main">
+          <div className="eyebrow">{eyebrow}</div>
+          <div className="net-big shimmer-text">
+            ${formatNumber(Math.round(netMain))}
+            <span className="per">{year1 ? ' yr 1' : '/yr'}</span>
+          </div>
+          <div className="net-sub">{netSub}</div>
+          <div className="receipt-rows">
+            <div className="row">
+              <span>Rewards on ${formatNumber(Math.round(spendTotal))} of spending</span>
+              <span>{formatUsd(earnings)}</span>
+            </div>
+            <div className="row">
+              <span>Credits you said you'd use</span>
+              <span>+ {formatUsd(credits)}</span>
+            </div>
+            <div className="row">
+              <span>Annual fees &amp; memberships</span>
+              <span>− {formatUsd(fees)}</span>
+            </div>
+            {year1 && (
+              <div className="row">
+                <span>Signup bonuses (year 1 only)</span>
+                <span>+ {formatUsd(bonuses)}</span>
+              </div>
+            )}
+            <div className="row total">
+              <span>{year1 ? 'Net, year one' : 'Net, each year'}</span>
+              <span>{formatUsd(netMain)}</span>
+            </div>
+          </div>
+          {unassigned.length > 0 && (
+            <div className="warn-note">
+              ⚠ unassignable spend earning $0 (closed-loop-only portfolio):{' '}
+              {unassigned.map(([bucket, v]) => `${bucket} ${formatUsd(v)}`).join(', ')}
+            </div>
+          )}
+        </div>
+        <div className="card-stack">
+          {stackCards.map((s, i) =>
+            i === 0
+              ? <CardRender key={s.id} id={s.id} name={s.card.name} />
+              : <CardBar key={s.id} id={s.id} name={s.card.name} kind={i === 1 ? 'mid' : 'bottom'} />,
+          )}
+        </div>
+      </div>
+    </section>
   )
 }

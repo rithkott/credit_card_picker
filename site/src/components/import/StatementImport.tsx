@@ -86,12 +86,17 @@ export function StatementImport({ config, formNonEmpty, onApply }: {
 
   return (
     <section className="block">
-      <h2>Start from your statements <span className="optional">(optional)</span></h2>
+      <div className="panel-head">
+        <h2>Start from your statements <span className="optional">optional</span></h2>
+        <span className="spacer" />
+        <span className="privacy-pill">
+          <span className="dot" />
+          Everything runs on your device — your data never leaves
+        </span>
+      </div>
       <p className="why">
-        Upload statement exports (CSV, OFX/QFX, or PDF) and the form below fills itself.
-        Everything is read entirely in your browser — your statements are never uploaded,
-        not to this site, not to the local optimizer. Only the category totals you approve
-        go into the form.
+        Already have credit or debit cards? Download statements from your bank and drop them
+        in — the spending form below fills itself. Only the totals you approve go into the form.
       </p>
 
       {(state.phase === 'idle' || state.phase === 'parsing') && (
@@ -124,7 +129,7 @@ export function StatementImport({ config, formNonEmpty, onApply }: {
               })}
             onUsageCheck={(key, on) => setUsageChecks((u) => ({ ...u, [key]: on }))}
           />
-          <div className="runbar">
+          <div className="runbar inline">
             <button type="button" className="primary" onClick={apply}>
               Apply to the form
             </button>
@@ -139,7 +144,7 @@ export function StatementImport({ config, formNonEmpty, onApply }: {
       )}
 
       {state.phase === 'applied' && (
-        <div className="runbar">
+        <div className="runbar inline">
           <span className="status">{state.summary} — applied to the form below.</span>
           <button type="button" onClick={() => setState({ phase: 'idle' })}>
             Import again

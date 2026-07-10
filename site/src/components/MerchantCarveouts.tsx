@@ -1,9 +1,7 @@
 import type { ConfigCategory, ConfigMerchant } from '../types'
 import type { SpendState } from '../lib/validation'
-import {
-  displayFromAnnualCents, formatNumber, otherUnitAnnotation,
-  parseToAnnualCents, type Unit,
-} from '../lib/money'
+import { formatNumber, otherUnitAnnotation, type Unit } from '../lib/money'
+import { MoneyInput } from './CategoryRow'
 
 interface Props {
   category: ConfigCategory
@@ -29,22 +27,20 @@ export function MerchantCarveouts({ category, merchants, spend, unit, onMerchant
         return (
           <div className="cat-row" key={m.key}>
             <label htmlFor={`mer-${m.key}`}>{m.label}</label>
-            <input
+            <MoneyInput
               id={`mer-${m.key}`}
-              type="number"
-              min="0"
-              step="any"
-              inputMode="decimal"
-              value={displayFromAnnualCents(cents, unit)}
-              onChange={(e) => onMerchantChange(m.key, parseToAnnualCents(e.target.value, unit))}
-              placeholder="0"
+              cents={cents}
+              unit={unit}
+              onChange={(c) => onMerchantChange(m.key, c)}
             />
             <span className="annot">{otherUnitAnnotation(cents, unit)}</span>
           </div>
         )
       })}
       <div className="budget">
-        carve-outs ${formatNumber(carvedCents / 100)} of ${formatNumber(parentCents / 100)} {category.label.toLowerCase()} (annual)
+        carve-outs ${formatNumber(carvedCents / 100)} of ${formatNumber(parentCents / 100)}{' '}
+        {category.label.replace(/\s*\(.*\)$/, '').split(' / ')[0].toLowerCase()}
+        {' '}— part of the total, not added to it
       </div>
     </div>
   )

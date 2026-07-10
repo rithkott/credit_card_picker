@@ -43,6 +43,9 @@ export interface Config {
   reward_kinds: string[]
   max_cards_range: [number, number]
   cards_total: number
+  /** Most recent hand-verification date across the dataset (YYYY-MM-DD) —
+   * quoted by the footer trust line instead of a hardcoded date. */
+  data_last_verified: string
   statement_import: StatementImportRules
 }
 

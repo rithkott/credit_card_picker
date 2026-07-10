@@ -6,3 +6,6 @@ site/node_modules/
 site/dist/
 docs/local/
 testdata/
+data/build/
+Design-Handoff-package.zip
+design-handoff-extracted/

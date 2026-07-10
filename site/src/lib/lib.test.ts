@@ -39,6 +39,10 @@ describe('money: integer-cents canonical state (plan 03 §3.2)', () => {
     expect(Number.isNaN(parseToAnnualCents('12e', 'annual') as number)).toBe(true)
     expect(Number.isNaN(parseToAnnualCents('-5', 'annual') as number)).toBe(true)
   })
+  it('accepts the grouped display format back ("8,000" round-trips)', () => {
+    expect(parseToAnnualCents('8,000', 'annual')).toBe(800000)
+    expect(parseToAnnualCents(displayFromAnnualCents(800000, 'annual'), 'annual')).toBe(800000)
+  })
   it('display round-trips are lossless: toggle never mutates state', () => {
     const cents = parseToAnnualCents('641.67', 'annual') as number
     // Simulate toggling display units repeatedly: state is untouched by display.
@@ -48,9 +52,9 @@ describe('money: integer-cents canonical state (plan 03 §3.2)', () => {
     expect(shownMonthly).toBe('53.47')
     expect(displayFromAnnualCents(cents, 'annual')).toBe('641.67') // unchanged after "toggling"
   })
-  it('other-unit annotation', () => {
-    expect(otherUnitAnnotation(800000, 'monthly')).toBe('≈ $8,000/yr')
-    expect(otherUnitAnnotation(800000, 'annual')).toBe('≈ $666.67/mo')
+  it('other-unit annotation (whole dollars — it is an approximation)', () => {
+    expect(otherUnitAnnotation(800000, 'monthly')).toBe('≈ $8,000 /yr')
+    expect(otherUnitAnnotation(800000, 'annual')).toBe('≈ $667 /mo')
     expect(otherUnitAnnotation(0, 'annual')).toBe('')
     expect(otherUnitAnnotation(null, 'annual')).toBe('')
   })

@@ -35,10 +35,15 @@ export function FileDrop({ parsing, onFiles }: {
         <span className="status">Reading statements in your browser…</span>
       ) : (
         <>
-          <button type="button" onClick={() => inputRef.current?.click()}>
-            Choose statement files
-          </button>
-          <span className="status">or drop them here — several months and cards at once is best</span>
+          <div className="choose">
+            <button type="button" onClick={() => inputRef.current?.click()}>
+              Choose files
+            </button>
+            <span className="formats">CSV · OFX/QFX · PDF</span>
+          </div>
+          <span className="status">
+            or drop them here — several months and cards at once works best
+          </span>
         </>
       )}
     </div>

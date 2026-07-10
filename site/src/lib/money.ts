@@ -9,9 +9,10 @@
 export type Unit = 'monthly' | 'annual'
 
 /** Parse a user-typed amount in the given display unit into annual cents.
+ * Thousands separators are accepted (inputs display "8,000" when idle).
  * Returns null for blank input, NaN for garbage (surfaced by validation E2). */
 export function parseToAnnualCents(text: string, unit: Unit): number | null {
-  const trimmed = text.trim()
+  const trimmed = text.trim().replace(/,/g, '')
   if (trimmed === '') return null
   const value = Number(trimmed)
   if (!Number.isFinite(value) || value < 0) return NaN
@@ -19,7 +20,8 @@ export function parseToAnnualCents(text: string, unit: Unit): number | null {
   return unit === 'monthly' ? cents * 12 : cents
 }
 
-/** Render annual cents in the given display unit for an input field. */
+/** Render annual cents in the given display unit for an idle input field
+ * (grouped: "8,000"). */
 export function displayFromAnnualCents(cents: number | null, unit: Unit): string {
   if (cents === null || Number.isNaN(cents)) return ''
   const divisor = unit === 'monthly' ? 1200 : 100
@@ -27,12 +29,21 @@ export function displayFromAnnualCents(cents: number | null, unit: Unit): string
   return formatNumber(value)
 }
 
-/** The grey other-unit annotation ("≈ $8,000/yr" under a monthly entry). */
+/** Render annual cents as a plain editable string ("8000", no grouping) —
+ * what the input shows while focused, so typing isn't reformatted mid-edit. */
+export function editDisplayFromAnnualCents(cents: number | null, unit: Unit): string {
+  if (cents === null || Number.isNaN(cents)) return ''
+  const divisor = unit === 'monthly' ? 1200 : 100
+  return String(Math.round((cents / divisor) * 100) / 100)
+}
+
+/** The grey other-unit annotation ("≈ $667 /mo" beside a yearly entry) —
+ * rounded to whole dollars, it's an approximation by design. */
 export function otherUnitAnnotation(cents: number | null, unit: Unit): string {
   if (cents === null || Number.isNaN(cents) || cents === 0) return ''
   return unit === 'monthly'
-    ? `≈ $${formatNumber(cents / 100)}/yr`
-    : `≈ $${formatNumber(cents / 1200)}/mo`
+    ? `≈ $${formatNumber(Math.round(cents / 100))} /yr`
+    : `≈ $${formatNumber(Math.round(cents / 1200))} /mo`
 }
 
 /** Annual cents -> the number sent in the profile: integer when whole,

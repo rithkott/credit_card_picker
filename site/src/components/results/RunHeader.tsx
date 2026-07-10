@@ -1,18 +1,28 @@
 import type { OptimizeBundle } from '../../types'
 
+const KIND_LABELS: Record<string, string> = {
+  cashback: 'cash back',
+  flights: 'flights',
+  hotels: 'hotels',
+}
+
+/** "2026-07-05" -> "Jul 5, 2026". */
+function shortDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  const names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  return names[m - 1] ? `${names[m - 1]} ${d}, ${y}` : iso
+}
+
 export function RunHeader({ bundle }: { bundle: OptimizeBundle }) {
   return (
-    <section className="block">
+    <div className="results-head">
       <h2>Results</h2>
-      <p className="why">
-        as of {bundle.as_of} · optimizing{' '}
-        {bundle.optimize_for === 'ongoing' ? 'ongoing yearly value' : 'first-year value'} ·{' '}
-        {bundle.cards_eligible} of {bundle.cards_total} cards eligible ({bundle.card_variants}{' '}
-        variants, {bundle.card_variants_pruned} pruned) · rewards:{' '}
-        {bundle.reward_preferences.join(', ')} · brand lock-in:{' '}
-        {bundle.accepts_brand_lockin ? 'ok' : 'no'} · confirmed:{' '}
-        {bundle.confirmed_usage.length > 0 ? bundle.confirmed_usage.join(', ') : 'none'}
-      </p>
-    </section>
+      <span className="meta">
+        as of {shortDate(bundle.as_of)} · {bundle.cards_eligible} of {bundle.cards_total}{' '}
+        cards were eligible for you · rewards:{' '}
+        {bundle.reward_preferences.map((k) => KIND_LABELS[k] ?? k).join(', ')} ·{' '}
+        {bundle.accepts_brand_lockin ? 'brand lock-in included' : 'no brand lock-in'}
+      </span>
+    </div>
   )
 }
