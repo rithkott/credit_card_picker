@@ -1,8 +1,8 @@
 # Credit Card Picker
 
-**Find the credit cards that actually pay you the most — based on your real spending, with zero sales pitch.**
+**Find the credit card that actually pays you the most based on your real spending**
 
-Most card-recommendation sites rank whatever pays them the highest affiliate commission. This tool does the opposite: you tell it how you actually spend, and it computes — deterministically, from a hand-curated dataset — the single best card *or combination of cards* for you, netting out reward rates, category caps, annual fees, signup bonuses, and the credits you'd realistically use.
+Most card recommendation sites rank whatever pays them the highest commission, this tool tells you exactly which card is the best for you
 
 **Try it now: [creditcardpicker.vercel.app](https://creditcardpicker.vercel.app)** — no install, no clone, no account. Or run everything locally (see [Getting started](#getting-started)).
 
@@ -20,10 +20,6 @@ Most card-recommendation sites rank whatever pays them the highest affiliate com
 - Statement imports (PDF/CSV/OFX) are parsed entirely in your browser — the files are never uploaded anywhere. Only the resulting per-category dollar totals are sent to the optimizer API to be scored, and nothing is stored.
 - No accounts, no cookies, no analytics, no tracking.
 - Want even the category totals to stay on your machine? Run the optimizer locally (below) — the same site works against `localhost`, and the command-line mode needs no server at all.
-
-## No conflicts of interest
-
-There are no affiliate links, sponsored placements, or monetization of any kind — by design, permanently. Rankings are pure arithmetic over your numbers. See [docs/research.md](docs/research.md) for why this matters in this industry.
 
 ## Getting started
 
