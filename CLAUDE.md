@@ -2,6 +2,26 @@
 
 Deterministic credit-card portfolio optimizer built on a hand-curated YAML dataset. Read `docs/research.md` for product direction and `docs/curation-guide.md` before touching card data.
 
+## Workflow: branching, releases, deployment (required)
+
+All work follows this process — no direct commits to `main`.
+
+**Branching**
+- Every change is developed on a git worktree (`git worktree add .claude/worktrees/<branch> -b <branch> main`), branched from up-to-date `main`.
+- `main` is the only long-lived branch. It is the branch Vercel deploys to production (https://creditcardpicker.vercel.app). Never push work-in-progress directly to `main`.
+- No dedicated dev/preview branch: Vercel's git integration builds a preview deployment for every pushed non-`main` branch — that preview URL is the staging environment.
+
+**Preview → production**
+1. Develop and commit on the worktree branch; push it to `origin`.
+2. Vercel auto-builds a preview deployment for the branch. Test the change on that preview URL (not just locally).
+3. Only after the user's **explicit approval** of the tested preview: merge the branch to `main` and push. The `main` push is the production deploy — verify it goes READY and the live site reflects the change.
+4. Remove the worktree and delete the merged branch.
+
+**Versioning** (semver, tracked as git tags `vX.Y.Z` on `main`)
+- Small edits (bug fixes, copy, styling, minor tweaks): bump the **patch** number (v1.1.3 → v1.1.4).
+- Large overhauls (new subsystems, reworked optimizer/UI, breaking data-model changes): bump the **minor** number (v1.1.3 → v1.2.0).
+- Tag the merge commit on `main` after the production deploy is verified, and push the tag.
+
 ## Architecture diagram maintenance (required)
 
 `docs/architecture.md` contains a Mermaid diagram of the whole system — data infrastructure, schema, optimizer, web UI, and Vercel deployment — annotated with why each piece exists. **Any change to the architecture must update this diagram in the same commit/PR.** That means edits to any of:
