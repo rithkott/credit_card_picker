@@ -169,6 +169,12 @@ export default function App() {
                 }))
               }}
             />
+            <RewardPreferences
+              config={cfg.config}
+              kinds={user.rewardKinds}
+              onChange={(kind, on) =>
+                setUser((u) => ({ ...u, rewardKinds: { ...u.rewardKinds, [kind]: on } }))}
+            />
             <SpendEntry
               config={cfg.config}
               spend={spend}
@@ -191,19 +197,11 @@ export default function App() {
                   return { ...u, confirmed_usage: next }
                 })}
             />
-            <div className="prefs-grid">
-              <RewardPreferences
-                config={cfg.config}
-                kinds={user.rewardKinds}
-                onChange={(kind, on) =>
-                  setUser((u) => ({ ...u, rewardKinds: { ...u.rewardKinds, [kind]: on } }))}
-              />
-              <AboutYou
-                config={cfg.config}
-                user={user}
-                onChange={(patch) => setUser((u) => ({ ...u, ...patch }))}
-              />
-            </div>
+            <AboutYou
+              config={cfg.config}
+              user={user}
+              onChange={(patch) => setUser((u) => ({ ...u, ...patch }))}
+            />
             <ChecksPanel errors={errors} />
             <div className="runbar">
               <button

@@ -15,7 +15,7 @@ export function RewardPreferences({ config, kinds, onChange }: {
 }) {
   return (
     <section className="block">
-      <h2>Rewards you'd use</h2>
+      <h2>What rewards do you want to prioritize?</h2>
       <p className="why">Check all that apply — all three means every kind of value counts.</p>
       <div className="chips lg" style={{ marginTop: 14 }}>
         {config.reward_kinds.map((kind) => (
