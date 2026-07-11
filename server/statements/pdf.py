@@ -126,6 +126,23 @@ TOTALS_PATTERNS = [
 TOTALS_AMOUNT = re.compile(r"(-?\(?\$?[\d,]+\.\d{2}\)?-?)\s*$")
 NON_DESCRIPTOR = re.compile(r"^[\d\s$,.()-]*$")  # digits/punctuation only = not a merchant
 
+# Account-summary label-value pairs that share a visual line with a date under
+# geometric reconstruction ("Apr 18, 2026 Credit limit $10,000.00" — Bilt's
+# summary box, found in the plan-12 corpus rerun) and would otherwise parse as
+# giant purchases. Exact label match only — a real merchant is never one of
+# these strings.
+FURNITURE_DESCRIPTORS = frozenset({
+    "CREDIT LIMIT", "AVAILABLE CREDIT", "CASH ADVANCE LIMIT",
+    "AVAILABLE CASH ADVANCE LIMIT", "CASH ADVANCE CREDIT LIMIT",
+    "STATEMENT BALANCE", "NEW BALANCE", "PREVIOUS BALANCE", "TOTAL BALANCE",
+    "BALANCE", "MINIMUM PAYMENT DUE", "MINIMUM PAYMENT", "PAST DUE AMOUNT",
+    "PAYMENT DUE DATE", "AMOUNT DUE", "TOTAL AMOUNT DUE",
+})
+
+
+def _is_furniture(descriptor: str) -> bool:
+    return re.sub(r"\s+", " ", descriptor).strip().upper() in FURNITURE_DESCRIPTORS
+
 
 def _mmdd_to_iso(mmdd: str, period_end_iso: str) -> Optional[str]:
     m = re.fullmatch(r"(\d{1,2})/(\d{1,2})", mmdd)
@@ -218,6 +235,8 @@ def extract_from_lines(lines: List[str], file: str) -> dict:
         if txn_match or long_match:
             descriptor = (desc or "").strip()
             amount_cents = parse_amount_to_cents(amount_raw or "")
+            if _is_furniture(descriptor):
+                continue  # summary-box label, not a transaction — skip silently
             if (date_iso is None or amount_cents is None or descriptor == ""
                     or NON_DESCRIPTOR.fullmatch(descriptor)):
                 rejected_rows += 1
@@ -338,6 +357,8 @@ def layout_extract(line_words: List[List[Word]], lines: List[str], file: str) ->
         amount_cents = parse_amount_to_cents(amount_word.text)
         descriptor = re.sub(r"\s+", " ", " ".join(
             w.text.strip() for w in rest if w.x1 < amount_word.x0)).strip()
+        if _is_furniture(descriptor):
+            continue  # summary-box label, not a transaction — skip silently
         if amount_cents is None or descriptor == "" or NON_DESCRIPTOR.fullmatch(descriptor):
             rejected_rows += 1
             continue

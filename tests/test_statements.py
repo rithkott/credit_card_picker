@@ -323,6 +323,19 @@ class TestPdfLines(unittest.TestCase):
                          ["2026-03-05", 7415])
         self.assertEqual(out["range_start"], "2026-03-05")
 
+    def test_summary_box_furniture_skipped(self):
+        """Bilt's account-summary box reconstructs as a dated line ("Apr 18,
+        2026 Credit limit $10,000.00") — must never become a purchase (found
+        in the plan-12 corpus rerun)."""
+        out = self.extract([
+            "Statement Period 1/1/2026 to 1/31/2026",
+            "Apr 18, 2026 Credit limit $10,000.00",
+            "Apr 18, 2026 Available credit $9,551.02",
+            "01/12 KROGER #442 $74.15",
+        ], "bilt.pdf")
+        self.assertEqual([t.descriptor for t in out["txns"]], ["KROGER #442"])
+        self.assertEqual(out["rejected_rows"], 0)  # furniture skips silently
+
     def test_undated_lines_without_period_raise(self):
         with self.assertRaises(StatementParseError) as ctx:
             self.extract(["12/12 UBER TRIP $24.50"], "x.pdf")
