@@ -58,8 +58,9 @@ export function ResultsView({ bundle }: { bundle: OptimizeBundle }) {
     )
   }
 
-  // Card-stack order for the receipt panel: newest addition on top, walking
-  // the shown ladder up to the selected entry (matches how the user built it).
+  // Card-stack order for the receipt panel: most important card first (the
+  // big render at the back of the picture), latest addition last (the small
+  // bottom-front bar), walking the shown ladder up to the selected entry.
   const additionOrder: string[] = []
   for (const s of shown) {
     for (const id of s.entry.cards) {
@@ -67,7 +68,7 @@ export function ResultsView({ bundle }: { bundle: OptimizeBundle }) {
     }
     if (s === selected) break
   }
-  const stack = additionOrder.filter((id) => selected.entry.cards.includes(id)).reverse()
+  const stack = additionOrder.filter((id) => selected.entry.cards.includes(id))
 
   const bestNet = Math.max(best.entry[metric], 1)
   const perYear = bundle.optimize_for === 'ongoing' ? '/yr' : ' yr 1'
