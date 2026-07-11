@@ -9,7 +9,7 @@ import { formatUsd } from '../../lib/money'
  * copy says so. Negative groups are unmatched refunds — assigning them
  * subtracts from that category.
  *
- * Materiality (plan 13): minor unlabeled groups (under 1% of total spend
+ * Materiality (plan 13): minor unlabeled groups (under 0.1% of total spend
  * each) don't get their own ask — they're summarized in one line and fold
  * into 'Everything else' automatically. Only significant unknowns and
  * flagged policy groups (rent) interrupt the user. */
@@ -59,9 +59,9 @@ export function UncategorizedList({ categories, groups, coverageDays, assignment
       )}
       {minor.length > 0 && (
         <p className="line-note uncat-minor">
-          {minor.length} small merchant{minor.length === 1 ? '' : 's'} (each under 1% of
+          {minor.length} small merchant{minor.length === 1 ? '' : 's'} (each under 0.1% of
           your spending, {formatUsd(minorAnnual / 100)}/yr together) will count as
-          "Everything else" — not worth your time individually.
+          "Everything else".
         </p>
       )}
     </div>

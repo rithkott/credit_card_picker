@@ -15,7 +15,7 @@ import { annualize, mergeIntervals, MIN_COVERAGE_DAYS } from './annualize'
 /** A merchant group below this share of total annualized spend is folded
  * into 'Everything else' without asking (plan 13 — don't interrupt the user
  * for charges that can't change the recommendation). */
-export const MATERIALITY_PCT = 0.01
+export const MATERIALITY_PCT = 0.001
 import { formatUsd } from '../money'
 import type { SpendState } from '../validation'
 import type { ConfigMerchant, UsageItem } from '../../types'
@@ -206,7 +206,7 @@ export function aggregate(
   }
 
   // Materiality (plan 13): total annualized spend = categorized + every
-  // uncategorized group; a group under 1% of it isn't worth interrupting the
+  // uncategorized group; a group under 0.1% of it isn't worth interrupting the
   // user for — it folds into 'Everything else' via the existing Apply path.
   const uncategorized = [...groups.values()]
     .filter((g) => g.rawCents !== 0)
