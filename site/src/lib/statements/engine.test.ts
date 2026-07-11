@@ -229,11 +229,14 @@ describe('aggregate', () => {
     expect(reconcile[0].message).toMatch(/\$24\.50/)
   })
 
-  it('discloses semantic-layer paths: fuzzy, inferred columns, layout', () => {
+  it('discloses semantic-layer paths: fuzzy, semantic, inferred columns, layout', () => {
     const fuzzyTxn = txn('STARBUKS #99881', { amountCents: 640 })
     fuzzyTxn.match = { category: 'dining', layer: 5, method: 'fuzzy',
                        confidence: 0.94, stem: 'STARBUKS' }
-    const inferred = file('a.csv', RANGE, [fuzzyTxn])
+    const semanticTxn = txn('JOES DELI 42', { amountCents: 1200 })
+    semanticTxn.match = { category: 'dining', layer: 6, method: 'semantic',
+                          confidence: 0.59, stem: 'JOES DELI' }
+    const inferred = file('a.csv', RANGE, [fuzzyTxn, semanticTxn])
     inferred.summary.columnInference = { used: true, confidence: 0.95 }
     const layout = file('b.pdf', RANGE, [txn('KROGER #1')])
     layout.summary.extraction = 'layout'
@@ -241,10 +244,39 @@ describe('aggregate', () => {
     const result = aggregate([inferred, layout], MERCHANTS, USAGE_ITEMS)
     const codes = result.warnings.map((w) => w.code)
     expect(codes).toContain('I-fuzzy')
+    expect(codes).toContain('I-semantic')
     expect(codes).toContain('I-inferred-columns')
     expect(codes).toContain('I-layout')
-    // Fuzzy money still lands in its category.
-    expect(result.categoryCents.dining).toBe(640 * 5)
+    // Approximate-match money still lands in its category.
+    expect(result.categoryCents.dining).toBe((640 + 1200) * 5)
+  })
+})
+
+// ── materiality (plan 13) ────────────────────────────────────────────────────
+
+describe('materiality', () => {
+  const RANGE: [string, string] = ['2026-01-01', '2026-03-14'] // ×5
+
+  it('flags sub-1% unlabeled groups as minor; labeled and big ones ask', () => {
+    const result = aggregate([file('a.csv', RANGE, [
+      txn('COSTCO WHSE #0021', { amountCents: 200000 }),   // $10k/yr categorized
+      txn('MYSTERY MERCHANT 71', { amountCents: 30000 }),  // $1.5k/yr — significant
+      txn('TINY VENDOR 9', { amountCents: 1000 }),         // $50/yr — minor
+      txn('BILT REWARDS', { amountCents: 100 }),           // labeled: never minor
+    ])], MERCHANTS, USAGE_ITEMS)
+    const byStem = Object.fromEntries(result.uncategorized.map((g) => [g.stem, g]))
+    expect(byStem['MYSTERY MERCHANT'].minor).toBeUndefined()
+    expect(byStem['TINY VENDOR'].minor).toBe(true)
+    expect(byStem['bilt_rent'].minor).toBeUndefined()
+  })
+
+  it('minor groups still fold into other on Apply (unchanged mechanics)', () => {
+    const result = aggregate([file('a.csv', RANGE, [
+      txn('COSTCO WHSE #0021', { amountCents: 200000 }),
+      txn('TINY VENDOR 9', { amountCents: 1000 }),
+    ])], MERCHANTS, USAGE_ITEMS)
+    const spend = toSpendState(result, {}, new Set(), MERCHANTS)
+    expect(spend.categoryCents['other']).toBe(1000 * 5)
   })
 })
 

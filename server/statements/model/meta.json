@@ -1,0 +1,8 @@
+{
+  "model": "Xenova/all-MiniLM-L6-v2",
+  "base": "sentence-transformers/all-MiniLM-L6-v2",
+  "license": "Apache-2.0",
+  "quantization": "int8 (dynamic)",
+  "pooling": "attention-masked mean of last_hidden_state, L2-normalized",
+  "max_tokens": 64
+}

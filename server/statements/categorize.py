@@ -20,6 +20,12 @@ embedded here. Layered matching per transaction, first hit wins:
      prefixes or explicitly-unmapped keys (those need exact evidence), and
      is marked method="fuzzy" with its score so the review UI can disclose
      approximate matches.
+  6. NEW (plan 13): semantic match — a LOCAL transformer (semantic.py,
+     MiniLM int8 ONNX) scores the stem against per-category archetype
+     phrases from category-rules.yaml (semantic_prototypes). "JOES DELI" /
+     "AMC THEATRES" resolve without a hand-written pattern; one confidence
+     gate, the model's call is trusted and every placement stays editable
+     on the review screen. method="semantic" + confidence.
 
 Within a layer the LONGEST pattern wins; identical patterns shared by two
 descriptor keys (APPLE.COM/BILL) break ties by ascending key so matching is
@@ -27,6 +33,7 @@ order-independent and deterministic.
 """
 
 import re
+import sys
 from typing import List, Optional
 
 try:
@@ -34,6 +41,12 @@ try:
     HAVE_FUZZ = True
 except ImportError:  # local dev without rapidfuzz: layers 1-4 still work
     HAVE_FUZZ = False
+
+try:  # numpy/tokenizers or the exported model may be absent locally
+    from .semantic import MODEL_DIR, SemanticMatcher
+    HAVE_SEMANTIC = (MODEL_DIR / "model_quantized.onnx").exists()
+except ImportError:
+    HAVE_SEMANTIC = False
 
 FUZZY_CUTOFF = 90.0
 FUZZY_MIN_PATTERN = 5  # short stems ("CVS") false-positive too easily
@@ -81,6 +94,27 @@ class Matcher:
             for pattern, category in self.keyword_patterns:
                 if len(pattern) >= FUZZY_MIN_PATTERN:
                     self.fuzzy_choices.append((pattern, "keyword", category))
+
+        # Layer 6 (plan 13): built lazily on first use — loading the ONNX
+        # session shouldn't tax startups that never parse statements.
+        self.semantic_prototypes = category_rules.get("semantic_prototypes") or {}
+        self._semantic = None
+        self._semantic_cache: dict = {}  # stem -> Optional[(category, confidence)]
+
+    def semantic(self):
+        if self._semantic is None and HAVE_SEMANTIC and self.semantic_prototypes:
+            try:
+                self._semantic = SemanticMatcher(self.semantic_prototypes)
+            except Exception as e:  # model files unreadable: degrade, don't 500
+                sys.stderr.write(f"semantic matcher disabled: {type(e).__name__}\n")
+                self._semantic = False
+        return self._semantic or None
+
+    def semantic_match(self, stem: str):
+        if stem not in self._semantic_cache:
+            matcher = self.semantic()
+            self._semantic_cache[stem] = matcher.match(stem) if matcher else None
+        return self._semantic_cache[stem]
 
 
 def normalize_descriptor(descriptor: str) -> str:
@@ -133,7 +167,10 @@ def _match_descriptor(m: Matcher, upper: str, depth: int) -> dict:
                     return inner
             if prefix and prefix.get("fallback_category") is not None:
                 return {"category": prefix["fallback_category"], "layer": 1, **attach}
-            return {"category": None, "layer": None}  # unknown merchant behind prefix
+            # Unknown merchant behind the prefix: hand the STRIPPED remainder
+            # to the semantic layer — "SQ *PITA GYROS" should be judged as
+            # "PITA GYROS", not with the processor noise in front.
+            return {"category": None, "layer": None, "_remainder": remainder}
         # Explicitly unmapped (or prefix at depth): labeled group, user's call.
         return {"category": None, "layer": None, **attach}
 
@@ -166,9 +203,13 @@ def _match_fuzzy(m: Matcher, upper: str) -> Optional[dict]:
 
 
 def match_txn(m: Matcher, descriptor: str, issuer_category: Optional[str],
-              mcc: Optional[int]) -> dict:
+              mcc: Optional[int], semantic_ok: bool = True) -> dict:
+    """semantic_ok=False skips layer 6 — payments/fees/transfers are excluded
+    from spend by kind anyway, and embedding "ONLINE PAYMENT FROM CHK" into a
+    spend category would just be noise in the per-txn data."""
     upper = normalize_descriptor(descriptor)
     direct = _match_descriptor(m, upper, 0)
+    semantic_text = direct.pop("_remainder", upper)
     if direct["category"] is not None or "descriptor_key" in direct:
         direct.setdefault("method", "exact")
         return direct
@@ -185,6 +226,14 @@ def match_txn(m: Matcher, descriptor: str, issuer_category: Optional[str],
     fuzzy = _match_fuzzy(m, upper)
     if fuzzy is not None:
         return fuzzy
+
+    # Layer 6: semantic — confident transformer matches only; anything
+    # below the gate stays for the user.
+    semantic = m.semantic_match(descriptor_stem(semantic_text)) if semantic_ok else None
+    if semantic is not None:
+        category, sim = semantic
+        return {"category": category, "layer": 6,
+                "method": "semantic", "confidence": round(sim, 2)}
     return {"category": None, "layer": None, "method": None}
 
 
@@ -192,7 +241,8 @@ def annotate(m: Matcher, txns: List) -> None:
     """Set txn.match on every transaction (single pass, categorization is
     the only per-txn state the server adds)."""
     for t in txns:
-        match = match_txn(m, t.descriptor, t.issuer_category, t.mcc)
+        match = match_txn(m, t.descriptor, t.issuer_category, t.mcc,
+                          semantic_ok=t.kind in ("purchase", "refund"))
         # The stem travels with the match so the browser can group
         # uncategorized rows without reimplementing the stemmer.
         match["stem"] = descriptor_stem(t.descriptor)

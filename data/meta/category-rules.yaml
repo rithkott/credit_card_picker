@@ -2,15 +2,21 @@
 #
 # Deterministic, hand-curated rules that map a parsed statement transaction to
 # one of the real (non-pseudo) spend categories in categories.yaml. Read ONLY
-# by server/app.py (GET /api/config -> statement_import) for the in-browser
-# statement importer; scripts/optimize.py never reads this file.
+# by server/app.py, which compiles them into the server-side statement
+# categorizer (server/statements/, plans 12-13); scripts/optimize.py never
+# reads this file.
 #
-# The importer matches each transaction descriptor through four layers, first
+# The importer matches each transaction descriptor through six layers, first
 # hit wins, longest pattern wins within a layer:
 #   1. statement-descriptors.yaml patterns -> descriptor_categories (below)
 #   2. keywords (below)
 #   3. the issuer's own category column (CSV exports) -> issuer_categories
 #   4. MCC / OFX <SIC> code -> mcc ranges
+#   5. fuzzy match (rapidfuzz) against layers 1-2 patterns
+#   6. semantic match: a local transformer (MiniLM ONNX) scores the
+#      descriptor stem against semantic_prototypes (below); accepted above a
+#      single confidence gate — the model's call is trusted, and the review
+#      screen is where the user corrects it
 # Unmatched transactions surface as "uncategorized" in the review UI.
 #
 # Every key in statement-descriptors.yaml must appear in exactly one of
@@ -367,6 +373,26 @@ keywords:
     - "WAYFAIR"
     - "CHEWY"
     - "SP *"            # Shopify-acquired online stores
+    - "HOME DEPOT"
+    - "LOWE'S"
+    - "LOWES"
+    - "BEST BUY"
+    - "IKEA"
+    - "TJ MAXX"
+    - "TJMAXX"
+    - "MARSHALLS"
+    - "ROSS STORES"
+    - "KOHL'S"
+    - "MACY'S"
+    - "NORDSTROM"
+    - "DOLLAR TREE"
+    - "DOLLAR GENERAL"
+    - "FIVE BELOW"
+    - "PETSMART"
+    - "PETCO"
+    - "BARNES & NOBLE"
+    - "OFFICE DEPOT"
+    - "STAPLES"
   entertainment:
     - "AMC THEATRES"
     - "CINEMARK"
@@ -414,26 +440,6 @@ keywords:
     - "WATER DEPT"
     - "WATER DISTRICT"
   other:
-    - "HOME DEPOT"
-    - "LOWE'S"
-    - "LOWES"
-    - "BEST BUY"
-    - "IKEA"
-    - "TJ MAXX"
-    - "TJMAXX"
-    - "MARSHALLS"
-    - "ROSS STORES"
-    - "KOHL'S"
-    - "MACY'S"
-    - "NORDSTROM"
-    - "DOLLAR TREE"
-    - "DOLLAR GENERAL"
-    - "FIVE BELOW"
-    - "PETSMART"
-    - "PETCO"
-    - "BARNES & NOBLE"
-    - "OFFICE DEPOT"
-    - "STAPLES"
     - "USPS"
     - "FEDEX"
     - "THE UPS STORE"
@@ -556,3 +562,114 @@ mcc:
   - {from: 7832, to: 7841, category: entertainment}    # movie theaters, video rental
   - {from: 7911, to: 7999, category: entertainment}    # recreation services
   - {from: 8011, to: 8099, category: other}            # medical services
+
+# ── Layer 6: semantic prototypes (plan 13) ────────────────────────────────────
+# Short phrases describing what belongs in each category, embedded by the
+# local model (server/statements/model/) and cosine-compared against
+# descriptor stems that every exact layer missed. Keep phrases SHORT and
+# concrete — one merchant archetype per phrase; the matcher takes the max
+# over phrases, so more phrases = better recall. These are GENERIC merchant
+# archetypes — never tune them against any particular user's statements.
+# Categories may be omitted; 'other' has no prototypes on purpose (it is the
+# fallback, not a meaning).
+semantic_prototypes:
+  groceries:
+    - grocery store
+    - supermarket
+    - food market
+    - butcher shop
+    - bakery
+    - liquor store
+    - wine and spirits shop
+    - wine shop bottle store
+    - convenience store bodega
+    - neighborhood mini market
+  dining:
+    - restaurant
+    - cafe
+    - coffee shop
+    - deli sandwiches
+    - delicatessen
+    - diner
+    - bar and grill
+    - pub
+    - brewery taproom
+    - pizzeria
+    - taqueria
+    - sushi restaurant
+    - wine bar
+    - food truck
+    - ice cream shop
+    - halal food cart
+    - steakhouse
+    - ramen noodle shop
+    - ice cream parlor
+    - gyro and pita shop
+    - cookie bakery dessert shop
+    - gourmet deli
+    - juice bar smoothie shop
+    - pasta shop
+  travel_flights:
+    - airline tickets
+    - airways flight
+  travel_hotels:
+    - hotel
+    - motel
+    - resort lodging
+    - inn
+  travel_other:
+    - train tickets
+    - railway
+    - car rental
+    - cruise line
+    - bridge toll
+    - ferry
+  gas:
+    - gas station
+    - fuel pump
+    - electric vehicle charging station
+  transit:
+    - rideshare ride
+    - taxi cab
+    - subway fare
+    - metro transit
+    - parking garage
+    - bus fare
+  streaming:
+    - video streaming subscription
+    - music streaming service
+  drugstores:
+    - pharmacy
+    - drugstore
+  online_shopping:
+    - online shopping
+    - retail store
+    - department store
+    - clothing store
+    - electronics store
+    - bookstore
+    - sporting goods store
+    - newsstand
+    - clothing brand store
+    - discount department store
+  entertainment:
+    - movie theater
+    - cinema
+    - concert tickets
+    - amusement park
+    - bowling alley
+    - arcade
+    - sports stadium
+    - sports arena tickets
+    - golf course
+    - museum admission
+    - climbing gym
+    - fitness studio
+    - spin cycling studio
+    - theater tickets
+    - stadium concession stand
+  utilities:
+    - electric utility bill
+    - internet service provider
+    - phone bill
+    - water utility

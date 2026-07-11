@@ -8,3 +8,7 @@ httpx  # only needed to run tests/test_server_api.py (FastAPI TestClient)
 python-multipart
 pdfplumber
 rapidfuzz
+# Semantic matcher layer 6 (plan 13): local MiniLM transformer runtime.
+numpy
+tokenizers
+onnxruntime
