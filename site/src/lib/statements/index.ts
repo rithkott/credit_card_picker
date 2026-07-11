@@ -122,6 +122,7 @@ export function createParseSession(onProgress?: ParseProgress): ParseSession {
   let accepted = 0 // files ever enqueued (the progress total), capped at MAX_FILES
   let done = 0
   let draining = false
+  let current: string | undefined // file in flight, for add()'s progress echo
   const idleResolvers: Array<() => void> = []
 
   const snapshot = (): ParseBatchResult =>
@@ -168,10 +169,12 @@ export function createParseSession(onProgress?: ParseProgress): ParseSession {
     // the loop re-checks the queue after every await, so late add()s extend it.
     while (queue.length > 0) {
       const input = queue.shift()!
-      onProgress?.(done, accepted, input.name)
+      current = input.name
+      onProgress?.(done, accepted, current)
       await parseOne(input)
       done += 1
     }
+    current = undefined
     onProgress?.(done, accepted)
     draining = false
     idleResolvers.splice(0).forEach((resolve) => resolve())
@@ -190,6 +193,9 @@ export function createParseSession(onProgress?: ParseProgress): ParseSession {
       if (!draining && queue.length > 0) {
         draining = true
         void drain()
+      } else if (draining && taken.length > 0) {
+        // The bigger total shows up right away, not when the next file starts.
+        onProgress?.(done, accepted, current)
       }
     },
     settled(): Promise<ParseBatchResult> {

@@ -54,9 +54,12 @@ export function FileDrop({ progress, addMore = false, onFiles }: {
             />
           </div>
           {progress.current && <span className="parse-file">{progress.current}</span>}
-          <span className="status">
-            Keep dropping files — they join this batch.
-          </span>
+          <div className="choose">
+            <button type="button" onClick={() => inputRef.current?.click()}>
+              Add more files
+            </button>
+            <span className="status">or drop them here — they join this batch</span>
+          </div>
         </div>
       ) : (
         <>
