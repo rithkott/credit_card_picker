@@ -20,7 +20,7 @@ const KIND_LABELS: Record<string, string> = {
  * anything touches the form. */
 export function ImportReview({
   config, batch, result, totals, assignments, excluded, usageChecks,
-  onAssign, onExclude, onUsageCheck,
+  onAssign, onAssignMany, onExclude, onUsageCheck,
 }: {
   config: Config
   batch: ParseBatchResult
@@ -30,6 +30,7 @@ export function ImportReview({
   excluded: ReadonlySet<string>
   usageChecks: Record<string, boolean>
   onAssign: (stem: string, category: string) => void
+  onAssignMany: (next: Record<string, string>) => void
   onExclude: (category: string, off: boolean) => void
   onUsageCheck: (key: string, on: boolean) => void
 }) {
@@ -112,6 +113,7 @@ export function ImportReview({
         coverageDays={result.coverageDays}
         assignments={assignments}
         onAssign={onAssign}
+        onAssignMany={onAssignMany}
       />
 
       <UsageSuggestions

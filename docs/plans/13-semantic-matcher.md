@@ -84,9 +84,37 @@ What actually closed the gap, no merchant keywords added:
    unlabeled unknown worth <1% of total annualized spend is never asked — the
    review shows one summary line and it folds into 'Everything else' on Apply
    (existing mechanics). Labeled policy groups (rent, Venmo) always ask.
+   (v1.2.2 lowered the gate to `MATERIALITY_PCT = 0.001` — 0.1%.)
 
 Corpus effect (real statements): semantic placements 91 → 112 txns; of 78
 unknown merchant groups the user is asked about **7 — all rent variants**;
 the other 71 (each < $1,260/yr on a $126k profile) fold silently. Brands the
 model can't know without shipping a bigger encoder (Häagen-Dazs, Uniqlo
 without its keyword) simply fold when small instead of interrupting.
+
+## v1.3.0 — suggestions + bounded misc (full-year corpus feedback)
+
+Parsing a whole year at once exposed the two failure modes of the pure
+gate-or-nothing design: hundreds of sub-gate merchants either dumped
+thousands of dollars into 'Everything else' unseen (each under the per-group
+materiality gate) or, with a lower gate, demanded hundreds of blank manual
+picks. Fixes, still zero merchant keywords and zero new tuned accept
+thresholds:
+
+1. **Suggestions** (`match.suggestion = {category, confidence}`): when all
+   six layers miss, the semantic top-1 BELOW the 0.40 gate still travels to
+   the review UI. It is never applied on its own — the group's row shows it
+   as a one-click "guess: Dining · 34% — use" chip, and an
+   "Accept all N guesses" button confirms every unassigned suggestion at
+   once. The 0.40 gate stays the only unattended categorization path; the
+   top-1 is emitted unconditionally with its score, so no second threshold
+   was tuned. Same ONNX pass serves both (Matcher.semantic_best cache).
+2. **Aggregate misc cap** (`MISC_CAP_PCT = 0.02`, site aggregate.ts): the
+   per-group gate is unbounded in aggregate, so when minor groups together
+   exceed 2% of total annualized spend the largest are promoted back to
+   asked rows (deterministic: spend-desc, stem tie-break). Promoted rows
+   arrive pre-filled with suggestions, so the marginal user cost is ~one
+   click on the bulk button.
+3. **Transparent fold-in**: the minor-tail summary line is now an expandable
+   section — every folded group can be opened, inspected (each row carries
+   an example raw descriptor), and placed by hand.

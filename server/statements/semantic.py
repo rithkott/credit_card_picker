@@ -18,9 +18,11 @@ That's it — we trust the model's confidence and leave corrections to the
 consumer: accepted matches carry method="semantic" + the score so the review
 UI disclosed them (I-semantic line), every placement is visible and editable
 there, and everything below the gate stays in the uncategorized list where
-the user is asked. Only purchases/refunds are eligible (a "$2,000 ONLINE
-PAYMENT" must never be semantically binned — that is kind classification's
-job, not a tuning choice).
+the user is asked. Below-gate top-1 results still travel to the review UI as
+match.suggestion — a pre-filled guess the USER confirms; the gate remains the
+only unattended categorization path. Only purchases/refunds are eligible (a
+"$2,000 ONLINE PAYMENT" must never be semantically binned — that is kind
+classification's job, not a tuning choice).
 
 Deterministic: fixed int8 weights, single-threaded onnxruntime session,
 argmax with stable tie-break by prototype order. Degrades to layers 1-5 when
@@ -90,15 +92,21 @@ class SemanticMatcher:
                 texts.append(phrase)
         self.proto = self.encoder.encode(texts)
 
-    def match(self, stem: str) -> Optional[Tuple[str, float]]:
-        """Best (category, confidence) for a descriptor stem, or None when
-        the model isn't confident enough — those go to the user."""
+    def best(self, stem: str) -> Optional[Tuple[str, float]]:
+        """Top-1 (category, cosine) regardless of the accept gate. Below-gate
+        results are the review screen's SUGGESTIONS (never applied on their
+        own); None only when the stem is too short to carry meaning."""
         if len(stem.strip()) < MIN_STEM_CHARS:
             return None
         vec = self.encoder.encode([stem.lower()])[0]
         sims = self.proto @ vec
-        best = int(np.argmax(sims))  # ties: first prototype in registry order
-        best_sim = float(sims[best])
-        if best_sim < ACCEPT_SIM:
+        i = int(np.argmax(sims))  # ties: first prototype in registry order
+        return self.owners[i], float(sims[i])
+
+    def match(self, stem: str) -> Optional[Tuple[str, float]]:
+        """Best (category, confidence) for a descriptor stem, or None when
+        the model isn't confident enough — those go to the user."""
+        found = self.best(stem)
+        if found is None or found[1] < ACCEPT_SIM:
             return None
-        return self.owners[best], best_sim
+        return found

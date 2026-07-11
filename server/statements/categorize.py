@@ -25,7 +25,10 @@ embedded here. Layered matching per transaction, first hit wins:
      phrases from category-rules.yaml (semantic_prototypes). "JOES DELI" /
      "AMC THEATRES" resolve without a hand-written pattern; one confidence
      gate, the model's call is trusted and every placement stays editable
-     on the review screen. method="semantic" + confidence.
+     on the review screen. method="semantic" + confidence. When even layer 6
+     misses (top-1 below the gate), the top-1 candidate is still attached as
+     match["suggestion"] = {"category", "confidence"} — a pre-filled guess
+     for the review UI that only user confirmation turns into spend.
 
 Within a layer the LONGEST pattern wins; identical patterns shared by two
 descriptor keys (APPLE.COM/BILL) break ties by ascending key so matching is
@@ -43,10 +46,11 @@ except ImportError:  # local dev without rapidfuzz: layers 1-4 still work
     HAVE_FUZZ = False
 
 try:  # numpy/tokenizers or the exported model may be absent locally
-    from .semantic import MODEL_DIR, SemanticMatcher
+    from .semantic import ACCEPT_SIM, MODEL_DIR, SemanticMatcher
     HAVE_SEMANTIC = (MODEL_DIR / "model_quantized.onnx").exists()
 except ImportError:
     HAVE_SEMANTIC = False
+    ACCEPT_SIM = 0.40  # unreachable without the model; keeps the gate referable
 
 FUZZY_CUTOFF = 90.0
 FUZZY_MIN_PATTERN = 5  # short stems ("CVS") false-positive too easily
@@ -99,7 +103,7 @@ class Matcher:
         # session shouldn't tax startups that never parse statements.
         self.semantic_prototypes = category_rules.get("semantic_prototypes") or {}
         self._semantic = None
-        self._semantic_cache: dict = {}  # stem -> Optional[(category, confidence)]
+        self._semantic_cache: dict = {}  # stem -> Optional[(category, cosine)] top-1
 
     def semantic(self):
         if self._semantic is None and HAVE_SEMANTIC and self.semantic_prototypes:
@@ -110,10 +114,13 @@ class Matcher:
                 self._semantic = False
         return self._semantic or None
 
-    def semantic_match(self, stem: str):
+    def semantic_best(self, stem: str):
+        """Cached top-1 (category, cosine) for a stem, accept gate NOT
+        applied — one ONNX pass serves both the layer-6 accept decision and
+        the below-gate suggestion."""
         if stem not in self._semantic_cache:
             matcher = self.semantic()
-            self._semantic_cache[stem] = matcher.match(stem) if matcher else None
+            self._semantic_cache[stem] = matcher.best(stem) if matcher else None
         return self._semantic_cache[stem]
 
 
@@ -122,11 +129,24 @@ def normalize_descriptor(descriptor: str) -> str:
 
 
 def descriptor_stem(descriptor: str) -> str:
-    """Group key for uncategorized transactions: strip store numbers, dates,
-    and punctuation noise so "KWIK-E-MART #442 SPRINGFIELD" and "#187" group."""
-    cleaned = re.sub(r"\s+", " ", re.sub(r"[#*]?\d[\d\-/.]*", " ",
-                                         normalize_descriptor(descriptor))).strip()
-    stem = " ".join(cleaned.split(" ")[:3])
+    """Group key for uncategorized transactions and the input to the fuzzy and
+    semantic layers. Reference-code tokens — store numbers, auth codes, masked
+    account fragments: any token whose alphanumerics are at least half digits —
+    are dropped WHOLE, not digit-stripped, so codes never shed letter shrapnel
+    into the stem ("15270219Q019KM5A5" must vanish, not become "Q KM A"). The
+    first three real words remain: "210001500 15270219Q019KM5A5 SUITSUPPLY
+    WILMINGTON DE" stems to "SUITSUPPLY WILMINGTON DE", and
+    "KWIK-E-MART #442 SPRINGFIELD" / "#187" still group together."""
+    words = []
+    for token in normalize_descriptor(descriptor).split(" "):
+        alnum = sum(c.isalnum() for c in token)
+        digits = sum(c.isdigit() for c in token)
+        if alnum == 0 or digits * 2 >= alnum:
+            continue
+        words.append(token)
+        if len(words) == 3:
+            break
+    stem = " ".join(words)
     return stem if stem != "" else normalize_descriptor(descriptor)
 
 
@@ -227,13 +247,19 @@ def match_txn(m: Matcher, descriptor: str, issuer_category: Optional[str],
     if fuzzy is not None:
         return fuzzy
 
-    # Layer 6: semantic — confident transformer matches only; anything
-    # below the gate stays for the user.
-    semantic = m.semantic_match(descriptor_stem(semantic_text)) if semantic_ok else None
+    # Layer 6: semantic — confident transformer matches only. The below-gate
+    # top-1 still travels as a SUGGESTION (category/layer/method stay None):
+    # the review UI pre-fills the group's picker with it, and it becomes real
+    # spend only when the user confirms — the gate stays the sole unattended
+    # categorization path.
+    semantic = m.semantic_best(descriptor_stem(semantic_text)) if semantic_ok else None
     if semantic is not None:
         category, sim = semantic
-        return {"category": category, "layer": 6,
-                "method": "semantic", "confidence": round(sim, 2)}
+        if sim >= ACCEPT_SIM:
+            return {"category": category, "layer": 6,
+                    "method": "semantic", "confidence": round(sim, 2)}
+        return {"category": None, "layer": None, "method": None,
+                "suggestion": {"category": category, "confidence": round(sim, 2)}}
     return {"category": None, "layer": None, "method": None}
 
 

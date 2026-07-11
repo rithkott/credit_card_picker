@@ -450,10 +450,30 @@ button.linklike {
   gap: 1em; padding: 0.2em 0; max-width: 42em;
   font-size: 13.5px;
 }
+.uncat-row > select { width: 15em; flex-shrink: 0; }
 .uncat-flag {
   color: var(--warn); font-weight: 600; border: 1px solid rgba(232, 196, 122, 0.5);
   border-radius: 4px; padding: 0 6px; margin-right: 6px; font-size: 11.5px;
 }
+.uncat .panel-head { max-width: 42em; }
+.uncat-name { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; }
+.uncat-name > .line-note { margin: 0; }
+.uncat-guess {
+  font-size: 11.5px; padding: 1px 8px; margin-top: 2px;
+  border: 1px solid var(--accent-border); border-radius: 999px;
+  background: transparent; color: var(--accent-text); cursor: pointer;
+  text-align: left;
+}
+.uncat-guess:hover { background: var(--accent-bg); }
+.uncat-accept-all {
+  font-size: 12.5px; padding: 2px 12px;
+  border: 1px solid var(--accent-border); border-radius: 999px;
+  background: transparent; color: var(--accent-text); cursor: pointer;
+}
+.uncat-accept-all:hover { background: var(--accent-bg); }
+.uncat-example { display: block; margin-left: 0; }
+.uncat-minor { max-width: 42em; margin-top: 0.5em; }
+.uncat-minor > summary { cursor: pointer; }
 
 /* Run bar */
 .runbar {

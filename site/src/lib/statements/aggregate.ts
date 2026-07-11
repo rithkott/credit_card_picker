@@ -16,6 +16,12 @@ import { annualize, mergeIntervals, MIN_COVERAGE_DAYS } from './annualize'
  * into 'Everything else' without asking (plan 13 — don't interrupt the user
  * for charges that can't change the recommendation). */
 export const MATERIALITY_PCT = 0.001
+
+/** Hard bound on the SILENT fold-in: when minor groups together exceed this
+ * share of total annualized spend, the largest are promoted back to asked
+ * rows until the remainder fits. Keeps "Everything else" from quietly
+ * swallowing a long tail that sums to real money. */
+export const MISC_CAP_PCT = 0.02
 import { formatUsd } from '../money'
 import type { SpendState } from '../validation'
 import type { ConfigMerchant, UsageItem } from '../../types'
@@ -83,9 +89,17 @@ export function aggregate(
           ...(match.descriptorLabel !== undefined ? { label: match.descriptorLabel } : {}),
           count: 0,
           rawCents: 0,
+          example: txn.descriptor,
         }
         group.count++
         group.rawCents += txn.amountCents
+        // Below-gate semantic top-1 pre-fills the group's picker. Same stem ⇒
+        // same model output, so first-non-null is stable; labeled policy
+        // groups (rent, Venmo) never get one — those are the user's call.
+        if (group.suggestion === undefined && group.label === undefined
+            && match.suggestion !== undefined) {
+          group.suggestion = match.suggestion
+        }
         groups.set(key, group)
       }
     }
@@ -218,6 +232,22 @@ export function aggregate(
         && Math.abs(annualize(g.rawCents, days)) < MATERIALITY_PCT * totalAnnualCents) {
       g.minor = true
     }
+  }
+
+  // The per-group gate alone is unbounded: a year of statements can hold
+  // hundreds of sub-0.1% merchants that together dump thousands into
+  // 'Everything else' unseen. Cap the SILENT fold-in at MISC_CAP_PCT of
+  // total spend by promoting the largest minor groups back to asked rows
+  // (they arrive pre-filled with suggestions, so promotion costs the user
+  // ~one click). Deterministic: uncategorized is already sorted by spend
+  // desc with a stem tie-break.
+  let minorTotal = uncategorized.reduce(
+    (s, g) => s + (g.minor ? Math.abs(annualize(g.rawCents, days)) : 0), 0)
+  for (const g of uncategorized) {
+    if (minorTotal <= MISC_CAP_PCT * totalAnnualCents) break
+    if (g.minor !== true) continue
+    g.minor = false
+    minorTotal -= Math.abs(annualize(g.rawCents, days))
   }
 
   return {

@@ -599,6 +599,16 @@ class TestCategorizeGoldenTable(unittest.TestCase):
                     self.assertEqual(match.get(key), value,
                                      f"{descriptor}: {key}")
 
+    def test_no_suggestion_without_semantic_layer(self):
+        """Inline registries carry no semantic_prototypes, so the matcher runs
+        without layer 6 — misses must degrade to a bare None match with no
+        suggestion key (same shape as when onnx deps/model are absent)."""
+        from statements.categorize import match_txn
+        match = match_txn(self.matcher, "MYSTERY MERCHANT", None, None)
+        self.assertEqual((match["category"], match["layer"], match["method"]),
+                         (None, None, None))
+        self.assertNotIn("suggestion", match)
+
     def test_normalize_and_stem(self):
         from statements.categorize import descriptor_stem, match_txn, normalize_descriptor
         self.assertEqual(normalize_descriptor("  netflix.COM   ca "), "NETFLIX.COM CA")
@@ -609,6 +619,13 @@ class TestCategorizeGoldenTable(unittest.TestCase):
         self.assertEqual(descriptor_stem("KWIK-E-MART #442 SPRINGFIELD"),
                          "KWIK-E-MART SPRINGFIELD")
         self.assertEqual(descriptor_stem("12345"), "12345")  # all-numeric falls back
+        # Reference-code tokens drop WHOLE — no letter shrapnel in the stem
+        # (real Bilt PDF shape: routing/auth codes before the merchant).
+        self.assertEqual(
+            descriptor_stem("210001500 15270219Q019KM5A5 SUITSUPPLY WILMINGTON DE"),
+            "SUITSUPPLY WILMINGTON DE")
+        self.assertEqual(descriptor_stem("MCDONALD'S F32122 SPRINGFIELD"),
+                         "MCDONALD'S SPRINGFIELD")
 
 
 SEMANTIC_READY = (
@@ -720,6 +737,41 @@ class TestSemanticLayer(unittest.TestCase):
         a = self.match("HANOVER GOURMET DELI")
         b = self.match("HANOVER GOURMET DELI")
         self.assertEqual(a, b)
+
+    def test_below_gate_carries_suggestion(self):
+        """v1.3.0: an all-layers miss still ships the semantic top-1 as
+        match['suggestion'] — never as the accepted category — so the review
+        UI can pre-fill the group's picker."""
+        for descriptor in ("SPIRIT AI EXECUTIVE", "SOME RANDOM LLC 5512"):
+            m = self.match(descriptor)
+            self.assertIsNone(m["category"], descriptor)
+            self.assertIsNone(m["layer"], descriptor)
+            self.assertIsNone(m["method"], descriptor)
+            self.assertIn("suggestion", m, descriptor)
+            suggestion = m["suggestion"]
+            self.assertIn(suggestion["category"],
+                          self.matcher.semantic_prototypes, descriptor)
+            self.assertGreaterEqual(suggestion["confidence"], 0.0, descriptor)
+            self.assertLess(suggestion["confidence"], 0.4, descriptor)
+
+    def test_no_suggestion_on_accepted_matches(self):
+        """Suggestion only rides misses: exact, fuzzy, and accepted semantic
+        matches must not carry one."""
+        for descriptor in ("NETFLIX.COM 866-579-7172",  # layer 1
+                           "SHELL OIL 5744221",          # layer 2
+                           "JOES DELI 42 NYC"):          # layer 6, above gate
+            self.assertNotIn("suggestion", self.match(descriptor), descriptor)
+
+    def test_no_suggestion_for_short_stems_or_non_spend(self):
+        self.assertNotIn("suggestion", self.match("XQZ"))  # < MIN_STEM_CHARS
+        self.assertNotIn("suggestion",
+                         self.match("SPIRIT AI EXECUTIVE", semantic_ok=False))
+
+    def test_suggestion_deterministic(self):
+        a = self.match("SPIRIT AI EXECUTIVE")
+        b = self.match("SPIRIT AI EXECUTIVE")
+        self.assertEqual(a.get("suggestion"), b.get("suggestion"))
+        self.assertIsNotNone(a.get("suggestion"))
 
 
 if __name__ == "__main__":

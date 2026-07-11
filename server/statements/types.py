@@ -53,7 +53,10 @@ class Txn:
     line: int  # 1-based row/line/block index in the source file
     issuer_category: Optional[str] = None  # issuer's own category column, lowercased
     mcc: Optional[int] = None  # CSV MCC column or OFX <SIC>
-    match: Optional[dict] = None  # set by categorize.annotate
+    # Set by categorize.annotate. Unmatched spend may carry
+    # match["suggestion"] = {"category", "confidence"} — the semantic top-1
+    # below the accept gate, for the review UI's pre-filled picker.
+    match: Optional[dict] = None
 
     def to_dict(self) -> dict:
         out = {

@@ -81,6 +81,7 @@ export function fromWire(wire: WireParsedFile): ParsedFile {
         ...(w.match.descriptor_label !== undefined
           ? { descriptorLabel: w.match.descriptor_label } : {}),
         stem: w.match.stem,
+        ...(w.match.suggestion !== undefined ? { suggestion: w.match.suggestion } : {}),
       },
       source: { file: s.name, line: w.line },
     })),
