@@ -125,19 +125,23 @@ export function PortfolioCard({ portfolio, bundle, isBest, stack }: {
           <div className="receipt-rows">
             <div className="row">
               <span>Rewards on ${formatNumber(Math.round(spendTotal))} of spending</span>
+              <i className="lead" aria-hidden="true" />
               <span>{formatUsd(earnings)}</span>
             </div>
             <div className="row">
               <span>Credits you said you'd use</span>
+              <i className="lead" aria-hidden="true" />
               <span>+ {formatUsd(credits)}</span>
             </div>
             <div className="row">
               <span>Annual fees &amp; memberships</span>
+              <i className="lead" aria-hidden="true" />
               <span>− {formatUsd(fees)}</span>
             </div>
             {year1 && (
               <div className="row">
                 <span>Signup bonuses (year 1 only)</span>
+                <i className="lead" aria-hidden="true" />
                 <span>+ {formatUsd(bonuses)}</span>
               </div>
             )}

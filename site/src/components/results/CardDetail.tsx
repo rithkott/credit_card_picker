@@ -23,6 +23,15 @@ function roleSubtitle(card: PerCard): string {
   return text.charAt(0).toUpperCase() + text.slice(1)
 }
 
+/** Verification bookkeeping is curator-facing; users only see warnings that
+ * change what the card does for them (expired bonus, approval odds, …). */
+function userFacing(warnings: string[]): string[] {
+  return warnings
+    .filter((w) => !w.startsWith('UNVERIFIED DATA') && !w.startsWith('stale verification'))
+    .map((w) => w.replace(/\s*NEEDS human verification\.?/g, '').trim())
+    .filter((w) => w.length > 0)
+}
+
 /** Per-card tile (design handoff v2): name, role, the money line items, and
  * an "Adds each year" total — with the existing full AssignmentsTable and
  * credits/bonus detail one disclosure away for power users. */
@@ -35,10 +44,18 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
   const fees = card.fees.annual_fee_usd + (card.fees.membership_fee_usd ?? 0)
   const adds = earn + credits - fees
 
+  const shownWarnings = userFacing(card.warnings)
   const warnText = [
     ...(card.valuation_note ? [card.valuation_note] : []),
-    ...card.warnings,
+    ...shownWarnings,
   ].join(' · ')
+
+  const shownAssignments = card.assignments
+    .filter((a) => a.usd_assigned > 0)
+    .sort((a, b) => b.usd_value - a.usd_value)
+  const shownCredits = card.credits
+    .filter((c) => c.value > 0)
+    .sort((a, b) => b.value - a.value)
 
   const coverage = card.fees.annual_fee_usd > 0 && earn + credits > card.fees.annual_fee_usd
     ? Math.round((earn + credits) / card.fees.annual_fee_usd)
@@ -53,26 +70,41 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
           : roleSubtitle(card)}
       </div>
       <div className="tile-lines">
-        {card.assignments.filter((a) => a.usd_assigned > 0).map((a, i) => (
+        {shownAssignments.map((a, i) => (
           <div className="line" key={`a-${a.bucket}-${i}`}>
             <span>
               {a.cpp === 1 ? `${a.rate}%` : `${a.rate}x`} {pretty(a.bucket)}
               {a.note && <span className="note"> {a.note}</span>}
             </span>
-            <span>{formatUsd(a.usd_value)}</span>
-          </div>
-        ))}
-        {card.credits.filter((c) => c.value > 0).map((c, i) => (
-          <div className="line" key={`c-${c.name}-${i}`}>
+            <i className="lead" aria-hidden="true" />
             <span>
-              {c.name} <span className="note">you use it</span>
+              {a.cpp !== 1 && (
+                <span className="pts">{formatNumber(Math.round(a.usd_assigned * a.rate))} pts · </span>
+              )}
+              {formatUsd(a.usd_value)}
             </span>
-            <span>+ {formatUsd(c.value)}</span>
           </div>
         ))}
+      </div>
+      {shownCredits.length > 0 && (
+        <div className="tile-lines tile-credits">
+          <div className="sublabel">Credits</div>
+          {shownCredits.map((c, i) => (
+            <div className="line" key={`c-${c.name}-${i}`}>
+              <span>
+                {c.name} <span className="note">you use it</span>
+              </span>
+              <i className="lead" aria-hidden="true" />
+              <span>+ {formatUsd(c.value)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="tile-lines tile-costs">
         {card.fees.membership_fee_usd !== undefined && (
           <div className="line fee">
             <span>{card.fees.membership_name ?? 'Required'} membership</span>
+            <i className="lead" aria-hidden="true" />
             <span>− {formatUsd(card.fees.membership_fee_usd)}</span>
           </div>
         )}
@@ -81,6 +113,7 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
             Annual fee
             {card.fees.first_year_waived && <span className="note"> waived year 1</span>}
           </span>
+          <i className="lead" aria-hidden="true" />
           <span>
             {card.fees.annual_fee_usd > 0 ? `− ${formatUsd(card.fees.annual_fee_usd)}` : '$0'}
           </span>
@@ -88,6 +121,7 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
         {card.reward_cap_clamp !== undefined && (
           <div className="line fee">
             <span>Card-wide reward cap</span>
+            <i className="lead" aria-hidden="true" />
             <span>− {formatUsd(card.reward_cap_clamp)}</span>
           </div>
         )}
@@ -129,7 +163,7 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
               <> · required membership ({card.fees.membership_name}): −{formatUsd(card.fees.membership_fee_usd)}/yr</>
             )}
           </div>
-          {card.warnings.map((w) => (
+          {shownWarnings.map((w) => (
             <div key={`${id}-${w}`} className="warn-note">⚠ {w}</div>
           ))}
         </div>
