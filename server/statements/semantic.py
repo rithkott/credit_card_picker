@@ -1,29 +1,31 @@
 """Semantic descriptor matching — matcher layer 6 (plan 13, v1.2.1).
 
-A LOCAL static embedding model (minishlab/potion-base-8M, exported to
-server/statements/model/ by scripts/export_semantic_model.py) semantically
-matches descriptor stems the exact and fuzzy layers missed: "JOES DELI",
-"CORNER BAR", "AMC THEATRES" are obvious to an embedding space and shouldn't
-land on the user's review pile. No network, no API, no cost — the model is a
-14 MB numpy matrix; encode = mean of token vectors, L2-normalized (verified
-identical to model2vec's output).
+A LOCAL transformer (all-MiniLM-L6-v2, int8 ONNX, committed at
+server/statements/model/) semantically matches descriptor stems the exact and
+fuzzy layers missed: "JOES DELI", "CORNER BAR", "AMC THEATRES" are obvious to
+a sentence encoder and shouldn't land on the user's review pile. No network,
+no API, no cost — onnxruntime runs the 23 MB model in-process, lazy-loaded.
 
-Each real category declares short prototype phrases in
-data/meta/category-rules.yaml (semantic_prototypes); a stem matches the
-category of its most-similar prototype, and is accepted only when BOTH
-  cosine >= ACCEPT_SIM          (absolute floor: garbage stays unmatched)
-  best - runner_up >= ACCEPT_MARGIN  (margin over the best OTHER category:
-                                      genuinely ambiguous merchants — a wine
-                                      shop vs a wine bar — go to the user;
-                                      0.12 calibrated so "TOTAL WINE" stays
-                                      ambiguous while "CORNER BAR" passes)
-hold. Accepted matches carry method="semantic" + confidence so the review UI
-discloses them; everything else stays uncategorized exactly as before — the
-user is only asked about what the model can't confidently place.
+Each real category declares short archetype phrases in
+data/meta/category-rules.yaml (semantic_prototypes — generic merchant
+archetypes like "deli sandwiches" or "movie theater", NOT tuned to any
+particular user's statements); a stem matches the category of its
+most-similar phrase and is accepted at a single confidence gate:
 
-Deterministic: fixed matrix, fixed prototypes, argmax with stable tie-break
-by prototype order. Degrades to layers 1-5 when numpy/tokenizers or the
-model files are absent (import guarded by categorize.py).
+  cosine >= ACCEPT_SIM
+
+That's it — we trust the model's confidence and leave corrections to the
+consumer: accepted matches carry method="semantic" + the score so the review
+UI disclosed them (I-semantic line), every placement is visible and editable
+there, and everything below the gate stays in the uncategorized list where
+the user is asked. Only purchases/refunds are eligible (a "$2,000 ONLINE
+PAYMENT" must never be semantically binned — that is kind classification's
+job, not a tuning choice).
+
+Deterministic: fixed int8 weights, single-threaded onnxruntime session,
+argmax with stable tie-break by prototype order. Degrades to layers 1-5 when
+onnxruntime/numpy/tokenizers or the model files are absent (import guarded
+by categorize.py).
 """
 
 import json
@@ -31,36 +33,46 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 import numpy as np
+import onnxruntime as ort
 from tokenizers import Tokenizer
 
 MODEL_DIR = Path(__file__).resolve().parent / "model"
 
-ACCEPT_SIM = 0.35
-ACCEPT_MARGIN = 0.12
+ACCEPT_SIM = 0.40
 MIN_STEM_CHARS = 4  # "SQ" or "#42" can't carry meaning
+MAX_TOKENS = 64
 
 
 class SemanticEncoder:
-    """Loads the exported matrix + tokenizer once; encodes short strings."""
+    """Lazy MiniLM ONNX session; masked-mean-pooled, L2-normalized vectors."""
 
     def __init__(self, model_dir: Path = MODEL_DIR):
-        self.embedding = np.load(model_dir / "embeddings.npy").astype(np.float32)
+        options = ort.SessionOptions()
+        # Single-threaded on purpose: reproducible sums, and the inputs are
+        # a handful of short strings — parallelism buys nothing here.
+        options.intra_op_num_threads = 1
+        options.inter_op_num_threads = 1
+        self.session = ort.InferenceSession(
+            str(model_dir / "model_quantized.onnx"), sess_options=options,
+            providers=["CPUExecutionProvider"])
         self.tokenizer = Tokenizer.from_file(str(model_dir / "tokenizer.json"))
+        self.tokenizer.enable_truncation(MAX_TOKENS)
         self.meta = json.loads((model_dir / "meta.json").read_text())
 
     def encode(self, texts: List[str]) -> np.ndarray:
-        """Mean of token vectors, L2-normalized — model2vec's exact recipe.
-        Unknown/empty inputs yield a zero vector (cosine 0 with everything)."""
-        out = np.zeros((len(texts), self.embedding.shape[1]), dtype=np.float32)
-        for i, text in enumerate(texts):
-            ids = self.tokenizer.encode(text, add_special_tokens=False).ids
-            if not ids:
-                continue
-            v = self.embedding[ids].mean(axis=0)
-            norm = float(np.linalg.norm(v))
-            if norm > 0:
-                out[i] = v / norm
-        return out
+        encs = [self.tokenizer.encode(t) for t in texts]
+        maxlen = max(len(e.ids) for e in encs)
+        ids = np.array([e.ids + [0] * (maxlen - len(e.ids)) for e in encs],
+                       dtype=np.int64)
+        mask = np.array([e.attention_mask + [0] * (maxlen - len(e.attention_mask))
+                         for e in encs], dtype=np.int64)
+        hidden = self.session.run(None, {
+            "input_ids": ids, "attention_mask": mask,
+            "token_type_ids": np.zeros_like(ids)})[0]
+        m = mask[:, :, None].astype(np.float32)
+        emb = (hidden * m).sum(axis=1) / np.maximum(m.sum(axis=1), 1e-9)
+        norms = np.linalg.norm(emb, axis=1, keepdims=True)
+        return emb / np.maximum(norms, 1e-9)
 
 
 class SemanticMatcher:
@@ -80,7 +92,7 @@ class SemanticMatcher:
 
     def match(self, stem: str) -> Optional[Tuple[str, float]]:
         """Best (category, confidence) for a descriptor stem, or None when
-        below the floor or inside the ambiguity margin."""
+        the model isn't confident enough — those go to the user."""
         if len(stem.strip()) < MIN_STEM_CHARS:
             return None
         vec = self.encoder.encode([stem.lower()])[0]
@@ -89,9 +101,4 @@ class SemanticMatcher:
         best_sim = float(sims[best])
         if best_sim < ACCEPT_SIM:
             return None
-        category = self.owners[best]
-        runner_up = max((float(s) for s, o in zip(sims, self.owners) if o != category),
-                        default=0.0)
-        if best_sim - runner_up < ACCEPT_MARGIN:
-            return None  # genuinely ambiguous: the user decides
-        return category, best_sim
+        return self.owners[best], best_sim

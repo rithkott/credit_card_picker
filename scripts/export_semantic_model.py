@@ -1,57 +1,56 @@
 #!/usr/bin/env python3
-"""One-time exporter for the semantic matcher's embedding model (plan 13).
+"""One-time exporter for the semantic matcher's transformer (plan 13).
 
-Downloads minishlab/potion-base-8M (MIT license) via model2vec and writes the
-two artifacts the runtime actually needs into server/statements/model/:
+Downloads the int8-quantized ONNX export of sentence-transformers/
+all-MiniLM-L6-v2 (Apache-2.0, via Xenova/all-MiniLM-L6-v2) and copies the two
+artifacts the runtime needs into server/statements/model/:
 
-  embeddings.npy   token-embedding matrix, float16 (~15 MB; fp32 adds nothing
-                   at cosine-similarity precision)
-  tokenizer.json   the model's HuggingFace tokenizers file, verbatim
-  meta.json        provenance + the exact encode recipe the runtime mirrors
+  model_quantized.onnx   ~23 MB int8 MiniLM encoder
+  tokenizer.json         the HuggingFace tokenizers file, verbatim
+  meta.json              provenance + the exact pooling recipe
 
-The runtime (server/statements/semantic.py) reimplements model2vec's encode —
-mean of token vectors, L2-normalized (verified identical: cosine 1.0) — so
-model2vec/huggingface_hub are DEV-ONLY dependencies; the deployed function
-needs just numpy + tokenizers, and never touches the network.
+The runtime (server/statements/semantic.py) runs it with onnxruntime and
+masked mean pooling + L2 norm — the standard sentence-transformers recipe.
+huggingface_hub is DEV-ONLY; the deployed function never touches the network.
 
 Rerun only to change models; the outputs are committed.
-Usage: pip install model2vec && python3 scripts/export_semantic_model.py
+Usage: pip install huggingface_hub && python3 scripts/export_semantic_model.py
 """
 
 import json
+import shutil
 from pathlib import Path
 
-import numpy as np
-from model2vec import StaticModel
+from huggingface_hub import hf_hub_download
 
-MODEL_ID = "minishlab/potion-base-8M"
+MODEL_ID = "Xenova/all-MiniLM-L6-v2"
 OUT = Path(__file__).resolve().parent.parent / "server" / "statements" / "model"
 
 
 def main() -> None:
-    model = StaticModel.from_pretrained(MODEL_ID)
-    assert model.normalize, "runtime recipe assumes normalized embeddings"
     OUT.mkdir(parents=True, exist_ok=True)
-
-    np.save(OUT / "embeddings.npy", model.embedding.astype(np.float16))
-    (OUT / "tokenizer.json").write_text(model.tokenizer.to_str())
+    for remote, local in [("onnx/model_quantized.onnx", "model_quantized.onnx"),
+                          ("tokenizer.json", "tokenizer.json")]:
+        shutil.copyfile(hf_hub_download(MODEL_ID, remote), OUT / local)
     (OUT / "meta.json").write_text(json.dumps({
         "model": MODEL_ID,
-        "license": "MIT",
-        "dim": int(model.embedding.shape[1]),
-        "vocab": int(model.embedding.shape[0]),
-        "dtype": "float16",
-        "encode": "mean of token vectors (add_special_tokens=False), L2-normalized",
+        "base": "sentence-transformers/all-MiniLM-L6-v2",
+        "license": "Apache-2.0",
+        "quantization": "int8 (dynamic)",
+        "pooling": "attention-masked mean of last_hidden_state, L2-normalized",
+        "max_tokens": 64,
     }, indent=2) + "\n")
 
-    # Sanity: reimplemented encode must match the library bit-for-bit in cosine.
-    ids = model.tokenizer.encode("corner bar", add_special_tokens=False).ids
-    manual = model.embedding[ids].mean(axis=0)
-    manual = manual / np.linalg.norm(manual)
-    lib = model.encode(["corner bar"])[0]
-    cos = float(np.dot(manual, lib))
-    assert cos > 0.9999, cos
-    print(f"exported {MODEL_ID} to {OUT} (encode parity cosine {cos:.6f})")
+    # Sanity: the runtime encoder must produce sane similarities.
+    import sys
+    sys.path.insert(0, str(OUT.parent.parent))
+    from statements.semantic import SemanticEncoder
+    enc = SemanticEncoder(OUT)
+    vecs = enc.encode(["movie theater", "cinema tickets", "gas station"])
+    close = float(vecs[0] @ vecs[1])
+    far = float(vecs[0] @ vecs[2])
+    assert close > 0.5 > far, (close, far)
+    print(f"exported {MODEL_ID} to {OUT} (theater~cinema {close:.2f}, theater~gas {far:.2f})")
 
 
 if __name__ == "__main__":

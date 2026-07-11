@@ -20,12 +20,12 @@ embedded here. Layered matching per transaction, first hit wins:
      prefixes or explicitly-unmapped keys (those need exact evidence), and
      is marked method="fuzzy" with its score so the review UI can disclose
      approximate matches.
-  6. NEW (plan 13): semantic match — a LOCAL embedding model (semantic.py)
-     scores the stem against per-category prototype phrases from
-     category-rules.yaml (semantic_prototypes). "JOES DELI" / "AMC THEATRES"
-     resolve without a hand-written pattern; accepted only above a
-     similarity floor AND a margin over every other category, so ambiguous
-     merchants still go to the user. method="semantic" + confidence.
+  6. NEW (plan 13): semantic match — a LOCAL transformer (semantic.py,
+     MiniLM int8 ONNX) scores the stem against per-category archetype
+     phrases from category-rules.yaml (semantic_prototypes). "JOES DELI" /
+     "AMC THEATRES" resolve without a hand-written pattern; one confidence
+     gate, the model's call is trusted and every placement stays editable
+     on the review screen. method="semantic" + confidence.
 
 Within a layer the LONGEST pattern wins; identical patterns shared by two
 descriptor keys (APPLE.COM/BILL) break ties by ascending key so matching is
@@ -44,7 +44,7 @@ except ImportError:  # local dev without rapidfuzz: layers 1-4 still work
 
 try:  # numpy/tokenizers or the exported model may be absent locally
     from .semantic import MODEL_DIR, SemanticMatcher
-    HAVE_SEMANTIC = (MODEL_DIR / "embeddings.npy").exists()
+    HAVE_SEMANTIC = (MODEL_DIR / "model_quantized.onnx").exists()
 except ImportError:
     HAVE_SEMANTIC = False
 
@@ -95,8 +95,8 @@ class Matcher:
                 if len(pattern) >= FUZZY_MIN_PATTERN:
                     self.fuzzy_choices.append((pattern, "keyword", category))
 
-        # Layer 6 (plan 13): built lazily on first use — loading the 14 MB
-        # embedding matrix shouldn't tax startups that never parse statements.
+        # Layer 6 (plan 13): built lazily on first use — loading the ONNX
+        # session shouldn't tax startups that never parse statements.
         self.semantic_prototypes = category_rules.get("semantic_prototypes") or {}
         self._semantic = None
         self._semantic_cache: dict = {}  # stem -> Optional[(category, confidence)]
@@ -223,8 +223,8 @@ def match_txn(m: Matcher, descriptor: str, issuer_category: Optional[str],
     if fuzzy is not None:
         return fuzzy
 
-    # Layer 6: semantic — high-confidence embedding matches only; anything
-    # below the floor or inside the ambiguity margin stays for the user.
+    # Layer 6: semantic — confident transformer matches only; anything
+    # below the gate stays for the user.
     semantic = m.semantic_match(descriptor_stem(upper)) if semantic_ok else None
     if semantic is not None:
         category, sim = semantic

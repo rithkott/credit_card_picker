@@ -13,9 +13,10 @@
 #   3. the issuer's own category column (CSV exports) -> issuer_categories
 #   4. MCC / OFX <SIC> code -> mcc ranges
 #   5. fuzzy match (rapidfuzz) against layers 1-2 patterns
-#   6. semantic match: a local embedding model scores the descriptor stem
-#      against semantic_prototypes (below); accepted only above a similarity
-#      floor AND a margin over every other category
+#   6. semantic match: a local transformer (MiniLM ONNX) scores the
+#      descriptor stem against semantic_prototypes (below); accepted above a
+#      single confidence gate — the model's call is trusted, and the review
+#      screen is where the user corrects it
 # Unmatched transactions surface as "uncategorized" in the review UI.
 #
 # Every key in statement-descriptors.yaml must appear in exactly one of
@@ -567,10 +568,10 @@ mcc:
 # local model (server/statements/model/) and cosine-compared against
 # descriptor stems that every exact layer missed. Keep phrases SHORT and
 # concrete — one merchant archetype per phrase; the matcher takes the max
-# over phrases, so more phrases = better recall, and an ambiguous stem
-# (similar to two categories) is deliberately left for the user. Categories
-# may be omitted; 'other' has no prototypes on purpose (it is the fallback,
-# not a meaning).
+# over phrases, so more phrases = better recall. These are GENERIC merchant
+# archetypes — never tune them against any particular user's statements.
+# Categories may be omitted; 'other' has no prototypes on purpose (it is the
+# fallback, not a meaning).
 semantic_prototypes:
   groceries:
     - grocery store

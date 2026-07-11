@@ -614,10 +614,11 @@ class TestCategorizeGoldenTable(unittest.TestCase):
 SEMANTIC_READY = (
     importlib.util.find_spec("numpy") is not None
     and importlib.util.find_spec("tokenizers") is not None
-    and (ROOT / "server" / "statements" / "model" / "embeddings.npy").exists())
+    and importlib.util.find_spec("onnxruntime") is not None
+    and (ROOT / "server" / "statements" / "model" / "model_quantized.onnx").exists())
 
 
-@unittest.skipUnless(SEMANTIC_READY, "numpy/tokenizers or model files absent")
+@unittest.skipUnless(SEMANTIC_READY, "onnxruntime/numpy/tokenizers or model files absent")
 class TestSemanticLayer(unittest.TestCase):
     """Layer 6 (plan 13): local embedding matcher over the real registries.
     Pins the user-visible promises: obvious merchants resolve, ambiguous and
@@ -650,16 +651,20 @@ class TestSemanticLayer(unittest.TestCase):
             ("KATZS DELICATESSEN", "dining"),
             ("VITAL CLIMBING GYM 182", "entertainment"),
             ("EAST JAPAN RAILWAY CO", "travel_other"),
+            ("MADISON SQUARE GARDEN SPORTS", "entertainment"),
         ]:
             m = self.match(descriptor)
             self.assertEqual((m["category"], m["layer"], m["method"]),
                              (want, 6, "semantic"), descriptor)
-            self.assertGreaterEqual(m["confidence"], 0.35)
+            self.assertGreaterEqual(m["confidence"], 0.4)
 
-    def test_ambiguous_stays_for_user(self):
-        # Wine SHOP vs wine BAR: inside the margin — the user decides.
+    def test_confident_call_is_trusted(self):
+        # One gate, no second-guessing: the model reads TOTAL WINE as a
+        # wine venue and places it; the review screen is where the user
+        # corrects it (every semantic placement is disclosed + editable).
         m = self.match("TOTAL WINE AND MORE 1523")
-        self.assertIsNone(m["category"])
+        self.assertEqual(m["method"], "semantic")
+        self.assertIsNotNone(m["category"])
 
     def test_garbage_stays_for_user(self):
         for descriptor in ("SPIRIT AI EXECUTIVE", "SOME RANDOM LLC 5512", "XQZ"):
