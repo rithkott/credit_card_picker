@@ -658,6 +658,29 @@ class TestSemanticLayer(unittest.TestCase):
                              (want, 6, "semantic"), descriptor)
             self.assertGreaterEqual(m["confidence"], 0.4)
 
+    def test_prefix_remainder_reaches_semantic(self):
+        """"SQ *PITA GYROS": the aggregator prefix strips 'SQ *' and the
+        semantic layer judges the REMAINDER, not the processor noise."""
+        m = self.match("SQ *PITA GYROS")
+        self.assertEqual((m["category"], m["layer"], m["method"]),
+                         ("dining", 6, "semantic"))
+
+    def test_new_archetypes_resolve(self):
+        for descriptor, want in [
+            ("INSOMNIA COOKIES 99", "dining"),
+            ("ARAMARK MSG CONCESSIONS", "entertainment"),
+        ]:
+            m = self.match(descriptor)
+            self.assertEqual((m["category"], m["layer"]), (want, 6), descriptor)
+
+    def test_retail_chains_are_shopping_not_other(self):
+        """Pre-existing retail keywords were parked under 'other'; they are
+        in-store retail and belong in online_shopping (its label says so)."""
+        for descriptor in ("TJMAXX 1121", "HOME DEPOT 233", "BEST BUY 552"):
+            m = self.match(descriptor)
+            self.assertEqual((m["category"], m["layer"]),
+                             ("online_shopping", 2), descriptor)
+
     def test_confident_call_is_trusted(self):
         # One gate, no second-guessing: the model reads TOTAL WINE as a
         # wine venue and places it; the review screen is where the user

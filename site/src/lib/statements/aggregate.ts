@@ -11,6 +11,11 @@
  */
 
 import { annualize, mergeIntervals, MIN_COVERAGE_DAYS } from './annualize'
+
+/** A merchant group below this share of total annualized spend is folded
+ * into 'Everything else' without asking (plan 13 — don't interrupt the user
+ * for charges that can't change the recommendation). */
+export const MATERIALITY_PCT = 0.01
 import { formatUsd } from '../money'
 import type { SpendState } from '../validation'
 import type { ConfigMerchant, UsageItem } from '../../types'
@@ -200,6 +205,21 @@ export function aggregate(
     if (cents > 0) merchantCents[key] = cents
   }
 
+  // Materiality (plan 13): total annualized spend = categorized + every
+  // uncategorized group; a group under 1% of it isn't worth interrupting the
+  // user for — it folds into 'Everything else' via the existing Apply path.
+  const uncategorized = [...groups.values()]
+    .filter((g) => g.rawCents !== 0)
+    .sort((a, b) => b.rawCents - a.rawCents || (a.stem < b.stem ? -1 : 1))
+  const totalAnnualCents = Object.values(categoryCents).reduce((s, c) => s + c, 0)
+    + uncategorized.reduce((s, g) => s + Math.abs(annualize(g.rawCents, days)), 0)
+  for (const g of uncategorized) {
+    if (g.label === undefined
+        && Math.abs(annualize(g.rawCents, days)) < MATERIALITY_PCT * totalAnnualCents) {
+      g.minor = true
+    }
+  }
+
   return {
     categoryCents,
     merchantCents,
@@ -207,9 +227,7 @@ export function aggregate(
     // flight whose refund descriptor matches nothing) must reduce SOME
     // bucket, or every total quietly overstates. The user can assign it;
     // unassigned ones subtract from 'other' on Apply.
-    uncategorized: [...groups.values()]
-      .filter((g) => g.rawCents !== 0)
-      .sort((a, b) => b.rawCents - a.rawCents || (a.stem < b.stem ? -1 : 1)),
+    uncategorized,
     usageSuggestions: Object.entries(rawUsage)
       .map(([key, raw]) => ({
         key,

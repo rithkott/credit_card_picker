@@ -373,6 +373,26 @@ keywords:
     - "WAYFAIR"
     - "CHEWY"
     - "SP *"            # Shopify-acquired online stores
+    - "HOME DEPOT"
+    - "LOWE'S"
+    - "LOWES"
+    - "BEST BUY"
+    - "IKEA"
+    - "TJ MAXX"
+    - "TJMAXX"
+    - "MARSHALLS"
+    - "ROSS STORES"
+    - "KOHL'S"
+    - "MACY'S"
+    - "NORDSTROM"
+    - "DOLLAR TREE"
+    - "DOLLAR GENERAL"
+    - "FIVE BELOW"
+    - "PETSMART"
+    - "PETCO"
+    - "BARNES & NOBLE"
+    - "OFFICE DEPOT"
+    - "STAPLES"
   entertainment:
     - "AMC THEATRES"
     - "CINEMARK"
@@ -420,26 +440,6 @@ keywords:
     - "WATER DEPT"
     - "WATER DISTRICT"
   other:
-    - "HOME DEPOT"
-    - "LOWE'S"
-    - "LOWES"
-    - "BEST BUY"
-    - "IKEA"
-    - "TJ MAXX"
-    - "TJMAXX"
-    - "MARSHALLS"
-    - "ROSS STORES"
-    - "KOHL'S"
-    - "MACY'S"
-    - "NORDSTROM"
-    - "DOLLAR TREE"
-    - "DOLLAR GENERAL"
-    - "FIVE BELOW"
-    - "PETSMART"
-    - "PETCO"
-    - "BARNES & NOBLE"
-    - "OFFICE DEPOT"
-    - "STAPLES"
     - "USPS"
     - "FEDEX"
     - "THE UPS STORE"
@@ -582,7 +582,8 @@ semantic_prototypes:
     - liquor store
     - wine and spirits shop
     - wine shop bottle store
-    - convenience store corner bodega
+    - convenience store bodega
+    - neighborhood mini market
   dining:
     - restaurant
     - cafe
@@ -602,6 +603,12 @@ semantic_prototypes:
     - halal food cart
     - steakhouse
     - ramen noodle shop
+    - ice cream parlor
+    - gyro and pita shop
+    - cookie bakery dessert shop
+    - gourmet deli
+    - juice bar smoothie shop
+    - pasta shop
   travel_flights:
     - airline tickets
     - airways flight
@@ -643,6 +650,8 @@ semantic_prototypes:
     - bookstore
     - sporting goods store
     - newsstand
+    - clothing brand store
+    - discount department store
   entertainment:
     - movie theater
     - cinema
@@ -658,6 +667,7 @@ semantic_prototypes:
     - fitness studio
     - spin cycling studio
     - theater tickets
+    - stadium concession stand
   utilities:
     - electric utility bill
     - internet service provider

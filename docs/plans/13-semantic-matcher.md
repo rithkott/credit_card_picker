@@ -51,3 +51,42 @@ stems every other layer missed.
 
 Model 23 MB + onnxruntime 53 MB + numpy/tokenizers ≈ 130 MB installed —
 comfortably under the 250 MB function limit alongside plan-12 deps.
+
+## v1.2.1 second iteration (same branch) — user feedback round 2
+
+Asks: place the still-obvious ones (Uniqlo, TJ Maxx, Häagen-Dazs, pita gyros,
+concessions, cookies, convenience, deli, pasta); try a bigger/newer
+transformer; never bother users with sub-1% charges; NO hand-added merchant
+keywords (registry must work for average users, not be tuned to one person's
+statements).
+
+Measured constraints (pip wheels for manylinux/py312, unzipped): runtime deps
+alone = 183 MB (numpy 57 + onnxruntime 53 + pdf stack 43 + rest), so model
+budget ≈ 45 MB. Bake-offs run: bge-base-en-v1.5 int8 (110 MB — best quality,
+DOESN'T FIT: 331 MB total), nli-deberta-v3-xsmall zero-shot (87 MB, fits
+alone but 12/22 — flat probabilities), bge-small/gte-small/arctic-xs (fit,
+worse separation than MiniLM), MiniLM⊕bge-small union (255 MB — over, and
+adds garbage placements). **Verdict: keep MiniLM** — best
+precision/separability within the physical budget.
+
+What actually closed the gap, no merchant keywords added:
+1. **Prefix-remainder fix**: semantic layer now judges the aggregator-prefix
+   remainder ("SQ *PITA GYROS" → "PITA GYROS" → dining 0.79, was noise).
+2. **Archetype descriptions** (category meanings, not merchant names): ice
+   cream parlor, gyro and pita shop, cookie bakery, stadium concession stand,
+   gourmet deli, pasta shop, juice bar, convenience store bodega, clothing
+   brand store, discount department store.
+3. **Registry correction**: 20 pre-existing retail-chain keywords (TJ MAXX,
+   HOME DEPOT, MACY'S, IKEA, …) moved from 'other' to online_shopping — its
+   label is literally "Shopping (online & in-store retail)". Only
+   USPS/FedEx/UPS remain in 'other'.
+4. **Materiality gate** (`MATERIALITY_PCT = 0.01`, site aggregate.ts): an
+   unlabeled unknown worth <1% of total annualized spend is never asked — the
+   review shows one summary line and it folds into 'Everything else' on Apply
+   (existing mechanics). Labeled policy groups (rent, Venmo) always ask.
+
+Corpus effect (real statements): semantic placements 91 → 112 txns; of 78
+unknown merchant groups the user is asked about **7 — all rent variants**;
+the other 71 (each < $1,260/yr on a $126k profile) fold silently. Brands the
+model can't know without shipping a bigger encoder (Häagen-Dazs, Uniqlo
+without its keyword) simply fold when small instead of interrupting.

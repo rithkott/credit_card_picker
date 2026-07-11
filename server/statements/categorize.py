@@ -167,7 +167,10 @@ def _match_descriptor(m: Matcher, upper: str, depth: int) -> dict:
                     return inner
             if prefix and prefix.get("fallback_category") is not None:
                 return {"category": prefix["fallback_category"], "layer": 1, **attach}
-            return {"category": None, "layer": None}  # unknown merchant behind prefix
+            # Unknown merchant behind the prefix: hand the STRIPPED remainder
+            # to the semantic layer — "SQ *PITA GYROS" should be judged as
+            # "PITA GYROS", not with the processor noise in front.
+            return {"category": None, "layer": None, "_remainder": remainder}
         # Explicitly unmapped (or prefix at depth): labeled group, user's call.
         return {"category": None, "layer": None, **attach}
 
@@ -206,6 +209,7 @@ def match_txn(m: Matcher, descriptor: str, issuer_category: Optional[str],
     spend category would just be noise in the per-txn data."""
     upper = normalize_descriptor(descriptor)
     direct = _match_descriptor(m, upper, 0)
+    semantic_text = direct.pop("_remainder", upper)
     if direct["category"] is not None or "descriptor_key" in direct:
         direct.setdefault("method", "exact")
         return direct
@@ -225,7 +229,7 @@ def match_txn(m: Matcher, descriptor: str, issuer_category: Optional[str],
 
     # Layer 6: semantic — confident transformer matches only; anything
     # below the gate stays for the user.
-    semantic = m.semantic_match(descriptor_stem(upper)) if semantic_ok else None
+    semantic = m.semantic_match(descriptor_stem(semantic_text)) if semantic_ok else None
     if semantic is not None:
         category, sim = semantic
         return {"category": category, "layer": 6,

@@ -106,6 +106,11 @@ export interface UncatGroup {
   label?: string
   count: number
   rawCents: number
+  /** Materiality (plan 13): true when the group's annualized value is under
+   * 1% of the profile's total annualized spend. Minor unlabeled groups are
+   * not asked about — they fold into 'Everything else' silently; labeled
+   * groups (rent, Venmo) are always asked regardless of size. */
+  minor?: boolean
 }
 
 /** "We detected $412/yr at Delta" — usage-questions items seen in the data. */
