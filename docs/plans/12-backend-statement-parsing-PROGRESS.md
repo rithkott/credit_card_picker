@@ -10,9 +10,9 @@ Branch: `statement-backend-v1.2` (worktree `.claude/worktrees/statement-backend-
 - [x] 3. categorize.py (4 registry layers + rapidfuzz layer 5) compiled from lifespan registries
 - [x] 4. API route POST /api/statements/parse (sync, ephemeral, no debug dumps, {detail,code} errors, 413 too_large) + matcher compiled in lifespan + statement_import REMOVED from /api/config + deps added to both requirements files + tests/test_statements.py (44 tests, fixtures copied to tests/fixtures/statements/) + test_server_api.py upload/error/no-dump tests. Full suite: 162 tests OK.
 - [x] 5. Frontend swap: upload loop in index.ts (4MB pre-check, dedupe before upload, one retry on 5xx/network, fromWire converter), deleted detect/csv/ofx/pdf/kind/categorize.ts + their tests + __fixtures__ + pdfjs-dist + vite test alias, aggregate consumes txn.match + I-fuzzy/I-inferred-columns/I-layout disclosures, types.ts wire shapes, api.ts parseStatement + ApiError.code, StatementImport/FileDrop privacy+progress copy, site/src/types.ts statement_import removed, engine.test.ts rewritten (matches inline), matcher golden table ported to Python (46 py tests). Verified: 164 unittest OK, 35 vitest OK, build OK, live curl upload OK.
-- [ ] 6. Deploy config (requirements.txt, vercel.json memory/maxDuration) + docs (CLAUDE.md privacy rule, README Privacy, docs/architecture.md diagram, types.ts header)
-- [ ] 7. Push branch, Vercel preview checklist, corpus rerun via server/statements/cli.py (local, ~/Desktop/Personal)
-- [ ] 8. After user preview approval: merge to main, verify prod, tag v1.2.0
+- [x] 6. Deploy config (vercel.json memory:1024/maxDuration:60; requirements done in step 4) + docs (CLAUDE.md ephemeral-parsing rule replaces in-browser rule, README Privacy rewritten, architecture.md intro/DESC/RULES/SITE/SERVER/VERCEL nodes + invariant 12)
+- [x] 7. Corpus rerun via server/statements/cli.py: 43 files parse, 29/29 printed totals reconcile, 0 mismatch. Found+fixed bug #7 (Bilt summary-box 'Credit limit $10,000.00' phantom purchase -> FURNITURE_DESCRIPTORS filter + regression test). Findings appended to docs/local/09 (main checkout, gitignored). Branch pushed; Vercel preview builds per push. REMAINING: test preview URL checklist (upload each format, error chips, I-* lines, e2e optimize).
+- [ ] 8. After user preview approval: merge to main, verify prod, tag v1.2.0. Also: rerun GitNexus analyze after merge.
 
 ## Resume notes
 
