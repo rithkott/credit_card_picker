@@ -24,6 +24,7 @@
   --hairline-strong: rgba(255, 255, 255, 0.1);
   --danger: #f28b82;
   --warn: #e8c47a;
+  --ok: #9dd6ae;
   --shimmer: linear-gradient(90deg, #8fa8ff, #c4b5fd, #67e8f9);
   --blur-panel: blur(28px) saturate(1.4);
   --blur-small: blur(20px);
@@ -689,14 +690,39 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 .tile-lines .line { display: flex; justify-content: space-between; gap: 12px; }
 .tile-lines .line > span:last-child { white-space: nowrap; }
 .tile-lines .line .note { color: rgba(242, 243, 247, 0.4); }
+.tile-lines .line .pts { color: var(--text-muted); }
 .tile-lines .line.fee { color: rgba(242, 243, 247, 0.5); }
 .tile-lines .line.total {
   border-top: 1px solid var(--hairline-strong);
   padding-top: 6px;
   font-weight: 700; color: var(--text);
 }
-.tile-note { margin-top: 10px; font-size: 11.5px; color: var(--text-faint); line-height: 1.5; }
-.tile-note.warn { color: var(--warn); }
+/* Dotted leader between a row's label and its amount (receipt style) — the
+ * flex-growing <i> soaks up the gap so the eye can trace label -> value. */
+.tile-lines .line .lead,
+.receipt-rows .row .lead {
+  flex: 1;
+  min-width: 16px;
+  align-self: flex-end;
+  border-bottom: 1px dotted var(--hairline-strong);
+  margin: 0 2px 4px;
+}
+/* Credits get their own labelled subsection between earnings and costs. */
+.tile-credits { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--hairline); }
+.tile-credits .sublabel {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-faint);
+}
+.tile-credits .line > span:last-child { color: var(--ok); }
+.tile-costs { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--hairline); }
+.tile-note {
+  margin-top: 12px;
+  font-size: 12.5px; color: var(--text-muted); line-height: 1.55;
+  padding-left: 10px;
+  border-left: 2px solid var(--hairline-strong);
+}
+.tile-note.warn { color: var(--warn); border-left-color: rgba(232, 196, 122, 0.4); }
 .card-tile details.full-detail { margin-top: 10px; }
 .card-tile details.full-detail summary {
   cursor: pointer; color: var(--accent); font-size: 12px;
