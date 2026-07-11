@@ -16,4 +16,12 @@ Branch: `statement-backend-v1.2` (worktree `.claude/worktrees/statement-backend-
 
 ## Resume notes
 
-(append notes here as steps complete)
+- 2026-07-10: Steps 1-7 complete, all pushed. Preview verified via Vercel share link
+  (branch alias creditcardpicker-git-statement-backend-v12-rithkotts-projects.vercel.app):
+  /api/health OK (114 cards), statement_import absent from /api/config, CSV/OFX/PDF
+  uploads parse + categorize correctly, scanned-PDF and junk uploads return coded 422s,
+  PDF round trip < 0.5 s, POST /api/optimize e2e OK. Local: 165 unittest + 35 vitest
+  green, site builds, real corpus 43 files / 29 totals reconcile / 0 mismatch.
+- AWAITING: user approval of preview -> then merge to main, verify prod READY,
+  tag v1.2.0, remove worktree, rerun `node .gitnexus/run.cjs analyze` (index stale
+  since 969b451).
