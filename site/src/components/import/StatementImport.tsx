@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import type { Config } from '../../types'
 import type { SpendState } from '../../lib/validation'
-import { parseFiles } from '../../lib/statements'
-import type { ParseBatchResult } from '../../lib/statements'
+import { createParseSession } from '../../lib/statements'
+import type { ParseBatchResult, ParseSession } from '../../lib/statements'
 import { aggregate, applyReview, toSpendState } from '../../lib/statements/aggregate'
 import type { ImportResult } from '../../lib/statements/types'
 import { FileDrop } from './FileDrop'
@@ -30,23 +30,44 @@ export function StatementImport({ config, formNonEmpty, onApply }: {
   const [assignments, setAssignments] = useState<Record<string, string>>({})
   const [excluded, setExcluded] = useState<ReadonlySet<string>>(new Set())
   const [usageChecks, setUsageChecks] = useState<Record<string, boolean>>({})
+  // One session per import: extra drops while parsing (or from the review
+  // screen) join it, so dedupe and the file cap span every drop. Cleared on
+  // discard/apply so the next import starts fresh.
+  const sessionRef = useRef<ParseSession | null>(null)
 
   const usageItems = useMemo(
     () => config.usage_questions.flatMap((g) => g.items), [config])
 
-  const onFiles = async (files: File[]) => {
-    if (files.length === 0) return
-    setState({ phase: 'parsing', done: 0, total: files.length })
+  const reset = () => {
+    sessionRef.current = null
     setAssignments({})
     setExcluded(new Set())
+    setUsageChecks({})
+    setState({ phase: 'idle' })
+  }
+
+  const onFiles = async (files: File[]) => {
+    if (files.length === 0) return
     const inputs = await Promise.all(files.map(async (f) => ({
       name: f.name, bytes: new Uint8Array(await f.arrayBuffer()),
     })))
-    const batch = await parseFiles(inputs, (done, total, current) =>
-      setState({ phase: 'parsing', done, total, current }))
+    let session = sessionRef.current
+    if (session === null) {
+      session = createParseSession((done, total, current) =>
+        setState({ phase: 'parsing', done, total, current }))
+      sessionRef.current = session
+      setAssignments({})
+      setExcluded(new Set())
+    }
+    session.add(inputs)
+    const batch = await session.settled()
+    if (sessionRef.current !== session) return // discarded mid-parse
     const result = aggregate(batch.files, config.merchants, usageItems)
-    // Suggestions start checked; the user unchecks what they don't use.
-    setUsageChecks(Object.fromEntries(result.usageSuggestions.map((s) => [s.key, true])))
+    // Suggestions start checked; the user unchecks what they don't use. When
+    // a later drop re-aggregates, choices already made on earlier suggestions
+    // are kept.
+    setUsageChecks((prev) => Object.fromEntries(
+      result.usageSuggestions.map((s) => [s.key, prev[s.key] ?? true])))
     setState({ phase: 'review', batch, result })
   }
 
@@ -69,6 +90,7 @@ export function StatementImport({ config, formNonEmpty, onApply }: {
     const summary = `Imported from ${state.batch.files.length} statement file(s) · ` +
       `${state.result.coverageDays} days of activity`
     onApply(spend, usageKeys)
+    sessionRef.current = null
     setState({ phase: 'applied', summary }) // raw result dropped from memory
   }
 
@@ -94,9 +116,10 @@ export function StatementImport({ config, formNonEmpty, onApply }: {
         go into it.
       </p>
 
-      {(state.phase === 'idle' || state.phase === 'parsing') && (
+      {state.phase !== 'applied' && (
         <FileDrop
           progress={state.phase === 'parsing' ? state : null}
+          addMore={state.phase === 'review'}
           onFiles={onFiles}
         />
       )}
@@ -131,7 +154,7 @@ export function StatementImport({ config, formNonEmpty, onApply }: {
             <button type="button" className="primary" onClick={apply}>
               Apply to the form
             </button>
-            <button type="button" onClick={() => setState({ phase: 'idle' })}>
+            <button type="button" onClick={reset}>
               Discard
             </button>
             {formNonEmpty && (
@@ -144,7 +167,7 @@ export function StatementImport({ config, formNonEmpty, onApply }: {
       {state.phase === 'applied' && (
         <div className="runbar inline">
           <span className="status">{state.summary} — applied to the form below.</span>
-          <button type="button" onClick={() => setState({ phase: 'idle' })}>
+          <button type="button" onClick={reset}>
             Import again
           </button>
         </div>
