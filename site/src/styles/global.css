@@ -408,6 +408,7 @@ button.linklike {
   padding: 22px;
 }
 .filedrop.dragging { border-color: var(--accent-border); background: var(--accent-bg); }
+.filedrop.add-more { padding: 12px 22px; gap: 10px; }
 .filedrop .choose { display: flex; align-items: center; gap: 10px; }
 .filedrop .formats { font-family: var(--mono); font-size: 11px; color: var(--text-faint); }
 .filedrop .status { font-size: 13px; color: rgba(242, 243, 247, 0.5); }

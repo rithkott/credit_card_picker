@@ -23,7 +23,8 @@ export const MAX_TXNS_TOTAL = 50_000
 export interface FileInput { name: string; bytes: Uint8Array }
 
 /** Per-file progress: `done` files finished out of `total`, `current` is the
- * file being uploaded next (undefined once the batch is complete). */
+ * file being uploaded next (undefined once the batch is complete). `total`
+ * grows when more files are added to a live session mid-parse. */
 export type ParseProgress = (done: number, total: number, current?: string) => void
 
 export interface ParseBatchResult {
@@ -98,19 +99,36 @@ async function uploadOnce(name: string, bytes: Uint8Array): Promise<WireParsedFi
   }
 }
 
-export async function parseFiles(
-  inputs: FileInput[], onProgress?: ParseProgress,
-): Promise<ParseBatchResult> {
+/** A live upload queue: files can keep arriving (more drag-and-drops) while
+ * earlier ones are still uploading. Dedupe, the file cap, and the transaction
+ * cap all span the whole session, not just one drop. */
+export interface ParseSession {
+  /** Enqueue more files; starts the drain loop or extends the running one. */
+  add(inputs: FileInput[]): void
+  /** Resolves with everything accumulated so far, once the queue is empty.
+   * Safe to call again after later add()s — each call waits for the next
+   * idle point. */
+  settled(): Promise<ParseBatchResult>
+}
+
+export function createParseSession(onProgress?: ParseProgress): ParseSession {
   const files: ParsedFile[] = []
   const errors: FileError[] = []
   const duplicates: string[] = []
   const seenHashes = new Set<string>()
   let txnsTotal = 0
 
-  const batch = inputs.slice(0, MAX_FILES)
+  const queue: FileInput[] = []
+  let accepted = 0 // files ever enqueued (the progress total), capped at MAX_FILES
   let done = 0
-  for (const input of batch) {
-    onProgress?.(done, batch.length, input.name)
+  let draining = false
+  let current: string | undefined // file in flight, for add()'s progress echo
+  const idleResolvers: Array<() => void> = []
+
+  const snapshot = (): ParseBatchResult =>
+    ({ files: [...files], errors: [...errors], duplicates: [...duplicates] })
+
+  async function parseOne(input: FileInput): Promise<void> {
     try {
       if (input.bytes.byteLength > MAX_FILE_BYTES) {
         throw new StatementParseError(
@@ -120,7 +138,7 @@ export async function parseFiles(
       const hash = await sha256Hex(input.bytes)
       if (seenHashes.has(hash)) {
         duplicates.push(input.name)
-        continue
+        return
       }
       seenHashes.add(hash)
 
@@ -143,13 +161,54 @@ export async function parseFiles(
         errors.push({ name: input.name,
                       message: `${input.name}: upload failed — check your connection and retry.` })
       }
-    } finally {
-      done += 1
     }
   }
-  onProgress?.(done, batch.length)
-  for (const skipped of inputs.slice(MAX_FILES)) {
-    errors.push({ name: skipped.name, message: `Batch limit is ${MAX_FILES} files — ${skipped.name} was not read.` })
+
+  async function drain(): Promise<void> {
+    // Single consumer: add() only starts this loop when it isn't running, and
+    // the loop re-checks the queue after every await, so late add()s extend it.
+    while (queue.length > 0) {
+      const input = queue.shift()!
+      current = input.name
+      onProgress?.(done, accepted, current)
+      await parseOne(input)
+      done += 1
+    }
+    current = undefined
+    onProgress?.(done, accepted)
+    draining = false
+    idleResolvers.splice(0).forEach((resolve) => resolve())
   }
-  return { files, errors, duplicates }
+
+  return {
+    add(inputs: FileInput[]): void {
+      const room = Math.max(0, MAX_FILES - accepted)
+      const taken = inputs.slice(0, room)
+      accepted += taken.length
+      queue.push(...taken)
+      for (const skipped of inputs.slice(room)) {
+        errors.push({ name: skipped.name,
+                      message: `Batch limit is ${MAX_FILES} files — ${skipped.name} was not read.` })
+      }
+      if (!draining && queue.length > 0) {
+        draining = true
+        void drain()
+      } else if (draining && taken.length > 0) {
+        // The bigger total shows up right away, not when the next file starts.
+        onProgress?.(done, accepted, current)
+      }
+    },
+    settled(): Promise<ParseBatchResult> {
+      if (!draining) return Promise.resolve(snapshot())
+      return new Promise((resolve) => idleResolvers.push(() => resolve(snapshot())))
+    },
+  }
+}
+
+export async function parseFiles(
+  inputs: FileInput[], onProgress?: ParseProgress,
+): Promise<ParseBatchResult> {
+  const session = createParseSession(onProgress)
+  session.add(inputs)
+  return session.settled()
 }

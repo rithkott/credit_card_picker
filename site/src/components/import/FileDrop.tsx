@@ -2,9 +2,12 @@ import { useRef, useState } from 'react'
 
 /** Multi-file picker + drag-drop target for statement exports. Reads nothing
  * itself — hands File objects up and lets the lib do the work. While a batch
- * is parsing, `progress` replaces the picker with a per-file progress bar. */
-export function FileDrop({ progress, onFiles }: {
+ * is parsing, `progress` shows a per-file progress bar but the target keeps
+ * accepting drops — new files join the running batch. With `addMore` (review
+ * screen) it renders as a slim strip for topping up the import. */
+export function FileDrop({ progress, addMore = false, onFiles }: {
   progress: { done: number; total: number; current?: string } | null
+  addMore?: boolean
   onFiles: (files: File[]) => void
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -13,13 +16,13 @@ export function FileDrop({ progress, onFiles }: {
 
   return (
     <div
-      className={`filedrop${dragging ? ' dragging' : ''}`}
+      className={`filedrop${dragging ? ' dragging' : ''}${addMore ? ' add-more' : ''}`}
       onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
       onDragLeave={() => setDragging(false)}
       onDrop={(e) => {
         e.preventDefault()
         setDragging(false)
-        if (!parsing) onFiles([...e.dataTransfer.files])
+        onFiles([...e.dataTransfer.files])
       }}
     >
       <input
@@ -33,7 +36,7 @@ export function FileDrop({ progress, onFiles }: {
           e.target.value = '' // same files can be re-picked after a discard
         }}
       />
-      {progress !== null ? (
+      {parsing ? (
         <div className="parse-progress">
           <span className="status">
             Uploading and parsing… {Math.min(progress.done + 1, progress.total)} of {progress.total}
@@ -51,17 +54,25 @@ export function FileDrop({ progress, onFiles }: {
             />
           </div>
           {progress.current && <span className="parse-file">{progress.current}</span>}
+          <div className="choose">
+            <button type="button" onClick={() => inputRef.current?.click()}>
+              Add more files
+            </button>
+            <span className="status">or drop them here — they join this batch</span>
+          </div>
         </div>
       ) : (
         <>
           <div className="choose">
             <button type="button" onClick={() => inputRef.current?.click()}>
-              Choose files
+              {addMore ? 'Add more files' : 'Choose files'}
             </button>
-            <span className="formats">CSV · OFX/QFX · PDF</span>
+            {!addMore && <span className="formats">CSV · OFX/QFX · PDF</span>}
           </div>
           <span className="status">
-            or drop them here — several months and cards at once works best
+            {addMore
+              ? 'or drop them here — they are added to the import below'
+              : 'or drop them here — several months and cards at once works best'}
           </span>
         </>
       )}
