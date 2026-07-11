@@ -1,28 +1,34 @@
 /** Aggregation: parsed files -> ImportResult for the review screen
- * (plan 09, commit 4/5).
+ * (plan 09, commit 4/5; server-side matches since plan 12).
  *
- * Only purchases and refunds reach spend buckets (refunds subtract);
- * payments/fees/interest/transfers accumulate in excludedCents so the review
- * screen can show what was ignored. Where a statement printed its own summary
- * box (PDFs), parsed sums are reconciled against it and a mismatch warns —
- * a silent partial parse must never masquerade as a complete one.
+ * Categorization happens on the server — every transaction arrives with its
+ * `match` already attached; this module only reduces. Only purchases and
+ * refunds reach spend buckets (refunds subtract); payments/fees/interest/
+ * transfers accumulate in excludedCents so the review screen can show what
+ * was ignored. Where a statement printed its own summary box (PDFs), parsed
+ * sums are reconciled against it and a mismatch warns — a silent partial
+ * parse must never masquerade as a complete one.
  */
 
 import { annualize, mergeIntervals, MIN_COVERAGE_DAYS } from './annualize'
-import { descriptorStem, matchTxn } from './categorize'
-import type { Matcher } from './categorize'
 import { formatUsd } from '../money'
 import type { SpendState } from '../validation'
-import type { ConfigMerchant } from '../../types'
+import type { ConfigMerchant, UsageItem } from '../../types'
 import type { ImportResult, ImportWarning, ParsedFile, TxnKind, UncatGroup } from './types'
 
-export function aggregate(files: ParsedFile[], matcher: Matcher): ImportResult {
+export function aggregate(
+  files: ParsedFile[], merchants: ConfigMerchant[], usageItems: UsageItem[],
+): ImportResult {
+  const merchantByKey = new Map(merchants.map((m) => [m.key, m]))
+  const usageLabels = new Map(usageItems.map((i) => [i.key, i.label]))
   const rawCategory: Record<string, number> = {}
   const rawMerchant: Record<string, number> = {}
   const rawUsage: Record<string, number> = {}
   const groups = new Map<string, UncatGroup>()
   const excludedCents: Partial<Record<TxnKind, number>> = {}
   const warnings: ImportWarning[] = []
+  let fuzzyCount = 0
+  let fuzzyCents = 0
 
   for (const file of files) {
     const fileSums: Record<'purchases' | 'paymentsAndCredits' | 'fees' | 'interest' | 'transfers', number> =
@@ -41,14 +47,18 @@ export function aggregate(files: ParsedFile[], matcher: Matcher): ImportResult {
         continue
       }
 
-      const match = matchTxn(matcher, txn)
+      const match = txn.match
       if (match.category !== null) {
         rawCategory[match.category] = (rawCategory[match.category] ?? 0) + txn.amountCents
+        if (match.method === 'fuzzy') {
+          fuzzyCount++
+          fuzzyCents += txn.amountCents
+        }
         if (match.merchantKey !== undefined) {
           // Defensive: tally the carve-out only when the bridge category is
           // the merchant's declared parent, else E3 (carve-out <= parent)
           // could break if the two registries ever drift.
-          const merchant = matcher.merchantByKey.get(match.merchantKey)
+          const merchant = merchantByKey.get(match.merchantKey)
           if (merchant !== undefined && merchant.category === match.category) {
             rawMerchant[match.merchantKey] = (rawMerchant[match.merchantKey] ?? 0) + txn.amountCents
           }
@@ -57,7 +67,7 @@ export function aggregate(files: ParsedFile[], matcher: Matcher): ImportResult {
           rawUsage[match.usageKey] = (rawUsage[match.usageKey] ?? 0) + txn.amountCents
         }
       } else {
-        const key = match.descriptorKey ?? descriptorStem(txn.descriptor)
+        const key = match.descriptorKey ?? match.stem
         const group = groups.get(key) ?? {
           stem: key,
           ...(match.descriptorLabel !== undefined ? { label: match.descriptorLabel } : {}),
@@ -77,6 +87,25 @@ export function aggregate(files: ParsedFile[], matcher: Matcher): ImportResult {
           `${file.summary.name} looks like several statements combined into one ` +
           `PDF — transaction dates and totals can't be trusted; upload the ` +
           `individual monthly statements instead.`,
+      })
+    }
+
+    // Semantic-layer disclosures (plan 12): the parse worked, but through a
+    // guessing path the user should know about when checking the review.
+    if (file.summary.columnInference?.used) {
+      warnings.push({
+        code: 'I-inferred-columns',
+        message:
+          `${file.summary.name}: the column layout wasn't recognized, so the ` +
+          `columns were inferred from their content — double-check the totals.`,
+      })
+    }
+    if (file.summary.extraction === 'layout') {
+      warnings.push({
+        code: 'I-layout',
+        message:
+          `${file.summary.name}: transactions were read from the PDF's column ` +
+          `geometry (the usual line patterns didn't match) — double-check the totals.`,
       })
     }
 
@@ -133,6 +162,15 @@ export function aggregate(files: ParsedFile[], matcher: Matcher): ImportResult {
       message: `${rejected} row(s) couldn't be parsed and were skipped.`,
     })
   }
+  if (fuzzyCount > 0) {
+    warnings.push({
+      code: 'I-fuzzy',
+      message:
+        `${fuzzyCount} transaction(s) (${formatUsd(Math.abs(fuzzyCents) / 100)} over the ` +
+        `covered period) were categorized by approximate name match — worth a ` +
+        `glance in the totals below.`,
+    })
+  }
 
   const categoryCents: Record<string, number> = {}
   for (const [cat, raw] of Object.entries(rawCategory)) {
@@ -141,7 +179,7 @@ export function aggregate(files: ParsedFile[], matcher: Matcher): ImportResult {
   }
   const merchantCents: Record<string, number> = {}
   for (const [key, raw] of Object.entries(rawMerchant)) {
-    const parent = matcher.merchantByKey.get(key)!.category
+    const parent = merchantByKey.get(key)!.category
     // Parent may have been clamped to 0 by refunds elsewhere in its category;
     // cap the carve-out so E3 holds unconditionally.
     const cents = Math.min(Math.max(0, annualize(raw, days)), categoryCents[parent] ?? 0)
@@ -161,7 +199,7 @@ export function aggregate(files: ParsedFile[], matcher: Matcher): ImportResult {
     usageSuggestions: Object.entries(rawUsage)
       .map(([key, raw]) => ({
         key,
-        label: matcher.usageLabels.get(key) ?? key,
+        label: usageLabels.get(key) ?? key,
         annualCents: Math.max(0, annualize(raw, days)),
       }))
       .filter((s) => s.annualCents > 0)

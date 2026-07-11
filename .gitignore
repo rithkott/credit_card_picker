@@ -10,3 +10,6 @@ data/build/
 Design-Handoff-package.zip
 design-handoff-extracted/
 .vercel
+
+# Claude worktrees (embedded checkouts, never commit)
+.claude/worktrees/

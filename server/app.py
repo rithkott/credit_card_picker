@@ -12,16 +12,22 @@ computation engine; this file only maps HTTP to its functions:
                           point-valuations.yaml) for the Assumptions page.
   GET  /api/config      — everything the form needs in one call (categories,
                         merchants, usage-question groups, tier order, user
-                        defaults, reward kinds, statement-import rules), built
-                        from the loaded dataset and optimize.py constants. The
-                        site embeds NO registry copies, so it cannot drift
-                        from the data.
+                        defaults, reward kinds), built from the loaded
+                        dataset and optimize.py constants. The site embeds
+                        NO registry copies, so it cannot drift from the data.
   POST /api/optimize  — body {spend, merchant_spend?, user, as_of?, top?}.
                         parse_profile is the single validator (no Pydantic
                         mirror — that would be a second drift surface).
                         InputError -> 422 {"detail": msg},
                         DataError  -> 500 {"detail": msg}; the optimizer's
                         messages are already user-directed.
+  POST /api/statements/parse — multipart, one statement file (PDF/CSV/OFX)
+                        per request (plan 12). Parsed and categorized IN
+                        MEMORY by server/statements/; transactions return
+                        to the browser, the bytes are discarded — never
+                        stored, never debug-dumped. Parse failures are
+                        per-file {"detail", "code"} errors the UI renders
+                        (422, or 413 for oversize files).
 
 The dataset is loaded once at startup — restart (or run uvicorn --reload)
 after editing card YAML. Every optimize call writes a gitignored debug dump to
@@ -42,12 +48,17 @@ from datetime import date, datetime
 from pathlib import Path
 
 import yaml
-from fastapi import Body, FastAPI, HTTPException
+from fastapi import Body, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
+sys.path.insert(0, str(ROOT / "server"))  # so `import statements` works everywhere
 import optimize as opt  # noqa: E402
+
+import statements as stmts  # noqa: E402  (server/statements/, plan 12)
+from statements.categorize import Matcher, annotate  # noqa: E402
 
 # Origins allowed to call the API: the GitHub Pages site (this repo's project
 # page) and the Vite dev server. Update if the repo is renamed or forked.
@@ -74,6 +85,10 @@ async def lifespan(app: FastAPI):
         STATE["descriptors"] = yaml.safe_load(f)["descriptors"]
     with open(meta / "category-rules.yaml") as f:
         STATE["category_rules"] = yaml.safe_load(f)
+    # Compiled once: the categorizer for POST /api/statements/parse (plan 12).
+    STATE["matcher"] = Matcher(STATE["descriptors"], STATE["category_rules"],
+                               STATE["dataset"]["merchants"],
+                               STATE["dataset"]["usage_questions"])
     yield
     STATE.clear()
 
@@ -199,20 +214,9 @@ def config() -> dict:
         "reward_kinds": opt.REWARD_KINDS,
         "max_cards_range": [1, 5],
         "cards_total": len(ds["cards"]),
-        # Rules for the in-browser statement importer (plan 09). Rules travel
-        # API -> browser; statement data never travels anywhere.
-        "statement_import": {
-            "descriptors": [
-                {"key": key, "label": entry.get("label", key),
-                 "patterns": entry["statement_patterns"]}
-                for key, entry in STATE["descriptors"].items()],
-            "descriptor_categories": STATE["category_rules"]["descriptor_categories"],
-            "aggregator_prefixes": STATE["category_rules"]["aggregator_prefixes"],
-            "unmapped": STATE["category_rules"]["unmapped"],
-            "keywords": STATE["category_rules"]["keywords"],
-            "issuer_categories": STATE["category_rules"]["issuer_categories"],
-            "mcc": STATE["category_rules"]["mcc"],
-        },
+        # Statement-import rules are no longer shipped to the browser: since
+        # plan 12 the server parses AND categorizes statements itself
+        # (POST /api/statements/parse), so the registries stay server-side.
     }
 
 
@@ -244,6 +248,33 @@ def optimize(body: dict = Body(...)) -> dict:
         raise HTTPException(500, detail=str(e))
     dump_debug_run(body, 200, bundle)
     return bundle
+
+
+@app.post("/api/statements/parse")
+def parse_statement_upload(file: UploadFile = File(...)):
+    """One statement file in, normalized + categorized transactions out.
+
+    Sync def on purpose (threadpool, like /api/optimize) — PDF extraction is
+    CPU-bound. EPHEMERAL BY POLICY: the bytes live only in this frame; there
+    is no dump_debug_run call on this route, errors are returned without
+    statement content, and nothing is written anywhere. The browser keeps
+    review/aggregation; this endpoint is one file -> one parse."""
+    name = file.filename or "statement"
+    data = file.file.read()
+    try:
+        parsed = stmts.parse_statement(data, name)
+        annotate(STATE["matcher"], parsed.txns)
+    except stmts.StatementParseError as e:
+        status = 413 if e.code == "too_large" else 422
+        return JSONResponse(status_code=status,
+                            content={"detail": str(e), "code": e.code})
+    except Exception:
+        # Never leak statement content into logs or the response; the type
+        # alone is enough to find the bug with a local reproduction.
+        return JSONResponse(status_code=500,
+                            content={"detail": f"{name}: unexpected error while parsing.",
+                                     "code": "internal"})
+    return parsed.to_dict()
 
 
 # Serve the built site when present (npm run build) — registered after the

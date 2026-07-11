@@ -33,10 +33,4 @@ const injectCsp: Plugin = {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), injectCsp],
-  test: {
-    // Node has no DOMMatrix/Worker: tests get pdf.js's legacy build (its
-    // fake worker runs in-process), browsers get the standard one — and the
-    // legacy build stays out of the production bundle.
-    alias: [{ find: /^pdfjs-dist$/, replacement: 'pdfjs-dist/legacy/build/pdf.mjs' }],
-  },
 })

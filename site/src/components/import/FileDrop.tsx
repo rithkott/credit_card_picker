@@ -36,7 +36,7 @@ export function FileDrop({ progress, onFiles }: {
       {progress !== null ? (
         <div className="parse-progress">
           <span className="status">
-            Reading statements in your browser… {Math.min(progress.done + 1, progress.total)} of {progress.total}
+            Uploading and parsing… {Math.min(progress.done + 1, progress.total)} of {progress.total}
           </span>
           <div
             className="parse-bar"

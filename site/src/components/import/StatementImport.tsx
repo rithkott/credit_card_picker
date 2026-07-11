@@ -4,15 +4,16 @@ import type { SpendState } from '../../lib/validation'
 import { parseFiles } from '../../lib/statements'
 import type { ParseBatchResult } from '../../lib/statements'
 import { aggregate, applyReview, toSpendState } from '../../lib/statements/aggregate'
-import { compileRules } from '../../lib/statements/categorize'
 import type { ImportResult } from '../../lib/statements/types'
 import { FileDrop } from './FileDrop'
 import { ImportReview } from './ImportReview'
 
-/** Statement import (plan 09): upload CSV/OFX/PDF statement exports, parse
- * them ENTIRELY in this browser tab, review the categorized annual totals,
- * then apply them to the form. Owns all import state; the app only receives
- * the final onApply payload. Raw transactions are dropped on apply/cancel. */
+/** Statement import (plan 09; server-side parsing since plan 12): upload
+ * CSV/OFX/PDF statement exports one at a time to the API, which parses and
+ * categorizes them in memory and stores nothing; review the annual totals in
+ * this tab, then apply them to the form. Owns all import state; the app only
+ * receives the final onApply payload. Raw transactions are dropped on
+ * apply/cancel. */
 
 type Phase =
   | { phase: 'idle' }
@@ -32,30 +33,21 @@ export function StatementImport({ config, formNonEmpty, onApply }: {
 
   const usageItems = useMemo(
     () => config.usage_questions.flatMap((g) => g.items), [config])
-  const matcher = useMemo(
-    () => compileRules(config.statement_import, config.merchants, usageItems),
-    [config, usageItems])
 
   const onFiles = async (files: File[]) => {
     if (files.length === 0) return
     setState({ phase: 'parsing', done: 0, total: files.length })
     setAssignments({})
     setExcluded(new Set())
-    try {
-      const inputs = await Promise.all(files.map(async (f) => ({
-        name: f.name, bytes: new Uint8Array(await f.arrayBuffer()),
-      })))
-      const batch = await parseFiles(inputs, (done, total, current) =>
-        setState({ phase: 'parsing', done, total, current }))
-      const result = aggregate(batch.files, matcher)
-      // Suggestions start checked; the user unchecks what they don't use.
-      setUsageChecks(Object.fromEntries(result.usageSuggestions.map((s) => [s.key, true])))
-      setState({ phase: 'review', batch, result })
-    } finally {
-      // The worker that saw statement bytes dies with the batch.
-      const { terminatePdfWorker } = await import('../../lib/statements/pdf')
-      await terminatePdfWorker()
-    }
+    const inputs = await Promise.all(files.map(async (f) => ({
+      name: f.name, bytes: new Uint8Array(await f.arrayBuffer()),
+    })))
+    const batch = await parseFiles(inputs, (done, total, current) =>
+      setState({ phase: 'parsing', done, total, current }))
+    const result = aggregate(batch.files, config.merchants, usageItems)
+    // Suggestions start checked; the user unchecks what they don't use.
+    setUsageChecks(Object.fromEntries(result.usageSuggestions.map((s) => [s.key, true])))
+    setState({ phase: 'review', batch, result })
   }
 
   const apply = () => {
@@ -92,12 +84,14 @@ export function StatementImport({ config, formNonEmpty, onApply }: {
         <span className="spacer" />
         <span className="privacy-pill">
           <span className="dot" />
-          Parsed on your device — statements are never uploaded
+          Parsed in memory, never stored — files are discarded right after parsing
         </span>
       </div>
       <p className="why">
         Already have credit or debit cards? Download statements from your bank and drop them
-        in — the spending form below fills itself. Only the totals you approve go into the form.
+        in — each file is parsed by our server in memory and immediately discarded; nothing is
+        saved or logged. The spending form below fills itself, and only the totals you approve
+        go into it.
       </p>
 
       {(state.phase === 'idle' || state.phase === 'parsing') && (

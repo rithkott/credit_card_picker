@@ -15,11 +15,12 @@ Most card recommendation sites rank whatever pays them the highest commission, t
 
 ## Privacy
 
-**Your statements never leave your browser.**
+**Your statements are parsed in memory and never stored.**
 
-- Statement imports (PDF/CSV/OFX) are parsed entirely in your browser — the files are never uploaded anywhere. Only the resulting per-category dollar totals are sent to the optimizer API to be scored, and nothing is stored.
+- Statement imports (PDF/CSV/OFX) are parsed one file at a time by the API: each file is held in memory only for the duration of its request, parsed deterministically (no AI/LLM services, no third parties), and discarded the moment the transactions are returned to your browser. Nothing is written to disk, logged, or debug-dumped — the no-storage guard is enforced in code and pinned by tests, not just promised.
+- Review and aggregation stay in your browser: which totals reach the optimizer is decided by you on the review screen, and only those per-category dollar totals are sent to be scored. Nothing is stored there either.
 - No accounts, no cookies, no analytics, no tracking.
-- Want even the category totals to stay on your machine? Run the optimizer locally (below) — the same site works against `localhost`, and the command-line mode needs no server at all.
+- Want nothing to leave your machine at all? Run the whole thing locally (below) — the same site and API work against `localhost`, and the command-line mode needs no server at all.
 
 ## Getting started
 

@@ -2,3 +2,7 @@
 # Local development instead uses server/requirements.txt (adds uvicorn/httpx).
 fastapi
 pyyaml
+# Statement parsing (plan 12): multipart uploads, PDF text layer, fuzzy matcher.
+python-multipart
+pdfplumber
+rapidfuzz

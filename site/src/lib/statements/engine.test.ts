@@ -1,56 +1,16 @@
-/** Categorize/annualize/aggregate tests (plan 09, commit 4/5). The rules
- * fixture is an inline subset shaped exactly like /api/config's
- * statement_import payload. */
+/** Aggregate/annualize/review tests (plan 09; server-side matches since
+ * plan 12). Categorization now happens on the server, so transactions here
+ * carry their `match` inline — exactly the shape POST /api/statements/parse
+ * returns after fromWire. Matcher behavior itself is pinned by the Python
+ * suite (tests/test_statements.py). */
 
 import { describe, expect, it } from 'vitest'
 import { annualize, daysInclusive, mergeIntervals } from './annualize'
-import { compileRules, descriptorStem, matchTxn, normalizeDescriptor } from './categorize'
 import { aggregate, applyReview, toSpendState } from './aggregate'
+import { fromWire } from './index'
 import { validate } from '../validation'
-import type { ConfigMerchant, StatementImportRules, UsageItem } from '../../types'
-import type { NormalizedTxn, ParsedFile } from './types'
-
-const RULES: StatementImportRules = {
-  descriptors: [
-    { key: 'delta', label: 'Delta Air Lines', patterns: ['DELTA AIR LINES', 'DELTA 006'] },
-    { key: 'doordash', label: 'DoorDash', patterns: ['DD *DOORDASH', 'DOORDASH'] },
-    { key: 'uber', label: 'Uber (rides)', patterns: ['UBER *TRIP', 'UBER TRIP'] },
-    { key: 'uber_eats', label: 'Uber Eats', patterns: ['UBER *EATS', 'UBER EATS'] },
-    { key: 'costco', label: 'Costco', patterns: ['COSTCO WHSE', 'COSTCO GAS'] },
-    { key: 'whole_foods', label: 'Whole Foods Market', patterns: ['WHOLEFDS'] },
-    { key: 'netflix', label: 'Netflix', patterns: ['NETFLIX'] },
-    { key: 'apple', label: 'Apple', patterns: ['APPLE.COM/BILL', 'APPLE STORE'] },
-    { key: 'apple_music', label: 'Apple Music', patterns: ['APPLE.COM/BILL'] },
-    { key: 'paypal', label: 'PayPal', patterns: ['PAYPAL *', 'PP*'] },
-    { key: 'toast_prefix', label: 'Toast-acquired restaurants', patterns: ['TST*'] },
-    { key: 'square_prefix', label: 'Square-acquired merchants', patterns: ['SQ *'] },
-    { key: 'bilt_rent', label: 'Bilt rent/housing payments', patterns: ['BILT'] },
-  ],
-  descriptor_categories: {
-    delta: 'travel_flights',
-    doordash: 'dining',
-    uber: 'transit',
-    uber_eats: 'dining',
-    costco: 'groceries',
-    whole_foods: 'groceries',
-    netflix: 'streaming',
-    apple: 'online_shopping',
-    apple_music: 'streaming',
-  },
-  aggregator_prefixes: {
-    paypal: {},
-    square_prefix: {},
-    toast_prefix: { fallback_category: 'dining' },
-  },
-  unmapped: ['bilt_rent'],
-  keywords: {
-    groceries: ['KROGER'],
-    gas: ['SHELL'],
-    dining: ['CAFE '],
-  },
-  issuer_categories: { 'dining': 'dining', 'gasoline': 'gas' },
-  mcc: [{ from: 5812, to: 5814, category: 'dining' }],
-}
+import type { ConfigMerchant, UsageItem } from '../../types'
+import type { NormalizedTxn, ParsedFile, TxnMatch, WireParsedFile } from './types'
 
 const MERCHANTS: ConfigMerchant[] = [
   { key: 'costco', label: 'Costco', category: 'groceries' },
@@ -63,60 +23,92 @@ const USAGE_ITEMS: UsageItem[] = [
   { key: 'costco', label: 'Costco' },
   { key: 'uber', label: 'Uber rides / Uber One' },
 ]
-const MATCHER = compileRules(RULES, MERCHANTS, USAGE_ITEMS)
+
+/** Server-shaped matches for the merchants the tests use. */
+const MATCHES: Record<string, TxnMatch> = {
+  'COSTCO WHSE #0021': {
+    category: 'groceries', layer: 1, method: 'exact',
+    merchantKey: 'costco', usageKey: 'costco',
+    descriptorKey: 'costco', descriptorLabel: 'Costco', stem: 'COSTCO WHSE',
+  },
+  'WHOLEFDS #10236': {
+    category: 'groceries', layer: 1, method: 'exact',
+    merchantKey: 'whole_foods',
+    descriptorKey: 'whole_foods', descriptorLabel: 'Whole Foods Market', stem: 'WHOLEFDS',
+  },
+  'KROGER #442': { category: 'groceries', layer: 2, method: 'exact', stem: 'KROGER SPRINGFIELD' },
+  'KROGER': { category: 'groceries', layer: 2, method: 'exact', stem: 'KROGER' },
+  'KROGER #1': { category: 'groceries', layer: 2, method: 'exact', stem: 'KROGER' },
+  'SHELL': { category: 'gas', layer: 2, method: 'exact', stem: 'SHELL' },
+  'SHELL OIL': { category: 'gas', layer: 2, method: 'exact', stem: 'SHELL OIL' },
+  'DELTA AIR LINES': {
+    category: 'travel_flights', layer: 1, method: 'exact',
+    usageKey: 'delta', descriptorKey: 'delta', descriptorLabel: 'Delta Air Lines',
+    stem: 'DELTA AIR LINES',
+  },
+  'BILT REWARDS': {
+    category: null, layer: null, method: 'exact',
+    descriptorKey: 'bilt_rent', descriptorLabel: 'Bilt rent/housing payments',
+    stem: 'BILT REWARDS',
+  },
+}
+
+const unmatched = (descriptor: string): TxnMatch => ({
+  category: null, layer: null, method: null,
+  stem: descriptor.replace(/[#*]?\d[\d\-/.]*/g, ' ').replace(/\s+/g, ' ').trim(),
+})
 
 const txn = (descriptor: string, over: Partial<NormalizedTxn> = {}): NormalizedTxn => ({
   dateISO: '2026-01-10', amountCents: 1000, descriptor, kind: 'purchase',
+  match: MATCHES[descriptor] ?? unmatched(descriptor),
   source: { file: 'f', line: 1 }, ...over,
 })
 
-// ── matchTxn golden table ────────────────────────────────────────────────────
+const file = (
+  name: string, range: [string, string], txns: NormalizedTxn[],
+  totals?: ParsedFile['summary']['statementTotals'],
+): ParsedFile => ({
+  summary: {
+    name, format: 'csv', txns: txns.length, rejectedRows: 0,
+    rangeStart: range[0], rangeEnd: range[1],
+    ...(totals !== undefined ? { statementTotals: totals } : {}),
+  },
+  txns,
+})
 
-describe('matchTxn', () => {
-  const cases: [string, Partial<NormalizedTxn>, ReturnType<typeof matchTxn>][] = [
-    ['DELTA AIR LINES ATLANTA', {},
-      { category: 'travel_flights', layer: 1, usageKey: 'delta', descriptorKey: 'delta', descriptorLabel: 'Delta Air Lines' }],
-    ['COSTCO WHSE #0021', {},
-      { category: 'groceries', layer: 1, merchantKey: 'costco', usageKey: 'costco', descriptorKey: 'costco', descriptorLabel: 'Costco' }],
-    ['UBER *EATS PENDING', {},   // longest pattern: uber_eats, not uber
-      { category: 'dining', layer: 1, descriptorKey: 'uber_eats', descriptorLabel: 'Uber Eats' }],
-    ['APPLE.COM/BILL 866-712-7753', {},   // identical patterns tie-break by key asc -> apple
-      { category: 'online_shopping', layer: 1, descriptorKey: 'apple', descriptorLabel: 'Apple' }],
-    ['PAYPAL *DD *DOORDASH', {},   // prefix strip -> inner descriptor match
-      { category: 'dining', layer: 1, usageKey: 'doordash', descriptorKey: 'doordash', descriptorLabel: 'DoorDash' }],
-    ['PAYPAL *KROGER 442', {},     // prefix strip -> inner keyword match
-      { category: 'groceries', layer: 2 }],
-    ['TST* JOES CRAB SHACK', {},   // prefix, unknown remainder -> fallback
-      { category: 'dining', layer: 1, descriptorKey: 'toast_prefix', descriptorLabel: 'Toast-acquired restaurants' }],
-    ['SQ *UNKNOWN VENDOR', {},     // prefix, unknown remainder, no fallback
-      { category: null, layer: null }],
-    ['BILT REWARDS 000123', {},    // explicitly unmapped -> labeled group
-      { category: null, layer: null, descriptorKey: 'bilt_rent', descriptorLabel: 'Bilt rent/housing payments' }],
-    ['KROGER #442 SPRINGFIELD', {},
-      { category: 'groceries', layer: 2 }],
-    ['MYSTERY MERCHANT', { issuerCategory: 'dining' },
-      { category: 'dining', layer: 3 }],
-    ['MYSTERY MERCHANT', { mcc: 5813 },
-      { category: 'dining', layer: 4 }],
-    ['MYSTERY MERCHANT', {},
-      { category: null, layer: null }],
-  ]
-  for (const [descriptor, over, expected] of cases) {
-    it(`${descriptor} -> ${expected.category ?? 'uncategorized'} (layer ${expected.layer})`, () => {
-      expect(matchTxn(MATCHER, txn(descriptor, over))).toEqual(expected)
+// ── fromWire ─────────────────────────────────────────────────────────────────
+
+describe('fromWire', () => {
+  it('converts the server wire shape to browser camelCase', () => {
+    const wire: WireParsedFile = {
+      summary: {
+        name: 's.pdf', format: 'pdf', txns: 1, rejected_rows: 2,
+        range_start: '2026-01-01', range_end: '2026-01-31',
+        statement_totals: { purchases_cents: 2450, fees_cents: 0 },
+        period_count: 1, extraction: 'layout',
+      },
+      txns: [{
+        date: '2026-01-03', amount_cents: 2450, descriptor: 'KROGER #1',
+        kind: 'purchase', line: 7,
+        match: { category: 'groceries', layer: 5, method: 'fuzzy',
+                 confidence: 0.93, stem: 'KROGER' },
+      }],
+    }
+    expect(fromWire(wire)).toEqual({
+      summary: {
+        name: 's.pdf', format: 'pdf', txns: 1, rejectedRows: 2,
+        rangeStart: '2026-01-01', rangeEnd: '2026-01-31',
+        statementTotals: { purchasesCents: 2450, feesCents: 0 },
+        periodCount: 1, extraction: 'layout',
+      },
+      txns: [{
+        dateISO: '2026-01-03', amountCents: 2450, descriptor: 'KROGER #1',
+        kind: 'purchase',
+        match: { category: 'groceries', layer: 5, method: 'fuzzy',
+                 confidence: 0.93, stem: 'KROGER' },
+        source: { file: 's.pdf', line: 7 },
+      }],
     })
-  }
-
-  it('normalizes case and whitespace', () => {
-    expect(normalizeDescriptor('  netflix.COM   ca ')).toBe('NETFLIX.COM CA')
-    expect(matchTxn(MATCHER, txn('netflix.com')).category).toBe('streaming')
-  })
-
-  it('groups uncategorized stems without store numbers', () => {
-    expect(descriptorStem('KWIK-E-MART #442 SPRINGFIELD'))
-      .toBe(descriptorStem('KWIK-E-MART #187 SPRINGFIELD'))
-    expect(descriptorStem('KWIK-E-MART #442 SPRINGFIELD')).toBe('KWIK-E-MART SPRINGFIELD')
-    expect(descriptorStem('12345')).toBe('12345') // all-numeric falls back to itself
   })
 })
 
@@ -161,18 +153,6 @@ describe('annualize / coverage', () => {
 
 // ── aggregate ────────────────────────────────────────────────────────────────
 
-const file = (
-  name: string, range: [string, string], txns: NormalizedTxn[],
-  totals?: ParsedFile['summary']['statementTotals'],
-): ParsedFile => ({
-  summary: {
-    name, format: 'csv', txns: txns.length, rejectedRows: 0,
-    rangeStart: range[0], rangeEnd: range[1],
-    ...(totals !== undefined ? { statementTotals: totals } : {}),
-  },
-  txns,
-})
-
 describe('aggregate', () => {
   // One 73-day window -> factor exactly 5 keeps expectations hand-computable.
   const RANGE: [string, string] = ['2026-01-01', '2026-03-14']
@@ -188,7 +168,7 @@ describe('aggregate', () => {
       txn('WHOLEFDS #10236', { amountCents: -1000, kind: 'refund' }),
       txn('MYSTERY MERCHANT 71', { amountCents: 4200 }),
       txn('BILT REWARDS', { amountCents: 150000 }),
-    ])], MATCHER)
+    ])], MERCHANTS, USAGE_ITEMS)
 
     expect(result.coverageDays).toBe(73)
     expect(result.categoryCents).toEqual({
@@ -207,8 +187,7 @@ describe('aggregate', () => {
     expect(result.usageSuggestions).toEqual([
       { key: 'delta', label: 'Delta', annualCents: 100000 },
       { key: 'costco', label: 'Costco', annualCents: 50000 },
-      { key: 'whole_foods', label: 'Whole Foods Market', annualCents: 20000 },
-    ].filter((s) => s.key !== 'whole_foods')) // whole_foods is not a usage item
+    ])
   })
 
   it('clamps refund-heavy categories (and their carve-outs) at zero', () => {
@@ -216,7 +195,7 @@ describe('aggregate', () => {
       txn('COSTCO WHSE #0021', { amountCents: 2000 }),
       txn('WHOLEFDS #10236', { amountCents: -5000, kind: 'refund' }),
       txn('SHELL OIL', { amountCents: 4000 }),
-    ])], MATCHER)
+    ])], MERCHANTS, USAGE_ITEMS)
     expect(result.categoryCents).toEqual({ gas: 20000 })
     expect(result.merchantCents).toEqual({}) // costco capped by clamped parent
   })
@@ -226,7 +205,7 @@ describe('aggregate', () => {
       file('a.csv', ['2026-01-01', '2026-01-31'], [txn('KROGER')]),
       { ...file('b.csv', ['2026-01-15', '2026-02-10'], [txn('SHELL')]),
         summary: { ...file('b.csv', ['2026-01-15', '2026-02-10'], []).summary, rejectedRows: 3 } },
-    ], MATCHER)
+    ], MERCHANTS, USAGE_ITEMS)
     const codes = result.warnings.map((w) => w.code).sort()
     expect(codes).toEqual(['W-coverage', 'W-overlap', 'W-rows'])
   })
@@ -238,16 +217,34 @@ describe('aggregate', () => {
     ]
     const clean = aggregate([file('s.pdf', RANGE, txns, {
       purchasesCents: 2450, paymentsAndCreditsCents: 100000, feesCents: 0, interestCents: 0,
-    })], MATCHER)
+    })], MERCHANTS, USAGE_ITEMS)
     expect(clean.warnings.filter((w) => w.code === 'W-reconcile')).toEqual([])
 
     const tampered = aggregate([file('s.pdf', RANGE, txns, {
       purchasesCents: 99999, paymentsAndCreditsCents: 100000,
-    })], MATCHER)
+    })], MERCHANTS, USAGE_ITEMS)
     const reconcile = tampered.warnings.filter((w) => w.code === 'W-reconcile')
     expect(reconcile).toHaveLength(1)
     expect(reconcile[0].message).toMatch(/\$999\.99/)
     expect(reconcile[0].message).toMatch(/\$24\.50/)
+  })
+
+  it('discloses semantic-layer paths: fuzzy, inferred columns, layout', () => {
+    const fuzzyTxn = txn('STARBUKS #99881', { amountCents: 640 })
+    fuzzyTxn.match = { category: 'dining', layer: 5, method: 'fuzzy',
+                       confidence: 0.94, stem: 'STARBUKS' }
+    const inferred = file('a.csv', RANGE, [fuzzyTxn])
+    inferred.summary.columnInference = { used: true, confidence: 0.95 }
+    const layout = file('b.pdf', RANGE, [txn('KROGER #1')])
+    layout.summary.extraction = 'layout'
+
+    const result = aggregate([inferred, layout], MERCHANTS, USAGE_ITEMS)
+    const codes = result.warnings.map((w) => w.code)
+    expect(codes).toContain('I-fuzzy')
+    expect(codes).toContain('I-inferred-columns')
+    expect(codes).toContain('I-layout')
+    // Fuzzy money still lands in its category.
+    expect(result.categoryCents.dining).toBe(640 * 5)
   })
 })
 
@@ -260,7 +257,7 @@ describe('applyReview / toSpendState', () => {
     txn('DELTA AIR LINES', { amountCents: 20000 }),
     txn('MYSTERY MERCHANT 71', { amountCents: 4200 }),
     txn('BILT REWARDS', { amountCents: 150000 }),
-  ])], MATCHER)
+  ])], MERCHANTS, USAGE_ITEMS)
 
   it('moves reassigned groups and drops excluded categories', () => {
     const out = applyReview(base, { 'MYSTERY MERCHANT': 'dining' },
@@ -291,11 +288,11 @@ describe('applyReview / toSpendState', () => {
     const withRefund = aggregate([file('a.csv', RANGE, [
       txn('DELTA AIR LINES', { amountCents: 20000 }),
       txn('SOME AIRLINE REFUND CO', { amountCents: -8000, kind: 'refund' }),
-    ])], MATCHER)
+    ])], MERCHANTS, USAGE_ITEMS)
     expect(withRefund.uncategorized).toEqual([
-      { stem: 'SOME AIRLINE REFUND', count: 1, rawCents: -8000 },
+      { stem: 'SOME AIRLINE REFUND CO', count: 1, rawCents: -8000 },
     ])
-    const out = applyReview(withRefund, { 'SOME AIRLINE REFUND': 'travel_flights' },
+    const out = applyReview(withRefund, { 'SOME AIRLINE REFUND CO': 'travel_flights' },
       new Set(), MERCHANTS)
     expect(out.categoryCents).toEqual({ travel_flights: (20000 - 8000) * 5 })
   })
@@ -304,7 +301,7 @@ describe('applyReview / toSpendState', () => {
     const result = aggregate([file('a.csv', RANGE, [
       txn('MYSTERY MERCHANT', { amountCents: 1000 }),
       txn('MYSTERY REFUNDER', { amountCents: -9000, kind: 'refund' }),
-    ])], MATCHER)
+    ])], MERCHANTS, USAGE_ITEMS)
     const spend = toSpendState(result, {}, new Set(), MERCHANTS)
     expect(spend.categoryCents['other']).toBeUndefined()
   })
@@ -318,7 +315,7 @@ describe('applyReview / toSpendState', () => {
       txn('MYSTERY REFUNDER', { amountCents: -3000, kind: 'refund' }),
       txn('PAYMENT THANK YOU', { amountCents: -50000, kind: 'payment' }),
     ]
-    const result = aggregate([file('a.csv', RANGE, txns)], MATCHER)
+    const result = aggregate([file('a.csv', RANGE, txns)], MERCHANTS, USAGE_ITEMS)
     const spend = toSpendState(result,
       { bilt_rent: 'other', 'MYSTERY MERCHANT': 'dining', 'MYSTERY REFUNDER': 'dining' },
       new Set(), MERCHANTS)
@@ -333,7 +330,7 @@ describe('applyReview / toSpendState', () => {
     const result = aggregate([file('s.pdf', RANGE, [
       txn('KROGER #1', { amountCents: 16771 }),
       txn('CARD BALANCE TRANSFER', { amountCents: 55713, kind: 'transfer' }),
-    ], { purchasesCents: 72484 })], MATCHER)
+    ], { purchasesCents: 72484 })], MERCHANTS, USAGE_ITEMS)
     expect(result.warnings.filter((w) => w.code === 'W-reconcile')).toEqual([])
   })
 
