@@ -229,11 +229,14 @@ describe('aggregate', () => {
     expect(reconcile[0].message).toMatch(/\$24\.50/)
   })
 
-  it('discloses semantic-layer paths: fuzzy, inferred columns, layout', () => {
+  it('discloses semantic-layer paths: fuzzy, semantic, inferred columns, layout', () => {
     const fuzzyTxn = txn('STARBUKS #99881', { amountCents: 640 })
     fuzzyTxn.match = { category: 'dining', layer: 5, method: 'fuzzy',
                        confidence: 0.94, stem: 'STARBUKS' }
-    const inferred = file('a.csv', RANGE, [fuzzyTxn])
+    const semanticTxn = txn('JOES DELI 42', { amountCents: 1200 })
+    semanticTxn.match = { category: 'dining', layer: 6, method: 'semantic',
+                          confidence: 0.59, stem: 'JOES DELI' }
+    const inferred = file('a.csv', RANGE, [fuzzyTxn, semanticTxn])
     inferred.summary.columnInference = { used: true, confidence: 0.95 }
     const layout = file('b.pdf', RANGE, [txn('KROGER #1')])
     layout.summary.extraction = 'layout'
@@ -241,10 +244,11 @@ describe('aggregate', () => {
     const result = aggregate([inferred, layout], MERCHANTS, USAGE_ITEMS)
     const codes = result.warnings.map((w) => w.code)
     expect(codes).toContain('I-fuzzy')
+    expect(codes).toContain('I-semantic')
     expect(codes).toContain('I-inferred-columns')
     expect(codes).toContain('I-layout')
-    // Fuzzy money still lands in its category.
-    expect(result.categoryCents.dining).toBe(640 * 5)
+    // Approximate-match money still lands in its category.
+    expect(result.categoryCents.dining).toBe((640 + 1200) * 5)
   })
 })
 

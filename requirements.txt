@@ -6,3 +6,6 @@ pyyaml
 python-multipart
 pdfplumber
 rapidfuzz
+# Semantic matcher layer 6 (plan 13): local embedding model runtime.
+numpy
+tokenizers

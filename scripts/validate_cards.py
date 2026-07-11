@@ -246,6 +246,23 @@ def main() -> int:
                           f"({lo2}-{hi2}) overlap — each code must map to exactly "
                           f"one category")
 
+    # semantic_prototypes (plan 13): layer-6 embedding prototypes. Categories
+    # must be real spend buckets ('other' is banned — it is the review
+    # fallback, and giving it prototypes would vacuum up every weak match).
+    for cat, phrases in sorted((rules.get("semantic_prototypes") or {}).items()):
+        check_real_category(cat, f"semantic_prototypes['{cat}']")
+        if cat == "other":
+            errors.append(f"{RULES}: semantic_prototypes must not include 'other' — "
+                          f"it is the fallback bucket, not a meaning")
+        if not phrases or not isinstance(phrases, list):
+            errors.append(f"{RULES}: semantic_prototypes['{cat}'] must be a "
+                          f"non-empty list of phrases")
+            continue
+        for p in phrases:
+            if not isinstance(p, str) or not p.strip():
+                errors.append(f"{RULES}: semantic_prototypes['{cat}'] contains a "
+                              f"non-string or blank phrase: {p!r}")
+
     card_files = sorted(CARDS_DIR.glob("*/*.yaml"))
     if not card_files:
         print(f"ERROR: no card files found under {CARDS_DIR}")

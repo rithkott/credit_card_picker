@@ -15,15 +15,16 @@
 export type TxnKind = 'purchase' | 'refund' | 'payment' | 'fee' | 'interest' | 'transfer'
 
 /** Server-computed categorization, attached to every transaction.
- * layer: 1 descriptor · 2 keyword · 3 issuer category · 4 MCC · 5 fuzzy.
- * method 'fuzzy' means an approximate match (rapidfuzz) the review UI should
- * disclose; `confidence` is its 0-1 score. `stem` is the noise-stripped
+ * layer: 1 descriptor · 2 keyword · 3 issuer category · 4 MCC · 5 fuzzy ·
+ * 6 semantic (local embedding model). methods 'fuzzy' and 'semantic' are
+ * approximate matches the review UI should disclose; `confidence` is their
+ * 0-1 score. `stem` is the noise-stripped
  * grouping key for uncategorized rows (computed server-side so the browser
  * doesn't reimplement the stemmer). */
 export interface TxnMatch {
   category: string | null
-  layer: 1 | 2 | 3 | 4 | 5 | null
-  method: 'exact' | 'fuzzy' | null
+  layer: 1 | 2 | 3 | 4 | 5 | 6 | null
+  method: 'exact' | 'fuzzy' | 'semantic' | null
   confidence?: number
   merchantKey?: string
   usageKey?: string
@@ -91,7 +92,8 @@ export interface FileError {
 
 export interface ImportWarning {
   /** W-coverage | W-overlap | W-rows | W-reconcile | W-multi-statement |
-   * I-fuzzy | I-inferred-columns | I-layout (I-* are informational). */
+   * I-fuzzy | I-semantic | I-inferred-columns | I-layout (I-* are
+   * informational). */
   code: string
   message: string
 }
@@ -136,8 +138,8 @@ export class StatementParseError extends Error {}
 
 export interface WireMatch {
   category: string | null
-  layer: 1 | 2 | 3 | 4 | 5 | null
-  method: 'exact' | 'fuzzy' | null
+  layer: 1 | 2 | 3 | 4 | 5 | 6 | null
+  method: 'exact' | 'fuzzy' | 'semantic' | null
   confidence?: number
   merchant_key?: string
   usage_key?: string

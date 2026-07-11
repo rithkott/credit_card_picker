@@ -29,6 +29,8 @@ export function aggregate(
   const warnings: ImportWarning[] = []
   let fuzzyCount = 0
   let fuzzyCents = 0
+  let semanticCount = 0
+  let semanticCents = 0
 
   for (const file of files) {
     const fileSums: Record<'purchases' | 'paymentsAndCredits' | 'fees' | 'interest' | 'transfers', number> =
@@ -53,6 +55,9 @@ export function aggregate(
         if (match.method === 'fuzzy') {
           fuzzyCount++
           fuzzyCents += txn.amountCents
+        } else if (match.method === 'semantic') {
+          semanticCount++
+          semanticCents += txn.amountCents
         }
         if (match.merchantKey !== undefined) {
           // Defensive: tally the carve-out only when the bridge category is
@@ -169,6 +174,15 @@ export function aggregate(
         `${fuzzyCount} transaction(s) (${formatUsd(Math.abs(fuzzyCents) / 100)} over the ` +
         `covered period) were categorized by approximate name match — worth a ` +
         `glance in the totals below.`,
+    })
+  }
+  if (semanticCount > 0) {
+    warnings.push({
+      code: 'I-semantic',
+      message:
+        `${semanticCount} transaction(s) (${formatUsd(Math.abs(semanticCents) / 100)} over the ` +
+        `covered period) were categorized by meaning ("JOE'S DELI" → dining) — ` +
+        `only confident matches are placed; the rest are listed below for you.`,
     })
   }
 

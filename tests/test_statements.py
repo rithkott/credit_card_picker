@@ -611,5 +611,88 @@ class TestCategorizeGoldenTable(unittest.TestCase):
         self.assertEqual(descriptor_stem("12345"), "12345")  # all-numeric falls back
 
 
+SEMANTIC_READY = (
+    importlib.util.find_spec("numpy") is not None
+    and importlib.util.find_spec("tokenizers") is not None
+    and (ROOT / "server" / "statements" / "model" / "embeddings.npy").exists())
+
+
+@unittest.skipUnless(SEMANTIC_READY, "numpy/tokenizers or model files absent")
+class TestSemanticLayer(unittest.TestCase):
+    """Layer 6 (plan 13): local embedding matcher over the real registries.
+    Pins the user-visible promises: obvious merchants resolve, ambiguous and
+    garbage ones stay for the user, exact layers are never overridden, and
+    non-spend rows are never semantically matched."""
+
+    @classmethod
+    def setUpClass(cls):
+        import yaml
+
+        sys.path.insert(0, str(ROOT / "scripts"))
+        import optimize as opt
+        from statements.categorize import Matcher
+        ds = opt.load_dataset()
+        meta = ROOT / "data" / "meta"
+        descriptors = yaml.safe_load(
+            (meta / "statement-descriptors.yaml").read_text())["descriptors"]
+        rules = yaml.safe_load((meta / "category-rules.yaml").read_text())
+        cls.matcher = Matcher(descriptors, rules, ds["merchants"],
+                              ds["usage_questions"])
+
+    def match(self, descriptor, **kw):
+        from statements.categorize import match_txn
+        return match_txn(self.matcher, descriptor, None, None, **kw)
+
+    def test_obvious_merchants_resolve(self):
+        for descriptor, want in [
+            ("JOES DELI 42 NYC", "dining"),
+            ("THE CORNER BAR", "dining"),
+            ("KATZS DELICATESSEN", "dining"),
+            ("VITAL CLIMBING GYM 182", "entertainment"),
+            ("EAST JAPAN RAILWAY CO", "travel_other"),
+        ]:
+            m = self.match(descriptor)
+            self.assertEqual((m["category"], m["layer"], m["method"]),
+                             (want, 6, "semantic"), descriptor)
+            self.assertGreaterEqual(m["confidence"], 0.35)
+
+    def test_ambiguous_stays_for_user(self):
+        # Wine SHOP vs wine BAR: inside the margin — the user decides.
+        m = self.match("TOTAL WINE AND MORE 1523")
+        self.assertIsNone(m["category"])
+
+    def test_garbage_stays_for_user(self):
+        for descriptor in ("SPIRIT AI EXECUTIVE", "SOME RANDOM LLC 5512", "XQZ"):
+            self.assertIsNone(self.match(descriptor)["category"], descriptor)
+
+    def test_never_overrides_exact_layers(self):
+        m = self.match("NETFLIX.COM 866-579-7172")
+        self.assertEqual((m["layer"], m["method"]), (1, "exact"))
+        m = self.match("SHELL OIL 5744221")
+        self.assertEqual((m["layer"], m["method"]), (2, "exact"))
+
+    def test_non_spend_rows_skip_semantic(self):
+        m = self.match("JOES DELI 42 NYC", semantic_ok=False)
+        self.assertIsNone(m["category"])
+
+    def test_annotate_gates_on_kind(self):
+        from statements.categorize import annotate
+        from statements.types import Txn
+        txns = [
+            Txn(date="2026-01-01", amount_cents=1200, descriptor="JOES DELI 42",
+                kind="purchase", line=1),
+            Txn(date="2026-01-02", amount_cents=-50000,
+                descriptor="ONLINE PAYMENT FROM CHK", kind="payment", line=2),
+        ]
+        annotate(self.matcher, txns)
+        self.assertEqual(txns[0].match["layer"], 6)
+        self.assertIsNone(txns[1].match["category"])
+
+    def test_deterministic(self):
+        a = self.match("HANOVER GOURMET DELI")
+        b = self.match("HANOVER GOURMET DELI")
+        self.assertEqual(a, b)
+
+
 if __name__ == "__main__":
     unittest.main()

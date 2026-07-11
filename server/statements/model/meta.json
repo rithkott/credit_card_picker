@@ -1,0 +1,8 @@
+{
+  "model": "minishlab/potion-base-8M",
+  "license": "MIT",
+  "dim": 256,
+  "vocab": 29528,
+  "dtype": "float16",
+  "encode": "mean of token vectors (add_special_tokens=False), L2-normalized"
+}
