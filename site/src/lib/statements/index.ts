@@ -17,7 +17,10 @@ import type { FileError, ParsedFile, WireParsedFile } from './types'
  * limit); the pre-check here means an oversize file fails fast with a local
  * message instead of a doomed upload. */
 export const MAX_FILE_BYTES = 4 * 1024 * 1024
-export const MAX_FILES = 50 // two cards x 24 monthly PDFs must fit in one batch
+// Four cards x 24 monthly PDFs + yearly CSV exports must fit in ONE batch —
+// a real year-of-everything drop hit the old cap of 50 and silently skewed
+// totals low (the dropped months still counted as covered days).
+export const MAX_FILES = 120
 export const MAX_TXNS_TOTAL = 50_000
 
 export interface FileInput { name: string; bytes: Uint8Array }
@@ -81,6 +84,7 @@ export function fromWire(wire: WireParsedFile): ParsedFile {
         ...(w.match.descriptor_label !== undefined
           ? { descriptorLabel: w.match.descriptor_label } : {}),
         stem: w.match.stem,
+        ...(w.match.suggestion !== undefined ? { suggestion: w.match.suggestion } : {}),
       },
       source: { file: s.name, line: w.line },
     })),

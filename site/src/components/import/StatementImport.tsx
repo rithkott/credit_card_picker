@@ -141,6 +141,10 @@ export function StatementImport({ config, formNonEmpty, onApply }: {
                 else next[stem] = category
                 return next
               })}
+            onAssignMany={(entries) =>
+              // Bulk "Accept all guesses": fills only unassigned stems — the
+              // caller already excludes stems the user placed by hand.
+              setAssignments((a) => ({ ...entries, ...a }))}
             onExclude={(category, off) =>
               setExcluded((prev) => {
                 const next = new Set(prev)

@@ -20,7 +20,7 @@ const KIND_LABELS: Record<string, string> = {
  * anything touches the form. */
 export function ImportReview({
   config, batch, result, totals, assignments, excluded, usageChecks,
-  onAssign, onExclude, onUsageCheck,
+  onAssign, onAssignMany, onExclude, onUsageCheck,
 }: {
   config: Config
   batch: ParseBatchResult
@@ -30,6 +30,7 @@ export function ImportReview({
   excluded: ReadonlySet<string>
   usageChecks: Record<string, boolean>
   onAssign: (stem: string, category: string) => void
+  onAssignMany: (next: Record<string, string>) => void
   onExclude: (category: string, off: boolean) => void
   onUsageCheck: (key: string, on: boolean) => void
 }) {
@@ -66,11 +67,23 @@ export function ImportReview({
       </div>
 
       <p className="coverage">
-        {batch.files.length} file(s) · {result.coverageDays} days of activity → totals
-        annualized ×{factor.toFixed(1)}
+        {batch.files.length} file(s) · {result.coverageDays} days of activity — every
+        total below is scaled to a 12-month year (×{factor.toFixed(1)})
       </p>
-      {result.warnings.map((w) => (
-        <p key={w.code + w.message} className="issue warning">{w.message}</p>
+      {Object.entries(
+        result.warnings.reduce<Record<string, typeof result.warnings>>((acc, w) => {
+          (acc[w.code] ??= []).push(w)
+          return acc
+        }, {}),
+      ).map(([code, ws]) => ws.length <= 3 ? (
+        ws.map((w) => <p key={code + w.message} className="issue warning">{w.message}</p>)
+      ) : (
+        // Twelve near-identical reconcile warnings teach the user to ignore
+        // warnings — collapse repeats of one code behind a single line.
+        <details key={code} className="issue warning warning-group">
+          <summary>{ws.length} files: {ws[0].message.replace(/^[^:]*: /, '')} (and similar) — details</summary>
+          {ws.map((w) => <p key={w.message} className="issue warning">{w.message}</p>)}
+        </details>
       ))}
 
       <table className="assign import-table">
@@ -112,6 +125,7 @@ export function ImportReview({
         coverageDays={result.coverageDays}
         assignments={assignments}
         onAssign={onAssign}
+        onAssignMany={onAssignMany}
       />
 
       <UsageSuggestions

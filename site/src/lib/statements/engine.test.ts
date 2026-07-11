@@ -82,7 +82,7 @@ describe('fromWire', () => {
   it('converts the server wire shape to browser camelCase', () => {
     const wire: WireParsedFile = {
       summary: {
-        name: 's.pdf', format: 'pdf', txns: 1, rejected_rows: 2,
+        name: 's.pdf', format: 'pdf', txns: 2, rejected_rows: 2,
         range_start: '2026-01-01', range_end: '2026-01-31',
         statement_totals: { purchases_cents: 2450, fees_cents: 0 },
         period_count: 1, extraction: 'layout',
@@ -92,11 +92,16 @@ describe('fromWire', () => {
         kind: 'purchase', line: 7,
         match: { category: 'groceries', layer: 5, method: 'fuzzy',
                  confidence: 0.93, stem: 'KROGER' },
+      }, {
+        date: '2026-01-04', amount_cents: 900, descriptor: 'JOES PLACE',
+        kind: 'purchase', line: 9,
+        match: { category: null, layer: null, method: null, stem: 'JOES PLACE',
+                 suggestion: { category: 'dining', confidence: 0.31 } },
       }],
     }
     expect(fromWire(wire)).toEqual({
       summary: {
-        name: 's.pdf', format: 'pdf', txns: 1, rejectedRows: 2,
+        name: 's.pdf', format: 'pdf', txns: 2, rejectedRows: 2,
         rangeStart: '2026-01-01', rangeEnd: '2026-01-31',
         statementTotals: { purchasesCents: 2450, feesCents: 0 },
         periodCount: 1, extraction: 'layout',
@@ -107,6 +112,12 @@ describe('fromWire', () => {
         match: { category: 'groceries', layer: 5, method: 'fuzzy',
                  confidence: 0.93, stem: 'KROGER' },
         source: { file: 's.pdf', line: 7 },
+      }, {
+        dateISO: '2026-01-04', amountCents: 900, descriptor: 'JOES PLACE',
+        kind: 'purchase',
+        match: { category: null, layer: null, method: null, stem: 'JOES PLACE',
+                 suggestion: { category: 'dining', confidence: 0.31 } },
+        source: { file: 's.pdf', line: 9 },
       }],
     })
   })
@@ -181,8 +192,10 @@ describe('aggregate', () => {
     })
     expect(result.excludedCents).toEqual({ payment: 30000, fee: 9500 })
     expect(result.uncategorized).toEqual([
-      { stem: 'bilt_rent', label: 'Bilt rent/housing payments', count: 1, rawCents: 150000 },
-      { stem: 'MYSTERY MERCHANT', count: 1, rawCents: 4200 },
+      { stem: 'bilt_rent', label: 'Bilt rent/housing payments', count: 1,
+        rawCents: 150000, example: 'BILT REWARDS' },
+      { stem: 'MYSTERY MERCHANT', count: 1, rawCents: 4200,
+        example: 'MYSTERY MERCHANT 71' },
     ])
     expect(result.usageSuggestions).toEqual([
       { key: 'delta', label: 'Delta', annualCents: 100000 },
@@ -278,6 +291,91 @@ describe('materiality', () => {
     const spend = toSpendState(result, {}, new Set(), MERCHANTS)
     expect(spend.categoryCents['other']).toBe(100 * 5)
   })
+
+  it('caps the silent fold-in at 2% of total spend by promoting largest-first', () => {
+    // $10k/yr categorized + 50 equal sub-0.1% vendors of $6.50/yr each:
+    // the tail sums to $325/yr > 2% of the $10,325 total, so the cap must
+    // promote groups (equal spend -> stem-ascending order) until the
+    // remainder fits under 2%.
+    // Letter suffixes: the stemmer strips digits, so numbered vendors would
+    // collapse into one group.
+    const vendorName = (i: number) =>
+      `VENDOR ${String.fromCharCode(65 + Math.floor(i / 26))}${String.fromCharCode(65 + (i % 26))}`
+    const vendors = Array.from({ length: 50 }, (_, i) =>
+      txn(vendorName(i), { amountCents: 130 }))
+    const result = aggregate([file('a.csv', RANGE, [
+      txn('COSTCO WHSE #0021', { amountCents: 200000 }),
+      ...vendors,
+    ])], MERCHANTS, USAGE_ITEMS)
+    const groups = result.uncategorized
+    const totalAnnual = 200000 * 5 + 50 * 130 * 5
+    const minorAnnual = groups.reduce(
+      (s, g) => s + (g.minor ? annualize(g.rawCents, result.coverageDays) : 0), 0)
+    expect(minorAnnual).toBeLessThanOrEqual(0.02 * totalAnnual)
+    const promoted = groups.filter((g) => g.minor === false).map((g) => g.stem)
+    // Promotion is deterministic and stops as soon as the tail fits.
+    expect(promoted).toEqual(Array.from({ length: 19 }, (_, i) => vendorName(i)))
+    expect(groups.filter((g) => g.minor === true)).toHaveLength(31)
+  })
+
+  it('leaves the tail alone when it already fits under the cap', () => {
+    const result = aggregate([file('a.csv', RANGE, [
+      txn('COSTCO WHSE #0021', { amountCents: 200000 }),
+      txn('TINY VENDOR 9', { amountCents: 100 }),
+    ])], MERCHANTS, USAGE_ITEMS)
+    expect(result.uncategorized.find((g) => g.stem === 'TINY VENDOR')!.minor).toBe(true)
+  })
+})
+
+// ── suggestions (v1.3.0) ─────────────────────────────────────────────────────
+
+describe('suggestions', () => {
+  const RANGE: [string, string] = ['2026-01-01', '2026-03-14'] // ×5
+  const SUGG = { category: 'dining', confidence: 0.31 }
+
+  it('propagates the txn suggestion and example onto the group', () => {
+    const result = aggregate([file('a.csv', RANGE, [
+      txn('JOES PLACE 42', {
+        amountCents: 30000,
+        match: { ...unmatched('JOES PLACE 42'), suggestion: SUGG },
+      }),
+      txn('JOES PLACE 99', {
+        amountCents: 30000,
+        match: { ...unmatched('JOES PLACE 99'), suggestion: SUGG },
+      }),
+    ])], MERCHANTS, USAGE_ITEMS)
+    const group = result.uncategorized.find((g) => g.stem === 'JOES PLACE')!
+    expect(group.suggestion).toEqual(SUGG)
+    expect(group.example).toBe('JOES PLACE 42')
+    expect(group.count).toBe(2)
+  })
+
+  it('never attaches a suggestion to labeled policy groups', () => {
+    const result = aggregate([file('a.csv', RANGE, [
+      txn('BILT REWARDS', {
+        amountCents: 150000,
+        match: { ...MATCHES['BILT REWARDS'], suggestion: SUGG },
+      }),
+    ])], MERCHANTS, USAGE_ITEMS)
+    expect(result.uncategorized[0].suggestion).toBeUndefined()
+  })
+
+  it('bulk-accepted suggestions flow through applyReview like manual picks', () => {
+    const result = aggregate([file('a.csv', RANGE, [
+      txn('COSTCO WHSE #0021', { amountCents: 200000 }),
+      txn('JOES PLACE 42', {
+        amountCents: 30000,
+        match: { ...unmatched('JOES PLACE 42'), suggestion: SUGG },
+      }),
+    ])], MERCHANTS, USAGE_ITEMS)
+    const accepted = Object.fromEntries(result.uncategorized
+      .filter((g) => g.suggestion !== undefined)
+      .map((g) => [g.stem, g.suggestion!.category]))
+    expect(applyReview(result, accepted, new Set(), MERCHANTS))
+      .toEqual(applyReview(result, { 'JOES PLACE': 'dining' }, new Set(), MERCHANTS))
+    expect(applyReview(result, accepted, new Set(), MERCHANTS)
+      .categoryCents.dining).toBe(30000 * 5)
+  })
 })
 
 // ── review edits + Apply payload ─────────────────────────────────────────────
@@ -322,7 +420,8 @@ describe('applyReview / toSpendState', () => {
       txn('SOME AIRLINE REFUND CO', { amountCents: -8000, kind: 'refund' }),
     ])], MERCHANTS, USAGE_ITEMS)
     expect(withRefund.uncategorized).toEqual([
-      { stem: 'SOME AIRLINE REFUND CO', count: 1, rawCents: -8000 },
+      { stem: 'SOME AIRLINE REFUND CO', count: 1, rawCents: -8000,
+        example: 'SOME AIRLINE REFUND CO' },
     ])
     const out = applyReview(withRefund, { 'SOME AIRLINE REFUND CO': 'travel_flights' },
       new Set(), MERCHANTS)

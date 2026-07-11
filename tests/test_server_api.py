@@ -198,6 +198,31 @@ class TestServerAPI(unittest.TestCase):
         self.assertEqual(r.status_code, 413)
         self.assertEqual(r.json()["code"], "too_large")
 
+    def test_parse_unmatched_txn_carries_suggestion(self):
+        """v1.3.0 contract: an all-layers miss ships the semantic top-1 as
+        match.suggestion {category, confidence<0.4} — category/layer/method
+        stay null, so a suggestion is never a placement."""
+        import importlib.util
+        ready = all(importlib.util.find_spec(mod) is not None
+                    for mod in ("numpy", "tokenizers", "onnxruntime")) and (
+            ROOT / "server" / "statements" / "model" / "model_quantized.onnx").exists()
+        if not ready:
+            self.skipTest("onnxruntime/numpy/tokenizers or model files absent")
+        csv = (b"Transaction Date,Post Date,Description,Category,Type,Amount,Memo\n"
+               b"01/05/2026,01/06/2026,SPIRIT AI EXECUTIVE,,Sale,-42.00,\n")
+        r = self.upload("misc.csv", csv)
+        self.assertEqual(r.status_code, 200, r.text)
+        match = r.json()["txns"][0]["match"]
+        self.assertIsNone(match["category"])
+        self.assertIsNone(match["layer"])
+        self.assertIsNone(match["method"])
+        suggestion = match["suggestion"]
+        real_categories = {c["key"] for c in
+                           self.client.get("/api/config").json()["categories"]}
+        self.assertIn(suggestion["category"], real_categories)
+        self.assertGreaterEqual(suggestion["confidence"], 0.0)
+        self.assertLess(suggestion["confidence"], 0.4)
+
     def test_parse_never_writes_debug_dumps(self):
         """EPHEMERAL BY POLICY: statement uploads must never produce a debug
         dump (unlike /api/optimize locally) — not on success, not on error."""

@@ -31,6 +31,16 @@ export interface TxnMatch {
   descriptorKey?: string
   descriptorLabel?: string
   stem: string
+  /** Unmatched spend only: the semantic model's top-1 candidate BELOW the
+   * accept gate. Never applied on its own — the review UI pre-fills the
+   * group's picker with it and the user confirms. */
+  suggestion?: MatchSuggestion
+}
+
+/** Semantic top-1 below the accept gate; confidence is the cosine (0–1). */
+export interface MatchSuggestion {
+  category: string
+  confidence: number
 }
 
 export interface NormalizedTxn {
@@ -108,9 +118,18 @@ export interface UncatGroup {
   rawCents: number
   /** Materiality (plan 13): true when the group's annualized value is under
    * 0.1% of the profile's total annualized spend. Minor unlabeled groups are
-   * not asked about — they fold into 'Everything else' silently; labeled
-   * groups (rent, Venmo) are always asked regardless of size. */
+   * not asked about — they fold into 'Everything else'; the fold-in is
+   * bounded: when minor groups together exceed MISC_CAP_PCT of total spend,
+   * the largest are promoted back to asked rows. Labeled groups (rent,
+   * Venmo) are always asked regardless of size. */
   minor?: boolean
+  /** Semantic top-1 below the accept gate, shared by the group's txns (same
+   * stem ⇒ same model output). Pre-fills the picker; user confirms. Never
+   * set on labeled groups — those are deliberate user decisions. */
+  suggestion?: MatchSuggestion
+  /** One raw descriptor from the group, so the user can identify the
+   * merchant beyond the stripped stem. */
+  example?: string
 }
 
 /** "We detected $412/yr at Delta" — usage-questions items seen in the data. */
@@ -151,6 +170,7 @@ export interface WireMatch {
   descriptor_key?: string
   descriptor_label?: string
   stem: string
+  suggestion?: { category: string; confidence: number }
 }
 
 export interface WireTxn {
