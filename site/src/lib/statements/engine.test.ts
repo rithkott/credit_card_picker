@@ -257,11 +257,11 @@ describe('aggregate', () => {
 describe('materiality', () => {
   const RANGE: [string, string] = ['2026-01-01', '2026-03-14'] // ×5
 
-  it('flags sub-1% unlabeled groups as minor; labeled and big ones ask', () => {
+  it('flags sub-0.1% unlabeled groups as minor; labeled and big ones ask', () => {
     const result = aggregate([file('a.csv', RANGE, [
       txn('COSTCO WHSE #0021', { amountCents: 200000 }),   // $10k/yr categorized
       txn('MYSTERY MERCHANT 71', { amountCents: 30000 }),  // $1.5k/yr — significant
-      txn('TINY VENDOR 9', { amountCents: 1000 }),         // $50/yr — minor
+      txn('TINY VENDOR 9', { amountCents: 100 }),          // $5/yr — minor
       txn('BILT REWARDS', { amountCents: 100 }),           // labeled: never minor
     ])], MERCHANTS, USAGE_ITEMS)
     const byStem = Object.fromEntries(result.uncategorized.map((g) => [g.stem, g]))
@@ -273,10 +273,10 @@ describe('materiality', () => {
   it('minor groups still fold into other on Apply (unchanged mechanics)', () => {
     const result = aggregate([file('a.csv', RANGE, [
       txn('COSTCO WHSE #0021', { amountCents: 200000 }),
-      txn('TINY VENDOR 9', { amountCents: 1000 }),
+      txn('TINY VENDOR 9', { amountCents: 100 }),
     ])], MERCHANTS, USAGE_ITEMS)
     const spend = toSpendState(result, {}, new Set(), MERCHANTS)
-    expect(spend.categoryCents['other']).toBe(1000 * 5)
+    expect(spend.categoryCents['other']).toBe(100 * 5)
   })
 })
 
