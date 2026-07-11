@@ -39,41 +39,65 @@ export function UncategorizedList({ categories, groups, coverageDays, assignment
       .map((g) => [g.stem, g.suggestion!.category]))
   const askedPendingCount = Object.keys(askedPending).length
 
-  const row = (g: UncatGroup) => (
-    <div key={g.stem} className="uncat-row">
-      <span className="uncat-name">
-        {g.label !== undefined && <span className="uncat-flag">{g.label}</span>}
-        {g.label === undefined && g.stem}
-        <span className="line-note">
-          {' '}×{g.count} · {formatUsd(annualize(g.rawCents, coverageDays) / 100)}/yr
-          {g.rawCents < 0 && ' (refund)'}
+  // Display copy of the raw descriptor with the leading reference codes
+  // (mostly-digit tokens) dimmed away — humans read the merchant, not the
+  // auth code. Categorization is untouched; this is presentation only.
+  const cleanExample = (example: string) => example
+    .split(/\s+/)
+    .filter((token) => {
+      const alnum = [...token].filter((c) => /[a-z0-9]/i.test(c)).length
+      const digits = [...token].filter((c) => /[0-9]/.test(c)).length
+      return alnum > 0 && digits * 2 < alnum
+    })
+    .join(' ')
+
+  const row = (g: UncatGroup) => {
+    const guessed = g.suggestion !== undefined
+      && assignments[g.stem] === g.suggestion.category
+    const example = g.example !== undefined ? cleanExample(g.example) : ''
+    return (
+      <div key={g.stem} className="uncat-row">
+        <span className="uncat-name">
+          {g.label !== undefined && <span className="uncat-flag">{g.label}</span>}
+          {g.label === undefined && g.stem}
+          <span className="line-note">
+            {' '}×{g.count} · {formatUsd(annualize(g.rawCents, coverageDays) / 100)}/yr
+            {g.rawCents < 0 && ' (refund)'}
+          </span>
+          {example !== '' && example.toUpperCase() !== g.stem && (
+            <span className="line-note uncat-example"> e.g. “{example}”</span>
+          )}
+          {g.suggestion !== undefined && assignments[g.stem] === undefined && (
+            <button
+              type="button"
+              className="uncat-guess"
+              onClick={() => onAssign(g.stem, g.suggestion!.category)}
+            >
+              guess: {labelOf.get(g.suggestion.category) ?? g.suggestion.category} — use
+            </button>
+          )}
+          {guessed && (
+            <span className="line-note uncat-guessed">
+              guessed —{' '}
+              <button type="button" className="uncat-clear" onClick={() => onAssign(g.stem, '')}>
+                clear
+              </button>
+            </span>
+          )}
         </span>
-        {g.example !== undefined && g.example.toUpperCase().trim() !== g.stem && (
-          <span className="line-note uncat-example"> e.g. “{g.example}”</span>
-        )}
-        {g.suggestion !== undefined && assignments[g.stem] === undefined && (
-          <button
-            type="button"
-            className="uncat-guess"
-            onClick={() => onAssign(g.stem, g.suggestion!.category)}
-          >
-            guess: {labelOf.get(g.suggestion.category) ?? g.suggestion.category}
-            {' '}· {Math.round(g.suggestion.confidence * 100)}% — use
-          </button>
-        )}
-      </span>
-      <select
-        value={assignments[g.stem] ?? ''}
-        aria-label={`Category for ${g.label ?? g.stem}`}
-        onChange={(e) => onAssign(g.stem, e.target.value)}
-      >
-        <option value="">{g.label !== undefined ? 'leave out' : 'everything else'}</option>
-        {categories.map((c) => (
-          <option key={c.key} value={c.key}>{c.label}</option>
-        ))}
-      </select>
-    </div>
-  )
+        <select
+          value={assignments[g.stem] ?? ''}
+          aria-label={`Category for ${g.label ?? g.stem}`}
+          onChange={(e) => onAssign(g.stem, e.target.value)}
+        >
+          <option value="">{g.label !== undefined ? 'leave out' : 'Everything else'}</option>
+          {categories.map((c) => (
+            <option key={c.key} value={c.key}>{c.label}</option>
+          ))}
+        </select>
+      </div>
+    )
+  }
 
   return (
     <div className="uncat">
@@ -93,9 +117,10 @@ export function UncategorizedList({ categories, groups, coverageDays, assignment
             )}
           </div>
           <p className="why">
-            Unassigned merchants below count into "Everything else" when you apply —
-            except the flagged ones (like rent), which stay out unless you place them.
-            Guesses are the model's best idea; nothing counts until you accept it.
+            Guesses are the model's best idea and apply only when you accept them —
+            each stays marked so you can clear it. Anything left unassigned counts
+            into "Everything else" when you apply; the flagged ones (like rent) stay
+            out unless you place them.
           </p>
           {asked.map(row)}
         </>

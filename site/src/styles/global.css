@@ -446,25 +446,32 @@ button.linklike {
 .uncat h3, .usage-suggest h3 { font-size: 14px; margin: 0 0 0.15em; }
 .uncat .why, .usage-suggest .why { color: var(--text-muted); font-size: 12.5px; margin: 0 0 0.5em; }
 .uncat-row {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 1em; padding: 0.2em 0; max-width: 42em;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 1em; padding: 0.3em 0; max-width: 42em;
   font-size: 13.5px;
 }
-.uncat-row > select { width: 15em; flex-shrink: 0; }
+.uncat-row > select { width: 15em; flex-shrink: 0; margin-top: 2px; }
 .uncat-flag {
   color: var(--warn); font-weight: 600; border: 1px solid rgba(232, 196, 122, 0.5);
   border-radius: 4px; padding: 0 6px; margin-right: 6px; font-size: 11.5px;
 }
 .uncat .panel-head { max-width: 42em; }
-.uncat-name { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; }
+.uncat-name { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; flex: 1; min-width: 0; }
 .uncat-name > .line-note { margin: 0; }
 .uncat-guess {
   font-size: 11.5px; padding: 1px 8px; margin-top: 2px;
   border: 1px solid var(--accent-border); border-radius: 999px;
   background: transparent; color: var(--accent-text); cursor: pointer;
-  text-align: left;
+  text-align: left; white-space: nowrap;
 }
 .uncat-guess:hover { background: var(--accent-bg); }
+.uncat-guessed { color: var(--accent-text); }
+.uncat-clear {
+  background: none; border: none; padding: 0; font-size: inherit;
+  color: var(--accent-text); text-decoration: underline; cursor: pointer;
+}
+.warning-group > summary { cursor: pointer; }
+.warning-group p { padding-left: 1em; }
 .uncat-accept-all {
   font-size: 12.5px; padding: 2px 12px;
   border: 1px solid var(--accent-border); border-radius: 999px;
