@@ -98,7 +98,15 @@ export interface Assignment {
   note: string
 }
 
-export interface CreditLine { name: string; value: number; note: string }
+export interface CreditLine {
+  name: string
+  value: number
+  note: string
+  /** Full annual face value of a usage-gated perk the user hasn't confirmed —
+   * present only on those $0 credits. Display-only ("perks you'd get anyway");
+   * never enters any total, since `value` stays 0. */
+  potential_value?: number
+}
 
 export interface PerCard {
   name: string

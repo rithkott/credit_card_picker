@@ -251,6 +251,13 @@ class TestServerAPI(unittest.TestCase):
                 self.assertIn(d["currency"]["kind"], ("cash", "points"))
                 self.assertIn("program", d["currency"])
                 self.assertIn("label", d["currency"])
+                # Contract: potential_value (full face of a usage-gated perk the
+                # user hasn't confirmed) appears only on $0 credits and is
+                # display-only — it never rides on an earning credit (v1.6.5).
+                for c in d["credits"]:
+                    if "potential_value" in c:
+                        self.assertEqual(c["value"], 0.0)
+                        self.assertGreater(c["potential_value"], 0)
 
     # -- error contract -------------------------------------------------------
 
