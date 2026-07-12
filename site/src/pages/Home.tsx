@@ -303,6 +303,7 @@ export function Home({ cfg, onRetryConfig }: {
               canFinish={errors.length === 0}
               onBack={() => setStep((s) => Math.max(0, s - 1))}
               onNext={() => setStep((s) => Math.min(steps.length - 1, s + 1))}
+              onJump={(i) => setStep(i)}
               onFinish={() => {
                 fs.setCompleted(true)
                 fs.setView('edit')

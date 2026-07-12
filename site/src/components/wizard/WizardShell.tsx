@@ -18,9 +18,10 @@ interface Props {
   onBack: () => void
   onNext: () => void
   onFinish: () => void
+  onJump: (index: number) => void
 }
 
-export function WizardShell({ steps, index, canFinish, onBack, onNext, onFinish }: Props) {
+export function WizardShell({ steps, index, canFinish, onBack, onNext, onFinish, onJump }: Props) {
   const step = steps[index]
   const isLast = index === steps.length - 1
 
@@ -37,8 +38,15 @@ export function WizardShell({ steps, index, canFinish, onBack, onNext, onFinish 
               className={i === index ? 'current' : i < index ? 'done' : ''}
               aria-current={i === index ? 'step' : undefined}
             >
-              <span className="dot" aria-hidden="true" />
-              <span className="wizard-dot-label">{s.title}</span>
+              <button
+                type="button"
+                className="wizard-dot-btn"
+                onClick={() => onJump(i)}
+                aria-label={`Go to step ${i + 1}: ${s.title}`}
+              >
+                <span className="dot" aria-hidden="true" />
+                <span className="wizard-dot-label">{s.title}</span>
+              </button>
             </li>
           ))}
         </ol>

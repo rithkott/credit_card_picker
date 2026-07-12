@@ -1187,9 +1187,17 @@ button.btn-danger {
   list-style: none; margin: 0; padding: 0;
 }
 .wizard-dots li {
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  min-width: 64px;
+  display: flex; min-width: 64px;
 }
+.wizard-dot-btn {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  background: none; border: none; border-radius: 8px;
+  padding: 4px 2px; cursor: pointer;
+  transition: opacity 0.15s;
+}
+.wizard-dot-btn:hover { opacity: 0.75; }
+.wizard-dots li.current .wizard-dot-btn { cursor: default; }
 .wizard-dots .dot {
   width: 9px; height: 9px; border-radius: 999px;
   background: var(--hairline-strong);
