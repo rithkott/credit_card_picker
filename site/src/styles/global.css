@@ -786,10 +786,32 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   color: rgba(242, 243, 247, 0.4);
 }
 .tile-perks .line { color: var(--text-muted); }
-.tile-perks .line > span:last-child { color: var(--text-muted); }
+/* Perks you'd get anyway: the value reads green — free money the card hands you. */
+.tile-perks .line > span:last-child { color: var(--ok); font-weight: 600; }
 .tile-bonus .line { color: inherit; }
 .tile-bonus .line > span:last-child { color: var(--ok); }
 .tile-costs { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--hairline); }
+/* "Adds each year" — the recurring yearly total glows golden. */
+.tile-lines .line.total.adds-year > span:last-child {
+  color: var(--warn);
+  text-shadow: 0 0 10px rgba(232, 196, 122, 0.55), 0 0 22px rgba(232, 196, 122, 0.3);
+}
+/* "Max value" — the optimistic ceiling glows blue-purple. */
+.tile-maxvalue { margin-top: 8px; }
+.tile-lines .line.total.max-value {
+  border-top: none;
+  padding-top: 0;
+}
+.tile-lines .line.total.max-value > span {
+  color: var(--accent-text);
+}
+.tile-lines .line.total.max-value > span:last-child {
+  background: var(--shimmer);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 12px rgba(143, 168, 255, 0.5), 0 0 24px rgba(196, 181, 253, 0.4);
+}
 .tile-note {
   margin-top: 12px;
   font-size: 12.5px; color: var(--text-muted); line-height: 1.55;
