@@ -45,10 +45,13 @@ function fanSlot(i: number): number {
 function CardRender({ id, name, index, count }: { id: string; name: string; index: number; count: number }) {
   // Centre the whole fan: even counts shift by half a slot so the arc is symmetric.
   const off = fanSlot(index) + (count % 2 === 0 ? 0.5 : 0)
-  const style = { ...faceStyle(id), zIndex: 100 - index } as CSSProperties & Record<string, string | number>
+  // Base fan transform lives in a CSS var so :hover can compose a lift on top
+  // of it (a plain transform on hover would drop the card's fan position).
+  const style = { ...faceStyle(id) } as CSSProperties & Record<string, string | number>
+  style['--z'] = 100 - index
   style['--sheen-delay'] = `${(index * -1.15).toFixed(2)}s`
   if (count > 1) {
-    style.transform =
+    style['--ft'] =
       `translate(${off * FAN_STEP}px, ${Math.abs(off) * FAN_DIP}px) rotate(${off * FAN_ANGLE}deg)`
   }
   return (

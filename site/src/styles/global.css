@@ -690,7 +690,16 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 .card-fan .card-render {
   position: absolute; top: 0; left: 50%; margin-left: -150px;
   transform-origin: 50% 130%;
-  transition: transform 0.3s ease;
+  transform: var(--ft, none);
+  z-index: var(--z, 1);
+  transition: transform 0.28s ease, box-shadow 0.28s ease;
+}
+/* Hover lifts the card clear of the fan and brings it fully to the front,
+   exposing its whole name. Composes the lift onto the base fan transform. */
+.card-fan .card-render:hover {
+  transform: var(--ft, none) translateY(-30px) scale(1.05);
+  z-index: 200;
+  box-shadow: 0 34px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 /* Scale the fan down where it would outgrow the viewport */
 @media (max-width: 1000px) { .card-fan { transform: scale(0.7); transform-origin: top center; } }
