@@ -100,12 +100,14 @@ export function PortfolioCard({ portfolio, bundle, isBest, stack }: {
 
   const year1 = bundle.optimize_for === 'year1'
   const netMain = year1 ? portfolio.year1_net : portfolio.ongoing_net
-  const bonusPhrase = bonuses > 0
-    ? year1
-      ? `$${formatNumber(Math.round(portfolio.ongoing_net))} each year after the bonuses`
-      : `$${formatNumber(Math.round(portfolio.year1_net))} in year one with the signup bonus${cards.filter((c) => c.bonus.value > 0).length > 1 ? 'es' : ''}`
-    : 'no signup bonuses in this combination'
-  const netSub = `left over ${year1 ? 'in year one' : 'each year'}, ${feePhrase} · ${bonusPhrase}`
+  // The other horizon gets its own big figure below the headline — a small
+  // sentence buried the number people ask about most (year one with bonuses).
+  const netSecond = year1 ? portfolio.ongoing_net : portfolio.year1_net
+  const secondLabel = year1
+    ? 'each year after the bonuses'
+    : `in year one with the signup bonus${cards.filter((c) => c.bonus.value > 0).length > 1 ? 'es' : ''} included`
+  const netSub = `left over ${year1 ? 'in year one' : 'each year'}, ${feePhrase}` +
+    (bonuses > 0 ? '' : ' · no signup bonuses in this combination')
 
   const unassigned = Object.entries(portfolio.unassigned_spend)
   const stackCards = stack
@@ -121,6 +123,12 @@ export function PortfolioCard({ portfolio, bundle, isBest, stack }: {
             ${formatNumber(Math.round(netMain))}
             <span className="per">{year1 ? ' yr 1' : '/yr'}</span>
           </div>
+          {bonuses > 0 && (
+            <div className="net-second">
+              ${formatNumber(Math.round(netSecond))}
+              <span className="per"> {secondLabel}</span>
+            </div>
+          )}
           <div className="net-sub">{netSub}</div>
           <div className="receipt-rows">
             <div className="row">
