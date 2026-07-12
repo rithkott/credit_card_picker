@@ -981,6 +981,12 @@ class TestFiltersAndSearch(unittest.TestCase):
         warnings = opt.card_warnings(seed_card("double-cash"), AS_OF)
         self.assertTrue(any("UNVERIFIED DATA" in w for w in warnings))
 
+    def test_approval_notes_never_surface_as_warning(self):
+        card = seed_card("double-cash")
+        card["approval"]["notes"] = "credit_tier estimated from positioning"
+        warnings = opt.card_warnings(card, AS_OF)
+        self.assertFalse(any(w.startswith("approval:") for w in warnings))
+
 
 class TestProfileValidation(unittest.TestCase):
     def assert_rejected(self, raw, fragment):

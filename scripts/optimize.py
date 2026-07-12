@@ -1144,8 +1144,10 @@ def card_warnings(card: dict, as_of: date) -> list:
     bonus = card["signup_bonus"]
     if bonus is not None and "expires" in bonus and date.fromisoformat(bonus["expires"]) < as_of:
         warnings.append(f"signup bonus offer expired {bonus['expires']} — valued at $0")
-    if card["approval"].get("notes"):
-        warnings.append(f"approval: {card['approval']['notes']}")
+    # approval.notes are curator credit_tier-inference bookkeeping ("estimated
+    # from the card's positioning — NEEDS human verification"), not actionable
+    # approval odds — never surfaced as a card warning (dropped at the source
+    # rather than filtered in the UI, so no surface can resurrect them).
     return warnings
 
 
