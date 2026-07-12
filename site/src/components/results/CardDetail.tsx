@@ -71,28 +71,38 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
           ? `Choice category: ${pretty(card.choice_category)}`
           : roleSubtitle(card)}
       </div>
-      <div className="tile-lines">
-        {shownAssignments.map((a, i) => (
-          <div className="line" key={`a-${a.bucket}-${i}`}>
-            <span>
-              {isPoints ? `${a.rate}x` : `${a.rate}%`} {pretty(a.bucket)}
-              {a.note && <span className="note"> {a.note}</span>}
-            </span>
-            <i className="lead" aria-hidden="true" />
-            <span>
-              {isPoints ? (
-                <span className="pts">
-                  {formatUsd(a.usd_assigned)} spend → {formatNumber(Math.round(a.usd_assigned * a.rate))} pts →{' '}
-                </span>
-              ) : (
-                <span className="pts">{formatUsd(a.usd_assigned)} spend → </span>
-              )}
-              {formatUsd(a.usd_value)}
-              {isPoints && <span className="pts"> at {a.cpp}¢/pt</span>}
-            </span>
-          </div>
-        ))}
-      </div>
+      {shownAssignments.length > 0 && (
+        <table className="earn-table">
+          {isPoints && (
+            <caption>
+              points valued at {[...new Set(shownAssignments.map((a) => a.cpp))].join(' / ')}¢ each
+            </caption>
+          )}
+          <thead>
+            <tr>
+              <th>Earns</th>
+              <th className="num">Spend</th>
+              {isPoints && <th className="num">Points</th>}
+              <th className="num">Value/yr</th>
+            </tr>
+          </thead>
+          <tbody>
+            {shownAssignments.map((a, i) => (
+              <tr key={`a-${a.bucket}-${i}`}>
+                <td>
+                  {isPoints ? `${a.rate}x` : `${a.rate}%`} {pretty(a.bucket)}
+                  {a.note && <span className="note">{a.note}</span>}
+                </td>
+                <td className="num">{formatUsd(a.usd_assigned).replace('.00', '')}</td>
+                {isPoints && (
+                  <td className="num">{formatNumber(Math.round(a.usd_assigned * a.rate))}</td>
+                )}
+                <td className="num val">{formatUsd(a.usd_value)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
       {shownCredits.length > 0 && (
         <div className="tile-lines tile-credits">
           <div className="sublabel">Credits</div>

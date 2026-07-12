@@ -595,6 +595,20 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   font-variant-numeric: tabular-nums;
 }
 .receipt .net-big .per { font-size: 24px; }
+/* Second horizon (year one with bonuses / ongoing after them) — a real
+ * number, not a buried sentence. */
+.receipt .net-second {
+  margin-top: 8px;
+  font-size: 28px; font-weight: 700;
+  letter-spacing: -0.02em; line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ok);
+}
+.receipt .net-second .per {
+  font-size: 14px; font-weight: 500;
+  color: rgba(242, 243, 247, 0.6);
+  letter-spacing: 0;
+}
 .receipt .net-sub { margin-top: 8px; font-size: 14px; color: rgba(242, 243, 247, 0.6); }
 .receipt-rows {
   margin-top: 20px;
@@ -697,6 +711,50 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   padding-top: 6px;
   font-weight: 700; color: var(--text);
 }
+/* Per-card earnings as a compact table: label column wraps, numeric columns
+ * stay right-aligned and never overflow the tile. */
+.earn-table {
+  margin-top: 12px;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+  table-layout: auto;
+}
+.earn-table caption {
+  caption-side: bottom;
+  text-align: left;
+  padding-top: 5px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+.earn-table th {
+  font-size: 10.5px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: left;
+  padding: 0 0 4px;
+  border-bottom: 1px solid var(--hairline);
+}
+.earn-table td {
+  padding: 4px 0;
+  vertical-align: top;
+  border-bottom: 1px solid var(--hairline);
+}
+.earn-table tr:last-child td { border-bottom: none; }
+.earn-table th.num, .earn-table td.num {
+  text-align: right;
+  padding-left: 10px;
+  white-space: nowrap;
+}
+.earn-table td.val { color: var(--text); font-weight: 600; }
+.earn-table td .note {
+  display: block;
+  color: rgba(242, 243, 247, 0.4);
+  font-size: 11.5px;
+}
+
 /* Dotted leader between a row's label and its amount (receipt style) — the
  * flex-growing <i> soaks up the gap so the eye can trace label -> value. */
 .tile-lines .line .lead,
