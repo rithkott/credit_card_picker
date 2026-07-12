@@ -290,6 +290,56 @@ class TestServerAPI(unittest.TestCase):
                          "user": {"credit_tier": "good"}, "top": 0},
                         "top must be an integer")
 
+    # -- evaluate (manual mode, v1.7): golden equivalence + errors ------------
+
+    def test_evaluate_matches_engine_byte_for_byte(self):
+        ids = [c["id"] for c in self.dataset["cards"]][:2]
+        raw = {"spend": {"dining": 6000, "groceries": 4800, "other": 12000},
+               "user": {"credit_tier": "good"}}
+        r = self.client.post("/api/evaluate",
+                             json={**raw, "cards": ids, "as_of": AS_OF})
+        self.assertEqual(r.status_code, 200, r.text)
+        profile = opt.parse_profile(raw, self.dataset)
+        expected = opt.evaluate(self.dataset, profile, date.fromisoformat(AS_OF), ids)
+        self.assertEqual(json.dumps(r.json(), sort_keys=True, indent=2) + "\n",
+                         opt.render_json(expected))
+        # Contract: same bundle shape as /api/optimize — a single best_by_size
+        # entry carrying exactly the chosen cards.
+        self.assertEqual(len(r.json()["best_by_size"]), 1)
+        self.assertEqual(r.json()["best_by_size"][0]["cards"], ids)
+        self.assertEqual(r.json()["portfolios"][0]["cards"], ids)
+
+    def assert_evaluate_422(self, body, fragment):
+        r = self.client.post("/api/evaluate", json=body)
+        self.assertEqual(r.status_code, 422, r.text)
+        self.assertIn(fragment, r.json()["detail"])
+
+    def test_evaluate_unknown_card_422(self):
+        self.assert_evaluate_422(
+            {"spend": {"other": 5000}, "user": {"credit_tier": "good"},
+             "cards": ["no-such-card"]},
+            "unknown card id")
+
+    def test_evaluate_too_many_422(self):
+        ids = [c["id"] for c in self.dataset["cards"]][:4]
+        self.assert_evaluate_422(
+            {"spend": {"other": 5000}, "user": {"credit_tier": "good"},
+             "cards": ids},
+            "at most 3 cards")
+
+    def test_evaluate_duplicate_422(self):
+        cid = self.dataset["cards"][0]["id"]
+        self.assert_evaluate_422(
+            {"spend": {"other": 5000}, "user": {"credit_tier": "good"},
+             "cards": [cid, cid]},
+            "duplicate ids")
+
+    def test_evaluate_empty_422(self):
+        self.assert_evaluate_422(
+            {"spend": {"other": 5000}, "user": {"credit_tier": "good"},
+             "cards": []},
+            "non-empty list")
+
     # -- debug dumps ----------------------------------------------------------
 
     def test_debug_dump_written_per_call(self):

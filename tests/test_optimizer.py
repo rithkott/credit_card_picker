@@ -1435,5 +1435,63 @@ class TestDeterminism(unittest.TestCase):
         self.assertIn('"policy_constants"', outputs[0])
 
 
+class TestEvaluate(unittest.TestCase):
+    """Manual mode (v1.7): evaluate() scores exactly the user-chosen cards,
+    reusing the same value engine as run() but bypassing filter/prune/search.
+    The score of a manual set must equal run()'s score of the same set."""
+
+    def test_manual_matches_run_for_same_set(self):
+        # A set the optimizer would plausibly pick; manual scoring of it must
+        # reproduce run()'s per-card math bit for bit.
+        prof = make_profile(P30K)
+        ids = ["active-cash", "double-cash"]
+        bundle = opt.evaluate(DATASET, prof, AS_OF, ids)
+        # Same-set portfolio from run(): score the pair directly for parity.
+        direct = score(ids, make_profile(P30K))
+        self.assertAlmostEqual(bundle["portfolios"][0]["ongoing_net"], direct["ongoing_net"])
+        self.assertAlmostEqual(bundle["portfolios"][0]["year1_net"], direct["year1_net"])
+
+    def test_bundle_shape_matches_run(self):
+        prof = make_profile(P30K)
+        manual = opt.evaluate(DATASET, prof, AS_OF, ["active-cash"])
+        auto = opt.run(DATASET, make_profile(P30K), AS_OF, 1)
+        self.assertEqual(set(manual.keys()), set(auto.keys()))
+        self.assertEqual(len(manual["best_by_size"]), 1)
+        self.assertEqual(manual["best_by_size"][0]["cards"], ["active-cash"])
+        self.assertEqual(manual["excluded"], [])
+        self.assertEqual(manual["pruned"], [])
+        self.assertEqual(manual["cards_eligible"], 1)
+
+    def test_selection_overrides_filters(self):
+        # A card the reward-preference / lock-in filters would exclude in Auto
+        # is still scored when hand-picked — that is the point of manual mode.
+        prof = make_profile(P30K, reward_preferences=["cashback"])
+        bundle = opt.evaluate(DATASET, prof, AS_OF, ["active-cash"])
+        self.assertEqual(bundle["portfolios"][0]["cards"], ["active-cash"])
+
+    def test_choice_card_resolves_best_variant(self):
+        # A choose-your-own-category card selected by its physical id resolves
+        # to the single best variant for the profile (dining spend here).
+        choice = next((c["id"] for c in DATASET["cards"]
+                       if any(cr.get("category") == "choice" for cr in c["category_rewards"])), None)
+        if choice is None:
+            self.skipTest("no choose-your-own-category card in dataset")
+        prof = make_profile({"dining": 6000, "other": 6000})
+        bundle = opt.evaluate(DATASET, prof, AS_OF, [choice])
+        self.assertEqual(len(bundle["portfolios"][0]["cards"]), 1)
+
+    def test_errors(self):
+        prof = make_profile(P30K)
+        with self.assertRaises(opt.InputError):
+            opt.evaluate(DATASET, prof, AS_OF, [])
+        with self.assertRaises(opt.InputError):
+            opt.evaluate(DATASET, prof, AS_OF, ["no-such-card"])
+        with self.assertRaises(opt.InputError):
+            opt.evaluate(DATASET, prof, AS_OF, ["active-cash", "active-cash"])
+        with self.assertRaises(opt.InputError):
+            opt.evaluate(DATASET, prof, AS_OF,
+                         ["active-cash", "double-cash", "blue-cash-preferred", "strata"])
+
+
 if __name__ == "__main__":
     unittest.main()
