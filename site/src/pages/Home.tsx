@@ -29,7 +29,7 @@ export function Home({ cfg, onRetryConfig }: {
   const [unit, setUnit] = useState<Unit>('monthly')
   const [spend, setSpend] = useState<SpendState>({ categoryCents: {}, merchantCents: {} })
   const [user, setUser] = useState<UserState>({
-    credit_tier: 'good',
+    credit_tier: 'excellent',
     optimize_for: 'ongoing',
     accepts_brand_lockin: false,
     rewardKinds: { cashback: true, flights: true, hotels: true },

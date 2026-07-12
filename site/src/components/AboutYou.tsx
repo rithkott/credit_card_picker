@@ -7,28 +7,32 @@ interface Props {
   onChange: (patch: Partial<UserState>) => void
 }
 
-/** Maps to the profile's user block. Simplified per plan 08: credit tier
- * (defaulting to 'good'), what to optimize for, and the brand-restriction
- * question — portfolio size, point-valuation mode, and rotating activation
- * are no longer asked (fixed 1–3 escalation, average cpp, activation
- * assumed). The FICO bands shown are UI guidance only, not repo data. */
-const FICO_BANDS: Record<string, string> = {
-  building: 'FICO < 580 / limited history',
-  fair: 'FICO 580–669',
-  good: 'FICO 670–739',
-  very_good: 'FICO 740–799',
-  excellent: 'FICO 800+',
+/** Maps to the profile's user block. Simplified per plan 08, and further to a
+ * single 720 threshold: most "excellent"-labeled cards actually approve around
+ * 720, so gating them behind higher bands locked out cards that don't need it.
+ * The two choices map to engine tiers — 720+ → 'excellent' (top rank, no tier
+ * gating) and below 720 → 'good' (premium/very-good cards filtered out). */
+const TIER_OPTIONS: { value: string; label: string; hint: string }[] = [
+  { value: 'excellent', label: '720 or above', hint: 'unlocks every card here' },
+  { value: 'good', label: 'Below 720', hint: 'a few premium cards may be out of reach' },
+]
+
+/** Collapse any stored engine tier into the two buckets. Anything at or above
+ * "very good" reads as 720+; the rest (good / fair / building / unset→720+). */
+function bucketOf(raw: string | null | undefined): string {
+  return raw === 'good' || raw === 'fair' || raw === 'building' ? 'good' : 'excellent'
 }
 
-export function AboutYou({ config, user, onChange }: Props) {
-  const tier = user.credit_tier ?? 'good'
+export function AboutYou({ config: _config, user, onChange }: Props) {
+  const tier = bucketOf(user.credit_tier)
+  const hint = TIER_OPTIONS.find((o) => o.value === tier)?.hint
   return (
     <section className="block">
       <h2>About you</h2>
       <div className="opts">
         <div className="field">
           <label htmlFor="tier">
-            Credit tier{FICO_BANDS[tier] && <span className="hint">· {FICO_BANDS[tier]}</span>}
+            Credit score{hint && <span className="hint">· {hint}</span>}
           </label>
           <div className="select-wrap">
             <select
@@ -36,10 +40,8 @@ export function AboutYou({ config, user, onChange }: Props) {
               value={tier}
               onChange={(e) => onChange({ credit_tier: e.target.value })}
             >
-              {config.tier_order.map((t) => (
-                <option key={t} value={t}>
-                  {t.replace('_', ' ')}{FICO_BANDS[t] ? ` · ${FICO_BANDS[t]}` : ''}
-                </option>
+              {TIER_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
               ))}
             </select>
           </div>
