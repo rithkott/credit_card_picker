@@ -38,6 +38,7 @@ merchant_rewards: []
 
 credits:
   - name: Annual hotel benefit (Citi Travel)
+    portal_only: true
     amount_usd: 300          # "Up to $300/year hotel benefit via Citi Travel"
     period: annual
     category: travel_hotels

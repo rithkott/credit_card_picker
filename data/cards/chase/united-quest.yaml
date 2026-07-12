@@ -43,6 +43,7 @@ credits:
       usable toward United airfare, expires per TravelBank terms. Near-full capture for
       anyone who flies United at least once a year; worthless to non-United travelers.
   - name: Renowned Hotels credit
+    portal_only: true
     amount_usd: 150             # "Up to $150/year Renowned Hotels and Resorts statement credit"
     period: annual
     usage_keys: [united]

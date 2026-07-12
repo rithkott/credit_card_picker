@@ -49,6 +49,7 @@ credits:
       $10/month on US Uber/Lyft/Curb/Alto rides, enrollment required; monthly
       forfeit. Excludes delivery, bikeshare, scooter, car rental, transit passes.
   - name: Delta Stays Credit
+    portal_only: true
     amount_usd: 150          # "up to $150/year"
     period: annual
     usage_keys: [delta]

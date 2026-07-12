@@ -51,6 +51,7 @@ merchant_rewards:
 
 credits:
   - name: Annual Chase Travel Hotel Credit
+    portal_only: true
     amount_usd: 100           # "$100 Annual Chase Travel Hotel Credit ... up to $100/year"
     period: annual
     category: travel_hotels

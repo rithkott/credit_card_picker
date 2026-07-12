@@ -115,6 +115,7 @@ credits:
       $100/quarter at US restaurants via Resy.com/app or Resy Pay; does not roll over.
       Captured by frequent Resy diners.
   - name: Hotel Credit
+    portal_only: true
     amount_usd: 300          # "up to $300 semiannually ($600/year)"
     period: semiannual
     category: travel_hotels

@@ -42,6 +42,7 @@ merchant_rewards: []
 
 credits:
   - name: Capital One Travel credit
+    portal_only: true
     amount_usd: 300
     period: annual
     category: travel_other

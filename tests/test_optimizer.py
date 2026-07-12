@@ -227,6 +227,37 @@ class TestCreditsAndBonus(unittest.TestCase):
         self.assertAlmostEqual(by_name["Resy dining credit"], 54.0)
         self.assertAlmostEqual(by_name["Dunkin' credit"], 0.0)
 
+    def test_portal_credits_dont_stack_in_net(self):
+        # Two cards, each an automatic full-face portal credit ($300 and $200).
+        # A user books through one portal, so the portfolio net counts only the
+        # larger ($300); the $200 overlap is deducted. Per-card credit values
+        # stay full (display is unaffected).
+        a = synth_card(id="port-a", credits=[
+            {"name": "Portal A credit", "period": "annual", "amount_usd": 300,
+             "automatic": True, "portal_only": True,
+             "realistic_capture_rate_note": "test"}])
+        b = synth_card(id="port-b", credits=[
+            {"name": "Portal B credit", "period": "annual", "amount_usd": 200,
+             "automatic": True, "portal_only": True,
+             "realistic_capture_rate_note": "test"}])
+        prof = make_profile({"other": 10000})  # base_rate 1% → $100 earnings
+        r = score([a, b], prof)
+        by_name = {c["name"]: c["value"] for c in r["credits"]}
+        self.assertAlmostEqual(by_name["Portal A credit"], 300.0)  # full display
+        self.assertAlmostEqual(by_name["Portal B credit"], 200.0)  # full display
+        # net counts only the larger portal credit: 100 earnings + 300
+        self.assertAlmostEqual(r["ongoing_net"], 400.0)
+        self.assertAlmostEqual(r["year1_net"], 400.0)
+
+    def test_single_portal_credit_fully_counted(self):
+        # One portal credit has no overlap → counted in full.
+        a = synth_card(id="port-a", credits=[
+            {"name": "Portal A credit", "period": "annual", "amount_usd": 300,
+             "automatic": True, "portal_only": True,
+             "realistic_capture_rate_note": "test"}])
+        r = score([a], make_profile({"other": 10000}))
+        self.assertAlmostEqual(r["ongoing_net"], 400.0)
+
     def test_bonus_infeasible_at_low_volume(self):
         # Gold needs 6000 in 6 months; 1000/yr * 0.5 = 500 < 6000 → $0.
         prof = make_profile({"other": 1000})

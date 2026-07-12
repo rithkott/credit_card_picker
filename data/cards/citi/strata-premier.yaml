@@ -49,6 +49,7 @@ merchant_rewards: []
 
 credits:
   - name: Annual hotel benefit (Citi Travel)
+    portal_only: true
     amount_usd: 100          # "$100 off a single hotel stay of $500+ ... booked via Citi Travel"
     period: annual
     category: travel_hotels
