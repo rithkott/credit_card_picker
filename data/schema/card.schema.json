@@ -353,6 +353,31 @@
         "note": { "type": "string", "minLength": 1, "description": "How selection works (user-picked vs automatic top category, change cadence)" }
       }
     },
+    "earnRatio": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["denominator_category", "floor_points_per_cycle", "cycles_per_year", "tiers"],
+      "description": "Variable earn on an explicit_only category (Bilt housing) whose points-per-dollar multiplier is a step function of a spend RATIO = (everyday spend charged to this card) / (this category's spend on this card), per billing cycle. Bilt's 'Everyday Spend Ratio': 0x below 25%, 0.5x at 25-49%, 0.75x at 50-74%, 1x at 75-99%, 1.25x at 100%+, with a per-cycle points floor. The optimizer resolves the multiplier in a post-assignment steering pass (scripts/optimize.py) and re-prices the reward line; the reward's top-level `rate` is the max tier rate, used only for line ordering and dominance pruning.",
+      "properties": {
+        "denominator_category": { "type": "string", "description": "The category whose per-card spend is the ratio denominator (e.g. 'housing'). Must be a non-pseudo category and normally this reward's own category." },
+        "floor_points_per_cycle": { "type": "number", "minimum": 0, "description": "Minimum points earned per billing cycle on the category regardless of ratio (Bilt: 250)." },
+        "cycles_per_year": { "type": "integer", "minimum": 1, "description": "Billing cycles per year (12) — annualizes the per-cycle floor." },
+        "tiers": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Ratio tiers ascending by min_ratio; first entry must have min_ratio 0. The applied rate is the highest tier whose min_ratio <= ratio.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["min_ratio", "rate"],
+            "properties": {
+              "min_ratio": { "type": "number", "minimum": 0, "description": "Inclusive lower bound of the everyday/denominator ratio for this tier (0, 0.25, 0.5, ...)." },
+              "rate": { "type": "number", "minimum": 0, "description": "Points per dollar earned on the category while in this tier." }
+            }
+          }
+        }
+      }
+    },
     "categoryReward": {
       "type": "object",
       "additionalProperties": false,
@@ -363,6 +388,7 @@
         "cap": { "$ref": "#/$defs/cap" },
         "rotation": { "$ref": "#/$defs/rotation" },
         "choice": { "$ref": "#/$defs/choice" },
+        "earn_ratio": { "$ref": "#/$defs/earnRatio" },
         "portal_only": { "type": "boolean", "description": "true if the rate only applies when booked through the issuer's portal" },
         "requires_enrollment": { "type": "boolean", "default": false, "description": "true when the rate pays nothing unless the cardholder actively enrolls/activates the category each cycle (Elan Max Cash Preferred category enrollment)" },
         "conditional_rate": { "$ref": "#/$defs/conditionalRate" },

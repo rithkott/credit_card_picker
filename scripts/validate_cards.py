@@ -247,9 +247,28 @@ def main() -> int:
                 f"portal_only — drop it or mark the portal lines")
 
         choice_rewards = 0
+        earn_ratio_rewards = 0
         for i, cr in enumerate(card["category_rewards"]):
             if cr["category"] not in categories:
                 errors.append(f"{rel}: category_rewards[{i}]: unknown category '{cr['category']}'")
+            er = cr.get("earn_ratio")
+            if er is not None:
+                earn_ratio_rewards += 1
+                if cr["category"] in pseudo_categories:
+                    errors.append(f"{rel}: category_rewards[{i}]: earn_ratio is not allowed on a pseudo-category")
+                if card["currency"]["type"] != "points":
+                    errors.append(f"{rel}: category_rewards[{i}]: earn_ratio needs a points currency to value its multiplier, got '{card['currency']['type']}'")
+                den = er.get("denominator_category")
+                if den not in categories or den in pseudo_categories:
+                    errors.append(f"{rel}: category_rewards[{i}]: earn_ratio.denominator_category must be a non-pseudo category, got {den!r}")
+                tiers = er.get("tiers") or []
+                mins = [t.get("min_ratio") for t in tiers]
+                if not tiers or mins[0] != 0:
+                    errors.append(f"{rel}: category_rewards[{i}]: earn_ratio.tiers must start with a min_ratio 0 tier")
+                if mins != sorted(mins):
+                    errors.append(f"{rel}: category_rewards[{i}]: earn_ratio.tiers must be sorted ascending by min_ratio")
+                if any(t.get("rate", 0) > cr["rate"] + 1e-9 for t in tiers):
+                    errors.append(f"{rel}: category_rewards[{i}]: earn_ratio tier rate exceeds the reward's top-level rate {cr['rate']} (rate must be the max tier rate)")
             if cr["category"] == "choice":
                 choice_rewards += 1
                 for j, opt in enumerate(cr.get("choice", {}).get("options", [])):
@@ -267,6 +286,8 @@ def main() -> int:
                     errors.append(f"{rel}: category_rewards[{i}]: rotating cap period must be 'quarterly' (the optimizer models rotating room as four quarterly windows), got {cap.get('period')!r}")
         if choice_rewards > 1:
             errors.append(f"{rel}: {choice_rewards} 'choice' category rewards — the optimizer supports at most one per card")
+        if earn_ratio_rewards > 1:
+            errors.append(f"{rel}: {earn_ratio_rewards} earn_ratio category rewards — the optimizer supports at most one per card")
         for i, mr in enumerate(card["merchant_rewards"]):
             if mr["merchant"] not in merchants:
                 errors.append(f"{rel}: merchant_rewards[{i}]: unknown merchant '{mr['merchant']}'")

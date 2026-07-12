@@ -1064,6 +1064,7 @@ class TestSubsetBudget(unittest.TestCase):
         self.assertIn("MAX_SCORED_SUBSETS", pc)
         self.assertNotIn("MAX_ELIGIBLE_CARDS", pc)
         self.assertIn("EXPLICIT_ONLY_CATEGORIES", pc)
+        self.assertIn("EARN_RATIO_STEERING", pc)
 
 
 class TestExplicitOnlyHousing(unittest.TestCase):
@@ -1114,6 +1115,92 @@ class TestExplicitOnlyHousing(unittest.TestCase):
         r = score([card], prof)
         self.assertEqual(r["credits"][0]["value"], 0.0)
         self.assertIn("unreachable", r["credits"][0]["note"])
+
+
+# earn_ratio tiers matching Bilt's Everyday Spend Ratio. Denominator = housing.
+HOUSING_ER = {
+    "denominator_category": "housing",
+    "floor_points_per_cycle": 250, "cycles_per_year": 12,
+    "tiers": [{"min_ratio": 0.0, "rate": 0}, {"min_ratio": 0.25, "rate": 0.5},
+              {"min_ratio": 0.5, "rate": 0.75}, {"min_ratio": 0.75, "rate": 1},
+              {"min_ratio": 1.0, "rate": 1.25}],
+}
+
+
+def bilt_like(**over):
+    """A Bilt-style points card: base 1x, housing on an earn_ratio reward.
+    Currency amex_mr in the fixture is ungated with avg cpp 1.25 (mean of 0.6
+    floor and 1.9 optimistic), so points values are deterministic."""
+    base = dict(id="biltish", base_rate=1,
+                currency={"type": "points", "program": "amex_mr"},
+                category_rewards=[{"category": "housing", "rate": 1.25,
+                                   "earn_ratio": HOUSING_ER}])
+    base.update(over)
+    return synth_card(**base)
+
+
+class TestEarnRatioHousing(unittest.TestCase):
+    """Bilt earn_ratio: housing multiplier is a step function of the Everyday
+    Spend Ratio (everyday-on-card / housing-on-card), resolved by the steering
+    pass which routes everyday spend onto the card up to the best-net tier.
+    amex_mr cpp = 1.25, so 1 point/$ = 1.25% effective."""
+
+    def housing_line(self, r):
+        return next(a for a in r["assignments"] if a["bucket"] == "housing")
+
+    def test_standalone_ratio_maxes_to_top_tier(self):
+        # Everyday 12000 >= housing 10000 -> ESR 120% -> 1.25x. Standalone, all
+        # everyday is already on the card, so no steering needed.
+        prof = make_profile({"housing": 10000, "other": 12000})
+        r = score([bilt_like()], prof)
+        h = self.housing_line(r)
+        self.assertAlmostEqual(h["rate"], 1.25)
+        # housing 10000*1.25*1.25/100 = 156.25 ; other 12000*1*1.25/100 = 150
+        self.assertAlmostEqual(r["earnings"], 306.25)
+
+    def test_below_25pct_floors(self):
+        # Everyday 1000 / housing 10000 = 10% (<25%) -> 0x, but the 250 pt/cycle
+        # floor (3000 pts/yr) still pays 3000*1.25/100 = 37.50.
+        prof = make_profile({"housing": 10000, "other": 1000})
+        r = score([bilt_like()], prof)
+        h = self.housing_line(r)
+        self.assertAlmostEqual(h["usd_value"], 37.50)
+        self.assertIn("floor", h["note"])
+        # other 1000*1.25% = 12.50 ; + 37.50 housing = 50.00
+        self.assertAlmostEqual(r["earnings"], 50.0)
+
+    def test_multicard_steering_picks_best_tier(self):
+        # Bilt + a flat 2% cash card, housing 10000, other 8000. Baseline greedy
+        # puts all 8000 on the 2% card (2% > 1.25%), so ESR would be 0. Steering
+        # moves the cheapest everyday dollars onto Bilt: the best net tier is 75%
+        # (move 7500), leaving 500 on the 2% card.
+        flat2 = synth_card(id="flat2", base_rate=2)
+        prof = make_profile({"housing": 10000, "other": 8000})
+        r = score([bilt_like(), flat2], prof)
+        h = self.housing_line(r)
+        self.assertAlmostEqual(h["rate"], 1.0)  # 75% tier
+        bilt_other = next(a for a in r["assignments"]
+                          if a["card_id"] == "biltish" and a["bucket"] == "other")
+        flat_other = next(a for a in r["assignments"]
+                          if a["card_id"] == "flat2" and a["bucket"] == "other")
+        self.assertAlmostEqual(bilt_other["usd_assigned"], 7500.0)
+        self.assertAlmostEqual(flat_other["usd_assigned"], 500.0)
+        # housing 10000*1*1.25/100 = 125 ; bilt other 7500*1.25% = 93.75 ;
+        # flat 500*2% = 10  -> 228.75
+        self.assertAlmostEqual(r["earnings"], 228.75)
+
+    def test_multicard_tier_unreachable_stays_floored(self):
+        # Housing 10000, other 1000 on a 2% card: even moving all 1000 onto Bilt
+        # only reaches 10% ESR (< the 25% first tier), so steering does nothing
+        # and housing stays at the floor. Cheaper to leave everyday on the 2% card.
+        flat2 = synth_card(id="flat2", base_rate=2)
+        prof = make_profile({"housing": 10000, "other": 1000})
+        r = score([bilt_like(), flat2], prof)
+        h = self.housing_line(r)
+        self.assertAlmostEqual(h["usd_value"], 37.50)  # floor
+        flat_other = next(a for a in r["assignments"]
+                          if a["card_id"] == "flat2" and a["bucket"] == "other")
+        self.assertAlmostEqual(flat_other["usd_assigned"], 1000.0)  # not steered
 
 
 class TestDominancePruning(unittest.TestCase):
