@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ApiError, optimize } from '../api'
+import { ApiError, evaluateManual, optimize } from '../api'
 import type { OptimizeBundle } from '../types'
 import type { Unit } from '../lib/money'
-import { buildProfile, type UserState } from '../lib/profile'
+import { buildProfile, MAX_CARDS, type UserState } from '../lib/profile'
 import { validate, type SpendState } from '../lib/validation'
+import { ManualGrid } from '../components/ManualGrid'
 import { AboutYou } from '../components/AboutYou'
 import { BrandLoyalty } from '../components/BrandLoyalty'
 import { ChecksPanel } from '../components/ChecksPanel'
@@ -37,6 +38,10 @@ export function Home({ cfg, onRetryConfig }: {
   })
   const [run, setRun] = useState<RunPhase>({ phase: 'idle' })
   const [elapsed, setElapsed] = useState(0)
+  // Auto = optimizer picks the best set (default). Manual = user hand-picks up
+  // to MAX_CARDS cards from the grid; the same value math runs on that set.
+  const [mode, setMode] = useState<'auto' | 'manual'>('auto')
+  const [selected, setSelected] = useState<Set<string>>(new Set())
 
   // Seed the option defaults the server declares (single source of truth).
   useEffect(() => {
@@ -77,10 +82,12 @@ export function Home({ cfg, onRetryConfig }: {
       return { ...u, confirmed_usage: next }
     })
 
-  const onRun = () => {
+  // Auto and Manual share the RunPhase lifecycle, error handling, and results
+  // view — only the request differs (optimizer search vs. score-these-cards).
+  const startRun = (req: Promise<OptimizeBundle>) => {
     setElapsed(0)
     setRun({ phase: 'running', startedAt: Date.now() })
-    optimize(buildProfile(spend, user))
+    req
       .then((bundle) => setRun({ phase: 'done', bundle }))
       .catch((err) => {
         if (err instanceof ApiError) {
@@ -90,6 +97,17 @@ export function Home({ cfg, onRetryConfig }: {
         }
       })
   }
+
+  const onRun = () => startRun(optimize(buildProfile(spend, user)))
+  const onRunManual = () => startRun(evaluateManual(buildProfile(spend, user), [...selected]))
+
+  const toggleSelect = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else if (next.size < MAX_CARDS) next.add(id)
+      return next
+    })
 
   return (
     <>
@@ -116,6 +134,28 @@ export function Home({ cfg, onRetryConfig }: {
 
       {cfg.phase === 'ready' && (
         <>
+          <div className="mode-toggle" role="tablist" aria-label="Optimization mode">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'auto'}
+              className={mode === 'auto' ? 'active' : ''}
+              onClick={() => setMode('auto')}
+            >
+              Auto
+              <span className="mode-hint">we pick the best cards</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'manual'}
+              className={mode === 'manual' ? 'active' : ''}
+              onClick={() => setMode('manual')}
+            >
+              Manual
+              <span className="mode-hint">you pick, we do the math</span>
+            </button>
+          </div>
           <StatementImport
             config={cfg.config}
             onApply={(usageKeys) => {
@@ -165,19 +205,40 @@ export function Home({ cfg, onRetryConfig }: {
             onChange={(patch) => setUser((u) => ({ ...u, ...patch }))}
           />
           <ChecksPanel errors={errors} />
+          {mode === 'manual' && (
+            <ManualGrid selected={selected} max={MAX_CARDS} onToggle={toggleSelect} />
+          )}
           <div className="runbar">
-            <button
-              type="button"
-              className="primary"
-              disabled={errors.length > 0 || run.phase === 'running'}
-              onClick={onRun}
-            >
-              {run.phase === 'running' ? 'Scoring…' : 'Run the numbers'}
-            </button>
+            {mode === 'auto' ? (
+              <button
+                type="button"
+                className="primary"
+                disabled={errors.length > 0 || run.phase === 'running'}
+                onClick={onRun}
+              >
+                {run.phase === 'running' ? 'Scoring…' : 'Run the numbers'}
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="primary"
+                disabled={errors.length > 0 || selected.size === 0 || run.phase === 'running'}
+                onClick={onRunManual}
+              >
+                {run.phase === 'running'
+                  ? 'Scoring…'
+                  : `Score selected (${selected.size}/${MAX_CARDS})`}
+              </button>
+            )}
             {run.phase === 'running' && (
               <span className="status">
-                scoring every 1–3 card portfolio — {elapsed}s
+                {mode === 'auto'
+                  ? `scoring every 1–3 card portfolio — ${elapsed}s`
+                  : `scoring your ${selected.size} card${selected.size > 1 ? 's' : ''} — ${elapsed}s`}
               </span>
+            )}
+            {mode === 'manual' && run.phase !== 'running' && selected.size === 0 && (
+              <span className="status">Pick 1–{MAX_CARDS} cards above to score.</span>
             )}
             {run.phase === 'error' && !run.unreachable && (
               <span className="error">{run.detail}</span>

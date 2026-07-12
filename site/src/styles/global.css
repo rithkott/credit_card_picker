@@ -722,6 +722,78 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 }
 .card-tile h3 { margin: 0; font-size: 14px; font-weight: 700; }
 .card-tile .role { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+
+/* Manual mode (v1.7): the same translucent tile, made a selectable button. */
+.card-tile.selectable {
+  position: relative;
+  display: block;
+  width: 100%;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+}
+.card-tile.selectable:hover:not(:disabled) {
+  border-color: var(--accent-border);
+  transform: translateY(-1px);
+}
+.card-tile.selectable:disabled { opacity: 0.4; cursor: not-allowed; }
+.card-tile.selectable.selected {
+  border-color: var(--accent-border);
+  background: var(--accent-bg);
+}
+.card-tile.selectable .check {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-text);
+  border: 1px solid var(--hairline-strong);
+}
+.card-tile.selectable.selected .check {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0b1020;
+}
+.card-tile.selectable h3 { padding-right: 28px; }
+.manual-grid .issuer-group h2 { margin: 0 0 4px; font-size: 15px; }
+
+/* Auto / Manual mode toggle */
+.mode-toggle {
+  display: flex;
+  gap: 8px;
+  margin-top: 18px;
+}
+.mode-toggle button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 12px 16px;
+  border-radius: var(--r-tile);
+  background: var(--glass);
+  border: 1px solid var(--hairline-strong);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.mode-toggle button:hover { border-color: var(--accent-border); }
+.mode-toggle button.active {
+  border-color: var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--accent-text);
+}
+.mode-toggle .mode-hint { font-size: 12px; font-weight: 400; color: var(--text-muted); }
 .tile-lines {
   margin-top: 12px;
   font-size: 12.5px;

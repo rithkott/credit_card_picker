@@ -94,6 +94,10 @@ REWARD_PREF_CHOICES = REWARD_KINDS + ["total_value"]
 # (C(229,3) ≈ 2M), matching 02-optimizer.md §6's ~200-card horizon.
 MAX_SCORED_SUBSETS = 2_000_000
 
+# Manual mode (v1.7): the user hand-picks the portfolio instead of the optimizer
+# searching for it. Capped at the same size Auto tops out at for the product UI.
+MANUAL_MAX_CARDS = 3
+
 KIND_RANK = {"merchant": 0, "category": 1, "rotating": 2, "fallback": 3, "base": 4}
 
 USER_DEFAULTS = {"max_cards": 3,
@@ -1437,6 +1441,93 @@ def run(dataset: dict, profile: dict, as_of: date, top: int) -> dict:
         "excluded": excluded,
         "best_by_size": best_by_size,
         "portfolios": portfolios,
+    }
+
+
+def _best_variant_combo(ordered_bases: list, by_var_base: dict, profile: dict,
+                        programs: dict, buckets: dict, as_of: date) -> list:
+    """For a fixed set of physical cards, pick the single best choose-your-own
+    configuration. Auto's search() optimizes the config while choosing the set;
+    here the set is fixed, so we only optimize over each card's live variants.
+    Scores whole combos (variants interact through points pooling) and ranks
+    them exactly like search(): primary metric, then year1_net, then card ids."""
+    primary = "ongoing_net" if profile["user"]["optimize_for"] == "ongoing" else "year1_net"
+    groups = [by_var_base[b] for b in ordered_bases]
+    scored = []
+    for combo in itertools.product(*groups):
+        ids = [v["id"] for v in combo]
+        s = score_portfolio(list(combo), profile, programs, buckets, as_of)
+        scored.append((s["ongoing_net"], s["year1_net"], ids))
+    scored.sort(key=lambda r: (-(r[0] if primary == "ongoing_net" else r[1]),
+                               -r[1], tuple(r[2])))
+    return scored[0][2]
+
+
+def evaluate(dataset: dict, profile: dict, as_of: date, card_ids: list) -> dict:
+    """Manual mode (v1.7): score exactly the user-selected cards, bypassing the
+    filter/prune/search that Auto mode uses to *pick* the best set. The value
+    engine (assemble_portfolio) and the output bundle shape are identical to
+    run(), so the web results view renders it unchanged — best_by_size just
+    carries a single entry. Selection overrides every Auto filter: a manually
+    chosen card is scored even if credit tier / brand-lockin / reward-preference
+    filters would have excluded it in Auto mode."""
+    if not isinstance(card_ids, list) or not card_ids:
+        raise InputError("evaluate: 'cards' must be a non-empty list of card ids")
+    if any(not isinstance(c, str) for c in card_ids):
+        raise InputError(f"evaluate: 'cards' must be a list of card-id strings, got {card_ids!r}")
+    if len(set(card_ids)) != len(card_ids):
+        raise InputError(f"evaluate: 'cards' has duplicate ids: {card_ids}")
+    if len(card_ids) > MANUAL_MAX_CARDS:
+        raise InputError(f"evaluate: at most {MANUAL_MAX_CARDS} cards, got {len(card_ids)}")
+    by_base = {c["id"]: c for c in dataset["cards"]}
+    unknown = [c for c in card_ids if c not in by_base]
+    if unknown:
+        raise InputError(f"evaluate: unknown card id(s): {sorted(unknown)}")
+
+    # Recompute assumed_usage here (parse_profile also sets it) so any override
+    # applied after parsing can never leave a stale derived set — mirrors run().
+    profile["user"]["assumed_usage"] = assumed_usage(
+        profile["user"], dataset.get("usage_questions") or {})
+    programs = dataset["programs"]
+    merchants = dataset["merchants"]
+    categories = dataset["categories"]
+
+    chosen = [by_base[c] for c in card_ids]
+    variants = expand_choice_variants(chosen, profile)
+    buckets = build_buckets(profile, merchants, categories)
+    by_var_base = {}
+    for v in variants:
+        by_var_base.setdefault(v.get("base_id", v["id"]), []).append(v)
+    # Preserve the user's selection order so the results card-stack is stable.
+    resolved = _best_variant_combo(card_ids, by_var_base, profile, programs,
+                                   buckets, as_of)
+
+    by_id = {v["id"]: v for v in variants}
+    gateways = gateway_names(dataset["cards"])
+    portfolio = assemble_portfolio({"cards": resolved}, by_id, profile, programs,
+                                   buckets, as_of, gateways)
+
+    return {
+        "as_of": as_of.isoformat(),
+        "optimize_for": profile["user"]["optimize_for"],
+        "max_cards": profile["user"]["max_cards"],
+        "reward_preferences": list(profile["user"]["reward_preferences"]),
+        "confirmed_usage": list(profile["user"]["confirmed_usage"]),
+        "assumed_usage": list(profile["user"]["assumed_usage"]),
+        "accepts_brand_lockin": profile["user"]["accepts_brand_lockin"],
+        "cpp_table": {p: {"floor_cpp": v["floor_cpp"],
+                          "optimistic_cpp": v["optimistic_cpp"],
+                          "avg_cpp": _round2(avg_cpp(v))}
+                      for p, v in sorted(programs.items())},
+        "policy_constants": policy_constants(),
+        "cards_total": len(dataset["cards"]),
+        "cards_eligible": len(card_ids),
+        "card_variants": len(variants),
+        "card_variants_pruned": 0,
+        "pruned": [],
+        "excluded": [],
+        "best_by_size": [{"size": len(resolved), **portfolio}],
+        "portfolios": [portfolio],
     }
 
 

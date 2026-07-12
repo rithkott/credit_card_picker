@@ -248,6 +248,36 @@ def optimize(body: dict = Body(...)) -> dict:
     return bundle
 
 
+@app.post("/api/evaluate")
+def evaluate(body: dict = Body(...)) -> dict:
+    """Manual mode (v1.7): score exactly the user-picked cards instead of
+    searching for the best set. Same profile contract as /api/optimize plus a
+    required `cards` id list; returns the identical OptimizeBundle shape (a
+    single best_by_size entry). Sync def like /api/optimize (threadpool)."""
+    as_of_raw = body.get("as_of")
+    cards = body.get("cards")
+    if as_of_raw is not None:
+        try:
+            as_of = date.fromisoformat(as_of_raw)
+        except (TypeError, ValueError):
+            raise HTTPException(422, detail=f"as_of must be YYYY-MM-DD, got {as_of_raw!r}")
+    else:
+        as_of = date.today()  # per request, so a long-lived server never serves stale expiry math
+
+    raw = {k: body[k] for k in ("spend", "merchant_spend", "user") if k in body}
+    try:
+        profile = opt.parse_profile(raw, STATE["dataset"])
+        bundle = opt.evaluate(STATE["dataset"], profile, as_of, cards)
+    except opt.InputError as e:
+        dump_debug_run(body, 422, {"detail": str(e)})
+        raise HTTPException(422, detail=str(e))
+    except opt.DataError as e:
+        dump_debug_run(body, 500, {"detail": str(e)})
+        raise HTTPException(500, detail=str(e))
+    dump_debug_run(body, 200, bundle)
+    return bundle
+
+
 @app.post("/api/statements/parse")
 def parse_statement_upload(file: UploadFile = File(...)):
     """One statement file in, detected benefit usage out (plan 14).
