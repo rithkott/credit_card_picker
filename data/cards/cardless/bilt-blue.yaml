@@ -11,15 +11,24 @@ base_rate: 1                 # 1 point per $1 on all other eligible purchases (H
 
 category_rewards:
   - category: housing
-    rate: 1                  # variable 0x-1.25x by Everyday Spend Ratio; modeled flat at 1x — see notes
+    rate: 1.25              # max tier rate; actual multiplier set by earn_ratio (see below)
+    earn_ratio:
+      denominator_category: housing   # ratio = everyday-spend-on-this-card / housing-payment
+      floor_points_per_cycle: 250     # min points/cycle even below the 25% tier
+      cycles_per_year: 12
+      tiers:                          # Everyday Spend Ratio -> points per $1 of housing
+        - {min_ratio: 0.0,  rate: 0}
+        - {min_ratio: 0.25, rate: 0.5}
+        - {min_ratio: 0.5,  rate: 0.75}
+        - {min_ratio: 0.75, rate: 1}
+        - {min_ratio: 1.0,  rate: 1.25}
     notes: >-
       Bilt Housing Payments (rent/mortgage/HOA dues/utilities/property tax paid via the Bilt
-      app, no transaction fee, no cap). The real earn is variable 0x-1.25x per billing cycle by
-      the "Everyday Spend Ratio" (Everyday Spend ÷ Housing Payment: 25-49%=0.5x, 50-74%=0.75x,
-      75-99%=1x, 100%+=1.25x; 250-pt/cycle floor). The ratio depends on how much everyday spend
-      lands on this card, so the deterministic model uses a flat 1x (the 75-99% tier) —
-      understates heavy-everyday users (1.25x), overstates users who put little everyday spend
-      here.
+      app, no transaction fee, no cap). Earn is a variable 0x-1.25x per billing cycle set by the
+      "Everyday Spend Ratio" = Everyday Spend ÷ Housing Payment (25-49%=0.5x, 50-74%=0.75x,
+      75-99%=1x, 100%+=1.25x; 250-pt/cycle floor below 25%). The optimizer resolves the tier
+      from how much everyday spend it routes onto this card (earn_ratio steering pass), so the
+      multiplier is portfolio-dependent, not a fixed rate.
 
 merchant_rewards: []
 # Partner earning (Lyft, Bilt Dining, Bilt Travel Portal, Bilt Fitness, Metropolis parking,

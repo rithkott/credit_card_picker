@@ -172,7 +172,7 @@ pre#yaml .k{color:var(--code-key)} pre#yaml .s{color:var(--code-str)} pre#yaml .
 
 <section class="block">
   <h2><code>category_rewards</code></h2>
-  <p class="why">Spend-proportional elevated rates. Caps are on <strong>spend</strong>, not reward ("$300 back at 6%" = cap $5,000). Use the <code>rotating</code> pseudo-category for quarterly cards (never hardcode this quarter's categories) and the <code>choice</code> pseudo-category for choose-your-own-category cards (list the selectable options; the optimizer picks the best one per portfolio).</p>
+  <p class="why">Spend-proportional elevated rates. Caps are on <strong>spend</strong>, not reward ("$300 back at 6%" = cap $5,000). Use the <code>rotating</code> pseudo-category for quarterly cards (never hardcode this quarter's categories) and the <code>choice</code> pseudo-category for choose-your-own-category cards (list the selectable options; the optimizer picks the best one per portfolio). The rare <code>earn_ratio</code> block (Bilt housing — a variable multiplier set by the Everyday Spend Ratio) is <strong>not editable here</strong>; hand-author it in the YAML per <code>data/schema/card.schema.json</code>.</p>
   <div id="cats"></div>
   <button type="button" class="btn-add" data-add="cat">+ Add category reward</button>
 </section>

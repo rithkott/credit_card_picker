@@ -145,6 +145,17 @@ def policy_constants() -> dict:
         "EXPLICIT_ONLY_CATEGORIES": "explicit_only categories (housing) earn only "
                                     "via explicit category rewards — no base rate, "
                                     "excluded from bonus/unlock spend feasibility",
+        # Documented rule, not a number: an earn_ratio reward (Bilt housing)
+        # earns a multiplier that is a step function of the Everyday Spend Ratio
+        # = everyday-spend-on-this-card / housing-on-this-card. A post-assignment
+        # steering pass routes everyday spend onto the card up to the tier that
+        # maximizes net value, then re-prices housing at that multiplier (or the
+        # per-cycle points floor). earn_ratio cards are context-dependent, so
+        # dominance pruning never drops them or prunes via their max tier rate.
+        "EARN_RATIO_STEERING": "housing multiplier = step function of everyday/"
+                               "housing ratio on the card; steering routes everyday "
+                               "spend to the best-net tier, then prices at that rate "
+                               "or the per-cycle points floor",
     }
 
 
@@ -426,7 +437,7 @@ def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
                       "rate": rate, "cpp": cpp,
                       "effective_rate": rate * cpp / 100.0,
                       "room": room, "room_key": room_key,
-                      "eligible_fraction": fraction,
+                      "eligible_fraction": fraction, "earn_ratio": None,
                       "eligible": sorted(eligible), "note": note})
 
     def cap_room(cap):
@@ -473,6 +484,19 @@ def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
                 note += " ×activation" if activated else " (not activated → fallback rate)"
             add("rotating", cat, rate, eligible, room, note, fraction=fraction)
             add("fallback", cat, cap["fallback_rate"], eligible, None, "above-cap fallback")
+            continue
+
+        er = cr.get("earn_ratio")
+        if er is not None:
+            # Variable earn on an explicit_only category (Bilt housing). Emit the
+            # line at the MAX tier rate for ordering/pruning; the true multiplier
+            # is resolved after assignment by steer_earn_ratio, since it depends
+            # on how much everyday spend the portfolio routes onto this card. The
+            # housing bucket is the only thing eligible here (explicit_only).
+            eligible = [cat] if cat in buckets else []
+            add("category", cat, cr["rate"], eligible, None,
+                "housing — multiplier set by Everyday Spend Ratio (steering)")
+            lines[-1]["earn_ratio"] = er
             continue
 
         rate = cr["rate"]
@@ -766,6 +790,173 @@ def membership_fee(card: dict) -> float:
     return 0.0
 
 
+def _tier_rate(tiers: list, ratio: float) -> float:
+    """Highest earn_ratio tier rate whose min_ratio <= ratio (tiers ascending)."""
+    rate = 0.0
+    for t in tiers:
+        if ratio >= t["min_ratio"] - EPS:
+            rate = t["rate"]
+        else:
+            break
+    return rate
+
+
+def steer_earn_ratio(cards: list, lines: list, assignments: list,
+                     unassigned: dict, buckets: dict, programs: dict,
+                     profile: dict) -> None:
+    """Resolve a Bilt-style earn_ratio housing reward (plan 05) — mutates
+    `assignments` and `unassigned` in place.
+
+    Housing is explicit_only, so its bucket is assigned only to the card's
+    housing line (priced at the max tier rate by build_lines) and never competes
+    with everyday buckets. The real housing multiplier is a step function of the
+    Everyday Spend Ratio = (everyday spend charged to this card) / (housing on
+    this card). A rational cardholder routes everyday spend onto the card until
+    the next tier no longer pays for the everyday rate given up, so we:
+
+      1. read the greedy baseline (E0 = everyday already on the card),
+      2. build the cheapest-first pool of everyday dollars not yet on the card
+         (each dollar's cost = what it earns now minus what it would earn here),
+      3. evaluate net value at E0 and at each reachable tier threshold — the
+         optimum is one of these points because housing value is a step function
+         and sacrifice is increasing — and pick the best,
+      4. move the chosen everyday dollars onto the card and re-price the housing
+         line at the resulting multiplier (or the per-cycle points floor).
+
+    Second-order effects of moved dollars (freeing a capped line elsewhere) are
+    treated as negligible — the same documented-heuristic footing as the greedy
+    assignment. Guard: with >1 earn_ratio card, only the one that actually holds
+    the housing spend is steered; the other has no denominator and is a no-op."""
+    er_cards = {c["id"]: c for c in cards
+                if any(cr.get("earn_ratio") for cr in c["category_rewards"])}
+    if not er_cards:
+        return
+    for cid, card in sorted(er_cards.items()):
+        cr = next(cr for cr in card["category_rewards"] if cr.get("earn_ratio"))
+        er = cr["earn_ratio"]
+        den_cat = er["denominator_category"]
+        # Housing assignment(s) for this card (the denominator bucket).
+        house_as = [a for a in assignments if a["card_id"] == cid
+                    and buckets[a["bucket"]]["category"] == den_cat]
+        housing = sum(a["usd_assigned"] for a in house_as)
+        if housing <= EPS:
+            continue  # no housing on this card → nothing to resolve
+        cpp = house_as[0]["cpp"]
+        floor_year = er["floor_points_per_cycle"] * er["cycles_per_year"]
+
+        def housing_value(everyday_on_card):
+            mult = _tier_rate(er["tiers"], everyday_on_card / housing)
+            pts = max(mult * housing, floor_year)
+            return mult, pts * cpp / 100.0
+
+        # This card's best everyday effective rate per bucket (its non-housing
+        # lines), plus the winning line's display fields for moved dollars.
+        my_lines = [ln for ln in lines if ln["card_id"] == cid
+                    and ln["earn_ratio"] is None]
+        best_line = {}
+        for ln in my_lines:
+            for b in ln["eligible"]:
+                cur = best_line.get(b)
+                if cur is None or ln["effective_rate"] > cur["effective_rate"]:
+                    best_line[b] = ln
+
+        E0 = sum(a["usd_assigned"] for a in assignments
+                 if a["card_id"] == cid and not buckets[a["bucket"]]["explicit_only"])
+
+        # Cheapest-first pool of everyday dollars NOT on this card: other cards'
+        # everyday assignments and unassigned everyday spend. Each chunk carries
+        # its per-dollar sacrifice = source effective rate − our rate here.
+        pool = []
+        for a in assignments:
+            if a["card_id"] == cid or buckets[a["bucket"]]["explicit_only"]:
+                continue
+            b = a["bucket"]
+            if b not in best_line:
+                continue  # we can't earn on it at all → can't move it here
+            src_eff = a["usd_value"] / a["usd_assigned"] if a["usd_assigned"] else 0.0
+            here_eff = best_line[b]["effective_rate"]
+            pool.append({"src": a, "bucket": b, "dollars": a["usd_assigned"],
+                         "sacrifice": src_eff - here_eff})
+        for b, amt in unassigned.items():
+            if buckets[b]["explicit_only"] or b not in best_line or amt <= EPS:
+                continue
+            pool.append({"src": None, "bucket": b, "dollars": amt,
+                         "sacrifice": -best_line[b]["effective_rate"]})
+        pool.sort(key=lambda c: (c["sacrifice"], c["bucket"]))
+        movable = sum(c["dollars"] for c in pool)
+
+        def sacrifice_to(target_x):
+            need, cost = target_x, 0.0
+            for c in pool:
+                if need <= EPS:
+                    break
+                take = min(need, c["dollars"])
+                cost += take * c["sacrifice"]
+                need -= take
+            return cost
+
+        base_mult, base_val = housing_value(E0)
+        # Candidate everyday-on-card totals: stay put, or reach a tier threshold.
+        thresholds = sorted({t["min_ratio"] * housing for t in er["tiers"]
+                             if t["min_ratio"] * housing > E0 + EPS
+                             and t["min_ratio"] * housing <= E0 + movable + EPS})
+        best = (0.0, E0, base_mult, base_val)  # (net_delta, E, mult, value)
+        for E in thresholds:
+            mult, val = housing_value(E)
+            net = (val - base_val) - sacrifice_to(E - E0)
+            if net > best[0] + EPS:
+                best = (net, E, mult, val)
+        _, E_star, mult, house_val = best
+
+        # Apply: move (E_star − E0) cheapest everyday dollars onto this card.
+        need = E_star - E0
+        for c in pool:
+            if need <= EPS:
+                break
+            take = min(need, c["dollars"])
+            need -= take
+            src = c["src"]
+            if src is not None:
+                frac = take / src["usd_assigned"]
+                src["usd_value"] *= (1 - frac)
+                src["usd_assigned"] -= take
+            else:
+                unassigned[c["bucket"]] -= take
+            bl = best_line[c["bucket"]]
+            existing = next((a for a in assignments if a["card_id"] == cid
+                             and a["bucket"] == c["bucket"] and a["kind"] == bl["kind"]),
+                            None)
+            add_val = take * bl["effective_rate"]
+            if existing is not None:
+                existing["usd_assigned"] += take
+                existing["usd_value"] += add_val
+            else:
+                assignments.append({"card_id": cid, "bucket": c["bucket"],
+                                    "usd_assigned": take, "rate": bl["rate"],
+                                    "cpp": bl["cpp"], "kind": bl["kind"],
+                                    "usd_value": add_val,
+                                    "note": bl["note"] or "steered onto this card to lift housing rate"})
+        # Re-price the housing line at the resolved multiplier. When the points
+        # floor binds, express it as an effective points-per-$ so the displayed
+        # rate × spend × cpp still reconciles to the value.
+        ratio_pct = 100.0 * E_star / housing
+        floored = mult * housing < floor_year - EPS
+        total_pts = house_val * 100.0 / cpp if cpp else 0.0
+        eff_rate = round(total_pts / housing, 4) if housing else 0.0
+        note = (f"everyday ${E_star:,.0f} ÷ rent ${housing:,.0f} = {ratio_pct:.0f}% "
+                f"→ {mult}× housing points")
+        if floored:
+            note += (f"; below 25% — {er['floor_points_per_cycle']:.0f} pts/cycle "
+                     f"floor applies (~{eff_rate}×)")
+        for a in house_as:
+            share = a["usd_assigned"] / housing
+            a["rate"] = eff_rate
+            a["usd_value"] = house_val * share
+            a["note"] = note
+        # Drop any everyday assignments emptied by the move.
+    assignments[:] = [a for a in assignments if a["usd_assigned"] > EPS]
+
+
 def score_portfolio(cards: list, profile: dict, programs: dict,
                     buckets: dict, as_of: date) -> dict:
     """Jointly score a card subset: one shared spend assignment over all the
@@ -780,6 +971,10 @@ def score_portfolio(cards: list, profile: dict, programs: dict,
     for card in cards:
         lines += build_lines(card, profile, programs, buckets, unlocked)
     assignments, unassigned = assign_spend(lines, buckets)
+    # Resolve any Bilt-style earn_ratio housing reward: re-prices the housing
+    # line by the Everyday Spend Ratio and may route everyday spend onto the card
+    # (plan 05). No-op for portfolios without an earn_ratio card.
+    steer_earn_ratio(cards, lines, assignments, unassigned, buckets, programs, profile)
     credits = score_credits(cards, profile, programs, as_of, everyday_spend)
     # Portal credits (Amex FHR, Chase Travel/The Edit, Cap One Travel, etc.) are
     # not stackable across cards — a user books through one portal — so the
@@ -970,6 +1165,12 @@ def prune_dominated_variants(variants: list, profile: dict,
 
     def context_dependent(v):
         prog = programs[v["currency"]["program"]]
+        # earn_ratio cards (Bilt housing) price their housing line at the max
+        # tier rate here; the real value depends on the portfolio's everyday
+        # assignment (steering), so — like transfer-gateway cards — never let
+        # them be pruned or prune others on that inflated rate.
+        if any(cr.get("earn_ratio") for cr in v["category_rewards"]):
+            return True
         return bool(prog.get("transfer_gateway_required")
                     and not v.get("unlocks_transfers"))
 
