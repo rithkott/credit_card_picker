@@ -1,8 +1,9 @@
 """Server-side statement parsing (plan 12) — deterministic, ephemeral.
 
 Entry point: parse_statement(data, name) — sniff the format, parse, classify
-kinds. Categorization is a separate pass (categorize.annotate) because the
-matcher is compiled once from the registries at app startup.
+kinds. Benefit-usage detection is a separate pass (detect_usage.detect_usage,
+plan 14) because the matcher is compiled once from the registry at app
+startup.
 
 Everything is deterministic and free: no LLM, no network, no storage. One
 request = one file; the FastAPI route holds the bytes in memory and drops

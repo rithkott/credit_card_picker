@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Local corpus harness (plan 12) — the server-side successor to the scratch
-vite-node harness from docs/local/09-verification-findings.md.
+"""Local corpus harness (plan 12; detection-only since plan 14).
 
-Runs the full parse + categorize pipeline over a directory of REAL statement
-files (e.g. ~/Desktop/Personal — never committed) and prints one line per
-file plus reconciliation and money-conservation checks. Local verification
-only; nothing here is imported by the server.
+Runs the parse + benefit-usage-detection pipeline over a directory of REAL
+statement files (e.g. ~/Desktop/Personal — never committed) and prints one
+line per file plus reconciliation checks (still a parser health check even
+though the product dropped the reconcile warning) and per-key usage totals.
+Local verification only; nothing here is imported by the server.
 
 Usage: python3 server/statements/cli.py <dir> [--verbose]
 """
@@ -26,7 +26,7 @@ import yaml  # noqa: E402
 
 import optimize as opt  # noqa: E402
 from statements import parse_statement  # noqa: E402
-from statements.categorize import Matcher, annotate  # noqa: E402
+from statements.detect_usage import Matcher, detect_usage  # noqa: E402
 from statements.types import StatementParseError  # noqa: E402
 
 EXTS = {".csv", ".ofx", ".qfx", ".pdf", ".txt"}
@@ -43,13 +43,11 @@ def main() -> int:
     meta = Path(opt.META_DIR)
     with open(meta / "statement-descriptors.yaml") as f:
         descriptors = yaml.safe_load(f)["descriptors"]
-    with open(meta / "category-rules.yaml") as f:
-        rules = yaml.safe_load(f)
-    matcher = Matcher(descriptors, rules, ds["merchants"], ds["usage_questions"])
+    matcher = Matcher(descriptors, ds["usage_questions"])
 
     files = sorted(p for p in root.rglob("*") if p.suffix.lower() in EXTS)
     ok = errors = reconciled = mismatched = 0
-    layer_counts: dict = {}
+    usage_totals: dict = {}
     for path in files:
         try:
             parsed = parse_statement(path.read_bytes(), path.name)
@@ -57,11 +55,12 @@ def main() -> int:
             errors += 1
             print(f"ERROR  {path.name}: [{e.code}] {e}")
             continue
-        annotate(matcher, parsed.txns)
+        matches = detect_usage(matcher, parsed.txns)
         ok += 1
         s = parsed.summary
-        for t in parsed.txns:
-            layer_counts[t.match["layer"]] = layer_counts.get(t.match["layer"], 0) + 1
+        for hit in matches:
+            usage_totals[hit["usage_key"]] = (
+                usage_totals.get(hit["usage_key"], 0) + hit["amount_cents"])
 
         recon = ""
         if s.statement_totals:
@@ -78,16 +77,16 @@ def main() -> int:
         extra = f" [{s.extraction}]" if s.extraction else ""
         extra += " [inferred-columns]" if s.column_inference else ""
         print(f"OK     {path.name}: {s.format} {s.txns} txns, rejected {s.rejected_rows}, "
-              f"{s.range_start}..{s.range_end}{extra}{recon}")
+              f"{s.range_start}..{s.range_end}{extra}{recon}, "
+              f"{len(matches)} usage hits")
         if verbose:
-            for t in parsed.txns:
-                m = t.match
-                print(f"         {t.date} {t.amount_cents:>9} {t.kind:9} "
-                      f"L{m['layer']}/{m['method']} {m['category']}: {t.descriptor[:60]}")
+            for hit in matches:
+                print(f"         {hit['date']} {hit['amount_cents']:>9} {hit['kind']:9} "
+                      f"{hit['usage_key']}: {hit['descriptor'][:60]}")
 
     print(f"\n{ok} parsed, {errors} errors; totals: {reconciled} reconcile, "
-          f"{mismatched} mismatch; txns by layer: "
-          f"{dict(sorted(layer_counts.items(), key=lambda kv: str(kv[0])))}")
+          f"{mismatched} mismatch; usage cents by key: "
+          f"{dict(sorted(usage_totals.items()))}")
     return 0 if errors == 0 and mismatched == 0 else 1
 
 

@@ -4,11 +4,7 @@ fastapi
 uvicorn[standard]
 pyyaml
 httpx  # only needed to run tests/test_server_api.py (FastAPI TestClient)
-# Statement parsing (plan 12) — same three as the root requirements.
+# Statement parsing (plan 12, detection-only since plan 14) — same two as
+# the root requirements.
 python-multipart
 pdfplumber
-rapidfuzz
-# Semantic matcher layer 6 (plan 13): local MiniLM transformer runtime.
-numpy
-tokenizers
-onnxruntime

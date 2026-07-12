@@ -1,15 +1,15 @@
 """Statement-parsing core types (plan 12 — server-side port of plan 09).
 
 Everything here lives and dies in request memory: statement bytes and
-transactions are parsed in-process, returned to the browser, and never
-written anywhere (no debug dumps on this path, no storage). The parsers
-normalize every format into Txn dicts; categorize annotates each with a
-match; the browser keeps review/aggregation.
+transactions are parsed in-process and never written anywhere (no debug
+dumps on this path, no storage). The parsers normalize every format into
+Txn objects; detect_usage matches them against statement-descriptors.yaml
+and only the usage-item hits are returned to the browser (plan 14) — full
+transaction lists never leave the server.
 
-Direct port of site/src/lib/statements/types.ts — field names are the
-API contract (snake_case); the TS engine these were ported from was
-verified against a real 42-file corpus (docs/local/09), so semantics
-must not drift from the original.
+Field names are the API contract (snake_case). The parsers were verified
+against a real 42-file corpus (docs/local/09), so parsing semantics must
+not drift.
 """
 
 from dataclasses import dataclass, field
@@ -53,10 +53,6 @@ class Txn:
     line: int  # 1-based row/line/block index in the source file
     issuer_category: Optional[str] = None  # issuer's own category column, lowercased
     mcc: Optional[int] = None  # CSV MCC column or OFX <SIC>
-    # Set by categorize.annotate. Unmatched spend may carry
-    # match["suggestion"] = {"category", "confidence"} — the semantic top-1
-    # below the accept gate, for the review UI's pre-filled picker.
-    match: Optional[dict] = None
 
     def to_dict(self) -> dict:
         out = {
@@ -70,8 +66,6 @@ class Txn:
             out["issuer_category"] = self.issuer_category
         if self.mcc is not None:
             out["mcc"] = self.mcc
-        if self.match is not None:
-            out["match"] = self.match
         return out
 
 

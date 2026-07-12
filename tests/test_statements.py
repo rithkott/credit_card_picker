@@ -1,12 +1,13 @@
-"""Parser tests for server/statements/ (plan 12).
+"""Parser tests for server/statements/ (plan 12; detection-only since plan 14).
 
 Parity assertions ported from the retired in-browser engine's vitest suites
 (parsers.test.ts, pdf.test.ts) so the Python port provably matches the
-corpus-verified TS behavior, plus new coverage for the server-only semantic
-layer: CSV column inference, the PDF layout-band fallback, and the fuzzy
-categorization layer. Fixtures are synthetic — see fixtures/statements/.
+corpus-verified TS behavior — CSV column inference and the PDF layout-band
+fallback included — plus the benefit-usage detector (detect_usage.py), which
+matches descriptors against statement-descriptors.yaml usage items only.
+Fixtures are synthetic — see fixtures/statements/.
 
-pdfplumber/rapidfuzz tests skip cleanly when those packages are absent so
+pdfplumber tests skip cleanly when the package is absent so
 `python3 -m unittest discover tests` still passes in the pyyaml-only CI
 environment. Run: python3 -m unittest tests.test_statements
 """
@@ -29,7 +30,6 @@ from statements.types import StatementParseError  # noqa: E402
 
 FIXTURES = ROOT / "tests" / "fixtures" / "statements"
 HAS_PDF = importlib.util.find_spec("pdfplumber") is not None
-HAS_FUZZ = importlib.util.find_spec("rapidfuzz") is not None
 
 
 def fixture(name: str) -> str:
@@ -441,70 +441,79 @@ class TestParseStatementDispatch(unittest.TestCase):
 # ── categorization (registries + fuzzy) ──────────────────────────────────────
 
 
-class TestCategorize(unittest.TestCase):
+class TestDetectUsageReal(unittest.TestCase):
+    """Detector over the REAL registries — pins that the shipped
+    statement-descriptors.yaml + usage-questions.yaml vocabulary detects the
+    benefits the product promises."""
+
     @classmethod
     def setUpClass(cls):
         import yaml
 
-        sys.path.insert(0, str(ROOT / "scripts"))
-        import optimize as opt
-        from statements.categorize import Matcher
-        ds = opt.load_dataset()
+        from statements.detect_usage import Matcher
+        # Read the registries directly (not via optimize.load_dataset) —
+        # test_optimizer repoints the shared optimize module at a fixture
+        # dataset and unittest discover would leak that in here.
         meta = ROOT / "data" / "meta"
         descriptors = yaml.safe_load(
             (meta / "statement-descriptors.yaml").read_text())["descriptors"]
-        rules = yaml.safe_load((meta / "category-rules.yaml").read_text())
-        cls.matcher = Matcher(descriptors, rules, ds["merchants"],
-                              ds["usage_questions"])
+        usage_questions = yaml.safe_load(
+            (meta / "usage-questions.yaml").read_text())["groups"]
+        cls.matcher = Matcher(descriptors, usage_questions)
 
-    def match(self, descriptor, issuer_category=None, mcc=None):
-        from statements.categorize import match_txn
-        return match_txn(self.matcher, descriptor, issuer_category, mcc)
+    def match(self, descriptor):
+        from statements.detect_usage import match_usage
+        return match_usage(self.matcher, descriptor)
 
-    def test_descriptor_layer(self):
-        m = self.match("WHOLEFDS #10236 SEATTLE WA")
-        self.assertEqual((m["category"], m["layer"], m["method"]),
-                         ("groceries", 1, "exact"))
-        self.assertEqual(m["merchant_key"], "whole_foods")
+    def test_usage_merchants_resolve(self):
+        for descriptor, want in [
+            ("DELTA AIR 0062341983477 ATLANTA", "delta"),
+            ("UBER *TRIP HELP.UBER.COM", "uber"),
+            ("DD *DOORDASH CHIPOTLE", "doordash"),
+            ("CLEAR *CLEARME.COM", "clear"),
+            ("COSTCO WHSE #0021 SEATTLE", "costco"),
+        ]:
+            m = self.match(descriptor)
+            self.assertIsNotNone(m, descriptor)
+            self.assertEqual(m["usage_key"], want, descriptor)
+            self.assertTrue(m["usage_label"], descriptor)
 
-    def test_keyword_layer(self):
-        m = self.match("SHELL OIL 5744221 PORTLAND OR")
-        self.assertEqual((m["category"], m["layer"]), ("gas", 2))
+    def test_prefix_strips_to_underlying_merchant(self):
+        m = self.match("PAYPAL *UBER TRIP HELP.UBER.COM")
+        self.assertEqual(m["usage_key"], "uber")
+        m = self.match("PP*DOORDASH")
+        self.assertEqual(m["usage_key"], "doordash")
 
-    def test_issuer_category_layer(self):
-        m = self.match("SOME UNKNOWN STORE", issuer_category="groceries")
-        self.assertEqual((m["category"], m["layer"]), ("groceries", 3))
+    def test_prefix_with_unknown_remainder_is_no_match(self):
+        self.assertIsNone(self.match("SQ *PITA GYROS"))
+        self.assertIsNone(self.match("TST* JOES CRAB SHACK"))
 
-    def test_mcc_layer(self):
-        m = self.match("SOME UNKNOWN STORE", mcc=5411)
-        self.assertEqual((m["category"], m["layer"]), ("groceries", 4))
+    def test_non_usage_descriptor_keys_do_not_match(self):
+        # Issuer travel portals are descriptor keys but deliberately not
+        # questionnaire items — the optimizer assumes portal use.
+        self.assertIsNone(self.match("AMEXTRAVEL.COM NYC"))
+        self.assertIsNone(self.match("CHASE TRAVEL 800-524-3880"))
 
-    def test_unmatched(self):
-        m = self.match("TOTALLY UNKNOWN LLC")
-        self.assertEqual((m["category"], m["layer"], m["method"]),
-                         (None, None, None))
+    def test_unknown_merchants_are_no_match(self):
+        for descriptor in ("TOTALLY UNKNOWN LLC", "JOES DELI 42 NYC",
+                           "STARBUCKS #123", "XQZ"):
+            self.assertIsNone(self.match(descriptor), descriptor)
 
-    @unittest.skipUnless(HAS_FUZZ, "rapidfuzz not installed")
-    def test_fuzzy_layer_misspelling(self):
-        m = self.match("STARBUKS #99881")
-        self.assertEqual((m["category"], m["layer"], m["method"]),
-                         ("dining", 5, "fuzzy"))
-        self.assertGreaterEqual(m["confidence"], 0.9)
-
-    @unittest.skipUnless(HAS_FUZZ, "rapidfuzz not installed")
-    def test_fuzzy_never_overrides_exact(self):
-        m = self.match("NETFLIX.COM 866-579-7172 CA")
-        self.assertEqual((m["layer"], m["method"]), (1, "exact"))
+    def test_deterministic(self):
+        a = self.match("DELTA AIR 0062341983477 ATLANTA")
+        b = self.match("DELTA AIR 0062341983477 ATLANTA")
+        self.assertEqual(a, b)
 
 
-class TestCategorizeGoldenTable(unittest.TestCase):
-    """Matcher golden table ported from the retired engine.test.ts — inline
-    registries shaped exactly like the YAML files, pinning prefix stripping,
-    longest-pattern wins, tie-breaks, fallbacks, and labeled unmapped keys."""
+class TestDetectUsageGolden(unittest.TestCase):
+    """Golden table over inline registries shaped exactly like the YAML files
+    — pins longest-pattern wins, tie-breaks, prefix stripping, and that
+    non-usage descriptor hits never shadow a usage merchant elsewhere in the
+    descriptor."""
 
     @classmethod
     def setUpClass(cls):
-        from statements.categorize import Matcher
+        from statements.detect_usage import Matcher
         descriptors = {
             "delta": {"label": "Delta Air Lines",
                       "statement_patterns": ["DELTA AIR LINES", "DELTA 006"]},
@@ -516,262 +525,83 @@ class TestCategorizeGoldenTable(unittest.TestCase):
                           "statement_patterns": ["UBER *EATS", "UBER EATS"]},
             "costco": {"label": "Costco",
                        "statement_patterns": ["COSTCO WHSE", "COSTCO GAS"]},
-            "whole_foods": {"label": "Whole Foods Market",
-                            "statement_patterns": ["WHOLEFDS"]},
             "netflix": {"label": "Netflix", "statement_patterns": ["NETFLIX"]},
-            "apple": {"label": "Apple",
-                      "statement_patterns": ["APPLE.COM/BILL", "APPLE STORE"]},
-            "apple_music": {"label": "Apple Music",
-                            "statement_patterns": ["APPLE.COM/BILL"]},
-            "paypal": {"label": "PayPal", "statement_patterns": ["PAYPAL *", "PP*"]},
-            "toast_prefix": {"label": "Toast-acquired restaurants",
-                             "statement_patterns": ["TST*"]},
+            "amex_travel": {"label": "Amex Travel",
+                            "statement_patterns": ["AMEX TRAVEL"]},
+            "paypal": {"label": "PayPal", "aggregator_prefix": True,
+                       "statement_patterns": ["PAYPAL *", "PP*"]},
             "square_prefix": {"label": "Square-acquired merchants",
+                              "aggregator_prefix": True,
                               "statement_patterns": ["SQ *"]},
-            "bilt_rent": {"label": "Bilt rent/housing payments",
-                          "statement_patterns": ["BILT"]},
         }
-        rules = {
-            "descriptor_categories": {
-                "delta": "travel_flights", "doordash": "dining", "uber": "transit",
-                "uber_eats": "dining", "costco": "groceries",
-                "whole_foods": "groceries", "netflix": "streaming",
-                "apple": "online_shopping", "apple_music": "streaming"},
-            "aggregator_prefixes": {
-                "paypal": {}, "square_prefix": {},
-                "toast_prefix": {"fallback_category": "dining"}},
-            "unmapped": ["bilt_rent"],
-            "keywords": {"groceries": ["KROGER"], "gas": ["SHELL"],
-                         "dining": ["CAFE "]},
-            "issuer_categories": {"dining": "dining", "gasoline": "gas"},
-            "mcc": [{"from": 5812, "to": 5814, "category": "dining"}],
-        }
-        merchants = {"costco": {}, "whole_foods": {}, "uber": {}}
         usage_questions = {"g": {"items": {
             "delta": {"label": "Delta"},
             "doordash": {"label": "DoorDash / DashPass"},
             "costco": {"label": "Costco"},
-            "uber": {"label": "Uber rides / Uber One"}}}}
-        cls.matcher = Matcher(descriptors, rules, merchants, usage_questions)
+            "uber": {"label": "Uber rides / Uber One"},
+            "uber_eats": {"label": "Uber Eats"}}}}
+        cls.matcher = Matcher(descriptors, usage_questions)
 
     CASES = [
-        # (descriptor, issuer_category, mcc, expected subset of the match)
-        ("DELTA AIR LINES ATLANTA", None, None,
-         {"category": "travel_flights", "layer": 1, "usage_key": "delta",
-          "descriptor_key": "delta"}),
-        ("COSTCO WHSE #0021", None, None,
-         {"category": "groceries", "layer": 1, "merchant_key": "costco",
-          "usage_key": "costco", "descriptor_key": "costco"}),
-        # Longest pattern: uber_eats, not uber.
-        ("UBER *EATS PENDING", None, None,
-         {"category": "dining", "layer": 1, "descriptor_key": "uber_eats"}),
-        # Identical patterns tie-break by key asc -> apple.
-        ("APPLE.COM/BILL 866-712-7753", None, None,
-         {"category": "online_shopping", "layer": 1, "descriptor_key": "apple"}),
-        # Prefix strip -> inner descriptor match.
-        ("PAYPAL *DD *DOORDASH", None, None,
-         {"category": "dining", "layer": 1, "usage_key": "doordash",
-          "descriptor_key": "doordash"}),
-        # Prefix strip -> inner keyword match.
-        ("PAYPAL *KROGER 442", None, None, {"category": "groceries", "layer": 2}),
-        # Prefix, unknown remainder -> fallback.
-        ("TST* JOES CRAB SHACK", None, None,
-         {"category": "dining", "layer": 1, "descriptor_key": "toast_prefix"}),
-        # Prefix, unknown remainder, no fallback.
-        ("SQ *UNKNOWN VENDOR", None, None, {"category": None, "layer": None}),
-        # Explicitly unmapped -> labeled group.
-        ("BILT REWARDS 000123", None, None,
-         {"category": None, "layer": None, "descriptor_key": "bilt_rent",
-          "descriptor_label": "Bilt rent/housing payments"}),
-        ("KROGER #442 SPRINGFIELD", None, None,
-         {"category": "groceries", "layer": 2}),
-        ("MYSTERY MERCHANT", "dining", None, {"category": "dining", "layer": 3}),
-        ("MYSTERY MERCHANT", None, 5813, {"category": "dining", "layer": 4}),
-        ("MYSTERY MERCHANT", None, None, {"category": None, "layer": None}),
+        # (descriptor, expected usage_key or None)
+        ("DELTA AIR LINES ATLANTA", "delta"),
+        ("COSTCO WHSE #0021", "costco"),
+        # Longest pattern wins: uber_eats, not uber.
+        ("UBER *EATS PENDING", "uber_eats"),
+        ("UBER *TRIP 06-11", "uber"),
+        # Prefix strip -> inner usage match.
+        ("PAYPAL *DD *DOORDASH", "doordash"),
+        ("PP*DOORDASH", "doordash"),
+        # Prefix, unknown remainder -> no match.
+        ("SQ *UNKNOWN VENDOR", None),
+        # Descriptor key that is not a usage item -> no match.
+        ("NETFLIX.COM 866-579-7172", None),
+        # Non-usage hit does not shadow a usage merchant in the same string.
+        ("AMEX TRAVEL DELTA AIR LINES", "delta"),
+        ("MYSTERY MERCHANT", None),
     ]
 
     def test_golden_table(self):
-        from statements.categorize import match_txn
-        for descriptor, issuer_category, mcc, expected in self.CASES:
+        from statements.detect_usage import match_usage
+        for descriptor, want in self.CASES:
             with self.subTest(descriptor=descriptor):
-                match = match_txn(self.matcher, descriptor, issuer_category, mcc)
-                for key, value in expected.items():
-                    self.assertEqual(match.get(key), value,
-                                     f"{descriptor}: {key}")
+                m = match_usage(self.matcher, descriptor)
+                if want is None:
+                    self.assertIsNone(m)
+                else:
+                    self.assertEqual(m["usage_key"], want)
+                    self.assertEqual(m["usage_label"],
+                                     self.matcher.usage_labels[want])
 
-    def test_no_suggestion_without_semantic_layer(self):
-        """Inline registries carry no semantic_prototypes, so the matcher runs
-        without layer 6 — misses must degrade to a bare None match with no
-        suggestion key (same shape as when onnx deps/model are absent)."""
-        from statements.categorize import match_txn
-        match = match_txn(self.matcher, "MYSTERY MERCHANT", None, None)
-        self.assertEqual((match["category"], match["layer"], match["method"]),
-                         (None, None, None))
-        self.assertNotIn("suggestion", match)
-
-    def test_normalize_and_stem(self):
-        from statements.categorize import descriptor_stem, match_txn, normalize_descriptor
-        self.assertEqual(normalize_descriptor("  netflix.COM   ca "), "NETFLIX.COM CA")
-        self.assertEqual(match_txn(self.matcher, "netflix.com", None, None)["category"],
-                         "streaming")
-        self.assertEqual(descriptor_stem("KWIK-E-MART #442 SPRINGFIELD"),
-                         descriptor_stem("KWIK-E-MART #187 SPRINGFIELD"))
-        self.assertEqual(descriptor_stem("KWIK-E-MART #442 SPRINGFIELD"),
-                         "KWIK-E-MART SPRINGFIELD")
-        self.assertEqual(descriptor_stem("12345"), "12345")  # all-numeric falls back
-        # Reference-code tokens drop WHOLE — no letter shrapnel in the stem
-        # (real Bilt PDF shape: routing/auth codes before the merchant).
+    def test_normalize(self):
+        from statements.detect_usage import match_usage, normalize_descriptor
+        self.assertEqual(normalize_descriptor("  costco.COM   wa "), "COSTCO.COM WA")
         self.assertEqual(
-            descriptor_stem("210001500 15270219Q019KM5A5 SUITSUPPLY WILMINGTON DE"),
-            "SUITSUPPLY WILMINGTON DE")
-        self.assertEqual(descriptor_stem("MCDONALD'S F32122 SPRINGFIELD"),
-                         "MCDONALD'S SPRINGFIELD")
+            match_usage(self.matcher, "  costco   whse #3 ")["usage_key"],
+            "costco")
 
-
-SEMANTIC_READY = (
-    importlib.util.find_spec("numpy") is not None
-    and importlib.util.find_spec("tokenizers") is not None
-    and importlib.util.find_spec("onnxruntime") is not None
-    and (ROOT / "server" / "statements" / "model" / "model_quantized.onnx").exists())
-
-
-@unittest.skipUnless(SEMANTIC_READY, "onnxruntime/numpy/tokenizers or model files absent")
-class TestSemanticLayer(unittest.TestCase):
-    """Layer 6 (plan 13): local embedding matcher over the real registries.
-    Pins the user-visible promises: obvious merchants resolve, ambiguous and
-    garbage ones stay for the user, exact layers are never overridden, and
-    non-spend rows are never semantically matched."""
-
-    @classmethod
-    def setUpClass(cls):
-        import yaml
-
-        sys.path.insert(0, str(ROOT / "scripts"))
-        import optimize as opt
-        from statements.categorize import Matcher
-        ds = opt.load_dataset()
-        meta = ROOT / "data" / "meta"
-        descriptors = yaml.safe_load(
-            (meta / "statement-descriptors.yaml").read_text())["descriptors"]
-        rules = yaml.safe_load((meta / "category-rules.yaml").read_text())
-        cls.matcher = Matcher(descriptors, rules, ds["merchants"],
-                              ds["usage_questions"])
-
-    def match(self, descriptor, **kw):
-        from statements.categorize import match_txn
-        return match_txn(self.matcher, descriptor, None, None, **kw)
-
-    def test_obvious_merchants_resolve(self):
-        for descriptor, want in [
-            ("JOES DELI 42 NYC", "dining"),
-            ("THE CORNER BAR", "dining"),
-            ("KATZS DELICATESSEN", "dining"),
-            ("VITAL CLIMBING GYM 182", "entertainment"),
-            ("EAST JAPAN RAILWAY CO", "travel_other"),
-            ("MADISON SQUARE GARDEN SPORTS", "entertainment"),
-        ]:
-            m = self.match(descriptor)
-            self.assertEqual((m["category"], m["layer"], m["method"]),
-                             (want, 6, "semantic"), descriptor)
-            self.assertGreaterEqual(m["confidence"], 0.4)
-
-    def test_prefix_remainder_reaches_semantic(self):
-        """"SQ *PITA GYROS": the aggregator prefix strips 'SQ *' and the
-        semantic layer judges the REMAINDER, not the processor noise."""
-        m = self.match("SQ *PITA GYROS")
-        self.assertEqual((m["category"], m["layer"], m["method"]),
-                         ("dining", 6, "semantic"))
-
-    def test_new_archetypes_resolve(self):
-        for descriptor, want in [
-            ("INSOMNIA COOKIES 99", "dining"),
-            ("ARAMARK MSG CONCESSIONS", "entertainment"),
-        ]:
-            m = self.match(descriptor)
-            self.assertEqual((m["category"], m["layer"]), (want, 6), descriptor)
-
-    def test_retail_chains_are_shopping_not_other(self):
-        """Pre-existing retail keywords were parked under 'other'; they are
-        in-store retail and belong in online_shopping (its label says so)."""
-        for descriptor in ("TJMAXX 1121", "HOME DEPOT 233", "BEST BUY 552"):
-            m = self.match(descriptor)
-            self.assertEqual((m["category"], m["layer"]),
-                             ("online_shopping", 2), descriptor)
-
-    def test_confident_call_is_trusted(self):
-        # One gate, no second-guessing: the model reads TOTAL WINE as a
-        # wine venue and places it; the review screen is where the user
-        # corrects it (every semantic placement is disclosed + editable).
-        m = self.match("TOTAL WINE AND MORE 1523")
-        self.assertEqual(m["method"], "semantic")
-        self.assertIsNotNone(m["category"])
-
-    def test_garbage_stays_for_user(self):
-        for descriptor in ("SPIRIT AI EXECUTIVE", "SOME RANDOM LLC 5512", "XQZ"):
-            self.assertIsNone(self.match(descriptor)["category"], descriptor)
-
-    def test_never_overrides_exact_layers(self):
-        m = self.match("NETFLIX.COM 866-579-7172")
-        self.assertEqual((m["layer"], m["method"]), (1, "exact"))
-        m = self.match("SHELL OIL 5744221")
-        self.assertEqual((m["layer"], m["method"]), (2, "exact"))
-
-    def test_non_spend_rows_skip_semantic(self):
-        m = self.match("JOES DELI 42 NYC", semantic_ok=False)
-        self.assertIsNone(m["category"])
-
-    def test_annotate_gates_on_kind(self):
-        from statements.categorize import annotate
+    def test_detect_usage_filters_kind_and_builds_wire_dicts(self):
+        from statements.detect_usage import detect_usage
         from statements.types import Txn
         txns = [
-            Txn(date="2026-01-01", amount_cents=1200, descriptor="JOES DELI 42",
-                kind="purchase", line=1),
-            Txn(date="2026-01-02", amount_cents=-50000,
-                descriptor="ONLINE PAYMENT FROM CHK", kind="payment", line=2),
+            Txn(date="2026-01-01", amount_cents=1200,
+                descriptor="DELTA AIR LINES ATL", kind="purchase", line=1),
+            Txn(date="2026-01-02", amount_cents=-1200,
+                descriptor="DELTA AIR LINES ATL REFUND", kind="refund", line=2),
+            # Payments/fees/interest/transfers are never usage evidence.
+            Txn(date="2026-01-03", amount_cents=-50000,
+                descriptor="PAYMENT COSTCO WHSE CARD", kind="payment", line=3),
+            Txn(date="2026-01-04", amount_cents=900,
+                descriptor="MYSTERY MERCHANT", kind="purchase", line=4),
         ]
-        annotate(self.matcher, txns)
-        self.assertEqual(txns[0].match["layer"], 6)
-        self.assertIsNone(txns[1].match["category"])
-
-    def test_deterministic(self):
-        a = self.match("HANOVER GOURMET DELI")
-        b = self.match("HANOVER GOURMET DELI")
-        self.assertEqual(a, b)
-
-    def test_below_gate_carries_suggestion(self):
-        """v1.3.0: an all-layers miss still ships the semantic top-1 as
-        match['suggestion'] — never as the accepted category — so the review
-        UI can pre-fill the group's picker."""
-        for descriptor in ("SPIRIT AI EXECUTIVE", "SOME RANDOM LLC 5512"):
-            m = self.match(descriptor)
-            self.assertIsNone(m["category"], descriptor)
-            self.assertIsNone(m["layer"], descriptor)
-            self.assertIsNone(m["method"], descriptor)
-            self.assertIn("suggestion", m, descriptor)
-            suggestion = m["suggestion"]
-            self.assertIn(suggestion["category"],
-                          self.matcher.semantic_prototypes, descriptor)
-            self.assertGreaterEqual(suggestion["confidence"], 0.0, descriptor)
-            self.assertLess(suggestion["confidence"], 0.4, descriptor)
-
-    def test_no_suggestion_on_accepted_matches(self):
-        """Suggestion only rides misses: exact, fuzzy, and accepted semantic
-        matches must not carry one."""
-        for descriptor in ("NETFLIX.COM 866-579-7172",  # layer 1
-                           "SHELL OIL 5744221",          # layer 2
-                           "JOES DELI 42 NYC"):          # layer 6, above gate
-            self.assertNotIn("suggestion", self.match(descriptor), descriptor)
-
-    def test_no_suggestion_for_short_stems_or_non_spend(self):
-        self.assertNotIn("suggestion", self.match("XQZ"))  # < MIN_STEM_CHARS
-        self.assertNotIn("suggestion",
-                         self.match("SPIRIT AI EXECUTIVE", semantic_ok=False))
-
-    def test_suggestion_deterministic(self):
-        a = self.match("SPIRIT AI EXECUTIVE")
-        b = self.match("SPIRIT AI EXECUTIVE")
-        self.assertEqual(a.get("suggestion"), b.get("suggestion"))
-        self.assertIsNotNone(a.get("suggestion"))
+        matches = detect_usage(self.matcher, txns)
+        self.assertEqual(len(matches), 2)
+        self.assertEqual(matches[0], {
+            "date": "2026-01-01", "amount_cents": 1200,
+            "descriptor": "DELTA AIR LINES ATL", "kind": "purchase",
+            "line": 1, "usage_key": "delta", "usage_label": "Delta"})
+        self.assertEqual(matches[1]["kind"], "refund")
+        self.assertEqual(matches[1]["amount_cents"], -1200)
 
 
 if __name__ == "__main__":

@@ -22,12 +22,13 @@ computation engine; this file only maps HTTP to its functions:
                         DataError  -> 500 {"detail": msg}; the optimizer's
                         messages are already user-directed.
   POST /api/statements/parse — multipart, one statement file (PDF/CSV/OFX)
-                        per request (plan 12). Parsed and categorized IN
-                        MEMORY by server/statements/; transactions return
-                        to the browser, the bytes are discarded — never
-                        stored, never debug-dumped. Parse failures are
-                        per-file {"detail", "code"} errors the UI renders
-                        (422, or 413 for oversize files).
+                        per request (plan 12; detection-only since plan 14).
+                        Parsed IN MEMORY by server/statements/; only the
+                        summary and detected benefit-usage matches return to
+                        the browser, the bytes and full transaction list are
+                        discarded — never stored, never debug-dumped. Parse
+                        failures are per-file {"detail", "code"} errors the
+                        UI renders (422, or 413 for oversize files).
 
 The dataset is loaded once at startup — restart (or run uvicorn --reload)
 after editing card YAML. Every optimize call writes a gitignored debug dump to
@@ -58,7 +59,7 @@ sys.path.insert(0, str(ROOT / "server"))  # so `import statements` works everywh
 import optimize as opt  # noqa: E402
 
 import statements as stmts  # noqa: E402  (server/statements/, plan 12)
-from statements.categorize import Matcher, annotate  # noqa: E402
+from statements.detect_usage import Matcher, detect_usage  # noqa: E402  (plan 14)
 
 # Origins allowed to call the API: the GitHub Pages site (this repo's project
 # page) and the Vite dev server. Update if the repo is renamed or forked.
@@ -77,17 +78,14 @@ STATE: dict = {}
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     STATE["dataset"] = opt.load_dataset()
-    # Statement-import rules (plan 09): read only here, never by the optimizer.
+    # Statement descriptors (plan 14): read only here, never by the optimizer.
     # opt.META_DIR (not a local constant) so tests that repoint the dataset
     # repoint these too.
     meta = Path(opt.META_DIR)
     with open(meta / "statement-descriptors.yaml") as f:
         STATE["descriptors"] = yaml.safe_load(f)["descriptors"]
-    with open(meta / "category-rules.yaml") as f:
-        STATE["category_rules"] = yaml.safe_load(f)
-    # Compiled once: the categorizer for POST /api/statements/parse (plan 12).
-    STATE["matcher"] = Matcher(STATE["descriptors"], STATE["category_rules"],
-                               STATE["dataset"]["merchants"],
+    # Compiled once: the usage detector for POST /api/statements/parse.
+    STATE["matcher"] = Matcher(STATE["descriptors"],
                                STATE["dataset"]["usage_questions"])
     yield
     STATE.clear()
@@ -215,8 +213,8 @@ def config() -> dict:
         "max_cards_range": [1, 5],
         "cards_total": len(ds["cards"]),
         # Statement-import rules are no longer shipped to the browser: since
-        # plan 12 the server parses AND categorizes statements itself
-        # (POST /api/statements/parse), so the registries stay server-side.
+        # plan 12 the server parses statements itself (detection-only since
+        # plan 14), so the descriptor registry stays server-side.
     }
 
 
@@ -252,18 +250,22 @@ def optimize(body: dict = Body(...)) -> dict:
 
 @app.post("/api/statements/parse")
 def parse_statement_upload(file: UploadFile = File(...)):
-    """One statement file in, normalized + categorized transactions out.
+    """One statement file in, detected benefit usage out (plan 14).
+
+    The response is `summary` plus only the purchase/refund transactions whose
+    descriptor matches a usage-questions item via statement-descriptors.yaml —
+    the full transaction list never leaves the server. No category assignment,
+    no spend import; spending is entered manually in the UI.
 
     Sync def on purpose (threadpool, like /api/optimize) — PDF extraction is
     CPU-bound. EPHEMERAL BY POLICY: the bytes live only in this frame; there
     is no dump_debug_run call on this route, errors are returned without
-    statement content, and nothing is written anywhere. The browser keeps
-    review/aggregation; this endpoint is one file -> one parse."""
+    statement content, and nothing is written anywhere."""
     name = file.filename or "statement"
     data = file.file.read()
     try:
         parsed = stmts.parse_statement(data, name)
-        annotate(STATE["matcher"], parsed.txns)
+        matches = detect_usage(STATE["matcher"], parsed.txns)
     except stmts.StatementParseError as e:
         status = 413 if e.code == "too_large" else 422
         return JSONResponse(status_code=status,
@@ -274,7 +276,7 @@ def parse_statement_upload(file: UploadFile = File(...)):
         return JSONResponse(status_code=500,
                             content={"detail": f"{name}: unexpected error while parsing.",
                                      "code": "internal"})
-    return parsed.to_dict()
+    return {"summary": parsed.summary.to_dict(), "matches": matches}
 
 
 # Serve the built site when present (npm run build) — registered after the

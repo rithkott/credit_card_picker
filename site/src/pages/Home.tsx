@@ -113,10 +113,9 @@ export function Home({ cfg, onRetryConfig }: {
         <>
           <StatementImport
             config={cfg.config}
-            formNonEmpty={Object.values(spend.categoryCents)
-              .some((c) => c !== null && !Number.isNaN(c) && c > 0)}
-            onApply={(imported, usageKeys) => {
-              setSpend(imported)
+            onApply={(usageKeys) => {
+              // Detection only (plan 14): statements never touch spend —
+              // confirmed services merge into the questionnaire state.
               setUser((u) => ({
                 ...u,
                 confirmed_usage: new Set([...u.confirmed_usage, ...usageKeys]),

@@ -2,11 +2,7 @@
 # Local development instead uses server/requirements.txt (adds uvicorn/httpx).
 fastapi
 pyyaml
-# Statement parsing (plan 12): multipart uploads, PDF text layer, fuzzy matcher.
+# Statement parsing (plan 12, detection-only since plan 14): multipart
+# uploads + PDF text layer.
 python-multipart
 pdfplumber
-rapidfuzz
-# Semantic matcher layer 6 (plan 13): local MiniLM transformer runtime.
-numpy
-tokenizers
-onnxruntime

@@ -71,7 +71,8 @@ def main() -> int:
     merchants = set(merchants_registry)
     programs_registry = load_yaml(META_DIR / "point-valuations.yaml")["programs"]
     programs = set(programs_registry)
-    descriptors = set(load_yaml(META_DIR / "statement-descriptors.yaml")["descriptors"])
+    descriptors_registry = load_yaml(META_DIR / "statement-descriptors.yaml")["descriptors"]
+    descriptors = set(descriptors_registry)
     questions_registry = load_yaml(META_DIR / "usage-questions.yaml")["groups"]
 
     backlog = BACKLOG_PATH.read_text() if BACKLOG_PATH.exists() else ""
@@ -162,106 +163,15 @@ def main() -> int:
                 f"data/meta/merchants.yaml: merchant '{name}': category must be a real "
                 f"(non-pseudo) category from categories.yaml, got {cat!r}")
 
-    # category-rules.yaml (plan 09) feeds the in-browser statement importer via
-    # GET /api/config. Its bridge must cover statement-descriptors.yaml exactly
-    # (every descriptor key in one of bridge/prefix/unmapped), and every category
-    # it emits must be a real spend bucket, or imported spend silently vanishes.
-    rules = load_yaml(META_DIR / "category-rules.yaml")
-    RULES = "data/meta/category-rules.yaml"
-
-    def check_real_category(cat, where):
-        if cat not in categories or cat in pseudo_categories:
-            errors.append(f"{RULES}: {where}: category must be a real (non-pseudo) "
-                          f"category from categories.yaml, got {cat!r}")
-
-    bridge = rules.get("descriptor_categories") or {}
-    prefixes = rules.get("aggregator_prefixes") or {}
-    unmapped = rules.get("unmapped") or []
-    for key, cat in sorted(bridge.items()):
-        if key not in descriptors:
-            errors.append(f"{RULES}: descriptor_categories key '{key}' is not a key "
-                          f"in statement-descriptors.yaml")
-        check_real_category(cat, f"descriptor_categories['{key}']")
-    for key, entry in sorted(prefixes.items()):
-        if key not in descriptors:
-            errors.append(f"{RULES}: aggregator_prefixes key '{key}' is not a key "
-                          f"in statement-descriptors.yaml")
-        fallback = (entry or {}).get("fallback_category")
-        if fallback is not None:
-            check_real_category(fallback, f"aggregator_prefixes['{key}'].fallback_category")
-    for key in unmapped:
-        if key not in descriptors:
-            errors.append(f"{RULES}: unmapped entry '{key}' is not a key in "
-                          f"statement-descriptors.yaml")
-    assigned: dict[str, str] = {}
-    for block_name, keys in (("descriptor_categories", bridge),
-                             ("aggregator_prefixes", prefixes),
-                             ("unmapped", unmapped)):
-        for key in keys:
-            if key in assigned:
-                errors.append(f"{RULES}: descriptor key '{key}' appears in both "
-                              f"'{assigned[key]}' and '{block_name}' — it must be in "
-                              f"exactly one")
-            assigned[key] = block_name
-    for key in sorted(descriptors - set(assigned)):
-        warnings.append(f"{RULES}: descriptor '{key}' is in no block — add it to "
-                        f"descriptor_categories (or aggregator_prefixes/unmapped with "
-                        f"a justification) so imported spend at it isn't dropped")
-
-    keyword_owner: dict[str, str] = {}
-    for cat, patterns in sorted((rules.get("keywords") or {}).items()):
-        check_real_category(cat, f"keywords['{cat}']")
-        for p in patterns or []:
-            if not isinstance(p, str) or not p.strip():
-                errors.append(f"{RULES}: keywords['{cat}'] contains a non-string or "
-                              f"blank pattern: {p!r}")
-                continue
-            if p in keyword_owner and keyword_owner[p] != cat:
-                errors.append(f"{RULES}: keyword pattern {p!r} appears under both "
-                              f"'{keyword_owner[p]}' and '{cat}' — matching would be "
-                              f"order-dependent")
-            keyword_owner[p] = cat
-
-    for raw_key, cat in sorted((rules.get("issuer_categories") or {}).items()):
-        if raw_key != raw_key.strip().lower():
-            errors.append(f"{RULES}: issuer_categories key {raw_key!r} must be "
-                          f"lowercase and trimmed (the importer normalizes the "
-                          f"issuer's string before the exact match)")
-        check_real_category(cat, f"issuer_categories[{raw_key!r}]")
-
-    mcc_ranges = []
-    for i, entry in enumerate(rules.get("mcc") or []):
-        lo, hi, cat = (entry or {}).get("from"), (entry or {}).get("to"), (entry or {}).get("category")
-        if (isinstance(lo, bool) or isinstance(hi, bool)
-                or not isinstance(lo, int) or not isinstance(hi, int) or lo > hi):
-            errors.append(f"{RULES}: mcc[{i}]: from/to must be integers with "
-                          f"from <= to, got from={lo!r} to={hi!r}")
-            continue
-        check_real_category(cat, f"mcc[{i}]")
-        mcc_ranges.append((lo, hi, i))
-    mcc_ranges.sort()
-    for (lo1, hi1, i1), (lo2, hi2, i2) in zip(mcc_ranges, mcc_ranges[1:]):
-        if lo2 <= hi1:
-            errors.append(f"{RULES}: mcc[{i1}] ({lo1}-{hi1}) and mcc[{i2}] "
-                          f"({lo2}-{hi2}) overlap — each code must map to exactly "
-                          f"one category")
-
-    # semantic_prototypes (plan 13): layer-6 embedding prototypes. Categories
-    # must be real spend buckets ('other' is banned — it is the review
-    # fallback, and giving it prototypes would vacuum up every weak match).
-    for cat, phrases in sorted((rules.get("semantic_prototypes") or {}).items()):
-        check_real_category(cat, f"semantic_prototypes['{cat}']")
-        if cat == "other":
-            errors.append(f"{RULES}: semantic_prototypes must not include 'other' — "
-                          f"it is the fallback bucket, not a meaning")
-        if not phrases or not isinstance(phrases, list):
-            errors.append(f"{RULES}: semantic_prototypes['{cat}'] must be a "
-                          f"non-empty list of phrases")
-            continue
-        for p in phrases:
-            if not isinstance(p, str) or not p.strip():
-                errors.append(f"{RULES}: semantic_prototypes['{cat}'] contains a "
-                              f"non-string or blank phrase: {p!r}")
+    # statement-descriptors.yaml drives the benefit-usage detector (plan 14):
+    # aggregator_prefix, when present, must be boolean true — the detector
+    # strips those prefixes and re-matches the remainder.
+    DESC = "data/meta/statement-descriptors.yaml"
+    for key, entry in sorted(descriptors_registry.items()):
+        flag = (entry or {}).get("aggregator_prefix")
+        if flag is not None and flag is not True:
+            errors.append(f"{DESC}: descriptor '{key}': aggregator_prefix must be "
+                          f"boolean true when present, got {flag!r}")
 
     card_files = sorted(CARDS_DIR.glob("*/*.yaml"))
     if not card_files:
