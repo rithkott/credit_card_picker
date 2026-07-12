@@ -14,6 +14,7 @@ import { RentMortgage } from '../components/RentMortgage'
 import { RewardPreferences } from '../components/RewardPreferences'
 import { ServerBanner } from '../components/ServerBanner'
 import { SpendEntry } from '../components/SpendEntry'
+import { StartPage } from '../components/StartPage'
 import { UsageQuestionnaire } from '../components/UsageQuestionnaire'
 import { WizardShell, type WizardStep } from '../components/wizard/WizardShell'
 import { ResultsView } from '../components/results/ResultsView'
@@ -116,6 +117,12 @@ export function Home({ cfg, onRetryConfig }: {
   }
 
   const inWizard = fs.view === 'wizard'
+
+  // Fresh-visitor splash (v1.9.1): its own full-bleed layout, no shared hero.
+  // "Get started" hands off to the guided wizard.
+  if (fs.view === 'start') {
+    return <StartPage onStart={() => fs.setView('wizard')} />
+  }
 
   return (
     <>
