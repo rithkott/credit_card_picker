@@ -136,6 +136,15 @@ def policy_constants() -> dict:
         # floor_cpp and optimistic_cpp, dropping to floor_cpp when a loyalty
         # or transfer-gateway gate is unconfirmed (plan 08).
         "CPP_MODEL": "avg = (floor_cpp + optimistic_cpp) / 2; floor when gated & unconfirmed",
+        # Documented rule, not a number: categories flagged explicit_only in
+        # data/meta/categories.yaml (housing = rent/mortgage) can't go on a
+        # normal card without a ~3% processor fee, so they earn $0 unless a
+        # card carries an explicit category reward for them (Bilt), never the
+        # base rate — and they don't count toward signup-bonus or credit-unlock
+        # spend feasibility (those windows measure card-payable spend).
+        "EXPLICIT_ONLY_CATEGORIES": "explicit_only categories (housing) earn only "
+                                    "via explicit category rewards — no base rate, "
+                                    "excluded from bonus/unlock spend feasibility",
     }
 
 
@@ -312,18 +321,25 @@ def assumed_usage(user: dict, usage_questions: dict) -> list:
 # Reward-line model and spend assignment (spec §5)
 # ---------------------------------------------------------------------------
 
-def build_buckets(profile: dict, merchants: dict) -> dict:
+def build_buckets(profile: dict, merchants: dict, categories: dict) -> dict:
     """Partition the user's spend: one bucket per merchant carve-out, plus one
-    residual bucket per category (category total minus its carve-outs)."""
+    residual bucket per category (category total minus its carve-outs).
+    Buckets whose category is flagged explicit_only in categories.yaml
+    (housing) carry the flag: base-rate lines skip them, so they earn only
+    through an explicit category reward (see EXPLICIT_ONLY_CATEGORIES)."""
+    def explicit_only(cat):
+        return bool((categories.get(cat) or {}).get("explicit_only"))
     buckets = {}
     carved = {}
     for m, amount in profile["merchant_spend"].items():
         cat = merchants[m]["category"]
-        buckets[m] = {"key": m, "kind": "merchant", "category": cat, "amount": float(amount)}
+        buckets[m] = {"key": m, "kind": "merchant", "category": cat,
+                      "amount": float(amount), "explicit_only": explicit_only(cat)}
         carved[cat] = carved.get(cat, 0.0) + float(amount)
     for cat, amount in profile["spend"].items():
         buckets[cat] = {"key": cat, "kind": "category", "category": cat,
-                        "amount": float(amount) - carved.get(cat, 0.0)}
+                        "amount": float(amount) - carved.get(cat, 0.0),
+                        "explicit_only": explicit_only(cat)}
     return buckets
 
 
@@ -483,7 +499,12 @@ def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
     claimed = set()
     for ln in lines:
         claimed.update(ln["eligible"])
-    add("base", "base", card["base_rate"], [b for b in buckets if b not in claimed], None)
+    # explicit_only buckets (housing) never fall through to the base rate: the
+    # spend isn't card-payable without a fee, so only an explicit category
+    # reward (already claimed above, e.g. Bilt housing) may earn on it.
+    add("base", "base", card["base_rate"],
+        [b for b in buckets if b not in claimed and not buckets[b]["explicit_only"]],
+        None)
     return lines
 
 
@@ -553,7 +574,7 @@ def assign_spend(lines: list, buckets: dict) -> tuple:
 # ---------------------------------------------------------------------------
 
 def score_credits(cards: list, profile: dict, programs: dict,
-                  as_of: date) -> list:
+                  as_of: date, everyday_spend: float) -> list:
     """Value every credit across the portfolio against a shared per-category
     remaining-spend tracker, so stacked credits can never exceed the user's real
     spend. Draw order is deterministic: file order within a card, card-id order
@@ -586,7 +607,9 @@ def score_credits(cards: list, profile: dict, programs: dict,
         credits (no keys, no category; anniversary points/cash).
     """
     tracker = {cat: float(v) for cat, v in profile["spend"].items()}
-    total_spend = sum(profile["spend"].values())
+    # unlock_spend_usd feasibility measures card-payable volume, so the
+    # explicit_only categories (housing) are excluded — see score_portfolio.
+    total_spend = everyday_spend
     confirmed = set(profile["user"]["confirmed_usage"])
     assumed = set(profile["user"].get("assumed_usage", []))
     unlocked = unlocked_programs(cards)
@@ -676,7 +699,8 @@ def score_credits(cards: list, profile: dict, programs: dict,
 
 def score_bonus(card: dict, profile: dict, programs: dict, as_of: date,
                 card_earnings: float = 0.0,
-                unlocked: frozenset = frozenset()) -> dict:
+                unlocked: frozenset = frozenset(),
+                everyday_spend: float = None) -> dict:
     """Signup-bonus value — counted once, year-1 only. A bonus's `value` may mix
     points and usd (both summed); `tiers` add tranches whose cumulative spend
     requirements are checked with the same feasibility rule as the base;
@@ -690,7 +714,11 @@ def score_bonus(card: dict, profile: dict, programs: dict, as_of: date,
     if bonus.get("first_year_match"):
         return {"value": card_earnings,
                 "note": f"first-year match of this card's computed earnings (${card_earnings:,.2f})"}
-    total_spend = sum(profile["spend"].values())
+    # Spend-requirement feasibility measures card-payable volume: housing
+    # (explicit_only) is excluded — Bilt's own bonuses require "Everyday
+    # Spend", and rent can't be charged to any other card anyway.
+    total_spend = (everyday_spend if everyday_spend is not None
+                   else sum(profile["spend"].values()))
     window_spend = total_spend * bonus["window_months"] / 12.0
     if window_spend < bonus["spend_requirement_usd"] - EPS:
         return {"value": 0.0, "note": "$0 — spend requirement unreachable at your volume"}
@@ -736,11 +764,15 @@ def score_portfolio(cards: list, profile: dict, programs: dict,
     subset's lines, plus credits (shared tracker), plus eligible signup bonuses
     (year-1 only), minus fees."""
     unlocked = unlocked_programs(cards)
+    # Card-payable volume: bonus and credit-unlock feasibility windows exclude
+    # explicit_only (housing) spend, which can't be charged to a card.
+    everyday_spend = sum(bk["amount"] for bk in buckets.values()
+                         if not bk["explicit_only"])
     lines = []
     for card in cards:
         lines += build_lines(card, profile, programs, buckets, unlocked)
     assignments, unassigned = assign_spend(lines, buckets)
-    credits = score_credits(cards, profile, programs, as_of)
+    credits = score_credits(cards, profile, programs, as_of, everyday_spend)
     credits_total = sum(c["value"] for c in credits)
     per_card_earnings = {card["id"]: 0.0 for card in cards}
     for a in assignments:
@@ -756,7 +788,8 @@ def score_portfolio(cards: list, profile: dict, programs: dict,
             per_card_earnings[cid] = cap
     earnings = sum(per_card_earnings.values())
     bonuses = {card["id"]: score_bonus(card, profile, programs, as_of,
-                                       per_card_earnings[card["id"]], unlocked)
+                                       per_card_earnings[card["id"]], unlocked,
+                                       everyday_spend)
                for card in cards}
     bonus_total = sum(b["value"] for b in bonuses.values())
     # Card-exclusive membership costs (Robinhood Gold) count in both metrics —
@@ -781,10 +814,10 @@ def score_portfolio(cards: list, profile: dict, programs: dict,
 
 
 def compute_annual_value(card: dict, profile: dict, programs: dict,
-                         merchants: dict, as_of: date) -> dict:
+                         merchants: dict, categories: dict, as_of: date) -> dict:
     """Single-card scoring (spec §4.2) — the portfolio scorer with this card as
     the only candidate."""
-    buckets = build_buckets(profile, merchants)
+    buckets = build_buckets(profile, merchants, categories)
     return score_portfolio([card], profile, programs, buckets, as_of)
 
 
@@ -893,7 +926,8 @@ def card_warnings(card: dict, as_of: date) -> list:
 
 
 def prune_dominated_variants(variants: list, profile: dict,
-                             programs: dict, merchants: dict) -> tuple:
+                             programs: dict, merchants: dict,
+                             categories: dict) -> tuple:
     """Exact pre-search pass (plan 02.5 §2): drop variants provably unable to
     appear in an optimal portfolio. B dominates A only when A is plain (no
     credits, no signup bonus), every live bucket A can win is covered by an
@@ -915,7 +949,7 @@ def prune_dominated_variants(variants: list, profile: dict,
     first_year_match card were ever context-dependent its guard threshold
     would be understated, so pruning bails out entirely (none exist today:
     match cards are cash-back)."""
-    buckets = build_buckets(profile, merchants)
+    buckets = build_buckets(profile, merchants, categories)
     NEG = float("-inf")
 
     def context_dependent(v):
@@ -1006,12 +1040,12 @@ def subset_budget(n_variants: int, max_cards: int) -> int:
 
 
 def search(variants: list, profile: dict, programs: dict,
-           merchants: dict, as_of: date) -> list:
+           merchants: dict, categories: dict, as_of: date) -> list:
     """Exhaustive over all subsets of eligible card variants, sizes
     1..max_cards. Two variants of the same physical card (same base_id) are
     mutually exclusive — you can only configure a choose-your-own card one way.
     Returns (cards, ongoing_net, year1_net) tuples, ranked."""
-    buckets = build_buckets(profile, merchants)
+    buckets = build_buckets(profile, merchants, categories)
     by_id = {c["id"]: c for c in variants}
     base_of = {cid: by_id[cid].get("base_id", cid) for cid in by_id}
     ids = sorted(by_id)
@@ -1117,14 +1151,15 @@ def run(dataset: dict, profile: dict, as_of: date, top: int) -> dict:
         profile["user"], dataset.get("usage_questions") or {})
     programs = dataset["programs"]
     merchants = dataset["merchants"]
+    categories = dataset["categories"]
     eligible, excluded = filter_cards(dataset["cards"], profile, programs)
     expanded = expand_choice_variants(eligible, profile)
     variants, pruned = prune_dominated_variants(expanded, profile,
-                                                programs, merchants)
-    ranked = search(variants, profile, programs, merchants, as_of)
+                                                programs, merchants, categories)
+    ranked = search(variants, profile, programs, merchants, categories, as_of)
 
     by_id = {c["id"]: c for c in variants}
-    buckets = build_buckets(profile, merchants)
+    buckets = build_buckets(profile, merchants, categories)
     gateways = gateway_names(dataset["cards"])
     portfolios = [assemble_portfolio(entry, by_id, profile, programs, buckets,
                                      as_of, gateways)
@@ -1244,7 +1279,7 @@ def render_text(bundle: dict) -> str:
                 out.append(f"      ⚠ {w}")
         for b, v in p["unassigned_spend"].items():
             out.append(f"    ⚠ ${v:,.2f} of '{b}' spend is unassignable "
-                       "(closed-loop-only portfolio) and earns $0")
+                       "(no card in this portfolio can earn on it) and earns $0")
         out.append("")
     return "\n".join(out)
 
