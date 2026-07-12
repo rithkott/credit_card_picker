@@ -61,6 +61,11 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
   const shownCredits = card.credits
     .filter((c) => c.value > 0)
     .sort((a, b) => b.value - a.value)
+  // Perks the user didn't confirm using — $0 to the optimizer, but they'd get
+  // them anyway with the card. Shown at full face value, never in any total.
+  const unusedPerks = card.credits
+    .filter((c) => c.value === 0 && (c.potential_value ?? 0) > 0)
+    .sort((a, b) => (b.potential_value ?? 0) - (a.potential_value ?? 0))
 
   const coverage = card.fees.annual_fee_usd > 0 && earn + credits > card.fees.annual_fee_usd
     ? Math.round((earn + credits) / card.fees.annual_fee_usd)
@@ -163,6 +168,32 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
           Credit values are discounted to what you'll realistically capture, not face value.
         </div>
       ) : null}
+      {card.bonus.value > 0 && (
+        <div className="tile-lines tile-perks tile-bonus">
+          <div className="sublabel">
+            Signup bonus <span className="note">first year only, not in the yearly total</span>
+          </div>
+          <div className="line">
+            <span>New-cardmember offer</span>
+            <i className="lead" aria-hidden="true" />
+            <span>{formatUsd(card.bonus.value)}</span>
+          </div>
+        </div>
+      )}
+      {unusedPerks.length > 0 && (
+        <div className="tile-lines tile-perks">
+          <div className="sublabel">
+            Perks you'd get anyway <span className="note">not counted above</span>
+          </div>
+          {unusedPerks.map((c, i) => (
+            <div className="line" key={`p-${c.name}-${i}`}>
+              <span>{c.name}</span>
+              <i className="lead" aria-hidden="true" />
+              <span>{formatUsd(c.potential_value ?? 0)}/yr</span>
+            </div>
+          ))}
+        </div>
+      )}
       <details className="full-detail">
         <summary>full detail</summary>
         <AssignmentsTable assignments={card.assignments} currencyKind={card.currency.kind} />

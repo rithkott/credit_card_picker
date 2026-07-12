@@ -649,13 +649,26 @@ def score_credits(cards: list, profile: dict, programs: dict,
             keys = credit.get("usage_keys")
             keys_confirmed = set(keys or []) & confirmed
             keys_assumed = set(keys or []) & assumed
+            periods = PERIODS_PER_YEAR[credit["period"]]
             if keys and not keys_confirmed and not keys_assumed:
+                # Usage-gated but the user hasn't confirmed the merchant/brand, so
+                # this is worth $0 to the optimizer (value stays 0.0 — never enters
+                # any total or ranking). We still surface the full annual FACE value
+                # as potential_value: the frontend lists it as a perk they'd get
+                # anyway and would likely use if they held the card. Face only —
+                # no capture haircut. Scoped to THIS gate; the other $0 branches
+                # (expired / unlock-unreachable / no-spend) omit potential_value
+                # because the user genuinely would not receive them.
+                if "amount_points" in credit:
+                    potential = credit["amount_points"] * periods * cpp / 100.0
+                else:
+                    potential = credit["amount_usd"] * periods
                 results.append({"card_id": card["id"], "name": credit["name"],
                                 "value": 0.0,
+                                "potential_value": round(potential, 2),
                                 "note": f"$0 — requires confirmed use of one of: "
                                         f"{', '.join(keys)} (user.confirmed_usage)"})
                 continue
-            periods = PERIODS_PER_YEAR[credit["period"]]
             capture = (CONFIRMED_CREDIT_CAPTURE if keys_confirmed else CREDIT_CAPTURE)[credit["period"]]
             if keys_confirmed:
                 usage_note = f"; confirmed: {', '.join(sorted(keys_confirmed))}"
@@ -1322,7 +1335,9 @@ def assemble_portfolio(entry: dict, by_id: dict, profile: dict, programs: dict,
                  "usd_value": _round2(a["usd_value"]), "note": a["note"]}
                 for a in scored["assignments"] if a["card_id"] == cid],
             "credits": [
-                {"name": c["name"], "value": _round2(c["value"]), "note": c["note"]}
+                {"name": c["name"], "value": _round2(c["value"]), "note": c["note"],
+                 **({"potential_value": _round2(c["potential_value"])}
+                    if "potential_value" in c else {})}
                 for c in scored["credits"] if c["card_id"] == cid],
             "bonus": {"value": _round2(scored["bonuses"][cid]["value"]),
                       "note": scored["bonuses"][cid]["note"]},
@@ -1485,7 +1500,9 @@ def render_text(bundle: dict) -> str:
                 out.append(f"      ⚠ card-wide reward cap (max_annual_rewards_usd): "
                            f"earnings above clamped by ${d['reward_cap_clamp']:,.2f}")
             for c in d["credits"]:
-                out.append(f"      credit: {c['name']} = ${c['value']:,.2f}   [{c['note']}]")
+                face = (f"   (face ${c['potential_value']:,.2f}/yr you'd get anyway)"
+                        if "potential_value" in c else "")
+                out.append(f"      credit: {c['name']} = ${c['value']:,.2f}   [{c['note']}]{face}")
             bonus = d["bonus"]
             out.append(f"      bonus (year 1 only): ${bonus['value']:,.2f}   [{bonus['note']}]")
             fee = d["fees"]

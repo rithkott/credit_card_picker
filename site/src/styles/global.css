@@ -775,6 +775,20 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   color: var(--text-faint);
 }
 .tile-credits .line > span:last-child { color: var(--ok); }
+.tile-perks { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--hairline); }
+.tile-perks .sublabel {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-faint);
+}
+.tile-perks .sublabel .note {
+  text-transform: none; letter-spacing: 0; font-weight: 400;
+  color: rgba(242, 243, 247, 0.4);
+}
+.tile-perks .line { color: var(--text-muted); }
+.tile-perks .line > span:last-child { color: var(--text-muted); }
+.tile-bonus .line { color: inherit; }
+.tile-bonus .line > span:last-child { color: var(--ok); }
 .tile-costs { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--hairline); }
 .tile-note {
   margin-top: 12px;

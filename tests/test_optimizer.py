@@ -401,6 +401,36 @@ class TestConfirmedUsage(unittest.TestCase):
         self.assertEqual(r["credits"][0]["value"], 0.0)
         self.assertIn("requires confirmed use of one of: uber, lyft",
                       r["credits"][0]["note"])
+        # Display-only: the full annual face surfaces as potential_value (perks
+        # you'd get anyway) while value stays 0 — never enters any total.
+        self.assertAlmostEqual(r["credits"][0]["potential_value"], 120.0)  # 10 × 12
+
+    def test_potential_value_only_on_usage_gated_zero(self):
+        # potential_value is scoped strictly to the usage-gate branch. Other $0
+        # credits (expired, unlock-unreachable, no category spend) omit it, and
+        # earning credits never carry it.
+        gated = {"name": "ride", "amount_usd": 10, "period": "monthly",
+                 "usage_keys": ["uber"], "realistic_capture_rate_note": "x"}
+        unreachable = {"name": "big", "amount_usd": 10, "period": "monthly",
+                       "unlock_spend_usd": 1000, "realistic_capture_rate_note": "x"}
+        earning = {"name": "auto", "amount_usd": 50, "period": "annual",
+                   "realistic_capture_rate_note": "x"}
+        r = score([synth_card(credits=[gated, unreachable, earning])],
+                  make_profile({"other": 6000}))
+        by_name = {c["name"]: c for c in r["credits"]}
+        self.assertEqual(by_name["ride"]["potential_value"], 120.0)
+        self.assertNotIn("potential_value", by_name["big"])
+        self.assertNotIn("potential_value", by_name["auto"])
+
+    def test_points_usage_gated_potential_value_by_cpp(self):
+        # A points-denominated usage-gated credit surfaces face at the card's cpp.
+        credit = {"name": "brand miles", "amount_points": 10000, "period": "annual",
+                  "usage_keys": ["uber"], "realistic_capture_rate_note": "x"}
+        card = synth_card(currency={"type": "points", "program": "chase_ur"},
+                          unlocks_transfers=True, credits=[credit])
+        r = score([card], make_profile({"other": 5000}))
+        self.assertEqual(r["credits"][0]["value"], 0.0)
+        self.assertAlmostEqual(r["credits"][0]["potential_value"], 150.0)  # 10k × 1.5cpp
 
     def test_confirmed_uncategorized_coupon_gets_capture_not_face(self):
         # A confirmed merchant coupon is spendable only at that merchant —
