@@ -134,28 +134,6 @@ export function Home({ cfg, onRetryConfig }: {
 
       {cfg.phase === 'ready' && (
         <>
-          <div className="mode-toggle" role="tablist" aria-label="Optimization mode">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === 'auto'}
-              className={mode === 'auto' ? 'active' : ''}
-              onClick={() => setMode('auto')}
-            >
-              Auto
-              <span className="mode-hint">we pick the best cards</span>
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === 'manual'}
-              className={mode === 'manual' ? 'active' : ''}
-              onClick={() => setMode('manual')}
-            >
-              Manual
-              <span className="mode-hint">you pick, we do the math</span>
-            </button>
-          </div>
           <StatementImport
             config={cfg.config}
             onApply={(usageKeys) => {
@@ -205,6 +183,28 @@ export function Home({ cfg, onRetryConfig }: {
             onChange={(patch) => setUser((u) => ({ ...u, ...patch }))}
           />
           <ChecksPanel errors={errors} />
+          <div className="mode-toggle" role="tablist" aria-label="Optimization mode">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'auto'}
+              className={mode === 'auto' ? 'active' : ''}
+              onClick={() => setMode('auto')}
+            >
+              Auto
+              <span className="mode-hint">we pick the best cards</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'manual'}
+              className={mode === 'manual' ? 'active' : ''}
+              onClick={() => setMode('manual')}
+            >
+              Manual
+              <span className="mode-hint">you pick, we do the math</span>
+            </button>
+          </div>
           {mode === 'manual' && (
             <ManualGrid selected={selected} max={MAX_CARDS} onToggle={toggleSelect} />
           )}
