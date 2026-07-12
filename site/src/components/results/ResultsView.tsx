@@ -10,30 +10,23 @@ import { PolicyConstants } from './PolicyConstants'
 interface ShownEntry {
   entry: BestBySize
   gain: number | null
-  /** Card ids in this entry that were not in the previous shown entry. */
-  added: string[]
 }
 
 /** Escalating presentation (plan 08): always the best single card, then the
  * best 2-card and 3-card portfolios — each shown only when it beats the last
  * shown size on the optimize_for metric (adding a card for $0 gain is noise).
- * Everything shown comes verbatim from the engine's best_by_size.
- *
- * v2 (design handoff): the sizes render as a clickable ladder; the selected
- * row drives the receipt panel, card stack, and per-card tiles below. */
+ * Everything shown comes verbatim from the engine's best_by_size. Each size
+ * is optimized independently — the best k-card set need not contain the best
+ * (k-1)-card set — so every row lists its complete portfolio. */
 export function ResultsView({ bundle }: { bundle: OptimizeBundle }) {
   const metric = bundle.optimize_for === 'ongoing' ? 'ongoing_net' : 'year1_net'
   const shown: ShownEntry[] = []
   for (const entry of bundle.best_by_size) {
     const prev = shown.length > 0 ? shown[shown.length - 1].entry : null
     if (prev === null) {
-      shown.push({ entry, gain: null, added: entry.cards })
+      shown.push({ entry, gain: null })
     } else if (entry[metric] > prev[metric]) {
-      shown.push({
-        entry,
-        gain: entry[metric] - prev[metric],
-        added: entry.cards.filter((id) => !prev.cards.includes(id)),
-      })
+      shown.push({ entry, gain: entry[metric] - prev[metric] })
     }
   }
 
@@ -80,11 +73,8 @@ export function ResultsView({ bundle }: { bundle: OptimizeBundle }) {
         {shown.map((s) => {
           const isBest = s === best
           const isSelected = s === selected
-          const label = s.gain === null
-            ? s.entry.cards.map((id) => s.entry.per_card[id]?.name ?? id).join(' + ')
-            : s.added.length > 0
-              ? `+ ${s.added.map((id) => s.entry.per_card[id]?.name ?? id).join(' + ')}`
-              : s.entry.cards.map((id) => s.entry.per_card[id]?.name ?? id).join(' + ')
+          const label = s.entry.cards
+            .map((id) => s.entry.per_card[id]?.name ?? id).join(' + ')
           const width = Math.max(0, Math.min(1, s.entry[metric] / bestNet)) * 100
           return (
             <button
