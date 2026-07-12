@@ -790,7 +790,10 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 .card-tile details.full-detail[open] summary::before { content: '▾ '; }
 
 /* Full-detail internals (assignments table, credits) */
-table.assign { border-collapse: collapse; width: 100%; font-size: 12px; margin: 0.6em 0 0.4em; }
+.assign-scroll { overflow-x: auto; margin: 0.6em 0 0.4em; }
+table.assign { border-collapse: collapse; width: 100%; font-size: 12px; }
+table.assign th, table.assign td { white-space: nowrap; }
+table.assign td:first-child { white-space: normal; min-width: 110px; }
 table.assign th, table.assign td { border: 1px solid var(--hairline-strong); padding: 3px 8px; text-align: right; }
 table.assign th:first-child, table.assign td:first-child { text-align: left; }
 table.assign .note { color: var(--text-muted); font-size: 0.92em; }

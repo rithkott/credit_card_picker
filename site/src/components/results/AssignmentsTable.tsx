@@ -8,7 +8,8 @@ export function AssignmentsTable({ assignments, currencyKind }: {
   if (assignments.length === 0) return null
   const points = currencyKind === 'points'
   return (
-    <table className="assign">
+    <div className="assign-scroll">
+      <table className="assign">
       <thead>
         <tr>
           <th>spend bucket</th>
@@ -34,6 +35,7 @@ export function AssignmentsTable({ assignments, currencyKind }: {
           </tr>
         ))}
       </tbody>
-    </table>
+      </table>
+    </div>
   )
 }
