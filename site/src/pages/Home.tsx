@@ -8,6 +8,7 @@ import { AboutYou } from '../components/AboutYou'
 import { BrandLoyalty } from '../components/BrandLoyalty'
 import { ChecksPanel } from '../components/ChecksPanel'
 import { StatementImport } from '../components/import/StatementImport'
+import { RentMortgage } from '../components/RentMortgage'
 import { RewardPreferences } from '../components/RewardPreferences'
 import { ServerBanner } from '../components/ServerBanner'
 import { SpendEntry } from '../components/SpendEntry'
@@ -132,6 +133,11 @@ export function Home({ cfg, onRetryConfig }: {
             config={cfg.config}
             confirmed={user.confirmed_usage}
             onToggle={toggleUsage}
+          />
+          <RentMortgage
+            cents={spend.categoryCents['housing'] ?? null}
+            onChange={(cents) =>
+              setSpend((s) => ({ ...s, categoryCents: { ...s.categoryCents, housing: cents } }))}
           />
           <SpendEntry
             config={cfg.config}

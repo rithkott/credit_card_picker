@@ -9,9 +9,17 @@ currency:
   program: bilt_points
 base_rate: 1                 # 1 point per $1 on all other eligible purchases (Housing-only option)
 
-category_rewards: []
-# Housing-payment earn (up to 1.25x on rent/mortgage/HOA/utilities/property tax) is OMITTED:
-# no housing/rent key exists in data/meta/categories.yaml. See notes + report registry gap.
+category_rewards:
+  - category: housing
+    rate: 1                  # variable 0x-1.25x by Everyday Spend Ratio; modeled flat at 1x — see notes
+    notes: >-
+      Bilt Housing Payments (rent/mortgage/HOA dues/utilities/property tax paid via the Bilt
+      app, no transaction fee, no cap). The real earn is variable 0x-1.25x per billing cycle by
+      the "Everyday Spend Ratio" (Everyday Spend ÷ Housing Payment: 25-49%=0.5x, 50-74%=0.75x,
+      75-99%=1x, 100%+=1.25x; 250-pt/cycle floor). The ratio depends on how much everyday spend
+      lands on this card, so the deterministic model uses a flat 1x (the 75-99% tier) —
+      understates heavy-everyday users (1.25x), overstates users who put little everyday spend
+      here.
 
 merchant_rewards: []
 # Partner earning (Lyft, Bilt Dining, Bilt Travel Portal, Bilt Fitness, Metropolis parking,
@@ -52,7 +60,8 @@ notes: >-
   no Bilt Cash on everyday spend. (2) Flexible Bilt Cash option (UNMODELED): 4% back in Bilt Cash on all
   Everyday Spend, no housing multiplier; redeem every $3 Bilt Cash to unlock 100 housing points (capped at
   1 pt/$1 of the payment). The 4% option could materially change value for low-housing users — flagged for
-  a human. HOUSING EARN OMITTED because no housing/rent category key exists (registry gap). No transaction
+  a human. Housing earn is modeled at a flat 1x against the 'housing' category (variable 0x-1.25x in
+  reality — see category_rewards note). No transaction
   fee to earn rewards on housing under either option. NEEDS human verification: prior-generation Bilt cards
   required 5 transactions/statement to earn — this offer file does not state such a requirement, so it is
   not modeled; confirm whether it applies to Bilt 2.0. Excluded from earning: balance transfers, cash
@@ -62,7 +71,7 @@ notes: >-
 
 sources:
   - url: https://www.biltrewards.com/terms
-    supports: [identity, currency, base_rate, signup_bonus, fees]
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, fees]
     accessed: "2026-07-04"
     added_by: claude-opus-4-8
     note: >-

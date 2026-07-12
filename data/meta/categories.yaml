@@ -38,6 +38,15 @@ categories:
     label: Entertainment
   utilities:
     label: Utilities & phone
+  housing:
+    # Rent / mortgage. explicit_only: this spend can't go on a normal credit
+    # card without a ~3% processor fee, so the optimizer never lets base-rate
+    # lines earn on it — only cards with an explicit `category: housing`
+    # reward (Bilt pays housing fee-free through its app). Also excluded from
+    # signup-bonus / credit-unlock spend-feasibility windows. The web UI asks
+    # for it in a dedicated rent/mortgage block, not the general spending grid.
+    label: Rent / mortgage
+    explicit_only: true
   other:
     label: Everything else
   rotating:

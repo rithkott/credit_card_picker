@@ -41,7 +41,7 @@ def seed_card(card_id):
 
 def score(cards, profile):
     cards = [seed_card(c) if isinstance(c, str) else c for c in cards]
-    buckets = opt.build_buckets(profile, DATASET["merchants"])
+    buckets = opt.build_buckets(profile, DATASET["merchants"], DATASET["categories"])
     return opt.score_portfolio(cards, profile, DATASET["programs"], buckets, AS_OF)
 
 
@@ -345,7 +345,7 @@ class TestCreditVariants(unittest.TestCase):
         prof = make_profile({"streaming": 1200, "other": 5000})
         live = score([card], prof)  # AS_OF 2026-07-03: promo still live
         self.assertAlmostEqual(live["credits"][0]["value"], 60.0)  # 120 face × 0.5 capture
-        buckets = opt.build_buckets(prof, DATASET["merchants"])
+        buckets = opt.build_buckets(prof, DATASET["merchants"], DATASET["categories"])
         expired = opt.score_portfolio([card], prof, DATASET["programs"],
                                       buckets, date(2027, 1, 1))
         self.assertEqual(expired["credits"][0]["value"], 0.0)
@@ -628,7 +628,7 @@ class TestTransferGateway(unittest.TestCase):
         prof = make_profile({"other": 10000})
         _, pruned = opt.prune_dominated_variants(
             [plain_ur, better], prof,
-            DATASET["programs"], DATASET["merchants"])
+            DATASET["programs"], DATASET["merchants"], DATASET["categories"])
         self.assertEqual(pruned, [])
 
 
@@ -815,7 +815,7 @@ class TestChooseYourOwnCategory(unittest.TestCase):
         prof = make_profile(P30K, max_cards=2)
         variants = opt.expand_choice_variants([seed_card("custom-cash")], prof)
         results = opt.search(variants, prof, DATASET["programs"],
-                             DATASET["merchants"], AS_OF)
+                             DATASET["merchants"], DATASET["categories"], AS_OF)
         # Only one physical card exists → only single-card portfolios.
         self.assertTrue(all(len(r["cards"]) == 1 for r in results))
         self.assertEqual(results[0]["cards"], ["custom-cash[groceries]"])
@@ -908,7 +908,7 @@ class TestFiltersAndSearch(unittest.TestCase):
         eligible, _ = opt.filter_cards(DATASET["cards"], prof, DATASET["programs"])
         variants = opt.expand_choice_variants(eligible, prof)
         results = opt.search(variants, prof, DATASET["programs"],
-                             DATASET["merchants"], AS_OF)
+                             DATASET["merchants"], DATASET["categories"], AS_OF)
         self.assertEqual(len(results), 85)
         nets = [r["ongoing_net"] for r in results]
         self.assertEqual(nets, sorted(nets, reverse=True))
@@ -1016,7 +1016,7 @@ class TestSubsetBudget(unittest.TestCase):
         prof = make_profile({"other": 10000})
         with self.assertRaises(opt.DataError) as ctx:
             opt.search(variants, prof, DATASET["programs"],
-                       DATASET["merchants"], AS_OF)
+                       DATASET["merchants"], DATASET["categories"], AS_OF)
         msg = str(ctx.exception)
         self.assertIn("max_cards", msg)
         self.assertIn("MAX_SCORED_SUBSETS", msg)
@@ -1024,13 +1024,65 @@ class TestSubsetBudget(unittest.TestCase):
     def test_small_pool_searches_fine(self):
         variants = [synth_card(id="one", base_rate=1), synth_card(id="two", base_rate=2)]
         results = opt.search(variants, make_profile({"other": 5000}),
-                             DATASET["programs"], DATASET["merchants"], AS_OF)
+                             DATASET["programs"], DATASET["merchants"],
+                             DATASET["categories"], AS_OF)
         self.assertEqual(len(results), 3)  # {one}, {two}, {one, two}
 
     def test_policy_constants_echo(self):
         pc = opt.policy_constants()
         self.assertIn("MAX_SCORED_SUBSETS", pc)
         self.assertNotIn("MAX_ELIGIBLE_CARDS", pc)
+        self.assertIn("EXPLICIT_ONLY_CATEGORIES", pc)
+
+
+class TestExplicitOnlyHousing(unittest.TestCase):
+    """Housing (explicit_only): rent/mortgage earns only through an explicit
+    housing category reward — never the base rate — and never counts toward
+    signup-bonus or credit-unlock spend feasibility."""
+
+    def test_base_rate_never_earns_on_housing(self):
+        # A plain 2% card has no housing line, so $24k of rent earns $0 and
+        # stays unassigned; only the $6k of 'other' earns the base rate.
+        plain = synth_card(base_rate=2)
+        prof = make_profile({"housing": 24000, "other": 6000})
+        r = score([plain], prof)
+        self.assertAlmostEqual(r["earnings"], 120.0)  # 6000 * 2%, housing earns $0
+        self.assertAlmostEqual(r["unassigned"]["housing"], 24000.0)
+
+    def test_explicit_housing_reward_earns(self):
+        # A card with an explicit housing reward (Bilt-style) earns on rent.
+        bilt = synth_card(base_rate=1,
+                          category_rewards=[{"category": "housing", "rate": 1}])
+        prof = make_profile({"housing": 24000, "other": 6000})
+        r = score([bilt], prof)
+        self.assertAlmostEqual(r["earnings"], 300.0)  # (24000 + 6000) * 1%
+        self.assertNotIn("housing", r["unassigned"])
+
+    def test_housing_excluded_from_bonus_feasibility(self):
+        # $40k spend requirement, but $36k of the $40k profile is housing —
+        # only $4k is card-payable, so the requirement is unreachable and the
+        # bonus is $0. Without the exclusion the $40k total would "reach" it.
+        card = synth_card(base_rate=1, signup_bonus={
+            "value": {"usd": 500}, "spend_requirement_usd": 40000,
+            "window_months": 12})
+        prof = make_profile({"housing": 36000, "other": 4000})
+        r = score([card], prof)
+        self.assertEqual(r["bonuses"]["synth"]["value"], 0.0)
+        self.assertIn("unreachable", r["bonuses"]["synth"]["note"])
+
+    def test_housing_excluded_from_credit_unlock_feasibility(self):
+        # unlock_spend_usd is measured against card-payable (everyday) spend,
+        # so a $10k/yr unlock is unreachable when only $2k is non-housing.
+        credit = {"name": "spend-unlock perk", "amount_usd": 100,
+                  "period": "annual", "unlock_spend_usd": 10000,
+                  "realistic_capture_rate_note": "x"}
+        card = synth_card(base_rate=1,
+                          category_rewards=[{"category": "housing", "rate": 1}],
+                          credits=[credit])
+        prof = make_profile({"housing": 30000, "other": 2000})
+        r = score([card], prof)
+        self.assertEqual(r["credits"][0]["value"], 0.0)
+        self.assertIn("unreachable", r["credits"][0]["note"])
 
 
 class TestDominancePruning(unittest.TestCase):
@@ -1038,7 +1090,8 @@ class TestDominancePruning(unittest.TestCase):
 
     def prune(self, variants, prof):
         return opt.prune_dominated_variants(variants, prof,
-                                            DATASET["programs"], DATASET["merchants"])
+                                            DATASET["programs"], DATASET["merchants"],
+                                            DATASET["categories"])
 
     def test_strictly_worse_clone_pruned(self):
         variants = [synth_card(id="worse", base_rate=1),

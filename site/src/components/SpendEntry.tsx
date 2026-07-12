@@ -14,15 +14,19 @@ interface Props {
   onMerchantChange: (key: string, cents: number | null) => void
 }
 
-/** All 13 categories always visible, registry order/labels — the fixed list
- * is a recall checklist (plan 03 §3.1). Merchant carve-outs nest under their
- * parent category rows. The totals row lives in this panel's footer (always
- * annual regardless of the unit toggle; carve-outs excluded — they are
+/** Every real spend category always visible, registry order/labels — the fixed
+ * list is a recall checklist (plan 03 §3.1). Housing (rent/mortgage) is the one
+ * exception: it's an explicit_only category asked in its own RentMortgage block,
+ * so it's filtered out here and out of these totals. Merchant carve-outs nest
+ * under their parent category rows. The totals row lives in this panel's footer
+ * (always annual regardless of the unit toggle; carve-outs excluded — they are
  * already inside their parents, plan 03 §3.5). */
 export function SpendEntry({ config, spend, unit, warnings, onUnitChange, onCategoryChange, onMerchantChange }: Props) {
-  const totalCents = Object.values(spend.categoryCents)
+  const categories = config.categories.filter((c) => c.key !== 'housing')
+  const gridCents = categories.map((c) => spend.categoryCents[c.key] ?? null)
+  const totalCents = gridCents
     .reduce<number>((sum, c) => sum + (c !== null && !Number.isNaN(c) && c > 0 ? c : 0), 0)
-  const nonzero = Object.values(spend.categoryCents)
+  const nonzero = gridCents
     .filter((c) => c !== null && !Number.isNaN(c) && c > 0).length
   return (
     <section className="block">
@@ -35,7 +39,7 @@ export function SpendEntry({ config, spend, unit, warnings, onUnitChange, onCate
         <UnitToggle unit={unit} onChange={onUnitChange} />
       </div>
       <div className="spend-rows">
-        {config.categories.map((cat) => (
+        {categories.map((cat) => (
           <CategoryRow
             key={cat.key}
             category={cat}
@@ -54,7 +58,7 @@ export function SpendEntry({ config, spend, unit, warnings, onUnitChange, onCate
         <span className="muted">≈ ${formatNumber(Math.round(totalCents / 1200))} /mo</span>
         <span className="spacer" />
         <span className="muted">
-          {nonzero} of {config.categories.length} categories · skipped categories count $0
+          {nonzero} of {categories.length} categories · skipped categories count $0
         </span>
       </div>
       {warnings.map((w) => (

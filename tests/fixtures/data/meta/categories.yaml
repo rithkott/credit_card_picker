@@ -34,6 +34,12 @@ categories:
     label: Entertainment
   utilities:
     label: Utilities & phone
+  housing:
+    # Rent / mortgage — explicit_only: only an explicit housing category reward
+    # earns on it (never the base rate), and it's excluded from bonus/credit-
+    # unlock spend-feasibility windows. Mirrors data/meta/categories.yaml.
+    label: Rent / mortgage
+    explicit_only: true
   other:
     label: Everything else
   rotating:
