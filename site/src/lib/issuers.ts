@@ -3,6 +3,7 @@
  * Data sources tab and Manual mode's card grid. */
 const ISSUER_LABELS: Record<string, string> = {
   'amex': 'American Express',
+  'cardless': 'Bilt',
   'bank-of-america': 'Bank of America',
   'capital-one': 'Capital One',
   'goldman-sachs': 'Goldman Sachs',

@@ -199,7 +199,7 @@ export function Home({ cfg, onRetryConfig }: {
               role="tab"
               aria-selected={mode === 'manual'}
               className={mode === 'manual' ? 'active' : ''}
-              onClick={() => setMode('manual')}
+              onClick={() => { setMode('manual'); setRun({ phase: 'idle' }); setElapsed(0) }}
             >
               Manual
               <span className="mode-hint">you pick, we do the math</span>
