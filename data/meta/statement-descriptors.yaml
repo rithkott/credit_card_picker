@@ -1,8 +1,11 @@
 # Statement-descriptor keyword registry.
 #
-# Purpose: groundwork for a future statement-import feature — parse a user's
-# credit card statement export and detect merchant-level spend that maps to a
-# pointed reward, statement credit, or unlockable benefit in data/cards/.
+# Purpose: THE single registry behind the benefit-usage detector (plan 14).
+# POST /api/statements/parse matches every transaction descriptor against the
+# statement_patterns below; hits that resolve to a usage-questions item are
+# returned as detected benefits ("you already spend at Delta") for the user to
+# confirm into user.confirmed_usage. Nothing else is matched — no category
+# assignment, no spend import; spending is entered manually.
 #
 # How this file was built: every merchant/brand below was extracted from the
 # terms sheets in data/offer_files/ because at least one card ties a reward
@@ -10,7 +13,7 @@
 # statement_patterns are the common ways that merchant appears in the
 # description field of a US credit card statement.
 #
-# Matching guidance for the eventual parser:
+# Matching rules (implemented in server/statements/detect_usage.py):
 #   - Match case-insensitively; statements are usually uppercase.
 #   - Patterns are stable stems, not exact strings. Real descriptors append
 #     store numbers, city/state, dates, phone numbers, or order suffixes
@@ -18,11 +21,10 @@
 #     "DD *DOORDASH CHIPOTLE"). Treat each pattern as a prefix/substring.
 #   - "*" appears literally in many processor descriptors (Stripe/Square-style
 #     "PAYFAC* MERCHANT"); it is part of the pattern, not a wildcard here.
-#   - Aggregator prefixes hide the underlying merchant: "PAYPAL *X",
-#     "SQ *X", "TST* X" (Toast, restaurants), "APLPAY X" (some Apple Pay
-#     acquirers), "PY *X", "CKE*X". When a prefix matches, the reward usually
-#     keys off the PREFIX network (e.g. PayPal 3%) or the underlying merchant
-#     after it — both entries exist below where relevant.
+#   - Entries marked `aggregator_prefix: true` hide the underlying merchant:
+#     "PAYPAL *X", "SQ *X", "TST* X" (Toast), "APLPAY X". When one matches,
+#     the matcher strips the prefix and re-matches the remainder once — the
+#     benefit belongs to the merchant behind the prefix, not the processor.
 #
 # Confidence: descriptor variants are heuristics from common knowledge, NOT
 # verified against real statement exports. Treat as draft (confidence: low)
@@ -866,6 +868,7 @@ descriptors:
   paypal:
     label: PayPal (checkout prefix + P2P)
     benefit_context: "3% via PayPal (Synchrony PayPal Cashback); descriptor prefix hides underlying merchant"
+    aggregator_prefix: true
     statement_patterns:
       - "PAYPAL *"
       - "PP*"
@@ -887,19 +890,22 @@ descriptors:
   # ── Aggregator prefixes (detection helpers, not merchants) ────────────
   square_prefix:
     label: Square-acquired merchants (often small food/retail)
-    benefit_context: "underlying merchant follows the prefix; category detection helper"
+    benefit_context: "underlying merchant follows the prefix; detection helper"
+    aggregator_prefix: true
     statement_patterns:
       - "SQ *"
       - "SQU*"
   toast_prefix:
     label: Toast-acquired restaurants
-    benefit_context: "strong dining-category signal; underlying restaurant follows the prefix"
+    benefit_context: "underlying restaurant follows the prefix; detection helper"
+    aggregator_prefix: true
     statement_patterns:
       - "TST*"
       - "TST* "
   apple_pay_prefix:
     label: Apple Pay acquirer prefix (some processors)
     benefit_context: "relevant to Apple Card 2% Apple Pay tier and Apple Pay partner 3% merchants"
+    aggregator_prefix: true
     statement_patterns:
       - "APLPAY"
       - "APL*"

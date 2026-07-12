@@ -109,7 +109,7 @@ class IssuerProfile:
 
 # Header fingerprints for the big issuers' transaction exports. Drafted from
 # their documented CSV layouts, confidence: low until checked against real
-# exports (same caveat as data/meta/category-rules.yaml).
+# exports (same caveat as data/meta/statement-descriptors.yaml).
 ISSUER_PROFILES = [
     IssuerProfile("chase", ["transaction date", "post date", "description", "type", "amount"], True),
     IssuerProfile("amex", ["date", "description", "amount"], False),

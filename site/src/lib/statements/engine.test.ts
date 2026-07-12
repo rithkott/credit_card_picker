@@ -1,22 +1,16 @@
-/** Aggregate/annualize/review tests (plan 09; server-side matches since
- * plan 12). Categorization now happens on the server, so transactions here
- * carry their `match` inline — exactly the shape POST /api/statements/parse
- * returns after fromWire. Matcher behavior itself is pinned by the Python
- * suite (tests/test_statements.py). */
+/** Detection/annualize tests (plan 09 lineage; detection-only since plan 14).
+ * Matching happens on the server, so files here carry only the usage-item
+ * matches — exactly the shape POST /api/statements/parse returns after
+ * fromWire. Matcher behavior itself is pinned by the Python suite
+ * (tests/test_statements.py). */
 
 import { describe, expect, it } from 'vitest'
 import { annualize, daysInclusive, mergeIntervals } from './annualize'
-import { aggregate, applyReview, toSpendState } from './aggregate'
+import { aggregate } from './aggregate'
 import { fromWire } from './index'
-import { validate } from '../validation'
-import type { ConfigMerchant, UsageItem } from '../../types'
-import type { NormalizedTxn, ParsedFile, TxnMatch, WireParsedFile } from './types'
+import type { UsageItem } from '../../types'
+import type { DetectedTxn, ParsedFile, WireParsedFile } from './types'
 
-const MERCHANTS: ConfigMerchant[] = [
-  { key: 'costco', label: 'Costco', category: 'groceries' },
-  { key: 'whole_foods', label: 'Whole Foods Market', category: 'groceries' },
-  { key: 'uber', label: 'Uber (rides)', category: 'transit' },
-]
 const USAGE_ITEMS: UsageItem[] = [
   { key: 'delta', label: 'Delta' },
   { key: 'doordash', label: 'DoorDash / DashPass' },
@@ -24,56 +18,22 @@ const USAGE_ITEMS: UsageItem[] = [
   { key: 'uber', label: 'Uber rides / Uber One' },
 ]
 
-/** Server-shaped matches for the merchants the tests use. */
-const MATCHES: Record<string, TxnMatch> = {
-  'COSTCO WHSE #0021': {
-    category: 'groceries', layer: 1, method: 'exact',
-    merchantKey: 'costco', usageKey: 'costco',
-    descriptorKey: 'costco', descriptorLabel: 'Costco', stem: 'COSTCO WHSE',
-  },
-  'WHOLEFDS #10236': {
-    category: 'groceries', layer: 1, method: 'exact',
-    merchantKey: 'whole_foods',
-    descriptorKey: 'whole_foods', descriptorLabel: 'Whole Foods Market', stem: 'WHOLEFDS',
-  },
-  'KROGER #442': { category: 'groceries', layer: 2, method: 'exact', stem: 'KROGER SPRINGFIELD' },
-  'KROGER': { category: 'groceries', layer: 2, method: 'exact', stem: 'KROGER' },
-  'KROGER #1': { category: 'groceries', layer: 2, method: 'exact', stem: 'KROGER' },
-  'SHELL': { category: 'gas', layer: 2, method: 'exact', stem: 'SHELL' },
-  'SHELL OIL': { category: 'gas', layer: 2, method: 'exact', stem: 'SHELL OIL' },
-  'DELTA AIR LINES': {
-    category: 'travel_flights', layer: 1, method: 'exact',
-    usageKey: 'delta', descriptorKey: 'delta', descriptorLabel: 'Delta Air Lines',
-    stem: 'DELTA AIR LINES',
-  },
-  'BILT REWARDS': {
-    category: null, layer: null, method: 'exact',
-    descriptorKey: 'bilt_rent', descriptorLabel: 'Bilt rent/housing payments',
-    stem: 'BILT REWARDS',
-  },
-}
-
-const unmatched = (descriptor: string): TxnMatch => ({
-  category: null, layer: null, method: null,
-  stem: descriptor.replace(/[#*]?\d[\d\-/.]*/g, ' ').replace(/\s+/g, ' ').trim(),
-})
-
-const txn = (descriptor: string, over: Partial<NormalizedTxn> = {}): NormalizedTxn => ({
-  dateISO: '2026-01-10', amountCents: 1000, descriptor, kind: 'purchase',
-  match: MATCHES[descriptor] ?? unmatched(descriptor),
+const hit = (
+  usageKey: string, amountCents: number, over: Partial<DetectedTxn> = {},
+): DetectedTxn => ({
+  dateISO: '2026-01-10', amountCents, descriptor: usageKey.toUpperCase(),
+  kind: 'purchase', usageKey, usageLabel: `${usageKey} (wire)`,
   source: { file: 'f', line: 1 }, ...over,
 })
 
 const file = (
-  name: string, range: [string, string], txns: NormalizedTxn[],
-  totals?: ParsedFile['summary']['statementTotals'],
+  name: string, range: [string, string], matches: DetectedTxn[],
 ): ParsedFile => ({
   summary: {
-    name, format: 'csv', txns: txns.length, rejectedRows: 0,
+    name, format: 'csv', txns: matches.length + 10, rejectedRows: 0,
     rangeStart: range[0], rangeEnd: range[1],
-    ...(totals !== undefined ? { statementTotals: totals } : {}),
   },
-  txns,
+  matches,
 })
 
 // ── fromWire ─────────────────────────────────────────────────────────────────
@@ -82,42 +42,30 @@ describe('fromWire', () => {
   it('converts the server wire shape to browser camelCase', () => {
     const wire: WireParsedFile = {
       summary: {
-        name: 's.pdf', format: 'pdf', txns: 2, rejected_rows: 2,
+        name: 's.pdf', format: 'pdf', txns: 214, rejected_rows: 2,
         range_start: '2026-01-01', range_end: '2026-01-31',
-        statement_totals: { purchases_cents: 2450, fees_cents: 0 },
+        statement_totals: { purchases_cents: 123456 },
         period_count: 1, extraction: 'layout',
       },
-      txns: [{
-        date: '2026-01-03', amount_cents: 2450, descriptor: 'KROGER #1',
-        kind: 'purchase', line: 7,
-        match: { category: 'groceries', layer: 5, method: 'fuzzy',
-                 confidence: 0.93, stem: 'KROGER' },
-      }, {
-        date: '2026-01-04', amount_cents: 900, descriptor: 'JOES PLACE',
-        kind: 'purchase', line: 9,
-        match: { category: null, layer: null, method: null, stem: 'JOES PLACE',
-                 suggestion: { category: 'dining', confidence: 0.31 } },
+      matches: [{
+        date: '2026-01-14', amount_cents: 41250,
+        descriptor: 'DELTA AIR 0062341983477 ATLANTA', kind: 'purchase',
+        line: 12, usage_key: 'delta', usage_label: 'Delta',
       }],
     }
     expect(fromWire(wire)).toEqual({
       summary: {
-        name: 's.pdf', format: 'pdf', txns: 2, rejectedRows: 2,
+        // statement_totals is dropped on purpose: the client no longer
+        // reconciles (it never sees the full transaction list to sum).
+        name: 's.pdf', format: 'pdf', txns: 214, rejectedRows: 2,
         rangeStart: '2026-01-01', rangeEnd: '2026-01-31',
-        statementTotals: { purchasesCents: 2450, feesCents: 0 },
         periodCount: 1, extraction: 'layout',
       },
-      txns: [{
-        dateISO: '2026-01-03', amountCents: 2450, descriptor: 'KROGER #1',
-        kind: 'purchase',
-        match: { category: 'groceries', layer: 5, method: 'fuzzy',
-                 confidence: 0.93, stem: 'KROGER' },
-        source: { file: 's.pdf', line: 7 },
-      }, {
-        dateISO: '2026-01-04', amountCents: 900, descriptor: 'JOES PLACE',
-        kind: 'purchase',
-        match: { category: null, layer: null, method: null, stem: 'JOES PLACE',
-                 suggestion: { category: 'dining', confidence: 0.31 } },
-        source: { file: 's.pdf', line: 9 },
+      matches: [{
+        dateISO: '2026-01-14', amountCents: 41250,
+        descriptor: 'DELTA AIR 0062341983477 ATLANTA', kind: 'purchase',
+        usageKey: 'delta', usageLabel: 'Delta',
+        source: { file: 's.pdf', line: 12 },
       }],
     })
   })
@@ -149,328 +97,74 @@ describe('annualize / coverage', () => {
     expect(annualize(10000, 365)).toBe(10000)
     expect(annualize(10000, 0)).toBe(10000 * 365) // guarded divisor
   })
-  it('E3 invariant: round is monotonic, carve-out never exceeds parent', () => {
-    // Deterministic LCG so the property sweep is reproducible.
-    let seed = 42
-    const next = () => (seed = (seed * 1664525 + 1013904223) % 2 ** 32)
-    for (let i = 0; i < 500; i++) {
-      const parent = next() % 1_000_000
-      const carve = next() % (parent + 1)
-      const days = 1 + (next() % 400)
-      expect(annualize(carve, days)).toBeLessThanOrEqual(annualize(parent, days))
-    }
-  })
 })
 
-// ── aggregate ────────────────────────────────────────────────────────────────
+// ── aggregate (detection) ────────────────────────────────────────────────────
 
 describe('aggregate', () => {
   // One 73-day window -> factor exactly 5 keeps expectations hand-computable.
   const RANGE: [string, string] = ['2026-01-01', '2026-03-14']
 
-  it('buckets, excludes non-spend kinds, and annualizes ×5', () => {
+  it('sums per usage key, subtracts refunds, annualizes ×5, sorts by value', () => {
     const result = aggregate([file('a.csv', RANGE, [
-      txn('COSTCO WHSE #0021', { amountCents: 10000 }),
-      txn('WHOLEFDS #10236', { amountCents: 5000 }),
-      txn('KROGER #442', { amountCents: 3000 }),
-      txn('DELTA AIR LINES', { amountCents: 20000 }),
-      txn('PAYMENT THANK YOU', { amountCents: -30000, kind: 'payment' }),
-      txn('ANNUAL FEE', { amountCents: 9500, kind: 'fee' }),
-      txn('WHOLEFDS #10236', { amountCents: -1000, kind: 'refund' }),
-      txn('MYSTERY MERCHANT 71', { amountCents: 4200 }),
-      txn('BILT REWARDS', { amountCents: 150000 }),
-    ])], MERCHANTS, USAGE_ITEMS)
-
+      hit('delta', 20000),
+      hit('costco', 10000),
+      hit('costco', 5000),
+      hit('costco', -1000, { kind: 'refund' }),
+    ])], USAGE_ITEMS)
     expect(result.coverageDays).toBe(73)
-    expect(result.categoryCents).toEqual({
-      groceries: (10000 + 5000 + 3000 - 1000) * 5,
-      travel_flights: 20000 * 5,
-    })
-    expect(result.merchantCents).toEqual({
-      costco: 50000,
-      whole_foods: (5000 - 1000) * 5,
-    })
-    expect(result.excludedCents).toEqual({ payment: 30000, fee: 9500 })
-    expect(result.uncategorized).toEqual([
-      { stem: 'bilt_rent', label: 'Bilt rent/housing payments', count: 1,
-        rawCents: 150000, example: 'BILT REWARDS' },
-      { stem: 'MYSTERY MERCHANT', count: 1, rawCents: 4200,
-        example: 'MYSTERY MERCHANT 71' },
-    ])
     expect(result.usageSuggestions).toEqual([
       { key: 'delta', label: 'Delta', annualCents: 100000 },
-      { key: 'costco', label: 'Costco', annualCents: 50000 },
+      { key: 'costco', label: 'Costco', annualCents: (10000 + 5000 - 1000) * 5 },
     ])
   })
 
-  it('clamps refund-heavy categories (and their carve-outs) at zero', () => {
+  it('prefers config labels, falls back to wire labels', () => {
+    const result = aggregate(
+      [file('a.csv', RANGE, [hit('delta', 1000), hit('mystery_key', 1000)])],
+      USAGE_ITEMS)
+    const labels = Object.fromEntries(result.usageSuggestions.map((s) => [s.key, s.label]))
+    expect(labels['delta']).toBe('Delta')
+    expect(labels['mystery_key']).toBe('mystery_key (wire)')
+  })
+
+  it('drops keys whose refunds net them to zero or below', () => {
     const result = aggregate([file('a.csv', RANGE, [
-      txn('COSTCO WHSE #0021', { amountCents: 2000 }),
-      txn('WHOLEFDS #10236', { amountCents: -5000, kind: 'refund' }),
-      txn('SHELL OIL', { amountCents: 4000 }),
-    ])], MERCHANTS, USAGE_ITEMS)
-    expect(result.categoryCents).toEqual({ gas: 20000 })
-    expect(result.merchantCents).toEqual({}) // costco capped by clamped parent
+      hit('uber', 4000),
+      hit('uber', -6000, { kind: 'refund' }),
+      hit('delta', 1000),
+    ])], USAGE_ITEMS)
+    expect(result.usageSuggestions.map((s) => s.key)).toEqual(['delta'])
   })
 
   it('warns on short coverage, overlaps, and rejected rows', () => {
+    const b = file('b.csv', ['2026-01-15', '2026-02-10'], [hit('delta', 100)])
+    b.summary.rejectedRows = 3
     const result = aggregate([
-      file('a.csv', ['2026-01-01', '2026-01-31'], [txn('KROGER')]),
-      { ...file('b.csv', ['2026-01-15', '2026-02-10'], [txn('SHELL')]),
-        summary: { ...file('b.csv', ['2026-01-15', '2026-02-10'], []).summary, rejectedRows: 3 } },
-    ], MERCHANTS, USAGE_ITEMS)
+      file('a.csv', ['2026-01-01', '2026-01-31'], [hit('costco', 100)]),
+      b,
+    ], USAGE_ITEMS)
     const codes = result.warnings.map((w) => w.code).sort()
     expect(codes).toEqual(['W-coverage', 'W-overlap', 'W-rows'])
   })
 
-  it('reconciles parsed sums against the statement summary box', () => {
-    const txns = [
-      txn('KROGER #1', { amountCents: 2450 }),
-      txn('PAYMENT THANK YOU', { amountCents: -100000, kind: 'payment' }),
-    ]
-    const clean = aggregate([file('s.pdf', RANGE, txns, {
-      purchasesCents: 2450, paymentsAndCreditsCents: 100000, feesCents: 0, interestCents: 0,
-    })], MERCHANTS, USAGE_ITEMS)
-    expect(clean.warnings.filter((w) => w.code === 'W-reconcile')).toEqual([])
-
-    const tampered = aggregate([file('s.pdf', RANGE, txns, {
-      purchasesCents: 99999, paymentsAndCreditsCents: 100000,
-    })], MERCHANTS, USAGE_ITEMS)
-    const reconcile = tampered.warnings.filter((w) => w.code === 'W-reconcile')
-    expect(reconcile).toHaveLength(1)
-    expect(reconcile[0].message).toMatch(/\$999\.99/)
-    expect(reconcile[0].message).toMatch(/\$24\.50/)
-  })
-
-  it('discloses semantic-layer paths: fuzzy, semantic, inferred columns, layout', () => {
-    const fuzzyTxn = txn('STARBUKS #99881', { amountCents: 640 })
-    fuzzyTxn.match = { category: 'dining', layer: 5, method: 'fuzzy',
-                       confidence: 0.94, stem: 'STARBUKS' }
-    const semanticTxn = txn('JOES DELI 42', { amountCents: 1200 })
-    semanticTxn.match = { category: 'dining', layer: 6, method: 'semantic',
-                          confidence: 0.59, stem: 'JOES DELI' }
-    const inferred = file('a.csv', RANGE, [fuzzyTxn, semanticTxn])
+  it('discloses guessing parse paths: inferred columns, layout, multi-statement', () => {
+    const inferred = file('a.csv', RANGE, [hit('delta', 100)])
     inferred.summary.columnInference = { used: true, confidence: 0.95 }
-    const layout = file('b.pdf', RANGE, [txn('KROGER #1')])
+    const layout = file('b.pdf', RANGE, [])
     layout.summary.extraction = 'layout'
+    layout.summary.periodCount = 3
 
-    const result = aggregate([inferred, layout], MERCHANTS, USAGE_ITEMS)
-    const codes = result.warnings.map((w) => w.code)
-    expect(codes).toContain('I-fuzzy')
-    expect(codes).toContain('I-semantic')
+    const codes = aggregate([inferred, layout], USAGE_ITEMS).warnings.map((w) => w.code)
     expect(codes).toContain('I-inferred-columns')
     expect(codes).toContain('I-layout')
-    // Approximate-match money still lands in its category.
-    expect(result.categoryCents.dining).toBe((640 + 1200) * 5)
-  })
-})
-
-// ── materiality (plan 13) ────────────────────────────────────────────────────
-
-describe('materiality', () => {
-  const RANGE: [string, string] = ['2026-01-01', '2026-03-14'] // ×5
-
-  it('flags sub-0.1% unlabeled groups as minor; labeled and big ones ask', () => {
-    const result = aggregate([file('a.csv', RANGE, [
-      txn('COSTCO WHSE #0021', { amountCents: 200000 }),   // $10k/yr categorized
-      txn('MYSTERY MERCHANT 71', { amountCents: 30000 }),  // $1.5k/yr — significant
-      txn('TINY VENDOR 9', { amountCents: 100 }),          // $5/yr — minor
-      txn('BILT REWARDS', { amountCents: 100 }),           // labeled: never minor
-    ])], MERCHANTS, USAGE_ITEMS)
-    const byStem = Object.fromEntries(result.uncategorized.map((g) => [g.stem, g]))
-    expect(byStem['MYSTERY MERCHANT'].minor).toBeUndefined()
-    expect(byStem['TINY VENDOR'].minor).toBe(true)
-    expect(byStem['bilt_rent'].minor).toBeUndefined()
+    expect(codes).toContain('W-multi-statement')
   })
 
-  it('minor groups still fold into other on Apply (unchanged mechanics)', () => {
-    const result = aggregate([file('a.csv', RANGE, [
-      txn('COSTCO WHSE #0021', { amountCents: 200000 }),
-      txn('TINY VENDOR 9', { amountCents: 100 }),
-    ])], MERCHANTS, USAGE_ITEMS)
-    const spend = toSpendState(result, {}, new Set(), MERCHANTS)
-    expect(spend.categoryCents['other']).toBe(100 * 5)
-  })
-
-  it('caps the silent fold-in at 2% of total spend by promoting largest-first', () => {
-    // $10k/yr categorized + 50 equal sub-0.1% vendors of $6.50/yr each:
-    // the tail sums to $325/yr > 2% of the $10,325 total, so the cap must
-    // promote groups (equal spend -> stem-ascending order) until the
-    // remainder fits under 2%.
-    // Letter suffixes: the stemmer strips digits, so numbered vendors would
-    // collapse into one group.
-    const vendorName = (i: number) =>
-      `VENDOR ${String.fromCharCode(65 + Math.floor(i / 26))}${String.fromCharCode(65 + (i % 26))}`
-    const vendors = Array.from({ length: 50 }, (_, i) =>
-      txn(vendorName(i), { amountCents: 130 }))
-    const result = aggregate([file('a.csv', RANGE, [
-      txn('COSTCO WHSE #0021', { amountCents: 200000 }),
-      ...vendors,
-    ])], MERCHANTS, USAGE_ITEMS)
-    const groups = result.uncategorized
-    const totalAnnual = 200000 * 5 + 50 * 130 * 5
-    const minorAnnual = groups.reduce(
-      (s, g) => s + (g.minor ? annualize(g.rawCents, result.coverageDays) : 0), 0)
-    expect(minorAnnual).toBeLessThanOrEqual(0.02 * totalAnnual)
-    const promoted = groups.filter((g) => g.minor === false).map((g) => g.stem)
-    // Promotion is deterministic and stops as soon as the tail fits.
-    expect(promoted).toEqual(Array.from({ length: 19 }, (_, i) => vendorName(i)))
-    expect(groups.filter((g) => g.minor === true)).toHaveLength(31)
-  })
-
-  it('leaves the tail alone when it already fits under the cap', () => {
-    const result = aggregate([file('a.csv', RANGE, [
-      txn('COSTCO WHSE #0021', { amountCents: 200000 }),
-      txn('TINY VENDOR 9', { amountCents: 100 }),
-    ])], MERCHANTS, USAGE_ITEMS)
-    expect(result.uncategorized.find((g) => g.stem === 'TINY VENDOR')!.minor).toBe(true)
-  })
-})
-
-// ── suggestions (v1.3.0) ─────────────────────────────────────────────────────
-
-describe('suggestions', () => {
-  const RANGE: [string, string] = ['2026-01-01', '2026-03-14'] // ×5
-  const SUGG = { category: 'dining', confidence: 0.31 }
-
-  it('propagates the txn suggestion and example onto the group', () => {
-    const result = aggregate([file('a.csv', RANGE, [
-      txn('JOES PLACE 42', {
-        amountCents: 30000,
-        match: { ...unmatched('JOES PLACE 42'), suggestion: SUGG },
-      }),
-      txn('JOES PLACE 99', {
-        amountCents: 30000,
-        match: { ...unmatched('JOES PLACE 99'), suggestion: SUGG },
-      }),
-    ])], MERCHANTS, USAGE_ITEMS)
-    const group = result.uncategorized.find((g) => g.stem === 'JOES PLACE')!
-    expect(group.suggestion).toEqual(SUGG)
-    expect(group.example).toBe('JOES PLACE 42')
-    expect(group.count).toBe(2)
-  })
-
-  it('never attaches a suggestion to labeled policy groups', () => {
-    const result = aggregate([file('a.csv', RANGE, [
-      txn('BILT REWARDS', {
-        amountCents: 150000,
-        match: { ...MATCHES['BILT REWARDS'], suggestion: SUGG },
-      }),
-    ])], MERCHANTS, USAGE_ITEMS)
-    expect(result.uncategorized[0].suggestion).toBeUndefined()
-  })
-
-  it('bulk-accepted suggestions flow through applyReview like manual picks', () => {
-    const result = aggregate([file('a.csv', RANGE, [
-      txn('COSTCO WHSE #0021', { amountCents: 200000 }),
-      txn('JOES PLACE 42', {
-        amountCents: 30000,
-        match: { ...unmatched('JOES PLACE 42'), suggestion: SUGG },
-      }),
-    ])], MERCHANTS, USAGE_ITEMS)
-    const accepted = Object.fromEntries(result.uncategorized
-      .filter((g) => g.suggestion !== undefined)
-      .map((g) => [g.stem, g.suggestion!.category]))
-    expect(applyReview(result, accepted, new Set(), MERCHANTS))
-      .toEqual(applyReview(result, { 'JOES PLACE': 'dining' }, new Set(), MERCHANTS))
-    expect(applyReview(result, accepted, new Set(), MERCHANTS)
-      .categoryCents.dining).toBe(30000 * 5)
-  })
-})
-
-// ── review edits + Apply payload ─────────────────────────────────────────────
-
-describe('applyReview / toSpendState', () => {
-  const RANGE: [string, string] = ['2026-01-01', '2026-03-14'] // ×5
-  const base = aggregate([file('a.csv', RANGE, [
-    txn('COSTCO WHSE #0021', { amountCents: 10000 }),
-    txn('DELTA AIR LINES', { amountCents: 20000 }),
-    txn('MYSTERY MERCHANT 71', { amountCents: 4200 }),
-    txn('BILT REWARDS', { amountCents: 150000 }),
-  ])], MERCHANTS, USAGE_ITEMS)
-
-  it('moves reassigned groups and drops excluded categories', () => {
-    const out = applyReview(base, { 'MYSTERY MERCHANT': 'dining' },
-      new Set(['travel_flights']), MERCHANTS)
-    expect(out.categoryCents).toEqual({ groceries: 50000, dining: 21000 })
-    expect(out.merchantCents).toEqual({ costco: 50000 })
-    expect(out.leftoverGroups.map((g) => g.stem)).toEqual(['bilt_rent'])
-  })
-
-  it('excluding a parent category drops its carve-outs', () => {
-    const out = applyReview(base, {}, new Set(['groceries']), MERCHANTS)
-    expect(out.merchantCents).toEqual({})
-  })
-
-  it('folds unlabeled leftovers into other; labeled groups never auto-fill', () => {
-    const spend = toSpendState(base, {}, new Set(), MERCHANTS)
-    expect(spend.categoryCents['other']).toBe(21000)   // mystery merchant only
-    expect(Object.values(spend.categoryCents).reduce((s, c) => s! + (c ?? 0), 0))
-      .toBe(50000 + 100000 + 21000)                    // bilt rent stayed out
-  })
-
-  it('assigned bilt rent lands where the user pointed it', () => {
-    const spend = toSpendState(base, { bilt_rent: 'other' }, new Set(), MERCHANTS)
-    expect(spend.categoryCents['other']).toBe(150000 * 5 + 21000)
-  })
-
-  it('keeps net-negative groups visible; unmatched refunds subtract on assign', () => {
-    const withRefund = aggregate([file('a.csv', RANGE, [
-      txn('DELTA AIR LINES', { amountCents: 20000 }),
-      txn('SOME AIRLINE REFUND CO', { amountCents: -8000, kind: 'refund' }),
-    ])], MERCHANTS, USAGE_ITEMS)
-    expect(withRefund.uncategorized).toEqual([
-      { stem: 'SOME AIRLINE REFUND CO', count: 1, rawCents: -8000,
-        example: 'SOME AIRLINE REFUND CO' },
-    ])
-    const out = applyReview(withRefund, { 'SOME AIRLINE REFUND CO': 'travel_flights' },
-      new Set(), MERCHANTS)
-    expect(out.categoryCents).toEqual({ travel_flights: (20000 - 8000) * 5 })
-  })
-
-  it('unassigned negative leftovers reduce other, clamped at zero', () => {
-    const result = aggregate([file('a.csv', RANGE, [
-      txn('MYSTERY MERCHANT', { amountCents: 1000 }),
-      txn('MYSTERY REFUNDER', { amountCents: -9000, kind: 'refund' }),
-    ])], MERCHANTS, USAGE_ITEMS)
-    const spend = toSpendState(result, {}, new Set(), MERCHANTS)
-    expect(spend.categoryCents['other']).toBeUndefined()
-  })
-
-  it('money conservation: fully-assigned review equals annualized net spend', () => {
-    const txns = [
-      txn('COSTCO WHSE #0021', { amountCents: 10000 }),
-      txn('DELTA AIR LINES', { amountCents: 20000 }),
-      txn('MYSTERY MERCHANT 71', { amountCents: 4200 }),
-      txn('BILT REWARDS', { amountCents: 150000 }),
-      txn('MYSTERY REFUNDER', { amountCents: -3000, kind: 'refund' }),
-      txn('PAYMENT THANK YOU', { amountCents: -50000, kind: 'payment' }),
-    ]
-    const result = aggregate([file('a.csv', RANGE, txns)], MERCHANTS, USAGE_ITEMS)
-    const spend = toSpendState(result,
-      { bilt_rent: 'other', 'MYSTERY MERCHANT': 'dining', 'MYSTERY REFUNDER': 'dining' },
-      new Set(), MERCHANTS)
-    const total = Object.values(spend.categoryCents).reduce((s, c) => s! + (c ?? 0), 0)
-    const netSpendRaw = txns
-      .filter((t) => t.kind === 'purchase' || t.kind === 'refund')
-      .reduce((s, t) => s + t.amountCents, 0)
-    expect(total).toBe(netSpendRaw * 5) // every parsed cent lands in exactly one bucket
-  })
-
-  it('reconciles issuer purchases totals that fold in balance transfers', () => {
-    const result = aggregate([file('s.pdf', RANGE, [
-      txn('KROGER #1', { amountCents: 16771 }),
-      txn('CARD BALANCE TRANSFER', { amountCents: 55713, kind: 'transfer' }),
-    ], { purchasesCents: 72484 })], MERCHANTS, USAGE_ITEMS)
-    expect(result.warnings.filter((w) => w.code === 'W-reconcile')).toEqual([])
-  })
-
-  it('Apply output passes the form validation mirror unmodified', () => {
-    const spend = toSpendState(base, { 'MYSTERY MERCHANT': 'dining' }, new Set(), MERCHANTS)
-    const { errors } = validate(
-      { categoryCents: spend.categoryCents, merchantCents: spend.merchantCents },
-      MERCHANTS, 'good', { cashback: true }, {},
-    )
-    expect(errors).toEqual([])
+  it('empty matches still produce coverage and file summaries', () => {
+    const result = aggregate([file('a.csv', RANGE, [])], USAGE_ITEMS)
+    expect(result.usageSuggestions).toEqual([])
+    expect(result.coverageDays).toBe(73)
+    expect(result.files).toHaveLength(1)
   })
 })

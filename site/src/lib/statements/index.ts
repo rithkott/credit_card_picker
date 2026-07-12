@@ -43,10 +43,11 @@ async function sha256Hex(bytes: Uint8Array): Promise<string> {
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('')
 }
 
-/** Wire (snake_case) -> browser (camelCase) conversion. */
+/** Wire (snake_case) -> browser (camelCase) conversion. The summary's
+ * statement_totals is deliberately dropped: the client no longer reconciles
+ * (it never sees the full transaction list to sum). */
 export function fromWire(wire: WireParsedFile): ParsedFile {
   const s = wire.summary
-  const t = s.statement_totals
   return {
     summary: {
       name: s.name,
@@ -55,37 +56,17 @@ export function fromWire(wire: WireParsedFile): ParsedFile {
       rejectedRows: s.rejected_rows,
       rangeStart: s.range_start,
       rangeEnd: s.range_end,
-      ...(t !== undefined ? {
-        statementTotals: {
-          ...(t.purchases_cents !== undefined ? { purchasesCents: t.purchases_cents } : {}),
-          ...(t.payments_and_credits_cents !== undefined
-            ? { paymentsAndCreditsCents: t.payments_and_credits_cents } : {}),
-          ...(t.fees_cents !== undefined ? { feesCents: t.fees_cents } : {}),
-          ...(t.interest_cents !== undefined ? { interestCents: t.interest_cents } : {}),
-        },
-      } : {}),
       ...(s.period_count !== undefined ? { periodCount: s.period_count } : {}),
       ...(s.extraction !== undefined ? { extraction: s.extraction } : {}),
       ...(s.column_inference !== undefined ? { columnInference: s.column_inference } : {}),
     },
-    txns: wire.txns.map((w) => ({
+    matches: wire.matches.map((w) => ({
       dateISO: w.date,
       amountCents: w.amount_cents,
       descriptor: w.descriptor,
       kind: w.kind,
-      match: {
-        category: w.match.category,
-        layer: w.match.layer,
-        method: w.match.method,
-        ...(w.match.confidence !== undefined ? { confidence: w.match.confidence } : {}),
-        ...(w.match.merchant_key !== undefined ? { merchantKey: w.match.merchant_key } : {}),
-        ...(w.match.usage_key !== undefined ? { usageKey: w.match.usage_key } : {}),
-        ...(w.match.descriptor_key !== undefined ? { descriptorKey: w.match.descriptor_key } : {}),
-        ...(w.match.descriptor_label !== undefined
-          ? { descriptorLabel: w.match.descriptor_label } : {}),
-        stem: w.match.stem,
-        ...(w.match.suggestion !== undefined ? { suggestion: w.match.suggestion } : {}),
-      },
+      usageKey: w.usage_key,
+      usageLabel: w.usage_label,
       source: { file: s.name, line: w.line },
     })),
   }
@@ -148,7 +129,9 @@ export function createParseSession(onProgress?: ParseProgress): ParseSession {
 
       const parsed = fromWire(await uploadOnce(input.name, input.bytes))
 
-      txnsTotal += parsed.txns.length
+      // The cap tracks parsed volume, not returned matches: summary.txns is
+      // the file's full transaction count even though only usage hits return.
+      txnsTotal += parsed.summary.txns
       if (txnsTotal > MAX_TXNS_TOTAL) {
         throw new StatementParseError(
           `Transaction limit reached (${MAX_TXNS_TOTAL.toLocaleString('en-US')}) — ` +

@@ -139,13 +139,13 @@ class TestServerAPI(unittest.TestCase):
             self.assertEqual(p["loyalty_keys"], src.get("loyalty_keys", []))
 
     def test_config_has_no_statement_import_block(self):
-        """Since plan 12 the server parses AND categorizes statements itself
-        (POST /api/statements/parse); the rule registries stay server-side
+        """Since plan 12 the server parses statements itself (POST
+        /api/statements/parse); the descriptor registry stays server-side
         and must not ship to the browser anymore."""
         cfg = self.client.get("/api/config").json()
         self.assertNotIn("statement_import", cfg)
 
-    # -- statements/parse (plan 12) -------------------------------------------
+    # -- statements/parse (plan 12; detection-only since plan 14) -------------
 
     FIXTURES = ROOT / "tests" / "fixtures" / "statements"
 
@@ -154,24 +154,30 @@ class TestServerAPI(unittest.TestCase):
                                 files={"file": (name, data, "application/octet-stream")})
 
     def test_parse_csv_upload(self):
+        """{summary, matches}: only usage-item hits come back — the full
+        transaction list never leaves the server (plan 14)."""
         r = self.upload("chase.csv", (self.FIXTURES / "chase.csv").read_bytes())
         self.assertEqual(r.status_code, 200, r.text)
         body = r.json()
+        self.assertEqual(set(body), {"summary", "matches"})
         self.assertEqual(body["summary"]["format"], "csv")
         self.assertEqual(body["summary"]["txns"], 7)
-        self.assertEqual(len(body["txns"]), 7)
-        # Every txn is categorized (match present, exact or a miss).
-        for t in body["txns"]:
-            self.assertIn("match", t)
-            self.assertIn("stem", t["match"])
-        uber = next(t for t in body["txns"] if "UBER" in t["descriptor"])
-        self.assertEqual(uber["match"]["category"], "transit")
-        self.assertEqual(uber["match"]["method"], "exact")
+        self.assertLess(len(body["matches"]), 7)
+        uber = next(m for m in body["matches"] if "UBER" in m["descriptor"])
+        self.assertEqual(uber["usage_key"], "uber")
+        self.assertEqual(uber["usage_label"], "Uber rides / Uber One")
+        for m in body["matches"]:
+            self.assertEqual(
+                set(m), {"date", "amount_cents", "descriptor", "kind",
+                         "line", "usage_key", "usage_label"})
+            self.assertIn(m["kind"], ("purchase", "refund"))
 
     def test_parse_ofx_upload(self):
         r = self.upload("sgml.ofx", (self.FIXTURES / "sgml.ofx").read_bytes())
         self.assertEqual(r.status_code, 200, r.text)
-        self.assertEqual(r.json()["summary"]["format"], "ofx")
+        body = r.json()
+        self.assertEqual(body["summary"]["format"], "ofx")
+        self.assertIn("matches", body)
 
     def test_parse_pdf_upload(self):
         import importlib.util
@@ -198,30 +204,18 @@ class TestServerAPI(unittest.TestCase):
         self.assertEqual(r.status_code, 413)
         self.assertEqual(r.json()["code"], "too_large")
 
-    def test_parse_unmatched_txn_carries_suggestion(self):
-        """v1.3.0 contract: an all-layers miss ships the semantic top-1 as
-        match.suggestion {category, confidence<0.4} — category/layer/method
-        stay null, so a suggestion is never a placement."""
-        import importlib.util
-        ready = all(importlib.util.find_spec(mod) is not None
-                    for mod in ("numpy", "tokenizers", "onnxruntime")) and (
-            ROOT / "server" / "statements" / "model" / "model_quantized.onnx").exists()
-        if not ready:
-            self.skipTest("onnxruntime/numpy/tokenizers or model files absent")
+    def test_parse_unmatched_txns_never_returned(self):
+        """A statement with no benefit-relevant merchants returns an empty
+        matches list — descriptors of unrecognized spend stay server-side."""
         csv = (b"Transaction Date,Post Date,Description,Category,Type,Amount,Memo\n"
-               b"01/05/2026,01/06/2026,SPIRIT AI EXECUTIVE,,Sale,-42.00,\n")
+               b"01/05/2026,01/06/2026,SPIRIT AI EXECUTIVE,,Sale,-42.00,\n"
+               b"01/06/2026,01/07/2026,JOES DELI 42 NYC,,Sale,-12.00,\n")
         r = self.upload("misc.csv", csv)
         self.assertEqual(r.status_code, 200, r.text)
-        match = r.json()["txns"][0]["match"]
-        self.assertIsNone(match["category"])
-        self.assertIsNone(match["layer"])
-        self.assertIsNone(match["method"])
-        suggestion = match["suggestion"]
-        real_categories = {c["key"] for c in
-                           self.client.get("/api/config").json()["categories"]}
-        self.assertIn(suggestion["category"], real_categories)
-        self.assertGreaterEqual(suggestion["confidence"], 0.0)
-        self.assertLess(suggestion["confidence"], 0.4)
+        body = r.json()
+        self.assertEqual(body["matches"], [])
+        self.assertEqual(body["summary"]["txns"], 2)
+        self.assertNotIn("SPIRIT", r.text)
 
     def test_parse_never_writes_debug_dumps(self):
         """EPHEMERAL BY POLICY: statement uploads must never produce a debug

@@ -21,10 +21,9 @@ function wireFile(name: string): WireParsedFile {
       name, format: 'csv', txns: 1, rejected_rows: 0,
       range_start: '2026-01-01', range_end: '2026-01-31',
     },
-    txns: [{
-      date: '2026-01-05', amount_cents: 1234, descriptor: 'KROGER #1',
-      kind: 'purchase', line: 2,
-      match: { category: 'groceries', layer: 2, method: 'exact', stem: 'KROGER' },
+    matches: [{
+      date: '2026-01-05', amount_cents: 1234, descriptor: 'DELTA AIR 006',
+      kind: 'purchase', line: 2, usage_key: 'delta', usage_label: 'Delta',
     }],
   }
 }

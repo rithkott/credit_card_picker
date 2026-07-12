@@ -1,68 +1,33 @@
-/** Statement-import core types (plan 09; server-side parsing since plan 12).
+/** Statement-import core types (plan 09; server-side parsing since plan 12;
+ * detection-only since plan 14).
  *
- * Since v1.2.0 the parsing engine lives in server/statements/ — each file is
- * uploaded to POST /api/statements/parse, parsed and categorized IN MEMORY on
- * the server, and only the normalized transactions come back; the server
- * stores nothing. The browser keeps everything after that: review,
- * aggregation, annualization, and the Apply payload all stay in this tab and
- * die with it.
+ * Each file is uploaded to POST /api/statements/parse, parsed IN MEMORY on
+ * the server, and only the summary plus the transactions that evidence a
+ * usage-questions item (matched via statement-descriptors.yaml) come back —
+ * the full transaction list never leaves the server, and the server stores
+ * nothing. The browser annualizes the detected amounts and renders them as
+ * pre-checked confirmed-usage suggestions; spending is entered manually.
  *
  * The camelCase shapes here are the browser-side working types; the wire
- * shapes (snake_case, defined by server/statements/types.py) are converted in
+ * shapes (snake_case, defined by server/statements/) are converted in
  * index.ts as they arrive.
  */
 
 export type TxnKind = 'purchase' | 'refund' | 'payment' | 'fee' | 'interest' | 'transfer'
 
-/** Server-computed categorization, attached to every transaction.
- * layer: 1 descriptor · 2 keyword · 3 issuer category · 4 MCC · 5 fuzzy ·
- * 6 semantic (local embedding model). methods 'fuzzy' and 'semantic' are
- * approximate matches the review UI should disclose; `confidence` is their
- * 0-1 score. `stem` is the noise-stripped
- * grouping key for uncategorized rows (computed server-side so the browser
- * doesn't reimplement the stemmer). */
-export interface TxnMatch {
-  category: string | null
-  layer: 1 | 2 | 3 | 4 | 5 | 6 | null
-  method: 'exact' | 'fuzzy' | 'semantic' | null
-  confidence?: number
-  merchantKey?: string
-  usageKey?: string
-  descriptorKey?: string
-  descriptorLabel?: string
-  stem: string
-  /** Unmatched spend only: the semantic model's top-1 candidate BELOW the
-   * accept gate. Never applied on its own — the review UI pre-fills the
-   * group's picker with it and the user confirms. */
-  suggestion?: MatchSuggestion
-}
-
-/** Semantic top-1 below the accept gate; confidence is the cosine (0–1). */
-export interface MatchSuggestion {
-  category: string
-  confidence: number
-}
-
-export interface NormalizedTxn {
+/** One detected benefit-usage transaction. Only purchases and refunds are
+ * returned (refunds subtract in the annualized total). */
+export interface DetectedTxn {
   /** YYYY-MM-DD */
   dateISO: string
-  /** Positive = money spent, negative = money back (refund). Payments, fees,
-   * interest, and transfers keep their sign but are excluded by kind. */
+  /** Positive = money spent, negative = money back (refund). */
   amountCents: number
   /** Raw statement description, trimmed (rendered only as text nodes). */
   descriptor: string
-  kind: TxnKind
-  match: TxnMatch
+  kind: 'purchase' | 'refund'
+  usageKey: string
+  usageLabel: string
   source: { file: string; line: number }
-}
-
-/** Statement-declared totals (PDF summary box), for reconciliation warnings.
- * All values are positive cents. */
-export interface StatementTotals {
-  purchasesCents?: number
-  paymentsAndCreditsCents?: number
-  feesCents?: number
-  interestCents?: number
 }
 
 export interface FileSummary {
@@ -75,7 +40,6 @@ export interface FileSummary {
    * transaction date. Empty strings when the file had no dated rows. */
   rangeStart: string
   rangeEnd: string
-  statementTotals?: StatementTotals
   /** PDFs: distinct statement-period lines found. >1 = several statements
    * combined into one PDF, which a single period can't date correctly. */
   periodCount?: number
@@ -89,7 +53,7 @@ export interface FileSummary {
 
 export interface ParsedFile {
   summary: FileSummary
-  txns: NormalizedTxn[]
+  matches: DetectedTxn[]
 }
 
 export interface FileError {
@@ -101,35 +65,10 @@ export interface FileError {
 }
 
 export interface ImportWarning {
-  /** W-coverage | W-overlap | W-rows | W-reconcile | W-multi-statement |
-   * I-fuzzy | I-semantic | I-inferred-columns | I-layout (I-* are
-   * informational). */
+  /** W-coverage | W-overlap | W-rows | W-multi-statement |
+   * I-inferred-columns | I-layout (I-* are informational). */
   code: string
   message: string
-}
-
-/** Uncategorized transactions grouped by descriptor stem for the review UI.
- * `label` is set (from statement-descriptors.yaml) when the group is an
- * explicitly-unmapped descriptor key (e.g. Bilt rent) needing a user call. */
-export interface UncatGroup {
-  stem: string
-  label?: string
-  count: number
-  rawCents: number
-  /** Materiality (plan 13): true when the group's annualized value is under
-   * 0.1% of the profile's total annualized spend. Minor unlabeled groups are
-   * not asked about — they fold into 'Everything else'; the fold-in is
-   * bounded: when minor groups together exceed MISC_CAP_PCT of total spend,
-   * the largest are promoted back to asked rows. Labeled groups (rent,
-   * Venmo) are always asked regardless of size. */
-  minor?: boolean
-  /** Semantic top-1 below the accept gate, shared by the group's txns (same
-   * stem ⇒ same model output). Pre-fills the picker; user confirms. Never
-   * set on labeled groups — those are deliberate user decisions. */
-  suggestion?: MatchSuggestion
-  /** One raw descriptor from the group, so the user can identify the
-   * merchant beyond the stripped stem. */
-  example?: string
 }
 
 /** "We detected $412/yr at Delta" — usage-questions items seen in the data. */
@@ -139,49 +78,27 @@ export interface UsageSuggestion {
   annualCents: number
 }
 
-export interface ImportResult {
-  /** Annualized integer cents per real category key. */
-  categoryCents: Record<string, number>
-  /** Annualized integer cents per merchants.yaml key (⊆ parent category by
-   * construction, so validation E3 can never fire from imported values). */
-  merchantCents: Record<string, number>
-  uncategorized: UncatGroup[]
+export interface DetectionResult {
   usageSuggestions: UsageSuggestion[]
   coverageDays: number
   files: FileSummary[]
   warnings: ImportWarning[]
-  /** Money excluded from categorization, by kind (payments, fees, ...). */
-  excludedCents: Partial<Record<TxnKind, number>>
 }
 
 /** User-renderable parse failure (client-side pre-checks: oversize file,
  * unreadable file). Server-side failures arrive as ApiError instead. */
 export class StatementParseError extends Error {}
 
-// ── Wire shapes (server/statements/types.py, snake_case) ────────────────────
+// ── Wire shapes (server/statements/ + detect_usage.py, snake_case) ──────────
 
-export interface WireMatch {
-  category: string | null
-  layer: 1 | 2 | 3 | 4 | 5 | 6 | null
-  method: 'exact' | 'fuzzy' | 'semantic' | null
-  confidence?: number
-  merchant_key?: string
-  usage_key?: string
-  descriptor_key?: string
-  descriptor_label?: string
-  stem: string
-  suggestion?: { category: string; confidence: number }
-}
-
-export interface WireTxn {
+export interface WireUsageMatch {
   date: string
   amount_cents: number
   descriptor: string
-  kind: TxnKind
+  kind: 'purchase' | 'refund'
   line: number
-  issuer_category?: string
-  mcc?: number
-  match: WireMatch
+  usage_key: string
+  usage_label: string
 }
 
 export interface WireSummary {
@@ -191,12 +108,7 @@ export interface WireSummary {
   rejected_rows: number
   range_start: string
   range_end: string
-  statement_totals?: {
-    purchases_cents?: number
-    payments_and_credits_cents?: number
-    fees_cents?: number
-    interest_cents?: number
-  }
+  statement_totals?: Record<string, number>
   period_count?: number
   extraction?: 'regex' | 'layout'
   column_inference?: { used: boolean; confidence: number }
@@ -204,5 +116,5 @@ export interface WireSummary {
 
 export interface WireParsedFile {
   summary: WireSummary
-  txns: WireTxn[]
+  matches: WireUsageMatch[]
 }
