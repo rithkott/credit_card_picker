@@ -490,7 +490,6 @@ button.linklike {
   gap: 18px; flex-wrap: wrap;
 }
 .runbar.inline { justify-content: flex-start; margin-top: 16px; }
-.runbar .det-note { font-family: var(--mono); font-size: 11.5px; color: rgba(242, 243, 247, 0.4); }
 .runbar .status { color: var(--text-muted); font-size: 13px; }
 .runbar .error { color: var(--danger); font-size: 13px; }
 

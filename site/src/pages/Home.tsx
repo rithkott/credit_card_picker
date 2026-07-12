@@ -105,7 +105,11 @@ export function Home({ cfg, onRetryConfig }: {
         </p>
       </div>
 
-      {cfg.phase === 'loading' && <p style={{ textAlign: 'center' }}>Connecting to the optimizer…</p>}
+      {cfg.phase === 'loading' && (
+        <p style={{ textAlign: 'center' }}>
+          Connecting to the optimizer… <span style={{ opacity: 0.7 }}>(this can take up to a minute)</span>
+        </p>
+      )}
       {(cfg.phase === 'unreachable' || (run.phase === 'error' && run.unreachable)) && (
         <ServerBanner onRetry={onRetryConfig} />
       )}
@@ -170,12 +174,10 @@ export function Home({ cfg, onRetryConfig }: {
             >
               {run.phase === 'running' ? 'Scoring…' : 'Run the numbers'}
             </button>
-            {run.phase === 'running' ? (
+            {run.phase === 'running' && (
               <span className="status">
                 scoring every 1–3 card portfolio — {elapsed}s
               </span>
-            ) : (
-              <span className="det-note">deterministic — same inputs, same answer</span>
             )}
             {run.phase === 'error' && !run.unreachable && (
               <span className="error">{run.detail}</span>
