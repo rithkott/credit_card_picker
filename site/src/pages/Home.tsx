@@ -1,19 +1,21 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { ApiError, evaluateManual, optimize } from '../api'
 import type { OptimizeBundle } from '../types'
-import type { Unit } from '../lib/money'
-import { buildProfile, MANUAL_MAX_CARDS, type UserState } from '../lib/profile'
-import { validate, type SpendState } from '../lib/validation'
+import { buildProfile, MANUAL_MAX_CARDS } from '../lib/profile'
+import { validate } from '../lib/validation'
+import { useFormState } from '../hooks/useFormState'
 import { ManualGrid } from '../components/ManualGrid'
 import { AboutYou } from '../components/AboutYou'
 import { BrandLoyalty } from '../components/BrandLoyalty'
 import { ChecksPanel } from '../components/ChecksPanel'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import { StatementImport } from '../components/import/StatementImport'
 import { RentMortgage } from '../components/RentMortgage'
 import { RewardPreferences } from '../components/RewardPreferences'
 import { ServerBanner } from '../components/ServerBanner'
 import { SpendEntry } from '../components/SpendEntry'
 import { UsageQuestionnaire } from '../components/UsageQuestionnaire'
+import { WizardShell, type WizardStep } from '../components/wizard/WizardShell'
 import { ResultsView } from '../components/results/ResultsView'
 import type { ConfigPhase } from '../App'
 
@@ -27,31 +29,26 @@ export function Home({ cfg, onRetryConfig }: {
   cfg: ConfigPhase
   onRetryConfig: () => void
 }) {
-  const [unit, setUnit] = useState<Unit>('monthly')
-  const [spend, setSpend] = useState<SpendState>({ categoryCents: {}, merchantCents: {} })
-  const [user, setUser] = useState<UserState>({
-    credit_tier: 'excellent',
-    optimize_for: 'ongoing',
-    accepts_brand_lockin: false,
-    rewardKinds: { cashback: true, flights: true, hotels: true },
-    confirmed_usage: new Set(),
-  })
+  const fs = useFormState()
+  const { spend, setSpend, user, setUser, unit, setUnit, mode, setMode, selected, setSelected } = fs
   const [run, setRun] = useState<RunPhase>({ phase: 'idle' })
   const [elapsed, setElapsed] = useState(0)
-  // Auto = optimizer picks the best set (default). Manual = user hand-picks up
-  // to MAX_CARDS cards from the grid; the same value math runs on that set.
-  const [mode, setMode] = useState<'auto' | 'manual'>('auto')
-  const [selected, setSelected] = useState<Set<string>>(new Set())
+  // First-run wizard step index. In-session only — a mid-wizard refresh restores
+  // entered values but returns to step 0 (accepted tradeoff, keeps this simple).
+  const [step, setStep] = useState(0)
+  const [confirmReset, setConfirmReset] = useState(false)
 
-  // Seed the option defaults the server declares (single source of truth).
+  // Seed the option defaults the server declares (single source of truth) — but
+  // only for fresh visitors. Returning users have restored values that this
+  // effect would otherwise clobber.
   useEffect(() => {
-    if (cfg.phase !== 'ready') return
+    if (cfg.phase !== 'ready' || fs.restored) return
     setUser((u) => ({
       ...u,
       optimize_for: cfg.config.user_defaults.optimize_for,
       accepts_brand_lockin: cfg.config.user_defaults.accepts_brand_lockin,
     }))
-  }, [cfg])
+  }, [cfg, fs.restored, setUser])
 
   useEffect(() => {
     if (run.phase !== 'running') return
@@ -109,9 +106,20 @@ export function Home({ cfg, onRetryConfig }: {
       return next
     })
 
+  const onStartFromScratch = () => {
+    if (cfg.phase !== 'ready') return
+    fs.reset(cfg.config.user_defaults)
+    setRun({ phase: 'idle' })
+    setElapsed(0)
+    setStep(0)
+    setConfirmReset(false)
+  }
+
+  const inWizard = fs.view === 'wizard'
+
   return (
     <>
-      <div className="hero">
+      <div className={`hero${inWizard ? ' compact' : ''}`}>
         <h1>
           Which cards are actually
           <br />
@@ -132,79 +140,10 @@ export function Home({ cfg, onRetryConfig }: {
         <ServerBanner onRetry={onRetryConfig} />
       )}
 
-      {cfg.phase === 'ready' && (
-        <>
-          <StatementImport
-            config={cfg.config}
-            onApply={(usageKeys) => {
-              // Detection only (plan 14): statements never touch spend —
-              // confirmed services merge into the questionnaire state.
-              setUser((u) => ({
-                ...u,
-                confirmed_usage: new Set([...u.confirmed_usage, ...usageKeys]),
-              }))
-            }}
-          />
-          <RewardPreferences
-            config={cfg.config}
-            kinds={user.rewardKinds}
-            onChange={(kind, on) =>
-              setUser((u) => ({ ...u, rewardKinds: { ...u.rewardKinds, [kind]: on } }))}
-          />
-          <BrandLoyalty
-            config={cfg.config}
-            confirmed={user.confirmed_usage}
-            onToggle={toggleUsage}
-          />
-          <RentMortgage
-            cents={spend.categoryCents['housing'] ?? null}
-            onChange={(cents) =>
-              setSpend((s) => ({ ...s, categoryCents: { ...s.categoryCents, housing: cents } }))}
-          />
-          <SpendEntry
-            config={cfg.config}
-            spend={spend}
-            unit={unit}
-            warnings={warnings}
-            onUnitChange={setUnit}
-            onCategoryChange={(key, cents) =>
-              setSpend((s) => ({ ...s, categoryCents: { ...s.categoryCents, [key]: cents } }))}
-            onMerchantChange={(key, cents) =>
-              setSpend((s) => ({ ...s, merchantCents: { ...s.merchantCents, [key]: cents } }))}
-          />
-          <UsageQuestionnaire
-            config={cfg.config}
-            confirmed={user.confirmed_usage}
-            onToggle={toggleUsage}
-          />
-          <AboutYou
-            config={cfg.config}
-            user={user}
-            onChange={(patch) => setUser((u) => ({ ...u, ...patch }))}
-          />
-          <ChecksPanel errors={errors} />
-          <div className="mode-toggle" role="tablist" aria-label="Optimization mode">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === 'auto'}
-              className={mode === 'auto' ? 'active' : ''}
-              onClick={() => setMode('auto')}
-            >
-              Auto
-              <span className="mode-hint">we pick the best cards</span>
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === 'manual'}
-              className={mode === 'manual' ? 'active' : ''}
-              onClick={() => { setMode('manual'); setRun({ phase: 'idle' }); setElapsed(0) }}
-            >
-              Manual
-              <span className="mode-hint">you pick, we do the math</span>
-            </button>
-          </div>
+      {cfg.phase === 'ready' && (() => {
+        const config = cfg.config
+
+        const runbar = (
           <div className="runbar">
             {mode === 'auto' ? (
               <button
@@ -241,12 +180,161 @@ export function Home({ cfg, onRetryConfig }: {
               <span className="error">{run.detail}</span>
             )}
           </div>
-          {run.phase === 'done' && <ResultsView bundle={run.bundle} />}
-          {mode === 'manual' && (
-            <ManualGrid selected={selected} max={MANUAL_MAX_CARDS} onToggle={toggleSelect} />
-          )}
-        </>
-      )}
+        )
+
+        const modeToggle = (
+          <div className="mode-toggle" role="tablist" aria-label="Optimization mode">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'auto'}
+              className={mode === 'auto' ? 'active' : ''}
+              onClick={() => setMode('auto')}
+            >
+              Auto
+              <span className="mode-hint">we pick the best cards</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'manual'}
+              className={mode === 'manual' ? 'active' : ''}
+              onClick={() => setMode('manual')}
+            >
+              Manual
+              <span className="mode-hint">you pick, we do the math</span>
+            </button>
+          </div>
+        )
+
+        const steps: WizardStep[] = [
+          {
+            id: 'rewards',
+            title: 'Rewards',
+            node: (
+              <>
+                <RewardPreferences
+                  config={config}
+                  kinds={user.rewardKinds}
+                  onChange={(kind, on) =>
+                    setUser((u) => ({ ...u, rewardKinds: { ...u.rewardKinds, [kind]: on } }))}
+                />
+                <BrandLoyalty config={config} confirmed={user.confirmed_usage} onToggle={toggleUsage} />
+              </>
+            ),
+          },
+          {
+            id: 'spending',
+            title: 'Spending',
+            node: (
+              <>
+                <RentMortgage
+                  cents={spend.categoryCents['housing'] ?? null}
+                  onChange={(cents) =>
+                    setSpend((s) => ({ ...s, categoryCents: { ...s.categoryCents, housing: cents } }))}
+                />
+                <SpendEntry
+                  config={config}
+                  spend={spend}
+                  unit={unit}
+                  warnings={warnings}
+                  onUnitChange={setUnit}
+                  onCategoryChange={(key, cents) =>
+                    setSpend((s) => ({ ...s, categoryCents: { ...s.categoryCents, [key]: cents } }))}
+                  onMerchantChange={(key, cents) =>
+                    setSpend((s) => ({ ...s, merchantCents: { ...s.merchantCents, [key]: cents } }))}
+                />
+              </>
+            ),
+          },
+          {
+            id: 'usage',
+            title: 'Services',
+            node: (
+              <>
+                <StatementImport
+                  config={config}
+                  onApply={(usageKeys) => {
+                    // Detection only (plan 14): statements never touch spend —
+                    // confirmed services merge into the questionnaire state.
+                    setUser((u) => ({
+                      ...u,
+                      confirmed_usage: new Set([...u.confirmed_usage, ...usageKeys]),
+                    }))
+                  }}
+                />
+                <UsageQuestionnaire config={config} confirmed={user.confirmed_usage} onToggle={toggleUsage} />
+              </>
+            ),
+          },
+          {
+            id: 'about',
+            title: 'About you',
+            node: (
+              <AboutYou
+                config={config}
+                user={user}
+                onChange={(patch) => setUser((u) => ({ ...u, ...patch }))}
+              />
+            ),
+          },
+          {
+            id: 'review',
+            title: 'Review',
+            node: (
+              <>
+                <ChecksPanel errors={errors} />
+                {modeToggle}
+                {runbar}
+                {run.phase === 'done' && <ResultsView bundle={run.bundle} />}
+                {mode === 'manual' && (
+                  <ManualGrid selected={selected} max={MANUAL_MAX_CARDS} onToggle={toggleSelect} />
+                )}
+              </>
+            ),
+          },
+        ]
+
+        if (inWizard) {
+          return (
+            <WizardShell
+              steps={steps}
+              index={step}
+              canFinish={errors.length === 0}
+              onBack={() => setStep((s) => Math.max(0, s - 1))}
+              onNext={() => setStep((s) => Math.min(steps.length - 1, s + 1))}
+              onJump={(i) => setStep(i)}
+              onFinish={() => {
+                fs.setCompleted(true)
+                fs.setView('edit')
+              }}
+            />
+          )
+        }
+
+        return (
+          <>
+            <div className="edit-toolbar">
+              <button type="button" className="ghost start-over" onClick={() => setConfirmReset(true)}>
+                Start from scratch
+              </button>
+            </div>
+            {steps.map((s) => (
+              <Fragment key={s.id}>{s.node}</Fragment>
+            ))}
+            <ConfirmDialog
+              open={confirmReset}
+              title="Start from scratch?"
+              body="This clears everything you've entered and reopens the guided setup. This can't be undone."
+              confirmLabel="Clear and restart"
+              cancelLabel="Keep my answers"
+              danger
+              onConfirm={onStartFromScratch}
+              onCancel={() => setConfirmReset(false)}
+            />
+          </>
+        )
+      })()}
     </>
   )
 }

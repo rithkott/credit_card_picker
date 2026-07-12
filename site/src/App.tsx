@@ -108,8 +108,9 @@ function Shell() {
           </p>
           <p className="fine">
             Statements are parsed in your browser and never uploaded. Only the category
-            totals you approve are sent to compute your results — nothing is stored, and
-            there are no accounts, cookies, or analytics.
+            totals you approve are sent to compute your results. Your entries are saved
+            in this browser so a refresh won't lose them, and never leave it — there are
+            no accounts, cookies, or analytics.
           </p>
           <nav>
             <Link to="/data-sources">Data sources</Link>
