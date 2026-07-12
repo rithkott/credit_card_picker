@@ -95,8 +95,9 @@ REWARD_PREF_CHOICES = REWARD_KINDS + ["total_value"]
 MAX_SCORED_SUBSETS = 2_000_000
 
 # Manual mode (v1.7): the user hand-picks the portfolio instead of the optimizer
-# searching for it. Capped at the same size Auto tops out at for the product UI.
-MANUAL_MAX_CARDS = 3
+# searching for it. Scores a single hand-picked subset (no combinatorial search),
+# so it can allow more cards than Auto's search cap without a subset-budget blowout.
+MANUAL_MAX_CARDS = 5
 
 KIND_RANK = {"merchant": 0, "category": 1, "rotating": 2, "fallback": 3, "base": 4}
 

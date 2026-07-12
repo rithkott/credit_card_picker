@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ApiError, evaluateManual, optimize } from '../api'
 import type { OptimizeBundle } from '../types'
 import type { Unit } from '../lib/money'
-import { buildProfile, MAX_CARDS, type UserState } from '../lib/profile'
+import { buildProfile, MANUAL_MAX_CARDS, type UserState } from '../lib/profile'
 import { validate, type SpendState } from '../lib/validation'
 import { ManualGrid } from '../components/ManualGrid'
 import { AboutYou } from '../components/AboutYou'
@@ -105,7 +105,7 @@ export function Home({ cfg, onRetryConfig }: {
     setSelected((prev) => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
-      else if (next.size < MAX_CARDS) next.add(id)
+      else if (next.size < MANUAL_MAX_CARDS) next.add(id)
       return next
     })
 
@@ -224,7 +224,7 @@ export function Home({ cfg, onRetryConfig }: {
               >
                 {run.phase === 'running'
                   ? 'Scoring…'
-                  : `Score selected (${selected.size}/${MAX_CARDS})`}
+                  : `Score selected (${selected.size}/${MANUAL_MAX_CARDS})`}
               </button>
             )}
             {run.phase === 'running' && (
@@ -235,7 +235,7 @@ export function Home({ cfg, onRetryConfig }: {
               </span>
             )}
             {mode === 'manual' && run.phase !== 'running' && selected.size === 0 && (
-              <span className="status">Pick 1–{MAX_CARDS} cards below to score.</span>
+              <span className="status">Pick 1–{MANUAL_MAX_CARDS} cards below to score.</span>
             )}
             {run.phase === 'error' && !run.unreachable && (
               <span className="error">{run.detail}</span>
@@ -243,7 +243,7 @@ export function Home({ cfg, onRetryConfig }: {
           </div>
           {run.phase === 'done' && <ResultsView bundle={run.bundle} />}
           {mode === 'manual' && (
-            <ManualGrid selected={selected} max={MAX_CARDS} onToggle={toggleSelect} />
+            <ManualGrid selected={selected} max={MANUAL_MAX_CARDS} onToggle={toggleSelect} />
           )}
         </>
       )}
