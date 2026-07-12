@@ -66,6 +66,12 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
   const unusedPerks = card.credits
     .filter((c) => c.value === 0 && (c.potential_value ?? 0) > 0)
     .sort((a, b) => (b.potential_value ?? 0) - (a.potential_value ?? 0))
+  // "Max value" = the recurring yearly adds + the one-time signup bonus + every
+  // perk they'd get anyway at full face value. The optimistic ceiling, shown
+  // as its own highlighted total when there's anything beyond `adds` to add.
+  const unusedPerksValue = unusedPerks.reduce((s, c) => s + (c.potential_value ?? 0), 0)
+  const maxValue = adds + card.bonus.value + unusedPerksValue
+  const showMaxValue = card.bonus.value > 0 || unusedPerksValue > 0
 
   const coverage = card.fees.annual_fee_usd > 0 && earn + credits > card.fees.annual_fee_usd
     ? Math.round((earn + credits) / card.fees.annual_fee_usd)
@@ -150,7 +156,7 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
             <span>− {formatUsd(card.reward_cap_clamp)}</span>
           </div>
         )}
-        <div className="line total">
+        <div className="line total adds-year">
           <span>Adds each year</span>
           <span>{formatUsd(adds)}</span>
         </div>
@@ -192,6 +198,14 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
               <span>{formatUsd(c.potential_value ?? 0)}/yr</span>
             </div>
           ))}
+        </div>
+      )}
+      {showMaxValue && (
+        <div className="tile-lines tile-maxvalue">
+          <div className="line total max-value">
+            <span>Max value</span>
+            <span>{formatUsd(maxValue)}</span>
+          </div>
         </div>
       )}
       <details className="full-detail">
