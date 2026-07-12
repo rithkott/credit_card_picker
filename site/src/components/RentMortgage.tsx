@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { MoneyInput } from './CategoryRow'
-import { UnitToggle } from './UnitToggle'
-import { otherUnitAnnotation, type Unit } from '../lib/money'
+import { otherUnitAnnotation } from '../lib/money'
 
 /** Rent / mortgage lives in its own block, not the general spending grid,
  * because housing is a special category: normal cards can't earn on it
@@ -17,7 +16,9 @@ export function RentMortgage({ cents, onChange }: {
 }) {
   const hasHousing = cents !== null && !Number.isNaN(cents) && cents > 0
   const [pays, setPays] = useState(hasHousing)
-  const [unit, setUnit] = useState<Unit>('monthly')
+  // Rent is always entered monthly — the single most natural unit for housing.
+  // No unit toggle here (unlike the general spending grid).
+  const unit = 'monthly' as const
 
   return (
     <section className="block">
@@ -46,11 +47,10 @@ export function RentMortgage({ cents, onChange }: {
       </div>
       {pays && (
         <div className="cat-row" style={{ marginTop: 14 }}>
-          <label htmlFor="cat-housing">How much?</label>
+          <label htmlFor="cat-housing">How much per month?</label>
           <MoneyInput id="cat-housing" cents={cents} unit={unit} onChange={onChange} />
           <span className="annot">{otherUnitAnnotation(cents, unit)}</span>
           <span className="spacer" />
-          <UnitToggle unit={unit} onChange={setUnit} />
         </div>
       )}
     </section>
