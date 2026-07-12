@@ -1,4 +1,5 @@
 import type { Config, UsageGroup } from '../types'
+import { SectionIcon } from './SectionIcon'
 
 /** One usage-question group as an inner glass panel — group name, a
  * selected-count badge in accent when >0, and the option chips (all of them;
@@ -45,7 +46,8 @@ export function UsageQuestionnaire({ config, confirmed, onToggle }: {
   onToggle: (key: string, on: boolean) => void
 }) {
   return (
-    <section className="block">
+    <section className="block has-icon">
+      <SectionIcon name="usage" />
       <h2>Things you already use (or would)</h2>
       <p className="why">
         Card credits for these services only count if you'd actually use them.

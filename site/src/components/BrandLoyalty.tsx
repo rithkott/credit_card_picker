@@ -1,5 +1,6 @@
 import type { Config } from '../types'
 import { UsageGroupPanel } from './UsageQuestionnaire'
+import { SectionIcon } from './SectionIcon'
 
 /** Brand-loyalty block: the airline and hotel groups from usage-questions.yaml
  * (the ones carrying assumed_reward_kind), split out of the usage
@@ -16,7 +17,8 @@ export function BrandLoyalty({ config, confirmed, onToggle }: {
   const groups = config.usage_questions.filter((g) => g.assumed_reward_kind)
   if (groups.length === 0) return null
   return (
-    <section className="block">
+    <section className="block has-icon">
+      <SectionIcon name="travel" />
       <h2>Any loyalty to airlines or hotels?</h2>
       <p className="why">
         Since you'd book whichever airline or hotel gives the best value, their perks

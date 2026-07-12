@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { MoneyInput } from './CategoryRow'
 import { otherUnitAnnotation } from '../lib/money'
+import { SectionIcon } from './SectionIcon'
 
 /** Rent / mortgage lives in its own block, not the general spending grid,
  * because housing is a special category: normal cards can't earn on it
@@ -21,7 +22,8 @@ export function RentMortgage({ cents, onChange }: {
   const unit = 'monthly' as const
 
   return (
-    <section className="block">
+    <section className="block has-icon block-accent">
+      <SectionIcon name="home" />
       <div className="panel-head">
         <div>
           <h2>Rent or mortgage</h2>
