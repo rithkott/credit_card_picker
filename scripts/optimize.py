@@ -71,12 +71,12 @@ CAP_PERIODS_PER_YEAR = {"monthly": 12, "quarterly": 4, "annual": 1}
 # card they hold, so portal rates need no questionnaire confirmation.
 PORTAL_RATE_MULT = 0.75
 
-# Fraction of a rotating card's theoretical annual cap room assumed usable,
-# reflecting quarters whose categories don't match the user's spend.
-ROTATING_OVERLAP = 0.75
-
 # Categories that historically appear in rotating quarters (Freedom Flex,
-# Discover it). The rotating wildcard line may draw only from these.
+# Discover it). The rotating wildcard line may draw only from these. A given
+# category is featured roughly 1/N of the year (one category per quarter,
+# uniform over the pool), so the rotating line may take at most 1/N of each
+# eligible bucket's spend — the coverage model that replaced the old
+# ROTATING_OVERLAP room discount.
 ROTATING_ELIGIBLE = ["dining", "drugstores", "gas", "groceries",
                      "online_shopping", "streaming"]
 
@@ -120,7 +120,14 @@ def policy_constants() -> dict:
         "PERIODS_PER_YEAR": PERIODS_PER_YEAR,
         "CAP_PERIODS_PER_YEAR": CAP_PERIODS_PER_YEAR,
         "PORTAL_RATE_MULT": PORTAL_RATE_MULT,
-        "ROTATING_OVERLAP": ROTATING_OVERLAP,
+        # Documented formula, not a number: a rotating category is assumed
+        # featured ~1/N of the year (N = len(ROTATING_ELIGIBLE)), so the
+        # rotating line may earn its rate on at most 1/N of each eligible
+        # bucket's spend, still capped at the annualized quarterly cap; the
+        # remainder earns the fallback rate.
+        "ROTATING_COVERAGE": "rotating rate applies to 1/len(ROTATING_ELIGIBLE) "
+                             "of each eligible bucket's spend, capped at the "
+                             "annualized quarterly cap; remainder earns fallback",
         "ROTATING_ELIGIBLE": ROTATING_ELIGIBLE,
         "TIER_ORDER": TIER_ORDER,
         "STALE_DAYS": STALE_DAYS,
@@ -327,6 +334,17 @@ def unlocked_programs(cards: list) -> frozenset:
                      if c.get("unlocks_transfers"))
 
 
+def gateway_names(cards: list) -> dict:
+    """Program -> sorted names of gateway cards (unlocks_transfers) among
+    `cards`. Names the concrete pairing (e.g. chase_ur -> Sapphire Preferred /
+    Sapphire Reserve) in valuation and pairing notes."""
+    out = {}
+    for c in cards:
+        if c.get("unlocks_transfers"):
+            out.setdefault(c["currency"]["program"], set()).add(c["name"])
+    return {p: sorted(names) for p, names in out.items()}
+
+
 def avg_cpp(prog: dict) -> float:
     """The single engaged valuation (plan 08): the mean of the registry's
     conservative floor and its transfer-partner optimistic value — a realistic
@@ -335,7 +353,8 @@ def avg_cpp(prog: dict) -> float:
 
 
 def effective_cpp(card: dict, programs: dict, confirmed: set,
-                  unlocked: frozenset = frozenset()) -> tuple:
+                  unlocked: frozenset = frozenset(),
+                  gateways: dict = None) -> tuple:
     """Context-aware cents-per-point: (cpp, note-or-None). Points are valued
     at the program's engaged average (avg_cpp) — mean of floor and optimistic —
     except when a gate mechanically limits redemption to the cash floor:
@@ -358,10 +377,13 @@ def effective_cpp(card: dict, programs: dict, confirmed: set,
     if (prog.get("transfer_gateway_required")
             and not card.get("unlocks_transfers")
             and card["currency"]["program"] not in unlocked):
+        gates = (gateways or {}).get(card["currency"]["program"])
+        pair_with = " or ".join(gates) if gates else "a gateway card (unlocks_transfers)"
         return prog["floor_cpp"], (
-            f"points valued at floor {prog['floor_cpp']}cpp — "
+            f"points worth {prog['floor_cpp']}cpp as cash on their own — pair with "
+            f"{pair_with} to unlock "
             f"{prog.get('label', card['currency']['program'])} transfer partners "
-            f"need a gateway card (unlocks_transfers) in the portfolio")
+            f"(valued at {avg_cpp(prog)}cpp)")
     return avg_cpp(prog), None
 
 
@@ -378,7 +400,8 @@ def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
     closed = set(card.get("closed_loop", {}).get("merchants", []))
     lines = []
 
-    def add(kind, key, rate, eligible, room, note="", room_key=None):
+    def add(kind, key, rate, eligible, room, note="", room_key=None,
+            fraction=None):
         eligible = [b for b in eligible if b in buckets]
         if closed:
             eligible = [b for b in eligible
@@ -387,6 +410,7 @@ def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
                       "rate": rate, "cpp": cpp,
                       "effective_rate": rate * cpp / 100.0,
                       "room": room, "room_key": room_key,
+                      "eligible_fraction": fraction,
                       "eligible": sorted(eligible), "note": note})
 
     def cap_room(cap):
@@ -424,12 +448,14 @@ def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
             rotation = cr.get("rotation") or {}
             activated = (not rotation.get("requires_activation", False)) or user["activates_rotating"]
             rate = cr["rate"] if activated else cap["fallback_rate"]
-            room = cap["max_spend_usd"] * 4 * ROTATING_OVERLAP
+            room = cap["max_spend_usd"] * CAP_PERIODS_PER_YEAR["quarterly"]
+            fraction = 1.0 / len(ROTATING_ELIGIBLE)
             eligible = [b for b, bk in buckets.items() if bk["category"] in ROTATING_ELIGIBLE]
-            note = f"rotating room ${room:,.0f}"
+            note = (f"rotating: featured ~1/{len(ROTATING_ELIGIBLE)} of the year; "
+                    f"up to ${room:,.0f}/yr")
             if rotation.get("requires_activation"):
                 note += " ×activation" if activated else " (not activated → fallback rate)"
-            add("rotating", cat, rate, eligible, room, note)
+            add("rotating", cat, rate, eligible, room, note, fraction=fraction)
             add("fallback", cat, cap["fallback_rate"], eligible, None, "above-cap fallback")
             continue
 
@@ -466,7 +492,10 @@ def assign_spend(lines: list, buckets: dict) -> tuple:
     effective USD rate, with deterministic tie-breaks (spec §5.5). Exact for the
     current structure (at most one capped wildcard per card, uncapped base lines
     guarantee coverage); beyond that it is a documented heuristic — a tiny-LP
-    solver is the named future upgrade, but v1 stays stdlib + pyyaml only."""
+    solver is the named future upgrade, but v1 stays stdlib + pyyaml only.
+    Lines carrying eligible_fraction (rotating coverage model) may take at most
+    that fraction of each bucket's original spend — the featured-quarter share —
+    in addition to any room/pool limit."""
     remaining = {b: bk["amount"] for b, bk in buckets.items()}
     order = sorted(lines, key=lambda ln: (-ln["effective_rate"], ln["card_id"],
                                           KIND_RANK[ln["kind"]], ln["key"]))
@@ -499,6 +528,11 @@ def assign_spend(lines: list, buckets: dict) -> tuple:
             if room_left <= EPS:
                 break
             take = min(room_left, remaining[b])
+            if ln.get("eligible_fraction") is not None:
+                # Coverage model: the line's rate applies only while the bucket's
+                # category is featured (~fraction of the year), measured against
+                # the bucket's original spend, not what other lines left over.
+                take = min(take, ln["eligible_fraction"] * buckets[b]["amount"])
             if take <= EPS:
                 continue
             remaining[b] -= take
@@ -1013,15 +1047,22 @@ def _round2(x: float) -> float:
 
 
 def assemble_portfolio(entry: dict, by_id: dict, profile: dict, programs: dict,
-                       buckets: dict, as_of: date) -> dict:
-    """Full detail for one ranked entry — the per-portfolio output block."""
+                       buckets: dict, as_of: date, gateways: dict = None) -> dict:
+    """Full detail for one ranked entry — the per-portfolio output block.
+    `gateways` is gateway_names() over the FULL dataset, so a standalone
+    Freedom Flex can name the Sapphires even when they're filtered out."""
     cards = [by_id[i] for i in entry["cards"]]
     scored = score_portfolio(cards, profile, programs, buckets, as_of)
+    unlocked = unlocked_programs(cards)
     per_card = {}
     for card in cards:
         cid = card["id"]
+        prog_key = card["currency"]["program"]
+        prog = programs[prog_key]
         per_card[cid] = {
             "name": card["name"],
+            "currency": {"kind": card["currency"]["type"], "program": prog_key,
+                         "label": prog.get("label", prog_key)},
             "assignments": [
                 {"bucket": a["bucket"], "usd_assigned": _round2(a["usd_assigned"]),
                  "rate": a["rate"], "cpp": a["cpp"],
@@ -1038,9 +1079,19 @@ def assemble_portfolio(entry: dict, by_id: dict, profile: dict, programs: dict,
         }
         _, valuation_note = effective_cpp(
             card, programs, set(profile["user"]["confirmed_usage"]),
-            unlocked_programs(cards))
+            unlocked, gateways)
         if valuation_note:
             per_card[cid]["valuation_note"] = valuation_note
+        elif (prog.get("transfer_gateway_required")
+                and not card.get("unlocks_transfers")
+                and prog_key in unlocked):
+            # Paired direction of the gateway note: this card's points are only
+            # worth avg_cpp because a gateway card sits in the same portfolio.
+            partners = gateway_names(cards).get(prog_key, [])
+            per_card[cid]["pairing_note"] = (
+                f"points pooled with {' / '.join(partners)} — valued at "
+                f"{_round2(avg_cpp(prog))}cpp (avg of {prog['floor_cpp']}cpp cash "
+                f"floor and {prog['optimistic_cpp']}cpp transfer value)")
         if membership_fee(card):
             per_card[cid]["fees"]["membership_fee_usd"] = _round2(membership_fee(card))
             per_card[cid]["fees"]["membership_name"] = card["required_membership"]["name"]
@@ -1074,7 +1125,9 @@ def run(dataset: dict, profile: dict, as_of: date, top: int) -> dict:
 
     by_id = {c["id"]: c for c in variants}
     buckets = build_buckets(profile, merchants)
-    portfolios = [assemble_portfolio(entry, by_id, profile, programs, buckets, as_of)
+    gateways = gateway_names(dataset["cards"])
+    portfolios = [assemble_portfolio(entry, by_id, profile, programs, buckets,
+                                     as_of, gateways)
                   for entry in ranked[:top]]
 
     # Best portfolio per exact size 1..max_cards (plan 08): the ranked list is
@@ -1090,7 +1143,8 @@ def run(dataset: dict, profile: dict, as_of: date, top: int) -> dict:
         seen_sizes.add(size)
         best_by_size.append({"size": size,
                              **assemble_portfolio(entry, by_id, profile,
-                                                  programs, buckets, as_of)})
+                                                  programs, buckets, as_of,
+                                                  gateways)})
     best_by_size.sort(key=lambda b: b["size"])
 
     return {
@@ -1167,6 +1221,8 @@ def render_text(bundle: dict) -> str:
             out.append(f"    {cid} — {d['name']}{chosen}")
             if "valuation_note" in d:
                 out.append(f"      ⚠ {d['valuation_note']}")
+            if "pairing_note" in d:
+                out.append(f"      ✓ {d['pairing_note']}")
             for a in d["assignments"]:
                 note = f"   [{a['note']}]" if a["note"] else ""
                 out.append(f"      earn: {a['bucket']:<16} ${a['usd_assigned']:>10,.2f} "

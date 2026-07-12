@@ -13,7 +13,7 @@ Two v1 knobs asked users questions they can't meaningfully answer:
   what each additional card is worth.
 
 Plus two form simplifications: rotating-category activation is assumed (the
-engine already discounts rotating room by `ROTATING_OVERLAP`), and credit tier
+engine already dilutes rotating lines to the ~1/N featured-quarter coverage), and credit tier
 defaults to `good` instead of forcing a selection.
 
 ## Value model

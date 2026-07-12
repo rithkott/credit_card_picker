@@ -250,6 +250,13 @@ class TestServerAPI(unittest.TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertLessEqual(len(r.json()["portfolios"]), 5)
         self.assertEqual(r.json()["as_of"], AS_OF)
+        # Contract: every per_card block names its earning currency (drives
+        # the frontend's points-chain rendering, v1.3.2).
+        for p in r.json()["portfolios"]:
+            for d in p["per_card"].values():
+                self.assertIn(d["currency"]["kind"], ("cash", "points"))
+                self.assertIn("program", d["currency"])
+                self.assertIn("label", d["currency"])
 
     # -- error contract -------------------------------------------------------
 

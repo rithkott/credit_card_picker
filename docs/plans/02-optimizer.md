@@ -101,10 +101,6 @@ CAP_PERIODS_PER_YEAR = {"monthly": 12, "quarterly": 4, "annual": 1}
 # direct booking, eroding the headline multiplier).
 PORTAL_RATE_MULT = 0.75
 
-# Fraction of a rotating card's theoretical annual cap room assumed usable,
-# reflecting quarters whose categories don't match the user's spend.
-ROTATING_OVERLAP = 0.75
-
 # Categories that historically appear in rotating quarters (Freedom Flex,
 # Discover it). The rotating wildcard line may draw only from these.
 ROTATING_ELIGIBLE = ["dining", "drugstores", "gas", "groceries",
@@ -231,8 +227,10 @@ travel_other, Freedom Flex 5x travel_other, and Venture X 10x hotels / 5x flight
 A `rotating` category line becomes a **capped wildcard line**:
 
 - eligible for every bucket whose category ∈ `ROTATING_ELIGIBLE`;
-- annual room = `cap.max_spend_usd × 4 × ROTATING_OVERLAP`
-  (Freedom Flex: `1500 × 4 × 0.75 = $4,500`);
+- annual room = `cap.max_spend_usd × 4`; the line may additionally take at
+  most `1/len(ROTATING_ELIGIBLE)` of each eligible bucket's spend — the
+  featured-quarter coverage model (v1.3.2, replaced ROTATING_OVERLAP)
+  (Freedom Flex: room `1500 × 4 = $6,000`, per-bucket share `1/6`);
 - rate = `rate` if (`not rotation.requires_activation` or
   `user.activates_rotating`) else `cap.fallback_rate`.
 
@@ -311,7 +309,7 @@ contain:
 - **Ranked portfolios** (top `--top N`, default 5), each with `year1_net`,
   `ongoing_net`, and per card:
   - assignment lines: `bucket, usd_assigned, rate, cpp, usd_value, note`
-    (e.g. "capped at $6,000/yr", "portal ×0.75", "rotating room $4,500 ×activation");
+    (e.g. "capped at $6,000/yr", "portal ×0.75", "rotating: featured ~1/6 of the year; up to $6,000/yr ×activation");
   - credits: face value, multiplier applied, cap-by-spend note, or $0 + reason;
   - bonus: value, or $0 + reason;
   - fee(s);

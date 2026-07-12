@@ -18,7 +18,8 @@ export interface UserState {
 
 /** Fixed for the product UI (plan 08): the engine searches sizes 1..3 and the
  * results view escalates best-1 → best-2 → best-3; rotating activation is
- * assumed (the engine already discounts rotating room by ROTATING_OVERLAP). */
+ * assumed (the engine already dilutes rotating lines to the ~1/N featured-
+ * quarter share of each eligible bucket). */
 export const MAX_CARDS = 3
 const ACTIVATES_ROTATING = true
 
