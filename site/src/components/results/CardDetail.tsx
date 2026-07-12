@@ -24,10 +24,13 @@ function roleSubtitle(card: PerCard): string {
 }
 
 /** Verification bookkeeping is curator-facing; users only see warnings that
- * change what the card does for them (expired bonus, approval odds, …). */
+ * change what the card does for them (expired bonus, …). Approval notes are
+ * curator credit-tier inferences ("estimated from the card's positioning"),
+ * not actionable approval odds — dropped alongside the other bookkeeping. */
 function userFacing(warnings: string[]): string[] {
   return warnings
-    .filter((w) => !w.startsWith('UNVERIFIED DATA') && !w.startsWith('stale verification'))
+    .filter((w) => !w.startsWith('UNVERIFIED DATA') && !w.startsWith('stale verification')
+      && !w.startsWith('approval:'))
     .map((w) => w.replace(/\s*NEEDS human verification\.?/g, '').trim())
     .filter((w) => w.length > 0)
 }
