@@ -1251,12 +1251,17 @@ button.btn-danger {
   .wizard-dots { gap: 12px; }
 }
 
-/* First-run start page (v1.9.1) */
-.start { padding: 24px 8px 8px; }
-.start-hero { text-align: center; padding: 40px 20px 16px; }
+/* First-run start page (v1.9.1) — fills the viewport between nav and footer. */
+.start {
+  padding: 8px;
+  min-height: calc(100vh - 210px);
+  display: flex; flex-direction: column; justify-content: center;
+  gap: clamp(40px, 7vh, 96px);
+}
+.start-hero { text-align: center; padding: 0 20px; }
 .start-pill {
   display: inline-flex;
-  margin: 0 auto 26px;
+  margin: 0 auto 28px;
 }
 .start-hero h1 {
   margin: 0;
@@ -1278,7 +1283,7 @@ button.btn-danger {
 .start-cta-note { font-size: 12.5px; color: var(--text-faint); }
 
 .start-points {
-  list-style: none; margin: 44px 0 0; padding: 0;
+  list-style: none; margin: 0; padding: 0;
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
 }
 .start-point {
