@@ -102,6 +102,9 @@ export interface CreditLine { name: string; value: number; note: string }
 
 export interface PerCard {
   name: string
+  /** The card's earning currency: cash back or a points program. Drives
+   * points-chain rendering (spend → pts → $ at cpp) vs plain % lines. */
+  currency: { kind: 'cash' | 'points'; program: string; label: string }
   assignments: Assignment[]
   credits: CreditLine[]
   bonus: { value: number; note: string }
@@ -113,6 +116,9 @@ export interface PerCard {
   }
   warnings: string[]
   valuation_note?: string
+  /** Positive counterpart of valuation_note: this card's points reach the avg
+   * valuation because a gateway card (e.g. a Sapphire) is in the portfolio. */
+  pairing_note?: string
   reward_cap_clamp?: number
   choice_category?: string
 }

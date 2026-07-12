@@ -44,6 +44,8 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
   const fees = card.fees.annual_fee_usd + (card.fees.membership_fee_usd ?? 0)
   const adds = earn + credits - fees
 
+  const isPoints = card.currency.kind === 'points'
+
   const shownWarnings = userFacing(card.warnings)
   const warnText = [
     ...(card.valuation_note ? [card.valuation_note] : []),
@@ -73,15 +75,20 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
         {shownAssignments.map((a, i) => (
           <div className="line" key={`a-${a.bucket}-${i}`}>
             <span>
-              {a.cpp === 1 ? `${a.rate}%` : `${a.rate}x`} {pretty(a.bucket)}
+              {isPoints ? `${a.rate}x` : `${a.rate}%`} {pretty(a.bucket)}
               {a.note && <span className="note"> {a.note}</span>}
             </span>
             <i className="lead" aria-hidden="true" />
             <span>
-              {a.cpp !== 1 && (
-                <span className="pts">{formatNumber(Math.round(a.usd_assigned * a.rate))} pts · </span>
+              {isPoints ? (
+                <span className="pts">
+                  {formatUsd(a.usd_assigned)} spend → {formatNumber(Math.round(a.usd_assigned * a.rate))} pts →{' '}
+                </span>
+              ) : (
+                <span className="pts">{formatUsd(a.usd_assigned)} spend → </span>
               )}
               {formatUsd(a.usd_value)}
+              {isPoints && <span className="pts"> at {a.cpp}¢/pt</span>}
             </span>
           </div>
         ))}
@@ -130,6 +137,7 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
           <span>{formatUsd(adds)}</span>
         </div>
       </div>
+      {card.pairing_note && <div className="tile-note">✓ {card.pairing_note}</div>}
       {warnText ? (
         <div className="tile-note warn">⚠ {warnText}</div>
       ) : coverage !== null && coverage >= 2 ? (
@@ -144,7 +152,7 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
       ) : null}
       <details className="full-detail">
         <summary>full detail</summary>
-        <AssignmentsTable assignments={card.assignments} />
+        <AssignmentsTable assignments={card.assignments} currencyKind={card.currency.kind} />
         <div className="detail-lines">
           <CreditsList credits={card.credits} />
           <div>

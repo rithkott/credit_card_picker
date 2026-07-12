@@ -147,26 +147,46 @@ class TestSingleCardGolden(unittest.TestCase):
         self.assertIn("use assumed", notes)
 
     def test_freedom_flex_rotating_activated(self):
-        # Rotating room 1500*4*0.75=4500 @5x. Regret rule fills gas (alt 1%)
-        # then groceries (alt 1%) before dining (alt 3%): gas 2000 + groceries
-        # 2500. Then dining 4000@3%=120, groceries fallback 3500@1%=35,
-        # base other 8000@1%=80 → 225+120+35+80=460. Bonus $200 → year1 660.
+        # Coverage model: a rotating category is featured ~1/6 of the year
+        # (N = len(ROTATING_ELIGIBLE)), so the 5x line may take only 1/6 of
+        # each eligible bucket, within the $1,500*4 = $6,000/yr cap room:
+        # gas 2000/6 + groceries 6000/6 + dining 4000/6 = $2,000 @5% = $100.
+        # Dining 3x on the remaining 4000*5/6 = 10000/3 → $100; rotating
+        # fallback 1x on groceries 5000 + gas 5000/3 → $200/3; base other
+        # 8000@1% = $80. earnings = 1040/3 ≈ 346.67. Bonus $200 → year1
+        # 1640/3 ≈ 546.67.
         prof = make_profile({"dining": 4000, "groceries": 6000, "gas": 2000, "other": 8000})
         r = score(["freedom-flex"], prof)
-        rotating = [a for a in r["assignments"] if a["kind"] == "rotating"]
-        self.assertEqual({(a["bucket"], a["usd_assigned"]) for a in rotating},
-                         {("gas", 2000.0), ("groceries", 2500.0)})
-        self.assertAlmostEqual(r["earnings"], 460.0)
-        self.assertAlmostEqual(r["ongoing_net"], 460.0)
-        self.assertAlmostEqual(r["year1_net"], 660.0)
+        rotating = {a["bucket"]: a["usd_assigned"] for a in r["assignments"]
+                    if a["kind"] == "rotating"}
+        self.assertEqual(set(rotating), {"dining", "gas", "groceries"})
+        self.assertAlmostEqual(rotating["gas"], 2000 / 6)
+        self.assertAlmostEqual(rotating["groceries"], 1000.0)
+        self.assertAlmostEqual(rotating["dining"], 4000 / 6)
+        self.assertAlmostEqual(r["earnings"], 1040 / 3)
+        self.assertAlmostEqual(r["ongoing_net"], 1040 / 3)
+        self.assertAlmostEqual(r["year1_net"], 1040 / 3 + 200)
 
     def test_freedom_flex_rotating_not_activated(self):
-        # Rotating line drops to fallback 1x: groceries+gas 8000@1% + dining
-        # 4000@3% + other 8000@1% = 80+120+80 = 280.
+        # Rotating line drops to fallback 1x. The 1x spend now splits between
+        # the diluted rotating line (1/6 of each bucket) and the above-cap
+        # fallback line at the same rate, so the total is unchanged:
+        # groceries+gas 8000@1% + dining 4000@3% + other 8000@1% = 280.
         prof = make_profile({"dining": 4000, "groceries": 6000, "gas": 2000, "other": 8000},
                             activates_rotating=False)
         r = score(["freedom-flex"], prof)
         self.assertAlmostEqual(r["ongoing_net"], 280.0)
+
+    def test_freedom_flex_rotating_cap_binds(self):
+        # When 1/6 of a bucket exceeds the annualized cap, the $6,000/yr room
+        # wins: groceries 60000/6 = 10000 → clamped to 6000 @5% = $300; the
+        # above-cap fallback earns 1% on the other 54000 = $540 → 840 total.
+        prof = make_profile({"groceries": 60000})
+        r = score(["freedom-flex"], prof)
+        rotating = [a for a in r["assignments"] if a["kind"] == "rotating"]
+        self.assertEqual([(a["bucket"], a["usd_assigned"]) for a in rotating],
+                         [("groceries", 6000.0)])
+        self.assertAlmostEqual(r["earnings"], 840.0)
 
     def test_venture_x_portal_assumed(self):
         # Portal use is assumed; avg cpp 1.1: hotels 2000@10*0.75=7.5x*.011=165,
@@ -562,14 +582,42 @@ class TestTransferGateway(unittest.TestCase):
         prof = make_profile(self.FLEX_PROF)
         bundle = opt.run(dataset, prof, AS_OF, 1)
         note = bundle["portfolios"][0]["per_card"]["freedom-flex"]["valuation_note"]
-        self.assertIn("gateway card", note)
-        # With the Sapphire in the pool the top portfolio pairs them: no note.
+        # No gateway card exists in this dataset → generic pairing hint.
+        self.assertIn("pair with a gateway card", note)
+        # With the Sapphire in the pool the top portfolio pairs them: the
+        # warning is replaced by the positive pairing_note naming the gateway.
         dataset["cards"] = [seed_card("freedom-flex"), seed_card("sapphire-preferred")]
         prof = make_profile(self.FLEX_PROF, max_cards=2)
         bundle = opt.run(dataset, prof, AS_OF, 1)
         top = bundle["portfolios"][0]
         self.assertEqual(top["cards"], ["freedom-flex", "sapphire-preferred"])
-        self.assertNotIn("valuation_note", top["per_card"]["freedom-flex"])
+        flex = top["per_card"]["freedom-flex"]
+        self.assertNotIn("valuation_note", flex)
+        self.assertIn("pooled with Chase Sapphire Preferred", flex["pairing_note"])
+        self.assertIn("1.5cpp", flex["pairing_note"])
+        self.assertEqual(flex["currency"], {"kind": "points", "program": "chase_ur",
+                                            "label": "Chase Ultimate Rewards"})
+        # The gateway card itself gets neither note (it unlocks its own program).
+        csp = top["per_card"]["sapphire-preferred"]
+        self.assertNotIn("valuation_note", csp)
+        self.assertNotIn("pairing_note", csp)
+        # A size-1 flex portfolio in the same bundle names the Sapphire in its
+        # floored note (gateway map comes from the full dataset).
+        flex_solo = next((p for p in bundle["best_by_size"]
+                          if p["cards"] == ["freedom-flex"]), None)
+        if flex_solo:
+            self.assertIn("pair with Chase Sapphire Preferred",
+                          flex_solo["per_card"]["freedom-flex"]["valuation_note"])
+
+    def test_standalone_note_names_gateways(self):
+        flex = seed_card("freedom-flex")
+        gates = opt.gateway_names([flex, seed_card("sapphire-preferred")])
+        self.assertEqual(gates, {"chase_ur": ["Chase Sapphire Preferred"]})
+        cpp, note = opt.effective_cpp(flex, DATASET["programs"], set(),
+                                      frozenset(), gates)
+        self.assertEqual(cpp, 1.0)
+        self.assertIn("pair with Chase Sapphire Preferred", note)
+        self.assertIn("1.5cpp", note)
 
     def test_context_dependent_card_never_pruned(self):
         # A plain UR card is worth 1.0cpp standalone but avg 1.5cpp next to a
