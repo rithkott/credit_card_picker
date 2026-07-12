@@ -125,7 +125,7 @@ export function Home({ cfg, onRetryConfig }: {
 
       {cfg.phase === 'loading' && (
         <p style={{ textAlign: 'center' }}>
-          Connecting to the optimizer… <span style={{ opacity: 0.7 }}>(this can take up to a minute)</span>
+          Loading… <span style={{ opacity: 0.7 }}>(this can take up to a minute)</span>
         </p>
       )}
       {(cfg.phase === 'unreachable' || (run.phase === 'error' && run.unreachable)) && (
