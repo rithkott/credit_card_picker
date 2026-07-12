@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import type { CSSProperties } from 'react'
 import type { BestBySize, OptimizeBundle, PerCard } from '../../types'
 import { formatNumber, formatUsd } from '../../lib/money'
 
@@ -15,33 +15,31 @@ function hueOf(id: string): number {
   return h
 }
 
-/** One credit-card render: the optional art file (site/public/cards/<id>.png)
- * when present, otherwise a pure-CSS card in the id's hue family. */
-function CardRender({ id, name }: { id: string; name: string }) {
-  const [artFailed, setArtFailed] = useState(false)
+/** Deterministic per-id background: a corner glow over a two-hue diagonal, so
+ * every card gets a distinct-but-cohesive dark face. Hue is stable per id. */
+function faceStyle(id: string): CSSProperties {
   const h = hueOf(id)
+  const h2 = (h + 28) % 360
+  return {
+    background:
+      `radial-gradient(130% 150% at 16% -10%, hsl(${h} 34% 24% / 0.95), transparent 52%), ` +
+      `linear-gradient(120deg, hsl(${h} 26% 17%), hsl(${h} 24% 9%) 62%, hsl(${h2} 24% 13%))`,
+  }
+}
+
+/** The lead credit-card render: a pure-CSS card face in the id's hue family —
+ * chip, contactless glyph, embossed number row, currency eyebrow, and name. No
+ * external art; every card is drawn deterministically from its id. */
+function CardRender({ id, name, brand }: { id: string; name: string; brand?: string }) {
   return (
-    <div
-      className="card-render"
-      style={{
-        background: `linear-gradient(120deg, hsl(${h} 24% 18%), hsl(${h} 22% 9%) 60%, hsl(${(h + 24) % 360} 22% 14%))`,
-      }}
-    >
-      {!artFailed && (
-        <img
-          className="art"
-          src={`${import.meta.env.BASE_URL}cards/${id}.png`}
-          alt=""
-          onError={() => setArtFailed(true)}
-        />
-      )}
-      {artFailed && (
-        <>
-          <span className="sheen" />
-          <span className="cchip" />
-          <span className="cname">{name}</span>
-        </>
-      )}
+    <div className="card-render" style={faceStyle(id)}>
+      <span className="sheen" />
+      <span className="guilloche" />
+      {brand && <span className="cbrand">{brand}</span>}
+      <span className="cchip" />
+      <span className="cwave" />
+      <span className="cnum">•••• •••• •••• ••••</span>
+      <span className="cname">{name}</span>
     </div>
   )
 }
@@ -168,7 +166,7 @@ export function PortfolioCard({ portfolio, bundle, isBest, stack }: {
         <div className="card-stack">
           {stackCards.map((s, i) =>
             i === 0
-              ? <CardRender key={s.id} id={s.id} name={s.card.name} />
+              ? <CardRender key={s.id} id={s.id} name={s.card.name} brand={s.card.currency.label} />
               : <CardBar key={s.id} id={s.id} name={s.card.name} kind={i === 1 ? 'mid' : 'bottom'} />,
           )}
         </div>

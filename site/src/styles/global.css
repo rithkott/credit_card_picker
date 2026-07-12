@@ -634,29 +634,76 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 .card-render {
   width: 300px; height: 186px;
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  padding: 18px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   position: relative;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
   overflow: hidden;
+  color: #fff;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
+.card-render > span { pointer-events: none; }
+/* glossy diagonal sweep + soft corner light */
 .card-render .sheen {
-  position: absolute; inset: 0; border-radius: 18px;
-  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.07) 46%, transparent 54%);
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(105deg, transparent 37%, rgba(255, 255, 255, 0.11) 46%, transparent 56%),
+    radial-gradient(85% 65% at 88% 118%, rgba(255, 255, 255, 0.07), transparent 60%);
 }
+/* faint engine-turned (guilloche) texture, faded toward the edges */
+.card-render .guilloche {
+  position: absolute; inset: 0; opacity: 0.55;
+  background:
+    repeating-linear-gradient(58deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(-58deg, rgba(255, 255, 255, 0.038) 0 1px, transparent 1px 9px);
+  -webkit-mask-image: radial-gradient(125% 105% at 50% 38%, #000 52%, transparent 100%);
+  mask-image: radial-gradient(125% 105% at 50% 38%, #000 52%, transparent 100%);
+}
+/* currency eyebrow, top-right */
+.card-render .cbrand {
+  position: absolute; top: 17px; right: 20px; max-width: 150px;
+  text-align: right; line-height: 1.25;
+  font-size: 8.5px; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: rgba(255, 255, 255, 0.60);
+}
+/* EMV chip: gold plate, contact ring + contact lines */
 .card-render .cchip {
-  width: 34px; height: 24px; border-radius: 5px;
-  background: linear-gradient(135deg, #d8c9a3, #a99366);
+  position: absolute; top: 52px; left: 22px;
+  width: 40px; height: 30px; border-radius: 6px;
+  background:
+    linear-gradient(rgba(120, 92, 30, 0.5), rgba(120, 92, 30, 0.5)) 0 50% / 100% 1px no-repeat,
+    linear-gradient(135deg, #efe0ad, #c3a45f 55%, #d8c184);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+}
+.card-render .cchip::before {
+  content: ''; position: absolute; inset: 4px; border-radius: 3px;
+  border: 1px solid rgba(120, 92, 30, 0.55);
+}
+.card-render .cchip::after {
+  content: ''; position: absolute; top: 4px; bottom: 4px; left: 50%; width: 1px;
+  background: rgba(120, 92, 30, 0.5);
+  box-shadow: -10px 0 0 rgba(120, 92, 30, 0.4), 10px 0 0 rgba(120, 92, 30, 0.4);
+}
+/* contactless glyph: two right-side arcs */
+.card-render .cwave { position: absolute; top: 54px; left: 76px; width: 20px; height: 26px; }
+.card-render .cwave::before, .card-render .cwave::after {
+  content: ''; position: absolute; top: 50%; transform: translateY(-50%);
+  border: 2px solid transparent; border-right-color: rgba(255, 255, 255, 0.55);
+  border-radius: 50%;
+}
+.card-render .cwave::before { left: 0; width: 9px; height: 15px; }
+.card-render .cwave::after { left: -5px; width: 18px; height: 26px; opacity: 0.6; }
+/* embossed number row */
+.card-render .cnum {
+  position: absolute; left: 23px; right: 20px; bottom: 50px;
+  font-size: 15px; font-weight: 700; letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
 }
 .card-render .cname {
-  position: absolute; bottom: 16px; left: 20px;
-  font-size: 14px; font-weight: 600; letter-spacing: 0.02em;
-}
-.card-render img.art {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  object-fit: cover;
-  border-radius: 18px;
+  position: absolute; bottom: 16px; left: 23px; right: 22px;
+  font-size: 13px; font-weight: 600; letter-spacing: 0.05em;
+  text-transform: uppercase; color: rgba(255, 255, 255, 0.92);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
 }
 .card-bar {
   border: 1px solid var(--border-input);
@@ -669,13 +716,13 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 }
 .card-bar.mid {
   width: 262px; height: 56px; border-radius: 14px;
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 .card-bar.bottom {
   width: 224px; height: 52px; border-radius: 13px;
   margin-top: -14px;
   border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.10);
   padding: 0 15px;
 }
 
