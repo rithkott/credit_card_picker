@@ -27,12 +27,32 @@ function faceStyle(id: string): CSSProperties {
   }
 }
 
-/** The lead credit-card render: a deterministic gradient face in the id's hue
- * family, a chip, and the card name as the glowing, animated hero. No external
- * art; the face is drawn entirely from the id. */
-function CardRender({ id, name }: { id: string; name: string }) {
+const FAN_STEP = 150 // px between adjacent cards in the fan
+const FAN_ANGLE = 6 // deg of splay per fan position
+const FAN_DIP = 22 // px each outer position drops, to arc the fan
+
+/** Fan slot for the i-th card: best card (0) sits center, the rest alternate
+ * outward — -1, +1, -2, +2 … — so the strongest card is the featured center. */
+function fanSlot(i: number): number {
+  const k = Math.ceil(i / 2)
+  return i % 2 ? -k : k
+}
+
+/** One credit-card render: a deterministic gradient face in the id's hue
+ * family, a chip, and the card name as the hero. In a multi-card portfolio the
+ * cards are laid out as a fan (via index/count); the sheen sweep is offset per
+ * card so they shimmer out of sync. No external art. */
+function CardRender({ id, name, index, count }: { id: string; name: string; index: number; count: number }) {
+  // Centre the whole fan: even counts shift by half a slot so the arc is symmetric.
+  const off = fanSlot(index) + (count % 2 === 0 ? 0.5 : 0)
+  const style = { ...faceStyle(id), zIndex: 100 - index } as CSSProperties & Record<string, string | number>
+  style['--sheen-delay'] = `${(index * -1.15).toFixed(2)}s`
+  if (count > 1) {
+    style.transform =
+      `translate(${off * FAN_STEP}px, ${Math.abs(off) * FAN_DIP}px) rotate(${off * FAN_ANGLE}deg)`
+  }
   return (
-    <div className="card-render" style={faceStyle(id)}>
+    <div className="card-render" style={style}>
       <span className="sheen" />
       <span className="cchip" />
       <span className="cname">{name}</span>
@@ -40,16 +60,10 @@ function CardRender({ id, name }: { id: string; name: string }) {
   )
 }
 
-function CardBar({ id, name, kind }: { id: string; name: string; kind: 'mid' | 'bottom' }) {
-  const h = hueOf(id)
-  return (
-    <div
-      className={`card-bar ${kind}`}
-      style={{ background: `linear-gradient(120deg, hsl(${h} 20% 16%), hsl(${h} 20% 8%))` }}
-    >
-      {name}
-    </div>
-  )
+/** Width/height the fan needs so every card is fully visible and centered. */
+function fanBox(count: number): CSSProperties {
+  const maxOff = (count - 1) / 2
+  return { width: 300 + maxOff * 2 * FAN_STEP, height: 190 + maxOff * (FAN_DIP + 12) }
 }
 
 /** The receipt panel: eyebrow, big shimmer net, the four receipt rows, and
@@ -110,8 +124,7 @@ export function PortfolioCard({ portfolio, bundle, isBest, stack }: {
 
   return (
     <section className="block receipt">
-      <div className="receipt-grid">
-        <div className="receipt-main">
+      <div className="receipt-main">
           <div className="eyebrow">{eyebrow}</div>
           <div className="net-big shimmer-text">
             ${formatNumber(Math.round(netMain))}
@@ -158,13 +171,12 @@ export function PortfolioCard({ portfolio, bundle, isBest, stack }: {
               {unassigned.map(([bucket, v]) => `${bucket} ${formatUsd(v)}`).join(', ')}
             </div>
           )}
-        </div>
-        <div className="card-stack">
-          {stackCards.map((s, i) =>
-            i === 0
-              ? <CardRender key={s.id} id={s.id} name={s.card.name} />
-              : <CardBar key={s.id} id={s.id} name={s.card.name} kind={i === 1 ? 'mid' : 'bottom'} />,
-          )}
+      </div>
+      <div className="card-fan-wrap">
+        <div className="card-fan" style={fanBox(stackCards.length)}>
+          {stackCards.map((s, i) => (
+            <CardRender key={s.id} id={s.id} name={s.card.name} index={i} count={stackCards.length} />
+          ))}
         </div>
       </div>
     </section>

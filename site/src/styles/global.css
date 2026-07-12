@@ -629,8 +629,7 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 }
 .receipt-rows .row.total span:last-child { font-weight: 700; }
 
-/* Credit-card renders (CSS fallback + optional art) */
-.card-stack { width: 300px; flex: none; }
+/* Credit-card renders — deterministic CSS faces, laid out as a fan */
 .card-render {
   width: 300px; height: 186px;
   border-radius: 18px;
@@ -646,6 +645,7 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   position: absolute; top: -40%; bottom: -40%; left: -30%; right: -30%;
   background: linear-gradient(105deg, transparent 45%, rgba(255, 255, 255, 0.14) 50%, transparent 55%);
   animation: cardSheen 6s ease-in-out infinite;
+  animation-delay: var(--sheen-delay, 0s);
 }
 @keyframes cardSheen {
   0% { transform: translateX(-55%); opacity: 0; }
@@ -653,10 +653,10 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   55% { transform: translateX(55%); opacity: 0.55; }
   100% { transform: translateX(55%); opacity: 0; }
 }
-/* EMV chip, tucked into the top-left corner */
+/* EMV chip, upper-left where a real card carries it */
 .card-render .cchip {
-  position: absolute; top: 18px; left: 20px;
-  width: 38px; height: 28px; border-radius: 6px;
+  position: absolute; top: 34px; left: 24px;
+  width: 40px; height: 30px; border-radius: 6px;
   background:
     linear-gradient(rgba(120, 92, 30, 0.5), rgba(120, 92, 30, 0.5)) 0 50% / 100% 1px no-repeat,
     linear-gradient(135deg, #efe0ad, #c3a45f 55%, #d8c184);
@@ -675,7 +675,7 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 .card-render .cname {
   position: absolute; inset: 0; z-index: 2;
   display: flex; align-items: center; justify-content: center;
-  padding: 40px 24px 22px; text-align: center;
+  padding: 52px 24px 22px; text-align: center;
   text-wrap: balance;
   font-size: 22px; font-weight: 800; line-height: 1.15; letter-spacing: 0.005em;
   color: #fff;
@@ -684,26 +684,17 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 @media (prefers-reduced-motion: reduce) {
   .card-render .sheen { animation: none; opacity: 0.5; transform: translateX(20%); }
 }
-.card-bar {
-  border: 1px solid var(--border-input);
-  margin: -18px auto 0;
-  position: relative;
-  display: flex; align-items: center;
-  padding: 0 16px;
-  font-size: 12.5px; font-weight: 600;
-  color: rgba(242, 243, 247, 0.85);
+/* Fan of full-size cards, centered below the receipt numbers */
+.card-fan-wrap { display: flex; justify-content: center; margin-top: 28px; }
+.card-fan { position: relative; flex: none; }
+.card-fan .card-render {
+  position: absolute; top: 0; left: 50%; margin-left: -150px;
+  transform-origin: 50% 130%;
+  transition: transform 0.3s ease;
 }
-.card-bar.mid {
-  width: 262px; height: 56px; border-radius: 14px;
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-.card-bar.bottom {
-  width: 224px; height: 52px; border-radius: 13px;
-  margin-top: -14px;
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.10);
-  padding: 0 15px;
-}
+/* Scale the fan down where it would outgrow the viewport */
+@media (max-width: 1000px) { .card-fan { transform: scale(0.7); transform-origin: top center; } }
+@media (max-width: 680px) { .card-fan { transform: scale(0.48); transform-origin: top center; } }
 
 /* Per-card tiles */
 .tile-grid {
