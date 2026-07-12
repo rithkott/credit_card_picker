@@ -8,27 +8,9 @@ currency:
   program: cash
 base_rate: 1                 # "1% cash back on all other purchases"
 
-category_rewards:
-  - category: rotating
-    rate: 5                  # "5% cash back in rotating quarterly categories"
-    rotation:
-      frequency: quarterly
-      requires_activation: true
-      note: >-
-        Eligible 5% categories rotate each calendar quarter and must be activated
-        each quarter before the elevated rate applies; unactivated spend earns the
-        1% base rate. Categories change quarterly (the offer file lists grocery
-        stores, restaurants, gas stations "and others" as examples) — not modeled
-        as permanent.
-    cap:
-      period: quarterly
-      max_spend_usd: 1500
-      fallback_rate: 1
-    notes: >-
-      The offer file does not state the dollar amount of the quarterly maximum;
-      the $1,500/quarter cap is the standard published figure for this product,
-      drafted from general knowledge and NOT re-checked against issuer sources
-      in this change. NEEDS human verification of the quarterly spend cap.
+# Rotating 5% quarterly category intentionally NOT modeled — the optimizer values
+# only permanent full-time rates; rotating spend earns the 1% base_rate.
+category_rewards: []
 
 merchant_rewards: []
 
