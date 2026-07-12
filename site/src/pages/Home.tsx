@@ -205,9 +205,6 @@ export function Home({ cfg, onRetryConfig }: {
               <span className="mode-hint">you pick, we do the math</span>
             </button>
           </div>
-          {mode === 'manual' && (
-            <ManualGrid selected={selected} max={MAX_CARDS} onToggle={toggleSelect} />
-          )}
           <div className="runbar">
             {mode === 'auto' ? (
               <button
@@ -238,13 +235,16 @@ export function Home({ cfg, onRetryConfig }: {
               </span>
             )}
             {mode === 'manual' && run.phase !== 'running' && selected.size === 0 && (
-              <span className="status">Pick 1–{MAX_CARDS} cards above to score.</span>
+              <span className="status">Pick 1–{MAX_CARDS} cards below to score.</span>
             )}
             {run.phase === 'error' && !run.unreachable && (
               <span className="error">{run.detail}</span>
             )}
           </div>
           {run.phase === 'done' && <ResultsView bundle={run.bundle} />}
+          {mode === 'manual' && (
+            <ManualGrid selected={selected} max={MAX_CARDS} onToggle={toggleSelect} />
+          )}
         </>
       )}
     </>
