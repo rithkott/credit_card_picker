@@ -46,6 +46,7 @@ credits:
       transferring from Platinum/Reserve). Excludes delivery, bikeshare, scooter,
       car rental, transit passes, memberships.
   - name: Delta Stays Credit
+    portal_only: true
     amount_usd: 100          # "up to $100/year"
     period: annual
     usage_keys: [delta]

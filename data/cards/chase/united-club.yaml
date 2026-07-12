@@ -33,6 +33,7 @@ merchant_rewards: []
 
 credits:
   - name: Renowned Hotels and Resorts credit
+    portal_only: true
     amount_usd: 200             # "Up to $200/year Renowned Hotels and Resorts statement credit (prepaid via Chase Travel)"
     period: annual
     usage_keys: [united]

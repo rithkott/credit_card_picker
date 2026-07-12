@@ -474,6 +474,7 @@ function addCred(){
     <div class="grid g3" style="margin-top:10px">
       <label class="check"><input type="checkbox" data-role="inkind"> in-kind benefit (free night, companion cert — amount is your estimate)</label>
       <label class="check"><input type="checkbox" data-role="enroll"> requires enrollment / activation</label>
+      <label class="check"><input type="checkbox" data-role="portalonly"> portal-only (issuer travel/hotel portal — optimizer counts one portal credit per portfolio)</label>
       <div class="field"><label>promo expires <span class="hint">omit if evergreen</span></label><input type="date" data-role="credexp"></div>
     </div>
     <div class="grid g3" style="margin-top:10px">
@@ -721,6 +722,7 @@ function build(){
       const ul = num($('[data-role=unlock]',it).value);
       if (ul!==null && ul>0) L.push(`    unlock_spend_usd: ${ul}`);
       if ($('[data-role=enroll]',it).checked) L.push(`    requires_enrollment: true`);
+      if ($('[data-role=portalonly]',it).checked) L.push(`    portal_only: true    # counts once per portfolio (single portal assumed)`);
       const cx = $('[data-role=credexp]',it).value;
       if (cx){ L.push(`    expires: "${cx}"`); if (cx < today) warns.push(`credit #${i+1}: promo already expired — re-check whether it was renewed`); }
       L.push(`    realistic_capture_rate_note: ${capn?fold(capn,6):"?"}`);

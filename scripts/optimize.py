@@ -694,6 +694,14 @@ def score_credits(cards: list, profile: dict, programs: dict,
                 note += f" (capped by remaining '{cat}' spend)"
             results.append({"card_id": card["id"], "name": credit["name"],
                             "value": value, "note": note})
+    # Tag each result with its credit's portal_only flag. Every credit yields
+    # exactly one result in this same deterministic (card-id, file) order, so a
+    # parallel walk aligns without threading the flag through 8 append sites.
+    flags = [bool(cr.get("portal_only"))
+             for card in sorted(cards, key=lambda c: c["id"])
+             for cr in card["credits"]]
+    for r, f in zip(results, flags):
+        r["portal_only"] = f
     return results
 
 
@@ -773,7 +781,15 @@ def score_portfolio(cards: list, profile: dict, programs: dict,
         lines += build_lines(card, profile, programs, buckets, unlocked)
     assignments, unassigned = assign_spend(lines, buckets)
     credits = score_credits(cards, profile, programs, as_of, everyday_spend)
-    credits_total = sum(c["value"] for c in credits)
+    # Portal credits (Amex FHR, Chase Travel/The Edit, Cap One Travel, etc.) are
+    # not stackable across cards — a user books through one portal — so the
+    # portfolio counts only the single highest-value portal credit and deducts
+    # the rest from net value. Per-card `credits` display is left untouched, so a
+    # recommended card still shows all its benefits.
+    portal_vals = sorted((c["value"] for c in credits
+                          if c.get("portal_only") and c["value"] > 0), reverse=True)
+    portal_overlap = sum(portal_vals[1:])
+    credits_total = sum(c["value"] for c in credits) - portal_overlap
     per_card_earnings = {card["id"]: 0.0 for card in cards}
     for a in assignments:
         per_card_earnings[a["card_id"]] += a["usd_value"]

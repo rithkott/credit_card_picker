@@ -46,6 +46,7 @@ credits:
       purchases (year = account anniversary cycle). Near-universal full capture for
       anyone who travels; the offsetting purchases do not also earn points.
   - name: The Edit prepaid-stay credit
+    portal_only: true
     amount_usd: 250           # "$500 Credit for stays with The Edit ... up to $250 twice a year (starting 1/1/2026)"
     period: semiannual
     category: travel_hotels
@@ -54,6 +55,7 @@ credits:
       The Edit (Chase's luxury hotel program). Captured only by users who book qualifying
       luxury 2+ night prepaid stays each half-year; low capture for most cardholders.
   - name: Select-hotels Chase Travel credit (2026)
+    portal_only: true
     amount_usd: 250           # "$250 Credit for select hotels through Chase Travel in 2026 ... up to $250 in calendar year 2026"
     period: annual
     category: travel_hotels
@@ -116,6 +118,7 @@ credits:
       Shops at Chase. Reachable by very few cardholders; the optimizer zeroes it below
       that spend volume.
   - name: Southwest Airlines Chase Travel credit (at $75k annual spend)
+    portal_only: true
     amount_usd: 500           # "$75,000/calendar-year spend unlocks ... $500 Southwest Airlines Chase Travel credit"
     period: annual
     usage_keys: [southwest]

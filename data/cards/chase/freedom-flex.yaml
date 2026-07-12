@@ -10,19 +10,8 @@ currency:
 base_rate: 1                 # "1% Cash Back: base rate on all purchases"
 
 category_rewards:
-  - category: rotating
-    rate: 5                  # "5% Cash Back total (rotating quarterly categories) ... up to $1,500 combined spend per quarter"
-    cap:
-      period: quarterly
-      max_spend_usd: 1500     # "$1,500 combined spend per quarter", falls back to 1% after cap
-      fallback_rate: 1
-    rotation:
-      frequency: quarterly
-      requires_activation: true
-      note: >-
-        Categories change each quarter and must be activated by the quarterly deadline;
-        may include specific merchants as well as categories. This quarter's specific
-        categories are intentionally NOT hardcoded here — check chase.com/freedomflex.
+  # Rotating 5% quarterly category intentionally NOT modeled — the optimizer values
+  # only permanent full-time rates; rotating spend earns the 1% base_rate.
   - category: dining
     rate: 3                  # "3% Cash Back total: ... dining at restaurants (incl. takeout/delivery)"
   - category: drugstores

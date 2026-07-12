@@ -36,6 +36,7 @@ credits:
       $10,000 of card spend in a calendar year; TravelBank cash expires 12 months after
       issue. Captured by United flyers who reach the spend gate and use the cash in time.
   - name: United Hotels credit
+    portal_only: true
     amount_usd: 100             # "Up to $100/year United Hotels statement credit ($50 each on first two prepaid $50+ stays via Pay Now)"
     period: annual
     usage_keys: [united]
