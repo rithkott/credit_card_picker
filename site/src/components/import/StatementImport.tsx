@@ -6,6 +6,7 @@ import { aggregate } from '../../lib/statements/aggregate'
 import type { DetectionResult } from '../../lib/statements/types'
 import { FileDrop } from './FileDrop'
 import { UsageSuggestions } from './UsageSuggestions'
+import { SectionIcon } from '../SectionIcon'
 
 /** Statement benefit detection (plan 14): upload CSV/OFX/PDF statement
  * exports one at a time to the API, which parses them in memory, stores
@@ -74,7 +75,8 @@ export function StatementImport({ config, onApply }: {
   }
 
   return (
-    <section className="block">
+    <section className="block has-icon">
+      <SectionIcon name="document" />
       <div className="panel-head">
         <h2>Spot benefits in your statements <span className="optional">optional</span></h2>
         <span className="spacer" />

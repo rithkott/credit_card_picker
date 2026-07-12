@@ -1,5 +1,6 @@
 import type { Config } from '../types'
 import type { UserState } from '../lib/profile'
+import { SectionIcon } from './SectionIcon'
 
 interface Props {
   config: Config
@@ -8,17 +9,17 @@ interface Props {
 }
 
 /** Maps to the profile's user block. Simplified per plan 08, and further to a
- * single 720 threshold: most "excellent"-labeled cards actually approve around
- * 720, so gating them behind higher bands locked out cards that don't need it.
- * The two choices map to engine tiers — 720+ → 'excellent' (top rank, no tier
- * gating) and below 720 → 'good' (premium/very-good cards filtered out). */
+ * single 730 threshold: most "excellent"-labeled cards actually approve around
+ * 730, so gating them behind higher bands locked out cards that don't need it.
+ * The two choices map to engine tiers — 730+ → 'excellent' (top rank, no tier
+ * gating) and below 730 → 'good' (premium/very-good cards filtered out). */
 const TIER_OPTIONS: { value: string; label: string; hint: string }[] = [
-  { value: 'excellent', label: '720 or above', hint: 'unlocks every card here' },
-  { value: 'good', label: 'Below 720', hint: 'a few premium cards may be out of reach' },
+  { value: 'excellent', label: '730 or above', hint: 'unlocks every card here' },
+  { value: 'good', label: 'Below 730', hint: 'a few premium cards may be out of reach' },
 ]
 
 /** Collapse any stored engine tier into the two buckets. Anything at or above
- * "very good" reads as 720+; the rest (good / fair / building / unset→720+). */
+ * "very good" reads as 730+; the rest (good / fair / building / unset→730+). */
 function bucketOf(raw: string | null | undefined): string {
   return raw === 'good' || raw === 'fair' || raw === 'building' ? 'good' : 'excellent'
 }
@@ -27,7 +28,8 @@ export function AboutYou({ config: _config, user, onChange }: Props) {
   const tier = bucketOf(user.credit_tier)
   const hint = TIER_OPTIONS.find((o) => o.value === tier)?.hint
   return (
-    <section className="block">
+    <section className="block has-icon">
+      <SectionIcon name="user" />
       <h2>About you</h2>
       <div className="opts">
         <div className="field">

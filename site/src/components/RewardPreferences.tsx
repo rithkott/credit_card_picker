@@ -1,4 +1,5 @@
 import type { Config } from '../types'
+import { SectionIcon } from './SectionIcon'
 
 const KIND_LABELS: Record<string, string> = {
   cashback: 'Cash back',
@@ -14,7 +15,8 @@ export function RewardPreferences({ config, kinds, onChange }: {
   onChange: (kind: string, on: boolean) => void
 }) {
   return (
-    <section className="block">
+    <section className="block has-icon">
+      <SectionIcon name="rewards" />
       <h2>What rewards do you want to prioritize?</h2>
       <p className="why">
         Check all that apply — all three means every kind of value counts. Checking

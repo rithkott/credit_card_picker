@@ -1,6 +1,7 @@
 import type { Config } from '../types'
 import type { Issue, SpendState } from '../lib/validation'
 import { formatNumber, type Unit } from '../lib/money'
+import { SectionIcon } from './SectionIcon'
 import { CategoryRow } from './CategoryRow'
 import { UnitToggle } from './UnitToggle'
 
@@ -29,7 +30,8 @@ export function SpendEntry({ config, spend, unit, warnings, onUnitChange, onCate
   const nonzero = gridCents
     .filter((c) => c !== null && !Number.isNaN(c) && c > 0).length
   return (
-    <section className="block">
+    <section className="block has-icon">
+      <SectionIcon name="spend" />
       <div className="panel-head">
         <div>
           <h2>Your spending</h2>

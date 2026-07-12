@@ -190,6 +190,53 @@ section.block > .why {
 }
 .panel-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .panel-head .spacer, .spacer { flex: 1; }
+
+/* Left-gutter section icon. The block reserves space with extra left padding;
+   the icon is absolutely placed in that gutter, aligned to the heading. */
+section.block.has-icon { padding-left: 98px; }
+.block-icon {
+  position: absolute;
+  top: 24px; left: 26px;
+  width: 52px; height: 52px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 15px;
+  color: var(--accent-text);
+  background: linear-gradient(158deg, rgba(143, 168, 255, 0.22), rgba(143, 168, 255, 0.05));
+  border: 1px solid var(--accent-border);
+  box-shadow:
+    0 6px 20px -8px rgba(143, 168, 255, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+.block-icon svg { display: block; }
+/* Airlines + hotels: a little plane-and-building diorama. */
+.block-icon.duo { position: absolute; }
+.block-icon.duo .duo-a { position: absolute; top: 9px; left: 8px; width: 21px; height: 21px; }
+.block-icon.duo .duo-b { position: absolute; right: 8px; bottom: 8px; width: 20px; height: 20px; opacity: 0.92; }
+
+/* Rent/mortgage is easy to skim past — give it an accent tint + glowing icon
+   so it reads as its own distinct decision. */
+section.block.block-accent {
+  border-color: var(--accent-border);
+  background:
+    linear-gradient(180deg, rgba(143, 168, 255, 0.10), rgba(143, 168, 255, 0.02)),
+    var(--glass);
+  box-shadow: 0 12px 34px -20px rgba(143, 168, 255, 0.75);
+}
+section.block.block-accent .block-icon {
+  color: #e6ecff;
+  background: linear-gradient(158deg, rgba(143, 168, 255, 0.38), rgba(143, 168, 255, 0.12));
+  box-shadow:
+    0 8px 24px -6px rgba(143, 168, 255, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+@media (max-width: 560px) {
+  section.block.has-icon { padding-left: 76px; }
+  .block-icon { top: 22px; left: 18px; width: 44px; height: 44px; border-radius: 13px; }
+  .block-icon svg { width: 23px; height: 23px; }
+  .block-icon.duo .duo-a { top: 8px; left: 7px; width: 18px; height: 18px; }
+  .block-icon.duo .duo-b { right: 7px; bottom: 7px; width: 17px; height: 17px; }
+}
 .optional { color: rgba(242, 243, 247, 0.5); font-weight: 500; font-size: 12.5px; }
 
 .privacy-pill {
