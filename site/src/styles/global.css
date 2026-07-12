@@ -679,22 +679,10 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   text-wrap: balance;
   font-size: 22px; font-weight: 800; line-height: 1.15; letter-spacing: 0.005em;
   color: #fff;
-  animation: cardNameGlow 3.4s ease-in-out infinite;
-}
-@keyframes cardNameGlow {
-  0%, 100% {
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3), 0 0 16px rgba(255, 255, 255, 0.12), 0 1px 3px rgba(0, 0, 0, 0.55);
-  }
-  50% {
-    text-shadow: 0 0 12px rgba(255, 255, 255, 0.85), 0 0 28px rgba(255, 255, 255, 0.5), 0 1px 3px rgba(0, 0, 0, 0.55);
-  }
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
 }
 @media (prefers-reduced-motion: reduce) {
   .card-render .sheen { animation: none; opacity: 0.5; transform: translateX(20%); }
-  .card-render .cname {
-    animation: none;
-    text-shadow: 0 0 12px rgba(255, 255, 255, 0.55), 0 1px 3px rgba(0, 0, 0, 0.55);
-  }
 }
 .card-bar {
   border: 1px solid var(--border-input);
