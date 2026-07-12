@@ -83,7 +83,30 @@ python3 scripts/validate_cards.py
 
 **Optimizer details:** ranks every 1–`max_cards` portfolio of approvable cards by net annual value (`--json` for machine output, `--as-of` for reproducible runs; point pricing per [docs/plans/08-simplified-valuation.md](docs/plans/08-simplified-valuation.md)). Design spec: [docs/plans/02-optimizer.md](docs/plans/02-optimizer.md).
 
-**Contributing card data:** follow [docs/curation-guide.md](docs/curation-guide.md); every file must pass `scripts/validate_cards.py`.
+## Adding & verifying cards
+
+Every card is one hand-curated YAML file in `data/cards/<issuer>/<card-id>.yaml`, checked against issuer terms. There are three ways in, all ending at the same validator gate. Read [docs/curation-guide.md](docs/curation-guide.md) first — it's the field-by-field reference these tools assume.
+
+**1. Card-entry form (easiest — no build, no Python to write).** Open `tools/card-entry-form.html` directly in a browser. It embeds the current category / merchant / point-program registry keys and mirrors the schema, so it can only emit valid choices; fill in the fields and it generates schema-valid YAML for you to save under `data/cards/<issuer>/`.
+
+```sh
+open tools/card-entry-form.html      # macOS; or just double-click it
+```
+
+**2. By hand from the template.** Copy the template at the bottom of [docs/curation-guide.md](docs/curation-guide.md) into `data/cards/<issuer>/<card-id>.yaml` and fill it in. `issuer` must match the directory name, `id` must match the filename. Rates are earn-units per dollar; cross-card assumptions (categories, merchants, point values) are referenced by key from `data/meta/` — never inlined.
+
+**3. Converting an offer file (AI task).** Terms sheets live in `data/offer_files/<issuer>/<slug>.txt`. Turning one into a card YAML is a stricter job because you're transcribing a transcription — follow [docs/ai-conversion-protocol.md](docs/ai-conversion-protocol.md) step by step (it gates entry into the curation guide, not replaces it). Any card drafted without confirming numbers against the issuer's own page **must** be marked `confidence: low` with a `NEEDS human verification` marker in `verification`.
+
+**Verifying existing cards.** The dataset is only as good as its sources. To promote a `confidence: low` card to `high`, check every rate, cap, fee, credit, and bonus against the issuer's live terms and record the URLs in `verification.source_urls`. Cards flagged `NEEDS_VERIFICATION` already have their official page links collected in [docs/needs-verification-links.md](docs/needs-verification-links.md) — start there. CI re-flags any card not re-checked in 6 months.
+
+**The gate (required for every path).** Nothing lands until it passes the validator — schema, registry-key, and staleness checks, the same run CI does on any `data/` change:
+
+```sh
+pip install pyyaml jsonschema
+python3 scripts/validate_cards.py
+```
+
+Fix every `ERROR`; staleness / low-confidence `WARN`ings are informational. See the full flow in [docs/curation-guide.md](docs/curation-guide.md).
 
 ## Deployment
 
