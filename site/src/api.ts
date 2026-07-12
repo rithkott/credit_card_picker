@@ -65,7 +65,7 @@ export function optimize(profile: Profile, top = 5): Promise<OptimizeBundle> {
   })
 }
 
-/** Manual mode (v1.7): score exactly the user-selected `cardIds` (1-3) instead
+/** Manual mode (v1.7): score exactly the user-selected `cardIds` (1-5) instead
  * of the optimizer searching for the best set. Same profile body as optimize(),
  * plus `cards`; returns the identical OptimizeBundle (a single best_by_size). */
 export function evaluateManual(profile: Profile, cardIds: string[]): Promise<OptimizeBundle> {

@@ -321,11 +321,11 @@ class TestServerAPI(unittest.TestCase):
             "unknown card id")
 
     def test_evaluate_too_many_422(self):
-        ids = [c["id"] for c in self.dataset["cards"]][:4]
+        ids = [c["id"] for c in self.dataset["cards"]][:6]
         self.assert_evaluate_422(
             {"spend": {"other": 5000}, "user": {"credit_tier": "good"},
              "cards": ids},
-            "at most 3 cards")
+            "at most 5 cards")
 
     def test_evaluate_duplicate_422(self):
         cid = self.dataset["cards"][0]["id"]
