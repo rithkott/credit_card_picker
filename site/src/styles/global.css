@@ -889,10 +889,19 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 .tile-bonus .line { color: inherit; }
 .tile-bonus .line > span:last-child { color: var(--ok); }
 .tile-costs { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--hairline); }
-/* "Adds each year" — the recurring yearly total glows golden. */
-.tile-lines .line.total.adds-year > span:last-child {
+/* "Adds each year" — both label and total glow golden. */
+.tile-lines .line.total.adds-year > span {
   color: var(--warn);
+}
+.tile-lines .line.total.adds-year > span:last-child {
   text-shadow: 0 0 10px rgba(232, 196, 122, 0.55), 0 0 22px rgba(232, 196, 122, 0.3);
+}
+/* Negative totals read red, overriding the gold/shimmer treatments. */
+.tile-lines .line.total.neg > span:last-child {
+  color: var(--danger);
+  background: none;
+  -webkit-text-fill-color: var(--danger);
+  text-shadow: 0 0 10px rgba(242, 139, 130, 0.45);
 }
 /* "Max value" — the optimistic ceiling glows blue-purple. */
 .tile-maxvalue { margin-top: 8px; }

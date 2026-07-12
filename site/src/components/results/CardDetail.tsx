@@ -156,7 +156,7 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
             <span>− {formatUsd(card.reward_cap_clamp)}</span>
           </div>
         )}
-        <div className="line total adds-year">
+        <div className={`line total adds-year${adds < 0 ? ' neg' : ''}`}>
           <span>Adds each year</span>
           <span>{formatUsd(adds)}</span>
         </div>
@@ -202,7 +202,7 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
       )}
       {showMaxValue && (
         <div className="tile-lines tile-maxvalue">
-          <div className="line total max-value">
+          <div className={`line total max-value${maxValue < 0 ? ' neg' : ''}`}>
             <span>Max value</span>
             <span>{formatUsd(maxValue)}</span>
           </div>
