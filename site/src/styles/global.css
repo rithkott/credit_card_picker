@@ -641,33 +641,22 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 .card-render > span { pointer-events: none; }
-/* glossy diagonal sweep + soft corner light */
+/* slow glossy light that sweeps across the face */
 .card-render .sheen {
-  position: absolute; inset: 0;
-  background:
-    linear-gradient(105deg, transparent 37%, rgba(255, 255, 255, 0.11) 46%, transparent 56%),
-    radial-gradient(85% 65% at 88% 118%, rgba(255, 255, 255, 0.07), transparent 60%);
+  position: absolute; top: -40%; bottom: -40%; left: -30%; right: -30%;
+  background: linear-gradient(105deg, transparent 45%, rgba(255, 255, 255, 0.14) 50%, transparent 55%);
+  animation: cardSheen 6s ease-in-out infinite;
 }
-/* faint engine-turned (guilloche) texture, faded toward the edges */
-.card-render .guilloche {
-  position: absolute; inset: 0; opacity: 0.55;
-  background:
-    repeating-linear-gradient(58deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 7px),
-    repeating-linear-gradient(-58deg, rgba(255, 255, 255, 0.038) 0 1px, transparent 1px 9px);
-  -webkit-mask-image: radial-gradient(125% 105% at 50% 38%, #000 52%, transparent 100%);
-  mask-image: radial-gradient(125% 105% at 50% 38%, #000 52%, transparent 100%);
+@keyframes cardSheen {
+  0% { transform: translateX(-55%); opacity: 0; }
+  20% { opacity: 1; }
+  55% { transform: translateX(55%); opacity: 0.55; }
+  100% { transform: translateX(55%); opacity: 0; }
 }
-/* currency eyebrow, top-right */
-.card-render .cbrand {
-  position: absolute; top: 17px; right: 20px; max-width: 150px;
-  text-align: right; line-height: 1.25;
-  font-size: 8.5px; font-weight: 700; letter-spacing: 0.14em;
-  text-transform: uppercase; color: rgba(255, 255, 255, 0.60);
-}
-/* EMV chip: gold plate, contact ring + contact lines */
+/* EMV chip, tucked into the top-left corner */
 .card-render .cchip {
-  position: absolute; top: 52px; left: 22px;
-  width: 40px; height: 30px; border-radius: 6px;
+  position: absolute; top: 18px; left: 20px;
+  width: 38px; height: 28px; border-radius: 6px;
   background:
     linear-gradient(rgba(120, 92, 30, 0.5), rgba(120, 92, 30, 0.5)) 0 50% / 100% 1px no-repeat,
     linear-gradient(135deg, #efe0ad, #c3a45f 55%, #d8c184);
@@ -680,30 +669,32 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 .card-render .cchip::after {
   content: ''; position: absolute; top: 4px; bottom: 4px; left: 50%; width: 1px;
   background: rgba(120, 92, 30, 0.5);
-  box-shadow: -10px 0 0 rgba(120, 92, 30, 0.4), 10px 0 0 rgba(120, 92, 30, 0.4);
+  box-shadow: -9px 0 0 rgba(120, 92, 30, 0.4), 9px 0 0 rgba(120, 92, 30, 0.4);
 }
-/* contactless glyph: two right-side arcs */
-.card-render .cwave { position: absolute; top: 54px; left: 76px; width: 20px; height: 26px; }
-.card-render .cwave::before, .card-render .cwave::after {
-  content: ''; position: absolute; top: 50%; transform: translateY(-50%);
-  border: 2px solid transparent; border-right-color: rgba(255, 255, 255, 0.55);
-  border-radius: 50%;
-}
-.card-render .cwave::before { left: 0; width: 9px; height: 15px; }
-.card-render .cwave::after { left: -5px; width: 18px; height: 26px; opacity: 0.6; }
-/* embossed number row */
-.card-render .cnum {
-  position: absolute; left: 23px; right: 20px; bottom: 50px;
-  font-size: 15px; font-weight: 700; letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.9);
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
-}
+/* the hero: card name, centered, glowing, gently pulsing */
 .card-render .cname {
-  position: absolute; bottom: 16px; left: 23px; right: 22px;
-  font-size: 13px; font-weight: 600; letter-spacing: 0.05em;
-  text-transform: uppercase; color: rgba(255, 255, 255, 0.92);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+  padding: 40px 24px 22px; text-align: center;
+  text-wrap: balance;
+  font-size: 22px; font-weight: 800; line-height: 1.15; letter-spacing: 0.005em;
+  color: #fff;
+  animation: cardNameGlow 3.4s ease-in-out infinite;
+}
+@keyframes cardNameGlow {
+  0%, 100% {
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3), 0 0 16px rgba(255, 255, 255, 0.12), 0 1px 3px rgba(0, 0, 0, 0.55);
+  }
+  50% {
+    text-shadow: 0 0 12px rgba(255, 255, 255, 0.85), 0 0 28px rgba(255, 255, 255, 0.5), 0 1px 3px rgba(0, 0, 0, 0.55);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-render .sheen { animation: none; opacity: 0.5; transform: translateX(20%); }
+  .card-render .cname {
+    animation: none;
+    text-shadow: 0 0 12px rgba(255, 255, 255, 0.55), 0 1px 3px rgba(0, 0, 0, 0.55);
+  }
 }
 .card-bar {
   border: 1px solid var(--border-input);

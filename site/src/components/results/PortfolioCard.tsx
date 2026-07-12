@@ -27,18 +27,14 @@ function faceStyle(id: string): CSSProperties {
   }
 }
 
-/** The lead credit-card render: a pure-CSS card face in the id's hue family —
- * chip, contactless glyph, embossed number row, currency eyebrow, and name. No
- * external art; every card is drawn deterministically from its id. */
-function CardRender({ id, name, brand }: { id: string; name: string; brand?: string }) {
+/** The lead credit-card render: a deterministic gradient face in the id's hue
+ * family, a chip, and the card name as the glowing, animated hero. No external
+ * art; the face is drawn entirely from the id. */
+function CardRender({ id, name }: { id: string; name: string }) {
   return (
     <div className="card-render" style={faceStyle(id)}>
       <span className="sheen" />
-      <span className="guilloche" />
-      {brand && <span className="cbrand">{brand}</span>}
       <span className="cchip" />
-      <span className="cwave" />
-      <span className="cnum">•••• •••• •••• ••••</span>
       <span className="cname">{name}</span>
     </div>
   )
@@ -166,7 +162,7 @@ export function PortfolioCard({ portfolio, bundle, isBest, stack }: {
         <div className="card-stack">
           {stackCards.map((s, i) =>
             i === 0
-              ? <CardRender key={s.id} id={s.id} name={s.card.name} brand={s.card.currency.label} />
+              ? <CardRender key={s.id} id={s.id} name={s.card.name} />
               : <CardBar key={s.id} id={s.id} name={s.card.name} kind={i === 1 ? 'mid' : 'bottom'} />,
           )}
         </div>
