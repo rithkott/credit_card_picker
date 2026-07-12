@@ -1250,3 +1250,68 @@ button.btn-danger {
   .wizard-dot-label { display: none; }
   .wizard-dots { gap: 12px; }
 }
+
+/* First-run start page (v1.9.1) — fills the viewport between nav and footer. */
+.start {
+  padding: 8px;
+  min-height: calc(100vh - 210px);
+  display: flex; flex-direction: column; justify-content: center;
+  gap: clamp(40px, 7vh, 96px);
+}
+.start-hero { text-align: center; padding: 0 20px; }
+.start-pill {
+  display: inline-flex;
+  margin: 0 auto 28px;
+}
+.start-hero h1 {
+  margin: 0;
+  font-size: 56px; font-weight: 700;
+  letter-spacing: -0.04em; line-height: 1.04;
+}
+.start-hero .sub {
+  margin: 18px auto 0;
+  font-size: 17px; line-height: 1.6;
+  color: rgba(242, 243, 247, 0.62);
+  max-width: 600px;
+  text-wrap: pretty;
+}
+.start-cta {
+  margin-top: 32px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.start-cta button.primary { padding: 15px 44px; font-size: 16px; }
+.start-cta-note { font-size: 12.5px; color: var(--text-faint); }
+
+.start-points {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+}
+.start-point {
+  background: var(--glass);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--r-tile);
+  padding: 24px 22px;
+  backdrop-filter: var(--blur-small);
+  -webkit-backdrop-filter: var(--blur-small);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.start-point-icon {
+  width: 46px; height: 46px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 13px;
+  color: var(--accent-text);
+  background: linear-gradient(158deg, rgba(143, 168, 255, 0.22), rgba(143, 168, 255, 0.05));
+  border: 1px solid var(--accent-border);
+  box-shadow:
+    0 6px 20px -8px rgba(143, 168, 255, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  margin-bottom: 4px;
+}
+.start-point-icon svg { width: 24px; height: 24px; display: block; }
+.start-point-title { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.start-point-body { font-size: 13px; line-height: 1.55; color: var(--text-muted); }
+
+@media (max-width: 720px) {
+  .start-hero h1 { font-size: 40px; }
+  .start-points { grid-template-columns: 1fr; }
+}

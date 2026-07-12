@@ -12,7 +12,7 @@ import type { UserState } from '../lib/profile'
 import type { Config } from '../types'
 import { clearForm, loadForm, saveForm, type PersistedForm } from '../lib/persistence'
 
-export type FormView = 'wizard' | 'edit'
+export type FormView = 'start' | 'wizard' | 'edit'
 type Mode = 'auto' | 'manual'
 
 /** Matches the current inline defaults in Home (pre-v1.9.0). Fresh visitors
@@ -66,7 +66,12 @@ export function useFormState(): FormState {
   const [mode, setMode] = useState<Mode>(() => loaded?.mode ?? 'auto')
   const [selected, setSelected] = useState<Set<string>>(() => loaded?.selected ?? new Set())
   const [completed, setCompleted] = useState<boolean>(() => loaded?.completed ?? false)
-  const [view, setView] = useState<FormView>(() => (loaded?.completed ? 'edit' : 'wizard'))
+  // Fresh visitor: land on the start splash (v1.9.1). Returning-but-unfinished
+  // visitor (restored a blob mid-wizard) skips the splash and resumes the wizard;
+  // a completed visitor goes straight to the scrolling edit view.
+  const [view, setView] = useState<FormView>(() =>
+    loaded?.completed ? 'edit' : loaded ? 'wizard' : 'start',
+  )
   const [restored] = useState(() => loaded !== null)
 
   // Persist on change. Skip the mount pass so a visitor who never touches the
