@@ -1569,9 +1569,6 @@ def augment(dataset: dict, profile: dict, as_of: date, held_ids: list) -> dict:
     if unknown:
         raise InputError(f"augment: unknown card id(s): {sorted(unknown)}")
     held_set = set(held_ids)
-    candidates = [c["id"] for c in dataset["cards"] if c["id"] not in held_set]
-    if not candidates:
-        raise InputError("augment: no cards left to add")
 
     # Mirror evaluate(): recompute assumed_usage so no override leaves a stale set.
     profile["user"]["assumed_usage"] = assumed_usage(
@@ -1579,6 +1576,18 @@ def augment(dataset: dict, profile: dict, as_of: date, held_ids: list) -> dict:
     programs = dataset["programs"]
     merchants = dataset["merchants"]
     categories = dataset["categories"]
+
+    # The suggested card is a RECOMMENDATION, so it must honor the same candidate
+    # filters Auto's search uses: credit tier, brand-lock-in opt-in, and reward
+    # preference (filter_cards). Held cards were hand-picked and keep bypassing
+    # the filter — evaluate() scores them regardless — but we never ADD a card the
+    # user's preferences exclude (e.g. a brand-locked card when accepts_brand_lockin
+    # is false, or one that doesn't redeem for the reward kinds they asked for).
+    eligible, _ = filter_cards(dataset["cards"], profile, programs)
+    candidates = [c["id"] for c in eligible if c["id"] not in held_set]
+    if not candidates:
+        raise InputError("augment: no eligible cards left to add")
+
     buckets = build_buckets(profile, merchants, categories)
     primary = "ongoing_net" if profile["user"]["optimize_for"] == "ongoing" else "year1_net"
 

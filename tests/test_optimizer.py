@@ -1559,6 +1559,20 @@ class TestAugment(unittest.TestCase):
         with self.assertRaises(opt.InputError):
             opt.augment(DATASET, prof, AS_OF, all_ids)
 
+    def test_respects_candidate_filters(self):
+        # The added card is a recommendation, so it must obey the same candidate
+        # filters Auto's search uses (tier / brand-lock-in / reward-preference).
+        # points-only makes the two pure-cash fixture cards ineligible — augment
+        # must never add them, even when a held card is itself a cash card
+        # (hand-picked held cards keep bypassing the filter).
+        prof = make_profile(P30K, reward_preferences=["points"])
+        _, excluded = opt.filter_cards(DATASET["cards"], prof, DATASET["programs"])
+        excluded_ids = {e["id"] for e in excluded}
+        self.assertEqual(excluded_ids, {"active-cash", "blue-cash-preferred"})
+        for held in (["venture-x"], ["active-cash"]):
+            added = opt.augment(DATASET, prof, AS_OF, held)["added_card"]
+            self.assertNotIn(added, excluded_ids)
+
 
 if __name__ == "__main__":
     unittest.main()
