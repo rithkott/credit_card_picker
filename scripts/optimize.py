@@ -80,6 +80,17 @@ PORTAL_RATE_MULT = 0.75
 ROTATING_ELIGIBLE = ["dining", "drugstores", "gas", "groceries",
                      "online_shopping", "streaming"]
 
+# Always-on redemption caveat for transfer_gateway_required currencies (see
+# point-valuations.yaml): the card's points redeem only at the cash floor unless
+# the holder ALSO carries a gateway card (unlocks_transfers) in the same program.
+# Surfaced in the results subtitle for every such card, standalone or paired, so
+# a Freedom-family card never reads as if its points transfer on their own.
+POINTS_GATEWAY_CAVEAT = {
+    "chase_ur": "Points need a Chase Sapphire card to transfer to travel partners",
+    "citi_typ": "Points need a premium Citi ThankYou card (Strata Premier / Elite) to transfer",
+    "wells_fargo_rewards": "Points need the Wells Fargo Autograph Journey card to transfer",
+}
+
 TIER_ORDER = ["building", "fair", "good", "very_good", "excellent"]
 
 # Reward kinds a user may ask for (user.reward_preferences / --rewards). Concrete
@@ -509,7 +520,9 @@ def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
             if rotation.get("requires_activation"):
                 note += " ×activation" if activated else " (not activated → fallback rate)"
             add("rotating", cat, rate, eligible, room, note, fraction=fraction)
-            add("fallback", cat, cap["fallback_rate"], eligible, None, "above-cap fallback")
+            add("fallback", cat, cap["fallback_rate"], eligible, None,
+                "the rest of this spend (outside the featured quarter, or above "
+                "the annual cap) earns the base rate")
             continue
 
         er = cr.get("earn_ratio")
@@ -612,6 +625,7 @@ def assign_spend(lines: list, buckets: dict) -> tuple:
                                 "usd_assigned": take, "rate": ln["rate"],
                                 "cpp": ln["cpp"], "kind": ln["kind"],
                                 "usd_value": take * ln["effective_rate"],
+                                "eligible_fraction": ln.get("eligible_fraction"),
                                 "note": ln["note"]})
         if pool_key:
             pools[pool_key] = room_left
@@ -1358,7 +1372,12 @@ def assemble_portfolio(entry: dict, by_id: dict, profile: dict, programs: dict,
             "assignments": [
                 {"bucket": a["bucket"], "usd_assigned": _round2(a["usd_assigned"]),
                  "rate": a["rate"], "cpp": a["cpp"],
-                 "usd_value": _round2(a["usd_value"]), "note": a["note"]}
+                 "usd_value": _round2(a["usd_value"]), "note": a["note"],
+                 # Rotating (featured-quarter) lines carry the ~1/N dilution so the
+                 # UI can show the FULL eligible spend and apply ×fraction to the
+                 # points/value it earns; null on every non-rotating line.
+                 **({"eligible_fraction": a["eligible_fraction"]}
+                    if a.get("eligible_fraction") is not None else {})}
                 for a in scored["assignments"] if a["card_id"] == cid],
             "credits": [
                 {"name": c["name"], "value": _round2(c["value"]), "note": c["note"],
@@ -1374,6 +1393,13 @@ def assemble_portfolio(entry: dict, by_id: dict, profile: dict, programs: dict,
         _, valuation_note = effective_cpp(
             card, programs, set(profile["user"]["confirmed_usage"]),
             unlocked, gateways)
+        # Always-on redemption caveat: a transfer-gateway card (Freedom family)
+        # must show, up front, that its points need a gateway card (Sapphire) —
+        # independent of whether one is currently in the scored portfolio.
+        if (prog.get("transfer_gateway_required")
+                and not card.get("unlocks_transfers")
+                and prog_key in POINTS_GATEWAY_CAVEAT):
+            per_card[cid]["points_gateway_caveat"] = POINTS_GATEWAY_CAVEAT[prog_key]
         if valuation_note:
             per_card[cid]["valuation_note"] = valuation_note
         elif (prog.get("transfer_gateway_required")
