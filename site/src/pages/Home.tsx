@@ -362,12 +362,17 @@ export function Home({ cfg, onRetryConfig }: {
               steps={steps}
               index={step}
               canFinish={errors.length === 0}
+              finishLabel={run.phase === 'running' ? 'Scoring…' : 'Run the numbers'}
               onBack={() => setStep((s) => Math.max(0, s - 1))}
               onNext={() => setStep((s) => Math.min(steps.length - 1, s + 1))}
               onJump={(i) => setStep(i)}
               onFinish={() => {
+                // One press ends onboarding and runs the optimizer (v1.11.1):
+                // collapse to the edit view and kick off the same Auto run the
+                // edit-view runbar would. Wizard is the guided Auto path.
                 fs.setCompleted(true)
                 fs.setView('edit')
+                onRun()
               }}
             />
           )
