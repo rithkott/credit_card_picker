@@ -27,14 +27,16 @@ const KIND_ICONS: Record<string, ReactNode> = {
   ),
   flights: (
     <svg {...svg}>
-      <path d="M17.8 19.2 16 11l3.5-3.5a2.12 2.12 0 0 0-3-3L13 8 4.8 6.2a1 1 0 0 0-.9 1.7l4.1 3.1-2.3 2.3-2-.5a1 1 0 0 0-.9 1.6L5 18l1.6 2.4a1 1 0 0 0 1.6-.1l2.3-2 3.1 4.1a1 1 0 0 0 1.7-.9z" />
+      <path d="M2 22h20" />
+      <path d="M6.36 17.4 4 17l-2-4 1.1-.55a2 2 0 0 1 1.8 0l.17.1a2 2 0 0 0 1.8 0L8 12 5 6l.9-.45a2 2 0 0 1 2.09.2l4.02 3a2 2 0 0 0 .9.42l4.9.98a2.06 2.06 0 0 1 1.66 1.51 1.91 1.91 0 0 1-1.55 2.3l-11.24 2a2 2 0 0 1-1.02-.06z" />
     </svg>
   ),
   hotels: (
     <svg {...svg}>
-      <path d="M6 22V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v17" />
-      <path d="M17 10h2a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4" />
-      <path d="M10 8h1M13 8h0M10 12h1M13 12h0M10 16h1M13 16h0" />
+      <path d="M2 4v16" />
+      <path d="M2 8h18a2 2 0 0 1 2 2v10" />
+      <path d="M2 17h20" />
+      <path d="M6 8v9" />
     </svg>
   ),
 }
@@ -53,7 +55,8 @@ export function RewardPreferences({ config, kinds, onChange }: {
       <p className="why">
         Check all that apply — all three means every kind of value counts. Checking
         flights or hotels also tells us you fly or stay in hotels, so airline and hotel
-        perks count without you naming a brand.
+        perks count without you naming a brand. Points are usually worth more than cash
+        back when redeemed directly for flights and hotel stays.
       </p>
       <div
         className="reward-tiles"
