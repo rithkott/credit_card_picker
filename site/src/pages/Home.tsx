@@ -188,7 +188,7 @@ export function Home({ cfg, onRetryConfig }: {
         const config = cfg.config
 
         const runbar = (
-          <div className="runbar">
+          <div className={`runbar${mode === 'manual' ? ' runbar--floating' : ''}`}>
             {mode === 'auto' ? (
               <button
                 type="button"
@@ -379,7 +379,7 @@ export function Home({ cfg, onRetryConfig }: {
         }
 
         return (
-          <>
+          <div className={mode === 'manual' ? 'edit-view has-floating-runbar' : 'edit-view'}>
             <div className="edit-toolbar">
               <button type="button" className="ghost start-over" onClick={() => setConfirmReset(true)}>
                 Start from scratch
@@ -398,7 +398,7 @@ export function Home({ cfg, onRetryConfig }: {
               onConfirm={onStartFromScratch}
               onCancel={() => setConfirmReset(false)}
             />
-          </>
+          </div>
         )
       })()}
     </>

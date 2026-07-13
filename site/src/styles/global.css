@@ -552,6 +552,34 @@ button.linklike {
 .runbar .status { color: var(--text-muted); font-size: 13px; }
 .runbar .error { color: var(--danger); font-size: 13px; }
 
+/* Custom-mode floating action bar: pinned to bottom-center of the viewport,
+   stays visible while the page scrolls. */
+.runbar--floating {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  z-index: 60;
+  margin-top: 0;
+  max-width: calc(100vw - 32px);
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: rgba(16, 16, 24, 0.82);
+  border: 1px solid var(--border-panel);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45);
+  backdrop-filter: var(--blur-panel);
+  -webkit-backdrop-filter: var(--blur-panel);
+}
+/* Reserve space so the floating bar never hides the last content or the
+   footer's links (footer is a sibling after the page body). */
+.has-floating-runbar { padding-bottom: 40px; }
+.page:has(.runbar--floating) footer.site { padding-bottom: 104px; }
+@media (max-width: 560px) {
+  .runbar--floating { width: max-content; padding: 10px 14px; bottom: 14px; }
+  .page:has(.runbar--floating) footer.site { padding-bottom: 128px; }
+}
+
 /* Checks */
 .issue { padding: 0.3em 0; font-size: 13.5px; }
 .issue.error { color: var(--danger); }
