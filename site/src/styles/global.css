@@ -1000,6 +1000,13 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 .tile-perks .line > span:last-child { color: var(--ok); font-weight: 600; }
 .tile-bonus .line { color: inherit; }
 .tile-bonus .line > span:last-child { color: var(--ok); }
+/* Dual signup bonus (plan 15): the limited-time offer sits beneath the
+   permanent one, divided by a hairline, with an amber "expires" pill. */
+.lt-divider { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--hairline-strong); }
+.lt-pill { margin-left: 8px; padding: 0 8px; vertical-align: middle; }
+.lt-revert { margin-top: 6px; font-size: 12px; }
+/* Inline "limited time · expires <date>" label on earn/credit lines. */
+.lt-inline { color: var(--warn); }
 .tile-costs { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--hairline); }
 /* "Adds each year" — both label and total glow golden. */
 .tile-lines .line.total.adds-year > span {

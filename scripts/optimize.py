@@ -450,13 +450,23 @@ def effective_cpp(card: dict, programs: dict, confirmed: set,
     return avg_cpp(prog), None
 
 
+def _earn_expired(rw: dict, as_of: date) -> bool:
+    """True when a limited-time earn row's `expires` date is strictly before
+    as_of — the row is dropped from scoring (its spend falls through to the
+    base rate), mirroring the promotional-credit expiry guard. `as_of` None
+    (no time context) never expires a row."""
+    exp = rw.get("expires")
+    return bool(exp) and as_of is not None and date.fromisoformat(exp) < as_of
+
+
 def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
-                unlocked: frozenset = frozenset()) -> list:
+                unlocked: frozenset = frozenset(), as_of: date = None) -> list:
     """All reward lines of one card, with effective USD rates and bucket
     eligibility. Issuer precedence (merchant beats category beats base) is
     encoded in the eligibility sets, not chosen by the optimizer. `unlocked` is
     the scoring portfolio's unlocked_programs() — the default (empty) prices
-    the card standalone."""
+    the card standalone. `as_of` drops limited-time earn rows past their
+    `expires` date, so their spend falls through to the base rate."""
     user = profile["user"]
     confirmed = set(user["confirmed_usage"])
     cpp, _ = effective_cpp(card, programs, confirmed, unlocked)
@@ -464,7 +474,7 @@ def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
     lines = []
 
     def add(kind, key, rate, eligible, room, note="", room_key=None,
-            fraction=None):
+            fraction=None, expires=None):
         eligible = [b for b in eligible if b in buckets]
         if closed:
             eligible = [b for b in eligible
@@ -474,6 +484,7 @@ def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
                       "effective_rate": rate * cpp / 100.0,
                       "room": room, "room_key": room_key,
                       "eligible_fraction": fraction, "earn_ratio": None,
+                      "expires": expires,
                       "eligible": sorted(eligible), "note": note})
 
     def cap_room(cap):
@@ -486,19 +497,28 @@ def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
         note = f"capped at ${room:,.0f}/yr" + (f" (shared pool '{shared}')" if shared else "")
         return room, room_key, note
 
-    merchant_line_keys = {mr["merchant"] for mr in card["merchant_rewards"]}
+    # Expired limited-time merchant rows are dropped entirely — and excluded
+    # from merchant_line_keys so a category reward for the same category can
+    # re-claim that merchant's carve-out bucket (otherwise it would fall to base).
+    merchant_line_keys = {mr["merchant"] for mr in card["merchant_rewards"]
+                          if not _earn_expired(mr, as_of)}
     for mr in card["merchant_rewards"]:
+        if _earn_expired(mr, as_of):
+            continue
         cap = mr.get("cap")
         if cap:
             room, room_key, cap_note = cap_room(cap)
             add("merchant", mr["merchant"], mr["rate"], [mr["merchant"]], room,
-                cap_note, room_key)
+                cap_note, room_key, expires=mr.get("expires"))
             add("fallback", mr["merchant"], cap["fallback_rate"], [mr["merchant"]],
                 None, "above-cap fallback")
         else:
-            add("merchant", mr["merchant"], mr["rate"], [mr["merchant"]], None)
+            add("merchant", mr["merchant"], mr["rate"], [mr["merchant"]], None,
+                expires=mr.get("expires"))
 
     for cr in card["category_rewards"]:
+        if _earn_expired(cr, as_of):
+            continue  # limited-time rate lapsed — spend falls through to base
         cat = cr["category"]
         if cat == "choice":
             raise DataError(f"{card['id']}: unexpanded 'choice' reward reached "
@@ -554,10 +574,11 @@ def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
         if cap:
             room, room_key, cap_note = cap_room(cap)
             add("category", cat, rate, eligible, room,
-                f"{note}; {cap_note}" if note else cap_note, room_key)
+                f"{note}; {cap_note}" if note else cap_note, room_key,
+                expires=cr.get("expires"))
             add("fallback", cat, cap["fallback_rate"], eligible, None, "above-cap fallback")
         else:
-            add("category", cat, rate, eligible, None, note)
+            add("category", cat, rate, eligible, None, note, expires=cr.get("expires"))
 
     claimed = set()
     for ln in lines:
@@ -626,6 +647,7 @@ def assign_spend(lines: list, buckets: dict) -> tuple:
                                 "cpp": ln["cpp"], "kind": ln["kind"],
                                 "usd_value": take * ln["effective_rate"],
                                 "eligible_fraction": ln.get("eligible_fraction"),
+                                "expires": ln.get("expires"),
                                 "note": ln["note"]})
         if pool_key:
             pools[pool_key] = room_left
@@ -771,14 +793,17 @@ def score_credits(cards: list, profile: dict, programs: dict,
                 note += f" (capped by remaining '{cat}' spend)"
             results.append({"card_id": card["id"], "name": credit["name"],
                             "value": value, "note": note})
-    # Tag each result with its credit's portal_only flag. Every credit yields
-    # exactly one result in this same deterministic (card-id, file) order, so a
-    # parallel walk aligns without threading the flag through 8 append sites.
-    flags = [bool(cr.get("portal_only"))
-             for card in sorted(cards, key=lambda c: c["id"])
-             for cr in card["credits"]]
-    for r, f in zip(results, flags):
-        r["portal_only"] = f
+    # Tag each result with its credit's portal_only flag and (limited-time
+    # promo credits) its `expires` date. Every credit yields exactly one result
+    # in this same deterministic (card-id, file) order, so a parallel walk aligns
+    # without threading the fields through 8 append sites.
+    meta = [(bool(cr.get("portal_only")), cr.get("expires"))
+            for card in sorted(cards, key=lambda c: c["id"])
+            for cr in card["credits"]]
+    for r, (portal, exp) in zip(results, meta):
+        r["portal_only"] = portal
+        if exp is not None:
+            r["expires"] = exp
     return results
 
 
@@ -786,27 +811,26 @@ def score_bonus(card: dict, profile: dict, programs: dict, as_of: date,
                 card_earnings: float = 0.0,
                 unlocked: frozenset = frozenset(),
                 everyday_spend: float = None) -> dict:
-    """Signup-bonus value — counted once, year-1 only. A bonus's `value` may mix
-    points and usd (both summed); `tiers` add tranches whose cumulative spend
-    requirements are checked with the same feasibility rule as the base;
-    `first_year_match` (Discover) is valued as the card's own computed
-    first-year earnings."""
-    bonus = card["signup_bonus"]
-    if bonus is None:
-        return {"value": 0.0, "note": "no signup bonus"}
-    if "expires" in bonus and date.fromisoformat(bonus["expires"]) < as_of:
-        return {"value": 0.0, "note": f"$0 — offer expired {bonus['expires']}"}
-    if bonus.get("first_year_match"):
-        return {"value": card_earnings,
-                "note": f"first-year match of this card's computed earnings (${card_earnings:,.2f})"}
+    """Signup-bonus value — counted once, year-1 only. Dual-bonus model (plan
+    15): a card holds a permanent `signup_bonus` and, optionally, a separate
+    limited-time elevated `signup_bonus_limited_time`. The active offer scored
+    is the live-and-feasible elevated offer, else the permanent bonus, else a
+    live-but-infeasible elevated offer, else none — so once the elevated offer's
+    `expires` date passes it drops out and the card auto-reverts to the
+    permanent bonus. Each offer's `value` may mix points and usd (both summed);
+    `tiers` add tranches whose cumulative spend requirements use the same
+    feasibility rule as the base; `first_year_match` (Discover) is valued as the
+    card's own computed first-year earnings.
+
+    Returns {value, note, active, permanent, limited_time} where value/note are
+    the active offer's, active ∈ {permanent, limited_time, none}, and
+    permanent/limited_time are per-offer {value, note} (limited_time also carries
+    its `expires`) or None."""
     # Spend-requirement feasibility measures card-payable volume: housing
     # (explicit_only) is excluded — Bilt's own bonuses require "Everyday
     # Spend", and rent can't be charged to any other card anyway.
     total_spend = (everyday_spend if everyday_spend is not None
                    else sum(profile["spend"].values()))
-    window_spend = total_spend * bonus["window_months"] / 12.0
-    if window_spend < bonus["spend_requirement_usd"] - EPS:
-        return {"value": 0.0, "note": "$0 — spend requirement unreachable at your volume"}
     cpp, _ = effective_cpp(card, programs,
                            set(profile["user"]["confirmed_usage"]), unlocked)
 
@@ -820,16 +844,59 @@ def score_bonus(card: dict, profile: dict, programs: dict, as_of: date,
             parts.append(f"${value['usd']:,.0f} cash")
         return worth, " + ".join(parts)
 
-    total, note = usd_of(bonus["value"])
-    tiers = bonus.get("tiers", [])
-    reached = [t for t in tiers if window_spend >= t["spend_requirement_usd"] - EPS]
-    for tier in reached:
-        worth, desc = usd_of(tier["value"])
-        total += worth
-        note += f"; +tier at ${tier['spend_requirement_usd']:,.0f} spend ({desc})"
-    if len(reached) < len(tiers):
-        note += f"; {len(tiers) - len(reached)} tier(s) unreachable at your volume"
-    return {"value": total, "note": note}
+    def leg(offer):
+        """Score one offer body → {value, note, feasible}. Note strings are
+        byte-identical to the pre-dual single-bonus scorer (keeps goldens green)."""
+        if "expires" in offer and date.fromisoformat(offer["expires"]) < as_of:
+            return {"value": 0.0, "feasible": False,
+                    "note": f"$0 — offer expired {offer['expires']}"}
+        if offer.get("first_year_match"):
+            return {"value": card_earnings, "feasible": True,
+                    "note": f"first-year match of this card's computed earnings "
+                            f"(${card_earnings:,.2f})"}
+        window_spend = total_spend * offer["window_months"] / 12.0
+        if window_spend < offer["spend_requirement_usd"] - EPS:
+            return {"value": 0.0, "feasible": False,
+                    "note": "$0 — spend requirement unreachable at your volume"}
+        total, note = usd_of(offer["value"])
+        tiers = offer.get("tiers", [])
+        reached = [t for t in tiers if window_spend >= t["spend_requirement_usd"] - EPS]
+        for tier in reached:
+            worth, desc = usd_of(tier["value"])
+            total += worth
+            note += f"; +tier at ${tier['spend_requirement_usd']:,.0f} spend ({desc})"
+        if len(reached) < len(tiers):
+            note += f"; {len(tiers) - len(reached)} tier(s) unreachable at your volume"
+        return {"value": total, "feasible": True, "note": note}
+
+    permanent = card["signup_bonus"]
+    elevated = card.get("signup_bonus_limited_time")
+    # The elevated offer is only a candidate while live (auto-reverts after).
+    elevated_live = (elevated is not None
+                     and date.fromisoformat(elevated["expires"]) >= as_of)
+
+    perm = leg(permanent) if permanent is not None else None
+    elev = leg(elevated) if elevated_live else None
+
+    if elev is not None and elev["feasible"]:
+        active_key, active = "limited_time", elev
+    elif perm is not None:
+        active_key, active = "permanent", perm
+    elif elev is not None:  # live but infeasible elevated offer
+        active_key, active = "limited_time", elev
+    else:
+        active_key, active = "none", {"value": 0.0, "note": "no signup bonus"}
+
+    return {
+        "value": active["value"],
+        "note": active["note"],
+        "active": active_key,
+        "permanent": ({"value": perm["value"], "note": perm["note"]}
+                      if perm is not None else None),
+        "limited_time": ({"value": elev["value"], "note": elev["note"],
+                          "expires": elevated["expires"]}
+                         if elev is not None else None),
+    }
 
 
 def membership_fee(card: dict) -> float:
@@ -1022,7 +1089,7 @@ def score_portfolio(cards: list, profile: dict, programs: dict,
                          if not bk["explicit_only"])
     lines = []
     for card in cards:
-        lines += build_lines(card, profile, programs, buckets, unlocked)
+        lines += build_lines(card, profile, programs, buckets, unlocked, as_of)
     assignments, unassigned = assign_spend(lines, buckets)
     # Resolve any Bilt-style earn_ratio housing reward: re-prices the housing
     # line by the Everyday Spend Ratio and may route everyday spend onto the card
@@ -1193,18 +1260,21 @@ def card_warnings(card: dict, as_of: date) -> list:
 
 def prune_dominated_variants(variants: list, profile: dict,
                              programs: dict, merchants: dict,
-                             categories: dict) -> tuple:
+                             categories: dict, as_of: date = None) -> tuple:
     """Exact pre-search pass (plan 02.5 §2): drop variants provably unable to
     appear in an optimal portfolio. B dominates A only when A is plain (no
-    credits, no signup bonus), every live bucket A can win is covered by an
+    credits, no permanent signup bonus AND no limited-time offer), every live
+    bucket A can win is covered by an
     *uncapped* B line at >= rate, B's fees are <= in both metrics, B carries no
     card-wide reward clamp, swapping A->B cannot newly out-rate any
     first_year_match card (guard g), and every sibling variant of B passes the
     same checks (rule s). Exact ties prune only the lexicographically larger id
     (rule e), so the reported rank-1 portfolio is unchanged. Profile-aware and
-    time-free: rates come from build_lines under this profile, and an expired
-    bonus still blocks pruning. Returns (kept, pruned) where pruned is an
-    id-sorted list of {"id", "reason"} dicts.
+    as-of-aware: rates come from build_lines under this profile at `as_of`, so a
+    lapsed limited-time earn row is priced out here exactly as it is in scoring;
+    any signup offer (permanent or limited-time), even expired, still blocks
+    pruning. Returns (kept, pruned) where pruned is an id-sorted list of
+    {"id", "reason"} dicts.
 
     Transfer-gateway safety (plan 07 addendum): a variant whose cpp is
     context-dependent — transfer_gateway_required program, not
@@ -1229,10 +1299,15 @@ def prune_dominated_variants(variants: list, profile: dict,
         return bool(prog.get("transfer_gateway_required")
                     and not v.get("unlocks_transfers"))
 
+    def match_offer(v):
+        """True when EITHER of the card's signup offers is a first_year_match."""
+        return bool((v.get("signup_bonus") or {}).get("first_year_match")
+                    or (v.get("signup_bonus_limited_time") or {}).get("first_year_match"))
+
     tables = {}
     for v in variants:
         best_any, best_uncapped = {}, {}
-        for ln in build_lines(v, profile, programs, buckets):
+        for ln in build_lines(v, profile, programs, buckets, as_of=as_of):
             for b in ln["eligible"]:
                 if buckets[b]["amount"] <= EPS:
                     continue
@@ -1247,15 +1322,17 @@ def prune_dominated_variants(variants: list, profile: dict,
             "fee": fees["annual_fee_usd"] + membership_fee(v),
             "year1_fee": (0 if fees.get("first_year_waived") else fees["annual_fee_usd"])
                          + membership_fee(v),
+            # A null-permanent + live-elevated card is NOT plain: its bonus
+            # would be silently dropped if it were pruned away (highest-risk
+            # item — see plan 15). Require both offers absent.
             "plain": (not v["credits"] and v["signup_bonus"] is None
+                      and v.get("signup_bonus_limited_time") is None
                       and not context_dependent(v)),
             "clamped": v.get("max_annual_rewards_usd") is not None,
             "base_id": v.get("base_id", v["id"]),
         }
-    match_ids = [v["id"] for v in variants
-                 if (v["signup_bonus"] or {}).get("first_year_match")]
-    if any(context_dependent(v) for v in variants
-           if (v["signup_bonus"] or {}).get("first_year_match")):
+    match_ids = [v["id"] for v in variants if match_offer(v)]
+    if any(context_dependent(v) for v in variants if match_offer(v)):
         return list(variants), []  # guard thresholds would be understated
     by_base = {}
     for cid, t in tables.items():
@@ -1352,6 +1429,24 @@ def _round2(x: float) -> float:
     return round(x + 0.0, 2)
 
 
+def _bonus_block(b: dict) -> dict:
+    """Round a score_bonus() result for the output contract, preserving the
+    dual-bonus active/permanent/limited_time structure. value/note are the
+    active offer's; permanent/limited_time are per-offer (limited_time keeps its
+    `expires`) or null."""
+    def offer(o, keep_expires):
+        if o is None:
+            return None
+        out = {"value": _round2(o["value"]), "note": o["note"]}
+        if keep_expires:
+            out["expires"] = o["expires"]
+        return out
+    return {"value": _round2(b["value"]), "note": b["note"],
+            "active": b["active"],
+            "permanent": offer(b["permanent"], False),
+            "limited_time": offer(b["limited_time"], True)}
+
+
 def assemble_portfolio(entry: dict, by_id: dict, profile: dict, programs: dict,
                        buckets: dict, as_of: date, gateways: dict = None) -> dict:
     """Full detail for one ranked entry — the per-portfolio output block.
@@ -1377,15 +1472,18 @@ def assemble_portfolio(entry: dict, by_id: dict, profile: dict, programs: dict,
                  # UI can show the FULL eligible spend and apply ×fraction to the
                  # points/value it earns; null on every non-rotating line.
                  **({"eligible_fraction": a["eligible_fraction"]}
-                    if a.get("eligible_fraction") is not None else {})}
+                    if a.get("eligible_fraction") is not None else {}),
+                 # Limited-time earn rows carry their end date so the UI can
+                 # label them "expires <date>"; absent on evergreen lines.
+                 **({"expires": a["expires"]} if a.get("expires") else {})}
                 for a in scored["assignments"] if a["card_id"] == cid],
             "credits": [
                 {"name": c["name"], "value": _round2(c["value"]), "note": c["note"],
                  **({"potential_value": _round2(c["potential_value"])}
-                    if "potential_value" in c else {})}
+                    if "potential_value" in c else {}),
+                 **({"expires": c["expires"]} if "expires" in c else {})}
                 for c in scored["credits"] if c["card_id"] == cid],
-            "bonus": {"value": _round2(scored["bonuses"][cid]["value"]),
-                      "note": scored["bonuses"][cid]["note"]},
+            "bonus": _bonus_block(scored["bonuses"][cid]),
             "fees": {"annual_fee_usd": card["fees"]["annual_fee_usd"],
                      "first_year_waived": bool(card["fees"].get("first_year_waived"))},
             "warnings": card_warnings(card, as_of),
@@ -1441,7 +1539,8 @@ def run(dataset: dict, profile: dict, as_of: date, top: int) -> dict:
     eligible, excluded = filter_cards(dataset["cards"], profile, programs)
     expanded = expand_choice_variants(eligible, profile)
     variants, pruned = prune_dominated_variants(expanded, profile,
-                                                programs, merchants, categories)
+                                                programs, merchants, categories,
+                                                as_of)
     ranked = search(variants, profile, programs, merchants, categories, as_of)
 
     by_id = {c["id"]: c for c in variants}

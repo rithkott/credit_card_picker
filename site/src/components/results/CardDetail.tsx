@@ -1,5 +1,5 @@
 import type { PerCard } from '../../types'
-import { formatNumber, formatUsd } from '../../lib/money'
+import { formatDate, formatNumber, formatUsd } from '../../lib/money'
 import { AssignmentsTable } from './AssignmentsTable'
 import { CreditsList } from './CreditsList'
 
@@ -125,6 +125,11 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
                   {isPoints ? `${a.rate}x` : `${a.rate}%`}
                   {frac && <span className="frac"> × {frac}</span>} {pretty(a.bucket)}
                   {a.note && <span className="note">{a.note}</span>}
+                  {a.expires && (
+                    <span className="note lt-inline">
+                      ⏳ limited time · expires {formatDate(a.expires)}
+                    </span>
+                  )}
                 </td>
                 <td className="num">{formatUsd(fullSpend(a)).replace('.00', '')}</td>
                 {isPoints && (
@@ -143,6 +148,11 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
             <div className="line" key={`c-${c.name}-${i}`}>
               <span>
                 {c.name} <span className="note">you use it</span>
+                {c.expires && (
+                  <span className="note lt-inline">
+                    ⏳ limited time · expires {formatDate(c.expires)}
+                  </span>
+                )}
               </span>
               <i className="lead" aria-hidden="true" />
               <span>+ {formatUsd(c.value)}</span>
@@ -193,18 +203,53 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
           Credit values are discounted to what you'll realistically capture, not face value.
         </div>
       ) : null}
-      {card.bonus.value > 0 && (
-        <div className="tile-lines tile-perks tile-bonus">
-          <div className="sublabel">
-            Signup bonus <span className="note">first year only, not in the yearly total</span>
+      {(() => {
+        // Dual signup bonus (plan 15): a permanent line and, beneath it, the
+        // limited-time elevated offer with its expiry + revert note.
+        const perm = card.bonus.permanent
+        const lt = card.bonus.limited_time
+        const hasPerm = (perm?.value ?? 0) > 0
+        const hasLt = (lt?.value ?? 0) > 0
+        if (!hasPerm && !hasLt) return null
+        return (
+          <div className="tile-lines tile-perks tile-bonus">
+            <div className="sublabel">
+              Signup bonus <span className="note">first year only, not in the yearly total</span>
+            </div>
+            {hasPerm && (
+              <div className="line">
+                <span>{hasLt ? 'Standard offer' : 'New-cardmember offer'}</span>
+                <i className="lead" aria-hidden="true" />
+                <span>{formatUsd(perm!.value)}</span>
+              </div>
+            )}
+            {hasLt && (
+              <div className={`lt-offer${hasPerm ? ' lt-divider' : ''}`}>
+                <div className="line">
+                  <span>
+                    ⏳ Limited-time offer
+                    {lt!.expires && (
+                      <span className="conf conf-low lt-pill">
+                        expires {formatDate(lt!.expires)}
+                      </span>
+                    )}
+                  </span>
+                  <i className="lead" aria-hidden="true" />
+                  <span>{formatUsd(lt!.value)}</span>
+                </div>
+                {lt!.expires && (
+                  <div className="tile-note lt-revert">
+                    After {formatDate(lt!.expires)}, this reverts to{' '}
+                    {hasPerm
+                      ? `the ${formatUsd(perm!.value)} standard offer`
+                      : 'no standard bonus (not yet published)'}.
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-          <div className="line">
-            <span>New-cardmember offer</span>
-            <i className="lead" aria-hidden="true" />
-            <span>{formatUsd(card.bonus.value)}</span>
-          </div>
-        </div>
-      )}
+        )
+      })()}
       {unusedPerks.length > 0 && (
         <div className="tile-lines tile-perks">
           <div className="sublabel">

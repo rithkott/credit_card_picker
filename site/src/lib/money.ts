@@ -59,6 +59,15 @@ export function formatNumber(value: number): string {
     : rounded.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
+/** Render an ISO date (YYYY-MM-DD, e.g. an offer `expires`) as a short
+ * human label ("Jul 15, 2026"). Parsed as LOCAL midnight (append 'T00:00')
+ * so a date-only string never shifts a day backward across time zones. */
+export function formatDate(iso: string): string {
+  const d = new Date(`${iso}T00:00`)
+  if (Number.isNaN(d.getTime())) return iso
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
 export function formatUsd(value: number): string {
   const sign = value < 0 ? '-' : ''
   return `${sign}$${Math.abs(value).toLocaleString('en-US', {

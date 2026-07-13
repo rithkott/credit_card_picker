@@ -43,10 +43,10 @@ signup_bonus:
     usd: 250
   spend_requirement_usd: 500
   window_months: 3
-  limited_time: true
   notes: >-
     "Earn a one-time $250 cash bonus once you spend $500 on purchases within the first 3
-    months." Marked limited-time in the offer file. Existing cardmembers ineligible if
+    months." Offer file marks it limited-time but states no end date, so it is kept as
+    the standard signup_bonus (no `expires`). Existing cardmembers ineligible if
     they received a bonus in the past 48 months. Figures third-party/unconfirmed per the
     offer file's NEEDS_VERIFICATION marker.
 

@@ -1259,7 +1259,7 @@ class TestDominancePruning(unittest.TestCase):
     def prune(self, variants, prof):
         return opt.prune_dominated_variants(variants, prof,
                                             DATASET["programs"], DATASET["merchants"],
-                                            DATASET["categories"])
+                                            DATASET["categories"], AS_OF)
 
     def test_strictly_worse_clone_pruned(self):
         variants = [synth_card(id="worse", base_rate=1),
@@ -1371,6 +1371,111 @@ class TestDominancePruning(unittest.TestCase):
         text = opt.render_text(bundle)
         self.assertIn("1 pruned as dominated", text)
         self.assertIn("Pruned: worse (dominated by better)", text)
+
+
+class TestLimitedTimeOffers(unittest.TestCase):
+    """Plan 15: limited-time earn-rate expiry + dual signup bonus (permanent +
+    auto-reverting elevated offer). All synthetic — no fixture edits."""
+
+    def score_at(self, cards, profile, as_of):
+        cards = [seed_card(c) if isinstance(c, str) else c for c in cards]
+        buckets = opt.build_buckets(profile, DATASET["merchants"], DATASET["categories"])
+        return opt.score_portfolio(cards, profile, DATASET["programs"], buckets, as_of)
+
+    # -- earn-rate expiry -----------------------------------------------------
+
+    def test_expired_category_earn_falls_to_base(self):
+        card = synth_card(base_rate=1, category_rewards=[
+            {"category": "dining", "rate": 5, "expires": "2026-08-01"}])
+        prof = make_profile({"dining": 5000})
+        live = self.score_at([card], prof, date(2026, 7, 31))
+        self.assertAlmostEqual(live["earnings"], 250.0)  # 5000 @5%
+        gone = self.score_at([card], prof, date(2026, 8, 2))
+        self.assertAlmostEqual(gone["earnings"], 50.0)   # 5000 @ base 1%
+        # A live limited-time line carries its expires for the UI label.
+        dine = next(a for a in live["assignments"] if a["bucket"] == "dining")
+        self.assertEqual(dine["expires"], "2026-08-01")
+
+    def test_expired_merchant_row_lets_category_reclaim_carveout(self):
+        # Merchant amazon (online_shopping) 5x expires; a live online_shopping 3x
+        # category line must reclaim the amazon carve-out (merchant_line_keys fix),
+        # not let it fall through to the 1% base.
+        card = synth_card(base_rate=1,
+                          merchant_rewards=[{"merchant": "amazon", "rate": 5,
+                                             "expires": "2026-08-01"}],
+                          category_rewards=[{"category": "online_shopping", "rate": 3}])
+        prof = make_profile({"online_shopping": 4000, "other": 1000},
+                            merchant_spend={"amazon": 3000})
+        gone = self.score_at([card], prof, date(2026, 8, 2))
+        amz = next(a for a in gone["assignments"] if a["bucket"] == "amazon")
+        self.assertEqual(amz["rate"], 3)               # reclaimed by category line
+        self.assertAlmostEqual(amz["usd_value"], 90.0)  # 3000 @3%, not @1%
+
+    # -- dual signup bonus ----------------------------------------------------
+
+    def _dual(self, **kw):
+        return synth_card(**kw)
+
+    def test_elevated_active_before_expiry(self):
+        card = self._dual(
+            signup_bonus={"value": {"usd": 100}, "spend_requirement_usd": 0,
+                          "window_months": 3},
+            signup_bonus_limited_time={"value": {"usd": 300}, "spend_requirement_usd": 0,
+                                       "window_months": 3, "expires": "2026-08-01"})
+        r = self.score_at([card], make_profile({"other": 10000}), date(2026, 7, 31))
+        b = r["bonuses"]["synth"]
+        self.assertEqual(b["active"], "limited_time")
+        self.assertEqual(b["value"], 300.0)
+        self.assertEqual(b["permanent"]["value"], 100.0)
+        self.assertEqual(b["limited_time"]["expires"], "2026-08-01")
+
+    def test_auto_reverts_to_permanent_after_expiry(self):
+        card = self._dual(
+            signup_bonus={"value": {"usd": 100}, "spend_requirement_usd": 0,
+                          "window_months": 3},
+            signup_bonus_limited_time={"value": {"usd": 300}, "spend_requirement_usd": 0,
+                                       "window_months": 3, "expires": "2026-08-01"})
+        b = self.score_at([card], make_profile({"other": 10000}), date(2026, 8, 2))["bonuses"]["synth"]
+        self.assertEqual(b["active"], "permanent")
+        self.assertEqual(b["value"], 100.0)
+        self.assertIsNone(b["limited_time"])  # elevated omitted once expired
+
+    def test_null_permanent_reverts_to_none(self):
+        card = self._dual(
+            signup_bonus=None,
+            signup_bonus_limited_time={"value": {"usd": 300}, "spend_requirement_usd": 0,
+                                       "window_months": 3, "expires": "2026-08-01"})
+        b = self.score_at([card], make_profile({"other": 10000}), date(2026, 8, 2))["bonuses"]["synth"]
+        self.assertEqual(b["active"], "none")
+        self.assertEqual(b["value"], 0.0)
+        self.assertIsNone(b["permanent"])
+
+    def test_infeasible_live_elevated_uses_permanent(self):
+        # Elevated is live but its spend requirement is unreachable → the active
+        # offer falls back to the feasible permanent bonus.
+        card = self._dual(
+            signup_bonus={"value": {"usd": 100}, "spend_requirement_usd": 0,
+                          "window_months": 3},
+            signup_bonus_limited_time={"value": {"usd": 900}, "spend_requirement_usd": 100000,
+                                       "window_months": 3, "expires": "2026-12-31"})
+        b = self.score_at([card], make_profile({"other": 5000}), date(2026, 7, 1))["bonuses"]["synth"]
+        self.assertEqual(b["active"], "permanent")
+        self.assertEqual(b["value"], 100.0)
+        self.assertIn("unreachable", b["limited_time"]["note"])  # live but $0
+
+    def test_null_permanent_live_elevated_not_pruned(self):
+        # Guards the prune plain-predicate fix: a null-permanent + live-elevated
+        # card must never be judged "plain" and pruned away (it would silently
+        # lose its bonus).
+        elevated = synth_card(id="elev", base_rate=1, signup_bonus=None,
+            signup_bonus_limited_time={"value": {"usd": 500}, "spend_requirement_usd": 0,
+                                       "window_months": 3, "expires": "2026-12-31"})
+        better = synth_card(id="better", base_rate=2)
+        _, pruned = opt.prune_dominated_variants(
+            [elevated, better], make_profile({"other": 10000}),
+            DATASET["programs"], DATASET["merchants"], DATASET["categories"],
+            date(2026, 7, 1))
+        self.assertEqual(pruned, [])
 
 
 class TestBestBySize(unittest.TestCase):

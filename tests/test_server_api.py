@@ -258,6 +258,36 @@ class TestServerAPI(unittest.TestCase):
                     if "potential_value" in c:
                         self.assertEqual(c["value"], 0.0)
                         self.assertGreater(c["potential_value"], 0)
+                    # Limited-time promo credits carry a date-shaped expires label.
+                    if "expires" in c:
+                        self.assertRegex(c["expires"], r"^\d{4}-\d{2}-\d{2}$")
+                # Contract (plan 15): every bonus block is the dual-bonus shape —
+                # active flag + per-offer permanent/limited_time (each dict-or-null;
+                # a present limited_time carries its expires date).
+                bonus = d["bonus"]
+                self.assertIn(bonus["active"], ("permanent", "limited_time", "none"))
+                self.assertIn("permanent", bonus)
+                self.assertIn("limited_time", bonus)
+                if bonus["limited_time"] is not None:
+                    self.assertRegex(bonus["limited_time"]["expires"], r"^\d{4}-\d{2}-\d{2}$")
+                for a in d["assignments"]:
+                    if "expires" in a:
+                        self.assertRegex(a["expires"], r"^\d{4}-\d{2}-\d{2}$")
+
+    def test_dual_bonus_limited_time_surfaced(self):
+        # delta-platinum holds a live limited-time elevated offer (expires
+        # 2026-07-15) and a null permanent bonus at AS_OF 2026-07-05. Manual
+        # evaluate bypasses the brand-lockin filter so the card is scored.
+        r = self.client.post("/api/evaluate",
+                             json={"spend": {"dining": 6000, "other": 12000},
+                                   "user": {"credit_tier": "excellent"},
+                                   "cards": ["delta-platinum"], "as_of": AS_OF})
+        self.assertEqual(r.status_code, 200, r.text)
+        bonus = r.json()["portfolios"][0]["per_card"]["delta-platinum"]["bonus"]
+        self.assertEqual(bonus["active"], "limited_time")
+        self.assertIsNone(bonus["permanent"])
+        self.assertEqual(bonus["limited_time"]["expires"], "2026-07-15")
+        self.assertGreater(bonus["value"], 0)
 
     # -- error contract -------------------------------------------------------
 

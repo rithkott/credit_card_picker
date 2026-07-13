@@ -101,6 +101,10 @@ export interface Assignment {
    * spend (usd_assigned / eligible_fraction) with the ×fraction shown against
    * the points/value it actually earns. Absent on every non-rotating line. */
   eligible_fraction?: number
+  /** Limited-time earn rows only (plan 15): the row's `expires` date
+   * (YYYY-MM-DD, last valid day). Present so the earn table can label the line
+   * "limited time · expires <date>". Absent on evergreen lines. */
+  expires?: string
 }
 
 export interface CreditLine {
@@ -111,6 +115,29 @@ export interface CreditLine {
    * present only on those $0 credits. Display-only ("perks you'd get anyway");
    * never enters any total, since `value` stays 0. */
   potential_value?: number
+  /** Limited-time promotional credits only (plan 15): the credit's `expires`
+   * date (YYYY-MM-DD). Present so the credits list can label it. */
+  expires?: string
+}
+
+/** One signup-bonus offer body in the dual-bonus model (plan 15). */
+export interface BonusOffer {
+  value: number
+  note: string
+  /** Present only on the limited-time offer: its end date (YYYY-MM-DD). */
+  expires?: string
+}
+
+/** Dual signup bonus (plan 15): value/note are the ACTIVE offer's (whichever
+ * the optimizer valued as-of the date); permanent/limited_time are the two
+ * underlying offers (either null). Once the limited-time offer's expires date
+ * passes, the optimizer auto-reverts and limited_time goes null. */
+export interface Bonus {
+  value: number
+  note: string
+  active: 'permanent' | 'limited_time' | 'none'
+  permanent: BonusOffer | null
+  limited_time: BonusOffer | null
 }
 
 export interface PerCard {
@@ -120,7 +147,7 @@ export interface PerCard {
   currency: { kind: 'cash' | 'points'; program: string; label: string }
   assignments: Assignment[]
   credits: CreditLine[]
-  bonus: { value: number; note: string }
+  bonus: Bonus
   fees: {
     annual_fee_usd: number
     first_year_waived: boolean

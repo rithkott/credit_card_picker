@@ -29,7 +29,8 @@ signup_bonus:
     - value:
         usd: 100              # "Additional $100 statement credit when you spend $1,500 in the first 90 days" (total up to $150).
       spend_requirement_usd: 1500
-  limited_time: true          # Offer file: "Limited time offer; only one per account." No calendar expiry stated, so `expires` is omitted.
+  # Offer file: "Limited time offer; only one per account." No calendar expiry stated,
+  # so it is kept as the standard signup_bonus with no `expires`.
   notes: >-
     Two-part welcome offer within the same 90-day window: $50 after the first purchase, plus $100 more
     after $1,500 total spend ($150 total). First tranche's spend_requirement is nominal ($0 = "make a

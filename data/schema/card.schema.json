@@ -114,6 +114,10 @@
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
             "description": "Last day of a promotional credit with an announced end date (e.g. 'offer ends 12/31/2026'). Omit for evergreen credits. The validator flags credits past this date"
           },
+          "auto_expire": {
+            "type": "boolean",
+            "description": "true marks a scraper-added, self-expiring promotional credit that the daily expirer may safely DELETE once past its `expires` date (requires `expires` — validator-enforced). Omit/false for curator-added credits, which are only reported, never auto-deleted"
+          },
           "realistic_capture_rate_note": {
             "type": "string",
             "minLength": 1,
@@ -124,63 +128,17 @@
       }
     },
     "signup_bonus": {
-      "description": "null when the card has no current public signup bonus",
+      "description": "The card's permanent/standard signup bonus; null when the card has no current public signup bonus. A limited-time ELEVATED offer above this goes in the sibling signup_bonus_limited_time — the optimizer values whichever is active as-of the date and auto-reverts here when the elevated offer expires",
       "oneOf": [
         { "type": "null" },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "oneOf": [
-            {
-              "required": ["value", "spend_requirement_usd", "window_months"],
-              "properties": { "first_year_match": { "const": false } }
-            },
-            {
-              "required": ["first_year_match"],
-              "properties": { "first_year_match": { "const": true } },
-              "allOf": [
-                { "not": { "required": ["value"] } },
-                { "not": { "required": ["spend_requirement_usd"] } },
-                { "not": { "required": ["window_months"] } },
-                { "not": { "required": ["tiers"] } }
-              ]
-            }
-          ],
-          "properties": {
-            "value": { "$ref": "#/$defs/bonusValue" },
-            "spend_requirement_usd": { "type": "number", "minimum": 0 },
-            "window_months": { "type": "number", "exclusiveMinimum": 0 },
-            "tiers": {
-              "type": "array",
-              "minItems": 1,
-              "description": "Additional bonus tranches on top of the base value, each unlocked at a higher CUMULATIVE spend within the same window_months (e.g. '70k after $3k, +20k more after $5k total' → value 70k points / spend_requirement_usd 3000, plus one tier of 20k points at spend_requirement_usd 5000). Tier spend requirements must exceed the base requirement and ascend",
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": ["value", "spend_requirement_usd"],
-                "properties": {
-                  "value": { "$ref": "#/$defs/bonusValue" },
-                  "spend_requirement_usd": { "type": "number", "exclusiveMinimum": 0 }
-                }
-              }
-            },
-            "first_year_match": {
-              "type": "boolean",
-              "description": "Discover-style Cashback Match: the issuer matches all rewards earned in year one, dollar-for-dollar. When true, omit value/spend_requirement_usd/window_months/tiers — the optimizer values the match as the card's own computed first-year earnings"
-            },
-            "limited_time": {
-              "type": "boolean",
-              "description": "true when this is a limited-time elevated offer above the card's standard bonus (note the standard bonus in `notes` for comparison)"
-            },
-            "expires": {
-              "type": "string",
-              "format": "date",
-              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
-              "description": "Last day the offer is available, when the issuer announces one. Omit for evergreen offers with no stated end date. The validator flags offers past this date so they get re-checked."
-            },
-            "notes": { "type": "string" }
-          }
-        }
+        { "$ref": "#/$defs/signupOffer" }
+      ]
+    },
+    "signup_bonus_limited_time": {
+      "description": "A limited-time elevated signup offer above the permanent signup_bonus (dual-bonus model). Same shape as signup_bonus but ALWAYS carries an end date (`expires` required). The optimizer scores this while live-and-feasible and auto-reverts to signup_bonus once past `expires`. Record the standard offer in signup_bonus (or its notes) so the card still shows a bonus after this expires. Omit for cards with no elevated offer",
+      "allOf": [
+        { "$ref": "#/$defs/signupOffer" },
+        { "required": ["expires"] }
       ]
     },
     "fees": {
@@ -328,6 +286,57 @@
         "usd": { "type": "number", "exclusiveMinimum": 0 }
       }
     },
+    "signupOffer": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "One signup-bonus offer body, shared by the permanent signup_bonus and the elevated signup_bonus_limited_time. `expires` lives here (not the wrapper) so signup_bonus_limited_time's allOf+required[expires] survives additionalProperties:false.",
+      "oneOf": [
+        {
+          "required": ["value", "spend_requirement_usd", "window_months"],
+          "properties": { "first_year_match": { "const": false } }
+        },
+        {
+          "required": ["first_year_match"],
+          "properties": { "first_year_match": { "const": true } },
+          "allOf": [
+            { "not": { "required": ["value"] } },
+            { "not": { "required": ["spend_requirement_usd"] } },
+            { "not": { "required": ["window_months"] } },
+            { "not": { "required": ["tiers"] } }
+          ]
+        }
+      ],
+      "properties": {
+        "value": { "$ref": "#/$defs/bonusValue" },
+        "spend_requirement_usd": { "type": "number", "minimum": 0 },
+        "window_months": { "type": "number", "exclusiveMinimum": 0 },
+        "tiers": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Additional bonus tranches on top of the base value, each unlocked at a higher CUMULATIVE spend within the same window_months (e.g. '70k after $3k, +20k more after $5k total' → value 70k points / spend_requirement_usd 3000, plus one tier of 20k points at spend_requirement_usd 5000). Tier spend requirements must exceed the base requirement and ascend",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["value", "spend_requirement_usd"],
+            "properties": {
+              "value": { "$ref": "#/$defs/bonusValue" },
+              "spend_requirement_usd": { "type": "number", "exclusiveMinimum": 0 }
+            }
+          }
+        },
+        "first_year_match": {
+          "type": "boolean",
+          "description": "Discover-style Cashback Match: the issuer matches all rewards earned in year one, dollar-for-dollar. When true, omit value/spend_requirement_usd/window_months/tiers — the optimizer values the match as the card's own computed first-year earnings"
+        },
+        "expires": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "Last day the offer is available, when the issuer announces one. Optional on the permanent signup_bonus (omit for evergreen offers); REQUIRED on signup_bonus_limited_time. The validator flags offers past this date so they get re-checked."
+        },
+        "notes": { "type": "string" }
+      }
+    },
     "rotation": {
       "type": "object",
       "additionalProperties": false,
@@ -392,6 +401,16 @@
         "portal_only": { "type": "boolean", "description": "true if the rate only applies when booked through the issuer's portal" },
         "requires_enrollment": { "type": "boolean", "default": false, "description": "true when the rate pays nothing unless the cardholder actively enrolls/activates the category each cycle (Elan Max Cash Preferred category enrollment)" },
         "conditional_rate": { "$ref": "#/$defs/conditionalRate" },
+        "expires": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "Last day a LIMITED-TIME elevated earn rate applies (e.g. a promotional 5x through a stated date). Omit for evergreen rates. The optimizer zeros this row past the date (spend falls through to base); the validator flags rows past it"
+        },
+        "auto_expire": {
+          "type": "boolean",
+          "description": "true marks a scraper-added, self-expiring promotional earn row that the daily expirer may safely DELETE once past its `expires` date (requires `expires` — validator-enforced). Omit/false for curator-added rows"
+        },
         "notes": { "type": "string" }
       },
       "if": { "properties": { "category": { "const": "choice" } }, "required": ["category"] },
@@ -406,6 +425,16 @@
         "rate": { "type": "number", "minimum": 0 },
         "cap": { "$ref": "#/$defs/cap" },
         "conditional_rate": { "$ref": "#/$defs/conditionalRate" },
+        "expires": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "Last day a LIMITED-TIME elevated earn rate applies. Omit for evergreen rates. The optimizer zeros this row past the date (spend falls through to base); the validator flags rows past it"
+        },
+        "auto_expire": {
+          "type": "boolean",
+          "description": "true marks a scraper-added, self-expiring promotional earn row that the daily expirer may safely DELETE once past its `expires` date (requires `expires` — validator-enforced). Omit/false for curator-added rows"
+        },
         "notes": { "type": "string" }
       }
     },

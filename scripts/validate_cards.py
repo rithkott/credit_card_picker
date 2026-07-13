@@ -328,6 +328,8 @@ def main() -> int:
                 expires = date.fromisoformat(credit["expires"])
                 if expires < date.today():
                     warnings.append(f"{rel}: credits[{i}] '{credit['name']}' EXPIRED {expires} — re-check whether the promo was renewed and update")
+            if credit.get("auto_expire") and "expires" not in credit:
+                errors.append(f"{rel}: credits[{i}] '{credit['name']}': auto_expire requires expires — the daily expirer deletes the credit by its end date")
 
         # conditional_rate must genuinely be a boost over the stated baseline,
         # otherwise the baseline was recorded wrong (or the two are swapped).
@@ -337,6 +339,14 @@ def main() -> int:
                 cond = rw.get("conditional_rate")
                 if cond and cond["rate"] <= rw["rate"]:
                     errors.append(f"{rel}: {kind_name}[{i}]: conditional_rate {cond['rate']} must exceed the baseline rate {rw['rate']} — the plain rate must be the unconditional baseline")
+                # Limited-time earn rows: flag lapsed rates, and require an
+                # end date behind any auto_expire marker (the expirer keys off it).
+                if "expires" in rw:
+                    exp = date.fromisoformat(rw["expires"])
+                    if exp < date.today():
+                        warnings.append(f"{rel}: {kind_name}[{i}] EXPIRED earn rate {exp} — re-check whether the promo was renewed and update or remove the row")
+                if rw.get("auto_expire") and "expires" not in rw:
+                    errors.append(f"{rel}: {kind_name}[{i}]: auto_expire requires expires — the daily expirer deletes the row by its end date")
         cond = card.get("base_rate_conditional")
         if cond and cond["rate"] <= card["base_rate"]:
             errors.append(f"{rel}: base_rate_conditional {cond['rate']} must exceed base_rate {card['base_rate']} — base_rate must be the unconditional baseline")
@@ -368,7 +378,8 @@ def main() -> int:
         for block in ("category_rewards", "merchant_rewards", "credits", "benefit_flags"):
             if card[block]:
                 populated.add(block)
-        if card["signup_bonus"] is not None:
+        if (card["signup_bonus"] is not None
+                or card.get("signup_bonus_limited_time") is not None):
             populated.add("signup_bonus")
         if "closed_loop" in card:
             populated.add("closed_loop")
@@ -385,18 +396,43 @@ def main() -> int:
         for block in sorted(populated - supported):
             warnings.append(f"{rel}: UNSOURCED — no entry in `sources` supports the '{block}' block")
 
-        bonus = card["signup_bonus"]
-        if bonus is not None and "tiers" in bonus:
-            reqs = [t["spend_requirement_usd"] for t in bonus["tiers"]]
-            if reqs and reqs[0] <= bonus["spend_requirement_usd"]:
-                errors.append(f"{rel}: signup_bonus.tiers[0] spend requirement {reqs[0]} must exceed the base requirement {bonus['spend_requirement_usd']} (tiers are cumulative)")
+        def check_offer_tiers(offer, label):
+            if "tiers" not in offer:
+                return
+            reqs = [t["spend_requirement_usd"] for t in offer["tiers"]]
+            if reqs and reqs[0] <= offer["spend_requirement_usd"]:
+                errors.append(f"{rel}: {label}.tiers[0] spend requirement {reqs[0]} must exceed the base requirement {offer['spend_requirement_usd']} (tiers are cumulative)")
             if reqs != sorted(reqs) or len(set(reqs)) != len(reqs):
-                errors.append(f"{rel}: signup_bonus.tiers spend requirements must strictly ascend, got {reqs}")
-        if bonus is not None and "expires" in bonus:
-            expires = date.fromisoformat(bonus["expires"])
-            if expires < date.today():
+                errors.append(f"{rel}: {label}.tiers spend requirements must strictly ascend, got {reqs}")
+
+        bonus = card["signup_bonus"]
+        lt_bonus = card.get("signup_bonus_limited_time")
+        if bonus is not None:
+            check_offer_tiers(bonus, "signup_bonus")
+            # Belt-and-suspenders: the schema already rejects the removed
+            # limited_time flag (additionalProperties:false), but re-flag it as a
+            # clear migration error in case the schema regresses.
+            if "limited_time" in bonus:
+                errors.append(f"{rel}: signup_bonus.limited_time was removed — move a limited-time elevated offer into the sibling signup_bonus_limited_time (dual-bonus model)")
+            if "expires" in bonus:
+                expires = date.fromisoformat(bonus["expires"])
+                if expires < date.today():
+                    warnings.append(
+                        f"{rel}: signup bonus offer EXPIRED {expires} — re-check the current offer and update"
+                    )
+        if lt_bonus is not None:
+            check_offer_tiers(lt_bonus, "signup_bonus_limited_time")
+            if "expires" not in lt_bonus:  # belt-and-suspenders (schema-required)
+                errors.append(f"{rel}: signup_bonus_limited_time requires expires — a limited-time offer must state its end date")
+            else:
+                expires = date.fromisoformat(lt_bonus["expires"])
+                if expires < date.today():
+                    warnings.append(
+                        f"{rel}: limited-time signup offer EXPIRED {expires} — re-check the current offer (the optimizer has already auto-reverted to the standard bonus; remove the lapsed offer or renew it)"
+                    )
+            if bonus is None:
                 warnings.append(
-                    f"{rel}: signup bonus offer EXPIRED {expires} — re-check the current offer and update"
+                    f"{rel}: signup_bonus is null while a limited-time elevated offer exists — the card shows no bonus once it expires; SOURCE the standard bonus into signup_bonus"
                 )
 
         verified = date.fromisoformat(card["verification"]["last_verified_date"])

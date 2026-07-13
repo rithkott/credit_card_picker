@@ -72,7 +72,11 @@ credits:
       10% back (up to $250/yr) on Venue Collection concessions, enrollment required;
       most cardholders capture a small fraction — modeled at ~$25.
 
-signup_bonus:
+# Standard evergreen bonus not stated in the offer file — SOURCE the standard so the
+# card still shows a bonus once the limited-time offer below expires (backlog).
+signup_bonus: null
+
+signup_bonus_limited_time:
   value:
     points: 70000            # "70,000 miles after $3,000 ... first 6 months"
   spend_requirement_usd: 3000
@@ -81,11 +85,12 @@ signup_bonus:
     - value:
         points: 20000        # "additional 20,000 miles (90,000 total) after $5,000 total"
       spend_requirement_usd: 5000
-  limited_time: true
   expires: "2026-07-15"
   notes: >-
-    Limited-time offer ending 07/15/2026 (11:59pm MST per the offer file). The
-    standard evergreen bonus is not stated in the offer file — flag for verification.
+    Limited-time ELEVATED offer ending 07/15/2026 (11:59pm MST per the offer file).
+    The standard evergreen bonus is not stated in the offer file — flag for
+    verification; once this expires the card shows no bonus until the standard is
+    sourced into signup_bonus.
 
 fees:
   annual_fee_usd: 150        # "$0 intro for first year, then $150"

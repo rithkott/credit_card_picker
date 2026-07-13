@@ -214,17 +214,42 @@ pre#yaml .k{color:var(--code-key)} pre#yaml .s{color:var(--code-str)} pre#yaml .
       <div id="subtiers"></div>
       <button type="button" class="btn-add" data-add="tier">+ Add bonus tier (extra tranche at higher cumulative spend)</button>
     </div>
-    <div class="grid g2" style="margin-top:12px">
-      <label class="check"><input type="checkbox" id="sublimited"> limited-time elevated offer</label>
-      <div class="field"><label for="subexp">offer expires <span class="hint">omit if evergreen</span></label>
-        <input type="date" id="subexp"></div>
-    </div>
+    <div class="field" style="margin-top:12px"><label for="subexp">offer expires <span class="hint">omit if evergreen — for a limited-time ELEVATED offer use the section below instead</span></label>
+      <input type="date" id="subexp"></div>
   </div>
   <div id="submatch" hidden>
     <p class="none-note">Issuer matches all rewards earned in year one — no value/spend fields; the optimizer values it as the card's own first-year earnings.</p>
   </div>
   <div class="field" id="subnoteswrap" style="margin-top:12px" hidden><label for="subnotes">notes <span class="hint">e.g. "standard offer is 60k"</span></label>
     <input type="text" id="subnotes"></div>
+</section>
+
+<section class="block">
+  <h2><code>signup_bonus_limited_time</code></h2>
+  <p class="why">A separate limited-time <strong>elevated</strong> offer above the standard bonus (dual-bonus model). Always needs an end date — the optimizer values whichever offer is active as-of the date and <strong>auto-reverts</strong> to the standard bonus once this one expires. If there is no standard bonus yet, leave "no public bonus" selected above and source it later.</p>
+  <label class="check"><input type="checkbox" id="lton"> card has a limited-time elevated offer</label>
+  <div id="ltfields" hidden>
+    <div class="grid g2">
+      <div class="field"><label for="ltpts">elevated points <span class="hint">at least one of points / USD</span></label>
+        <input type="number" id="ltpts" class="mono" min="0" step="any"></div>
+      <div class="field"><label for="ltusd">elevated USD <span class="hint">use both for mixed bonuses</span></label>
+        <input type="number" id="ltusd" class="mono" min="0" step="any"></div>
+      <div class="field"><label for="ltspend">spend requirement (USD) <span class="req">*</span></label>
+        <input type="number" id="ltspend" class="mono" min="0" step="any"></div>
+      <div class="field"><label for="ltwin">window (months) <span class="req">*</span></label>
+        <input type="number" id="ltwin" class="mono" min="0" step="any"></div>
+    </div>
+    <div style="margin-top:12px">
+      <div id="lttiers"></div>
+      <button type="button" class="btn-add" data-add="lttier">+ Add bonus tier (extra tranche at higher cumulative spend)</button>
+    </div>
+    <div class="grid g2" style="margin-top:12px">
+      <div class="field"><label for="ltexp">offer expires <span class="req">*</span> <span class="hint">a limited-time offer must state its end date</span></label>
+        <input type="date" id="ltexp"></div>
+      <div class="field"><label for="ltnotes">notes <span class="hint">e.g. "standard offer is 60k"</span></label>
+        <input type="text" id="ltnotes"></div>
+    </div>
+  </div>
 </section>
 
 <section class="block">
@@ -431,6 +456,10 @@ function addCat(){
         <div class="chips">${CATS.filter(c=>!PSEUDO_CATS.includes(c)).map(c=>`<label class="chip"><input type="checkbox" data-role="chopt" value="${c}">${c}</label>`).join("")}</div></div>
       <div class="field" style="margin-top:10px"><label>choice note <span class="req">*</span></label><input type="text" data-role="chnote" placeholder="How selection works — user-picked vs automatic top category, change cadence…"></div>
     </div>
+    <div class="grid g2" style="margin-top:10px">
+      <div class="field"><label>limited-time expires <span class="hint">promo end date; omit if permanent</span></label><input type="date" data-role="rowexp"></div>
+      <label class="check"><input type="checkbox" data-role="rowauto"> auto_expire <span class="hint">scraper-added; deletable after expires</span></label>
+    </div>
     <div class="field" style="margin-top:10px"><label>notes <span class="hint">issuer fine print</span></label><input type="text" data-role="notes"></div>
   </div>`);
 }
@@ -450,6 +479,10 @@ function addMer(){
         <div class="field"><label>conditional rate <span class="req">*</span> <span class="hint">must exceed the baseline rate; stored, unscored</span></label><input type="number" data-role="condrate" class="mono" min="0" step="any"></div>
         <div class="field"><label>requires <span class="req">*</span></label><input type="text" data-role="condreq" placeholder="Sam's Club Plus tier"></div>
       </div>
+    </div>
+    <div class="grid g2" style="margin-top:10px">
+      <div class="field"><label>limited-time expires <span class="hint">promo end date; omit if permanent</span></label><input type="date" data-role="rowexp"></div>
+      <label class="check"><input type="checkbox" data-role="rowauto"> auto_expire <span class="hint">scraper-added; deletable after expires</span></label>
     </div>
     <div class="field" style="margin-top:10px"><label>notes</label><input type="text" data-role="notes"></div>
   </div>`);
@@ -487,8 +520,8 @@ function addCred(){
     <div class="field" style="margin-top:10px"><label>notes <span class="hint">for in-kind: how you estimated the value</span></label><input type="text" data-role="notes"></div>
   </div>`);
 }
-function addTier(){
-  $("#subtiers").insertAdjacentHTML("beforeend",`
+function addTier(sel){
+  $(sel||"#subtiers").insertAdjacentHTML("beforeend",`
   <div class="item" data-kind="tier" data-uid="${++uid}">
     <div class="item-head"><span class="item-title">Bonus tier</span><button type="button" class="btn-x" data-remove>Remove</button></div>
     <div class="grid g3">
@@ -498,6 +531,7 @@ function addTier(){
     </div>
   </div>`);
 }
+function addLtTier(){ addTier("#lttiers"); }
 function addRbTier(){
   $("#rbtiers").insertAdjacentHTML("beforeend",`
   <div class="item" data-kind="rbtier" data-uid="${++uid}">
@@ -570,6 +604,15 @@ function emitCond(it, rate, label, L, errs){
   L.push(`    conditional_rate:`);
   L.push(`      rate: ${cr ?? "?"}`);
   L.push(`      requires: ${rq?ystr(rq):"?"}`);
+}
+/* Limited-time earn rows (plan 15): optional expires + auto_expire, shared by
+   category and merchant reward editors. auto_expire requires an expires date. */
+function emitEarnExpiry(it, label, L, errs, warns){
+  const expEl = $('[data-role=rowexp]',it), autoEl = $('[data-role=rowauto]',it);
+  if (!expEl) return;
+  const exp = expEl.value, auto = autoEl && autoEl.checked;
+  if (exp){ L.push(`    expires: "${exp}"`); if (exp < today) warns.push(`${label}: limited-time rate already expired — re-check whether it was renewed or remove the row`); }
+  if (auto){ if(!exp) errs.push(`${label}: auto_expire requires an expires date — the expirer deletes the row by its end date`); L.push(`    auto_expire: true`); }
 }
 
 function build(){
@@ -644,6 +687,7 @@ function build(){
       if ($('[data-role=portal]',it).checked) L.push(`    portal_only: true`);
       if ($('[data-role=enrollcat]',it).checked) L.push(`    requires_enrollment: true`);
       emitCond(it, rate, `category reward #${i+1}`, L, errs);
+      emitEarnExpiry(it, `category reward #${i+1}`, L, errs, warns);
       const n = $('[data-role=notes]',it).value.trim();
       if (n) L.push(`    notes: ${fold(n,6)}`);
     });
@@ -662,6 +706,7 @@ function build(){
       const cap = readCap(it);
       if (cap){ if(cap.max===null||cap.fall===null) errs.push(`merchant reward #${i+1}: cap needs max spend and fallback rate`); L.push(...capLines(cap,4)); }
       emitCond(it, rate, `merchant reward #${i+1}`, L, errs);
+      emitEarnExpiry(it, `merchant reward #${i+1}`, L, errs, warns);
       const n = $('[data-role=notes]',it).value.trim();
       if (n) L.push(`    notes: ${fold(n,6)}`);
     });
@@ -769,12 +814,51 @@ function build(){
         L.push(`      spend_requirement_usd: ${ts ?? "?"}`);
       });
     }
-    if ($("#sublimited").checked) L.push("  limited_time: true");
     const exp = val("subexp");
     if (exp){ L.push(`  expires: "${exp}"`); if (exp < today) warns.push("signup bonus offer is already expired"); }
-    if ($("#sublimited").checked && !exp) warns.push("limited-time offer without an expiry date — add one if the issuer states it");
     const sn = val("subnotes");
     if (sn) L.push(`  notes: ${fold(sn,4)}`);
+  }
+
+  /* signup_bonus_limited_time — separate elevated offer (dual-bonus, plan 15).
+     Always requires an end date; the optimizer auto-reverts to signup_bonus
+     when it lapses. Independent of the standard-bonus radio above. */
+  if ($("#lton").checked){
+    const vp = num(val("ltpts")), vu = num(val("ltusd"));
+    const sp = num(val("ltspend")), w = num(val("ltwin"));
+    if ((vp===null||vp<=0) && (vu===null||vu<=0)) errs.push("limited-time offer: at least one of points / USD is required");
+    if (sp===null) errs.push("limited-time offer: spend requirement is required");
+    if (w===null||w<=0) errs.push("limited-time offer: window (months) is required");
+    L.push("signup_bonus_limited_time:");
+    L.push("  value:");
+    if (vp!==null && vp>0) L.push(`    points: ${vp}`);
+    if (vu!==null && vu>0) L.push(`    usd: ${vu}`);
+    L.push(`  spend_requirement_usd: ${sp ?? "?"}`);
+    L.push(`  window_months: ${w ?? "?"}`);
+    const lttiers = $$('#lttiers .item');
+    if (lttiers.length){
+      L.push("  tiers:");
+      let prev = sp ?? 0;
+      lttiers.forEach((it,i)=>{
+        const tp = num($('[data-role=tpts]',it).value), tu = num($('[data-role=tusd]',it).value);
+        const ts = num($('[data-role=tspend]',it).value);
+        if ((tp===null||tp<=0) && (tu===null||tu<=0)) errs.push(`limited-time tier #${i+1}: at least one of points / USD is required`);
+        if (ts===null||ts<=0) errs.push(`limited-time tier #${i+1}: cumulative spend is required`);
+        else if (ts<=prev) errs.push(`limited-time tier #${i+1}: cumulative spend must exceed ${prev} (tiers ascend past the base requirement)`);
+        if (ts!==null) prev = Math.max(prev, ts);
+        L.push("    - value:");
+        if (tp!==null && tp>0) L.push(`        points: ${tp}`);
+        if (tu!==null && tu>0) L.push(`        usd: ${tu}`);
+        L.push(`      spend_requirement_usd: ${ts ?? "?"}`);
+      });
+    }
+    const ltexp = val("ltexp");
+    if (ltexp){ L.push(`  expires: "${ltexp}"`); if (ltexp < today) warns.push("limited-time offer is already expired — the optimizer has auto-reverted to the standard bonus"); }
+    else errs.push("limited-time offer: an offer-expires date is required (a limited-time offer must state its end date)");
+    const ltn = val("ltnotes");
+    if (ltn) L.push(`  notes: ${fold(ltn,4)}`);
+    if ($('input[name=sub]:checked').value==="none")
+      warns.push("limited-time offer with no standard bonus — the card shows no bonus once it expires; record the standard offer if the issuer has one");
   }
 
   /* fees */
@@ -892,7 +976,7 @@ function build(){
   if (mers.length) populated.add("merchant_rewards");
   if (creds.length) populated.add("credits");
   if (flags.length) populated.add("benefit_flags");
-  if (subMode!=="none") populated.add("signup_bonus");
+  if (subMode!=="none" || $("#lton").checked) populated.add("signup_bonus");
   if (clOn) populated.add("closed_loop");
   if (rbOn) populated.add("relationship_boost");
   if (rmOn) populated.add("required_membership");
@@ -947,7 +1031,7 @@ $("#vdate").value = today;
 
 document.addEventListener("click", e=>{
   const add = e.target.closest("[data-add]");
-  if (add){ ({cat:addCat, mer:addMer, cred:addCred, src:addSrc, tier:addTier, rbtier:addRbTier})[add.dataset.add](); render(); return; }
+  if (add){ ({cat:addCat, mer:addMer, cred:addCred, src:addSrc, tier:addTier, lttier:addLtTier, rbtier:addRbTier})[add.dataset.add](); render(); return; }
   if (e.target.closest("[data-remove]")){ e.target.closest(".item").remove(); render(); }
 });
 document.addEventListener("input", e=>{
@@ -965,6 +1049,7 @@ document.addEventListener("input", e=>{
     $("#submatch").hidden = e.target.value!=="match";
     $("#subnoteswrap").hidden = e.target.value==="none";
   }
+  if (e.target.id==="lton") $("#ltfields").hidden = !e.target.checked;
   if (e.target.id==="clon") $("#clfields").hidden = !e.target.checked;
   if (e.target.id==="rbon") $("#rbfields").hidden = !e.target.checked;
   if (e.target.id==="bcron") $("#bcrfields").hidden = !e.target.checked;
