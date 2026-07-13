@@ -16,7 +16,7 @@ interface Props {
 const TIER_OPTIONS: { value: string; label: string; hint: string }[] = [
   { value: 'excellent', label: 'Excellent · 740+', hint: 'unlocks every card here' },
   { value: 'good', label: 'Good · 670–739', hint: 'a few premium cards may be out of reach' },
-  { value: 'fair', label: 'Fair / Poor · below 670', hint: 'only cards for building credit' },
+  { value: 'fair', label: 'Building · below 670', hint: 'only cards for building credit' },
 ]
 
 /** Collapse any stored engine tier into the three bands. 'very_good'/'excellent'
