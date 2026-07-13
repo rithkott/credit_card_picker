@@ -199,7 +199,9 @@ export function Home({ cfg, onRetryConfig }: {
               onClick={() => setMode('auto')}
             >
               Auto
-              <span className="mode-hint">we pick the best cards</span>
+              <ul className="mode-bullets">
+                <li>Find the best profile for you automatically</li>
+              </ul>
             </button>
             <button
               type="button"
@@ -208,8 +210,12 @@ export function Home({ cfg, onRetryConfig }: {
               className={mode === 'manual' ? 'active' : ''}
               onClick={() => setMode('manual')}
             >
-              Manual
-              <span className="mode-hint">you pick, we do the math</span>
+              Custom
+              <ul className="mode-bullets">
+                <li>Check how good your existing card profile is</li>
+                <li>Experiment with new card profiles</li>
+                <li>Improve an existing profile</li>
+              </ul>
             </button>
           </div>
         )
