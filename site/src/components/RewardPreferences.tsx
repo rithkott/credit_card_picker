@@ -4,8 +4,7 @@ import { SectionIcon } from './SectionIcon'
 
 const KIND_LABELS: Record<string, string> = {
   cashback: 'Cash back',
-  flights: 'Flights',
-  hotels: 'Hotels',
+  points: 'Points',
 }
 
 const svg = {
@@ -25,18 +24,10 @@ const KIND_ICONS: Record<string, ReactNode> = {
       <path d="M17 5.5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
     </svg>
   ),
-  flights: (
+  points: (
     <svg {...svg}>
       <path d="M2 22h20" />
       <path d="M6.36 17.4 4 17l-2-4 1.1-.55a2 2 0 0 1 1.8 0l.17.1a2 2 0 0 0 1.8 0L8 12 5 6l.9-.45a2 2 0 0 1 2.09.2l4.02 3a2 2 0 0 0 .9.42l4.9.98a2.06 2.06 0 0 1 1.66 1.51 1.91 1.91 0 0 1-1.55 2.3l-11.24 2a2 2 0 0 1-1.02-.06z" />
-    </svg>
-  ),
-  hotels: (
-    <svg {...svg}>
-      <path d="M2 4v16" />
-      <path d="M2 8h18a2 2 0 0 1 2 2v10" />
-      <path d="M2 17h20" />
-      <path d="M6 8v9" />
     </svg>
   ),
 }
@@ -53,10 +44,10 @@ export function RewardPreferences({ config, kinds, onChange }: {
       <SectionIcon name="rewards" />
       <h2>What rewards do you want to prioritize?</h2>
       <p className="why">
-        Check all that apply — all three means every kind of value counts. Checking
-        flights or hotels also tells us you fly or stay in hotels, so airline and hotel
-        perks count without you naming a brand. Points are usually worth more than cash
-        back when redeemed directly for flights and hotel stays.
+        Check all that apply — checking both means every kind of value counts. Checking
+        points also tells us you take travel value, so airline and hotel perks count
+        without you naming a brand. Points are usually worth more than cash back when
+        redeemed directly for flights and hotel stays.
       </p>
       <div
         className="reward-tiles"

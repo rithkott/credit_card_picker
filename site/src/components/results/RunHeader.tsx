@@ -2,8 +2,7 @@ import type { OptimizeBundle } from '../../types'
 
 const KIND_LABELS: Record<string, string> = {
   cashback: 'cash back',
-  flights: 'flights',
-  hotels: 'hotels',
+  points: 'points',
 }
 
 /** "2026-07-05" -> "Jul 5, 2026". */

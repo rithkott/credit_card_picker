@@ -2,7 +2,7 @@
  * rules): zero/blank categories omitted (parse_profile reads absences as 0),
  * merchant_spend omitted entirely when no carve-out is nonzero, all user keys
  * always sent, reward_preferences = the checked kinds (the UI offers no
- * total_value — all three kinds checked is the everything-run). */
+ * total_value — both kinds checked is the everything-run). */
 
 import type { Profile } from '../types'
 import { centsToDollars } from './money'

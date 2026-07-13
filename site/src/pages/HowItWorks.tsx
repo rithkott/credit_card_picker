@@ -49,7 +49,7 @@ export function HowItWorks() {
           count for nothing.
         </p>
         <p>
-          Airlines and hotels are the one exception: if flights or hotels are among your
+          Airlines and hotels are the one exception: if points are among your
           reward priorities, you're assumed to book whichever brand gives the best value,
           so brand-specific airline and hotel credits count (at a conservative capture rate)
           without you naming a brand. Declaring loyalty to a specific brand upgrades it:

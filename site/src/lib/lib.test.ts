@@ -19,7 +19,7 @@ const baseUser = (): UserState => ({
   credit_tier: 'very_good',
   optimize_for: 'ongoing',
   accepts_brand_lockin: false,
-  rewardKinds: { cashback: true, flights: true, hotels: true },
+  rewardKinds: { cashback: true, points: true },
   confirmed_usage: new Set(['doordash', 'delta']),
 })
 
@@ -93,7 +93,7 @@ describe('validation: exact parse_profile mirror (plan 03 §4)', () => {
   })
   it('E5 requires at least one reward kind', () => {
     const { errors } = validate(spendOf({ other: 100 }), MERCHANTS, 'good',
-      { cashback: false, flights: false, hotels: false }, LABELS)
+      { cashback: false, points: false }, LABELS)
     expect(errors.map((e) => e.code)).toContain('E5')
   })
   it('W1 nudges when other is 0 but never blocks', () => {
@@ -120,13 +120,13 @@ describe('profile emission (plan 03 §2 rules)', () => {
       activates_rotating: true, // assumed on; no longer asked in the UI
       accepts_brand_lockin: false,
       confirmed_usage: ['delta', 'doordash'], // sorted
-      reward_preferences: ['cashback', 'flights', 'hotels'],
+      reward_preferences: ['cashback', 'points'],
     })
   })
   it('reward_preferences carries only the checked kinds — never total_value', () => {
     const user = baseUser()
-    user.rewardKinds = { cashback: false, flights: true, hotels: false }
+    user.rewardKinds = { cashback: false, points: true }
     const p = buildProfile(spendOf({ other: 100 }), user)
-    expect(p.user.reward_preferences).toEqual(['flights'])
+    expect(p.user.reward_preferences).toEqual(['points'])
   })
 })

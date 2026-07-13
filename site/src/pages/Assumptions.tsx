@@ -4,10 +4,12 @@ import type { AssumptionProgram } from '../types'
 
 const REPO = 'https://github.com/rithkott/credit_card_picker'
 
+// redeems_for keeps a fine-grained taxonomy in the data (cashback/flights/hotels);
+// the user-facing vocabulary is just cash back + points, so travel paths collapse.
 const KIND_LABELS: Record<string, string> = {
   cashback: 'cash back',
-  flights: 'flights',
-  hotels: 'hotels',
+  flights: 'points',
+  hotels: 'points',
 }
 
 type Phase =
@@ -100,7 +102,7 @@ export function Assumptions() {
                     <td>
                       {p.redeems_for.length === 0
                         ? <span className="dim">merchant-restricted</span>
-                        : p.redeems_for.map((k) => KIND_LABELS[k] ?? k).join(', ')}
+                        : [...new Set(p.redeems_for.map((k) => KIND_LABELS[k] ?? k))].join(', ')}
                     </td>
                     <td className="dim">
                       {[
