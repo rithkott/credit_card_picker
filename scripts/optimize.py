@@ -503,8 +503,9 @@ def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
             room = cap["max_spend_usd"] * CAP_PERIODS_PER_YEAR["quarterly"]
             fraction = 1.0 / len(ROTATING_ELIGIBLE)
             eligible = [b for b, bk in buckets.items() if bk["category"] in ROTATING_ELIGIBLE]
-            note = (f"rotating: featured ~1/{len(ROTATING_ELIGIBLE)} of the year; "
-                    f"up to ${room:,.0f}/yr")
+            note = (f"rotating bonus adjustment: weighted ×1/{len(ROTATING_ELIGIBLE)} "
+                    f"(featured ~1 quarter of {len(ROTATING_ELIGIBLE)} eligible "
+                    f"categories); up to ${room:,.0f}/yr")
             if rotation.get("requires_activation"):
                 note += " ×activation" if activated else " (not activated → fallback rate)"
             add("rotating", cat, rate, eligible, room, note, fraction=fraction)

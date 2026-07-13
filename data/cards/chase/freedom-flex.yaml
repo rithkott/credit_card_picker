@@ -10,8 +10,20 @@ currency:
 base_rate: 1                 # "1% Cash Back: base rate on all purchases"
 
 category_rewards:
-  # Rotating 5% quarterly category intentionally NOT modeled — the optimizer values
-  # only permanent full-time rates; rotating spend earns the 1% base_rate.
+  - category: rotating
+    rate: 5                  # "5% Cash Back total (rotating quarterly categories): up to $1,500 combined spend per quarter, requires quarterly activation"
+    cap:
+      period: quarterly
+      max_spend_usd: 1500
+      fallback_rate: 1       # "falls back to 1% after the $1,500 cap"
+    rotation:
+      frequency: quarterly
+      requires_activation: true
+      note: >-
+        Categories change each quarter (historically gas, groceries, Amazon, PayPal,
+        streaming, etc.) and must be activated by the quarterly deadline; unactivated
+        spend earns 1x. Modeled as a diluted wildcard over the rotating-eligible pool
+        (rotating bonus adjustment: ~1/6 featured-quarter coverage).
   - category: dining
     rate: 3                  # "3% Cash Back total: ... dining at restaurants (incl. takeout/delivery)"
   - category: drugstores
