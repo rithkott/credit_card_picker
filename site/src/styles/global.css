@@ -769,6 +769,7 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 }
 .card-tile h3 { margin: 0; font-size: 14px; font-weight: 700; }
 .card-tile .role { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+.card-tile .role .fee-amount { color: var(--danger); font-weight: 700; }
 
 /* Manual mode (v1.7): the same translucent tile, made a selectable button. */
 .card-tile.selectable {
@@ -841,6 +842,17 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   color: var(--accent-text);
 }
 .mode-toggle .mode-hint { font-size: 12px; font-weight: 400; color: var(--text-muted); }
+.mode-toggle .mode-bullets {
+  margin: 4px 0 0;
+  padding-left: 16px;
+  list-style: disc;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-muted);
+  text-align: left;
+}
+.mode-toggle .mode-bullets li { margin-top: 2px; }
+.mode-toggle button.active .mode-bullets { color: inherit; }
 .tile-lines {
   margin-top: 12px;
   font-size: 12.5px;

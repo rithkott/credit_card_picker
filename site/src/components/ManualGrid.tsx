@@ -66,7 +66,9 @@ export function ManualGrid({ selected, max, onToggle }: {
                   <span className="check" aria-hidden="true">{isSel ? '✓' : ''}</span>
                   <h3>{c.name}</h3>
                   <div className="role">
-                    {c.annual_fee_usd > 0 ? `$${formatNumber(c.annual_fee_usd)} annual fee` : 'No annual fee'}
+                    {c.annual_fee_usd > 0
+                      ? <><span className="fee-amount">${formatNumber(c.annual_fee_usd)}</span> annual fee</>
+                      : 'No annual fee'}
                     {' · '}{c.currency.program_label}
                   </div>
                 </button>
