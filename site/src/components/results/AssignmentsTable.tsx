@@ -20,7 +20,10 @@ export function AssignmentsTable({ assignments, currencyKind }: {
         </tr>
       </thead>
       <tbody>
-        {assignments.map((a, i) => (
+        {assignments.map((a, i) => {
+          const frac = a.eligible_fraction ? `1⁄${Math.round(1 / a.eligible_fraction)}` : null
+          const spend = a.eligible_fraction ? Math.round(a.usd_assigned / a.eligible_fraction) : a.usd_assigned
+          return (
           <tr key={`${a.bucket}-${i}`}>
             <td>
               {a.bucket}
@@ -28,12 +31,13 @@ export function AssignmentsTable({ assignments, currencyKind }: {
             </td>
             <td>
               {points ? <>{a.rate}x @ {a.cpp}¢/pt</> : <>{a.rate}%</>}
+              {frac && <span className="frac"> × {frac}</span>}
             </td>
-            <td>{formatUsd(a.usd_assigned)}</td>
+            <td>{formatUsd(spend)}</td>
             {points && <td>{formatNumber(Math.round(a.usd_assigned * a.rate))}</td>}
             <td>{formatUsd(a.usd_value)}</td>
           </tr>
-        ))}
+        )})}
       </tbody>
       </table>
     </div>

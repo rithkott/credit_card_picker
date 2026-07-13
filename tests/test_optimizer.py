@@ -160,6 +160,11 @@ class TestSingleCardGolden(unittest.TestCase):
         rotating = {a["bucket"]: a["usd_assigned"] for a in r["assignments"]
                     if a["kind"] == "rotating"}
         self.assertEqual(set(rotating), {"dining", "gas", "groceries"})
+        # Each rotating line carries the ~1/6 dilution so the UI can reconstruct
+        # the full eligible spend (usd_assigned / eligible_fraction).
+        for a in r["assignments"]:
+            if a["kind"] == "rotating":
+                self.assertAlmostEqual(a["eligible_fraction"], 1 / 6)
         self.assertAlmostEqual(rotating["gas"], 2000 / 6)
         self.assertAlmostEqual(rotating["groceries"], 1000.0)
         self.assertAlmostEqual(rotating["dining"], 4000 / 6)
@@ -642,9 +647,13 @@ class TestTransferGateway(unittest.TestCase):
                    "cards": [seed_card("freedom-flex")]}
         prof = make_profile(self.FLEX_PROF)
         bundle = opt.run(dataset, prof, AS_OF, 1)
-        note = bundle["portfolios"][0]["per_card"]["freedom-flex"]["valuation_note"]
+        flex_solo = bundle["portfolios"][0]["per_card"]["freedom-flex"]
+        note = flex_solo["valuation_note"]
         # No gateway card exists in this dataset → generic pairing hint.
         self.assertIn("pair with a gateway card", note)
+        # Always-on caveat: standalone Freedom names the Sapphire requirement up
+        # front, independent of whether a gateway card is in the portfolio.
+        self.assertIn("Chase Sapphire", flex_solo["points_gateway_caveat"])
         # With the Sapphire in the pool the top portfolio pairs them: the
         # warning is replaced by the positive pairing_note naming the gateway.
         dataset["cards"] = [seed_card("freedom-flex"), seed_card("sapphire-preferred")]
@@ -656,12 +665,16 @@ class TestTransferGateway(unittest.TestCase):
         self.assertNotIn("valuation_note", flex)
         self.assertIn("pooled with Chase Sapphire Preferred", flex["pairing_note"])
         self.assertIn("1.5cpp", flex["pairing_note"])
+        # The always-on caveat stays even when paired (requirement still true).
+        self.assertIn("Chase Sapphire", flex["points_gateway_caveat"])
         self.assertEqual(flex["currency"], {"kind": "points", "program": "chase_ur",
                                             "label": "Chase Ultimate Rewards"})
         # The gateway card itself gets neither note (it unlocks its own program).
         csp = top["per_card"]["sapphire-preferred"]
         self.assertNotIn("valuation_note", csp)
         self.assertNotIn("pairing_note", csp)
+        # The gateway card unlocks its own program, so it gets no caveat.
+        self.assertNotIn("points_gateway_caveat", csp)
         # A size-1 flex portfolio in the same bundle names the Sapphire in its
         # floored note (gateway map comes from the full dataset).
         flex_solo = next((p for p in bundle["best_by_size"]

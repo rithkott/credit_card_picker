@@ -96,6 +96,11 @@ export interface Assignment {
   cpp: number
   usd_value: number
   note: string
+  /** Rotating (featured-quarter) lines only: the ~1/N dilution already baked
+   * into usd_assigned/usd_value. Present so the UI can show the FULL eligible
+   * spend (usd_assigned / eligible_fraction) with the ×fraction shown against
+   * the points/value it actually earns. Absent on every non-rotating line. */
+  eligible_fraction?: number
 }
 
 export interface CreditLine {
@@ -123,6 +128,11 @@ export interface PerCard {
     membership_name?: string
   }
   warnings: string[]
+  /** Always-on redemption caveat for transfer-gateway cards (Chase Freedom
+   * family): their points redeem at the cash floor unless a gateway card
+   * (Sapphire) is also held. Shown up front in the card subtitle, regardless of
+   * whether a gateway card is currently in the portfolio. */
+  points_gateway_caveat?: string
   valuation_note?: string
   /** Positive counterpart of valuation_note: this card's points reach the avg
    * valuation because a gateway card (e.g. a Sapphire) is in the portfolio. */

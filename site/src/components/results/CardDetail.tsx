@@ -7,6 +7,19 @@ function pretty(bucket: string): string {
   return bucket.replace(/_/g, ' ')
 }
 
+/** Rotating featured-quarter lines carry eligible_fraction (~1/6): usd_assigned
+ * is already diluted, so the table shows the FULL eligible spend (undo the
+ * fraction) and surfaces the ×1/N against the points/value actually earned. */
+function fullSpend(a: { usd_assigned: number; eligible_fraction?: number }): number {
+  // Round the reconstructed full spend — the featured-quarter model is already
+  // an approximation, and undoing a rounded 1/N share otherwise yields cents
+  // like $4,000.02.
+  return a.eligible_fraction ? Math.round(a.usd_assigned / a.eligible_fraction) : a.usd_assigned
+}
+function fractionLabel(a: { eligible_fraction?: number }): string | null {
+  return a.eligible_fraction ? `1⁄${Math.round(1 / a.eligible_fraction)}` : null
+}
+
 /** "groceries, streaming, gas & transit" — the tile's role subtitle, derived
  * from where the optimizer actually routed spend. */
 function roleSubtitle(card: PerCard): string {
@@ -85,6 +98,9 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
           ? `Choice category: ${pretty(card.choice_category)}`
           : roleSubtitle(card)}
       </div>
+      {card.points_gateway_caveat && (
+        <div className="gateway-caveat">🔑 {card.points_gateway_caveat}</div>
+      )}
       {shownAssignments.length > 0 && (
         <table className="earn-table">
           {isPoints && (
@@ -101,19 +117,22 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
             </tr>
           </thead>
           <tbody>
-            {shownAssignments.map((a, i) => (
+            {shownAssignments.map((a, i) => {
+              const frac = fractionLabel(a)
+              return (
               <tr key={`a-${a.bucket}-${i}`}>
                 <td>
-                  {isPoints ? `${a.rate}x` : `${a.rate}%`} {pretty(a.bucket)}
+                  {isPoints ? `${a.rate}x` : `${a.rate}%`}
+                  {frac && <span className="frac"> × {frac}</span>} {pretty(a.bucket)}
                   {a.note && <span className="note">{a.note}</span>}
                 </td>
-                <td className="num">{formatUsd(a.usd_assigned).replace('.00', '')}</td>
+                <td className="num">{formatUsd(fullSpend(a)).replace('.00', '')}</td>
                 {isPoints && (
                   <td className="num">{formatNumber(Math.round(a.usd_assigned * a.rate))}</td>
                 )}
                 <td className="num val">{formatUsd(a.usd_value)}</td>
               </tr>
-            ))}
+            )})}
           </tbody>
         </table>
       )}
