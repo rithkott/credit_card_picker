@@ -320,12 +320,15 @@ class TestServerAPI(unittest.TestCase):
              "cards": ["no-such-card"]},
             "unknown card id")
 
-    def test_evaluate_too_many_422(self):
-        ids = [c["id"] for c in self.dataset["cards"]][:6]
-        self.assert_evaluate_422(
-            {"spend": {"other": 5000}, "user": {"credit_tier": "good"},
-             "cards": ids},
-            "at most 5 cards")
+    def test_evaluate_no_card_cap(self):
+        # v1.10 removed the old 5-card manual limit: >5 hand-picked cards score fine.
+        ids = [c["id"] for c in self.dataset["cards"]][:7]
+        r = self.client.post("/api/evaluate",
+                             json={"spend": {"other": 5000},
+                                   "user": {"credit_tier": "good"},
+                                   "cards": ids, "as_of": AS_OF})
+        self.assertEqual(r.status_code, 200, r.text)
+        self.assertEqual(r.json()["best_by_size"][0]["cards"], ids)
 
     def test_evaluate_duplicate_422(self):
         cid = self.dataset["cards"][0]["id"]
@@ -339,6 +342,43 @@ class TestServerAPI(unittest.TestCase):
             {"spend": {"other": 5000}, "user": {"credit_tier": "good"},
              "cards": []},
             "non-empty list")
+
+    # -- suggest-addition (best additional card, v1.10) -----------------------
+
+    def test_suggest_addition_matches_engine_and_adds_a_card(self):
+        held = [c["id"] for c in self.dataset["cards"]][:1]
+        raw = {"spend": {"dining": 6000, "groceries": 4800, "other": 12000},
+               "user": {"credit_tier": "good"}}
+        r = self.client.post("/api/suggest-addition",
+                             json={**raw, "cards": held, "as_of": AS_OF})
+        self.assertEqual(r.status_code, 200, r.text)
+        profile = opt.parse_profile(raw, self.dataset)
+        expected = opt.augment(self.dataset, profile, date.fromisoformat(AS_OF), held)
+        self.assertEqual(json.dumps(r.json(), sort_keys=True, indent=2) + "\n",
+                         opt.render_json(expected))
+        body = r.json()
+        # Contract: added_card is a real card not already held, and the scored
+        # portfolio is exactly held + added_card.
+        self.assertNotIn(body["added_card"], held)
+        self.assertIn(body["added_card"],
+                      {c["id"] for c in self.dataset["cards"]})
+        self.assertEqual(set(body["best_by_size"][0]["cards"]),
+                         set(held) | {body["added_card"]})
+
+    def test_suggest_addition_empty_422(self):
+        r = self.client.post("/api/suggest-addition",
+                             json={"spend": {"other": 5000},
+                                   "user": {"credit_tier": "good"}, "cards": []})
+        self.assertEqual(r.status_code, 422, r.text)
+        self.assertIn("non-empty list", r.json()["detail"])
+
+    def test_suggest_addition_unknown_card_422(self):
+        r = self.client.post("/api/suggest-addition",
+                             json={"spend": {"other": 5000},
+                                   "user": {"credit_tier": "good"},
+                                   "cards": ["no-such-card"]})
+        self.assertEqual(r.status_code, 422, r.text)
+        self.assertIn("unknown card id", r.json()["detail"])
 
     # -- debug dumps ----------------------------------------------------------
 

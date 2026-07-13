@@ -1,4 +1,4 @@
-import type { AssumptionsResponse, CardsResponse, Config, OptimizeBundle, Profile } from './types'
+import type { AssumptionsResponse, CardsResponse, Config, OptimizeBundle, Profile, SuggestAdditionBundle } from './types'
 import type { WireParsedFile } from './lib/statements/types'
 
 /** API base URL. Production builds default to '' (same-origin — Vercel
@@ -70,6 +70,17 @@ export function optimize(profile: Profile, top = 5): Promise<OptimizeBundle> {
  * plus `cards`; returns the identical OptimizeBundle (a single best_by_size). */
 export function evaluateManual(profile: Profile, cardIds: string[]): Promise<OptimizeBundle> {
   return request('/api/evaluate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...profile, cards: cardIds }),
+  })
+}
+
+/** Best-additional-card (v1.10): given the held Manual-mode set `cardIds`, ask the
+ * server which single card to add and get back the evaluate() bundle for held + that
+ * card, plus `added_card`. Same profile body as evaluateManual(). */
+export function suggestAddition(profile: Profile, cardIds: string[]): Promise<SuggestAdditionBundle> {
+  return request('/api/suggest-addition', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ...profile, cards: cardIds }),

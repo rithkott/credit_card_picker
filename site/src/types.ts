@@ -165,3 +165,10 @@ export interface OptimizeBundle {
   best_by_size: BestBySize[]
   portfolios: Portfolio[]
 }
+
+/** POST /api/suggest-addition (v1.10): the evaluate() bundle for the held set
+ * plus the single best-additional card, with `added_card` naming which card the
+ * optimizer chose to add. Same shape as OptimizeBundle otherwise. */
+export interface SuggestAdditionBundle extends OptimizeBundle {
+  added_card: string
+}

@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
-import { ApiError, evaluateManual, optimize } from '../api'
+import { ApiError, evaluateManual, optimize, suggestAddition } from '../api'
 import type { OptimizeBundle } from '../types'
-import { buildProfile, MANUAL_MAX_CARDS } from '../lib/profile'
+import { buildProfile } from '../lib/profile'
 import { validate } from '../lib/validation'
 import { useFormState } from '../hooks/useFormState'
 import { ManualGrid } from '../components/ManualGrid'
@@ -99,11 +99,31 @@ export function Home({ cfg, onRetryConfig }: {
   const onRun = () => startRun(optimize(buildProfile(spend, user)))
   const onRunManual = () => startRun(evaluateManual(buildProfile(spend, user), [...selected]))
 
+  // Best-additional-card (v1.10): ask the server for the best card to add to the
+  // held set, check it in the grid, and show the augmented score — one action. Can't
+  // reuse startRun() verbatim because of the extra setSelected side effect on success.
+  const onAddBest = () => {
+    setElapsed(0)
+    setRun({ phase: 'running', startedAt: Date.now() })
+    suggestAddition(buildProfile(spend, user), [...selected])
+      .then((bundle) => {
+        setSelected((prev) => new Set(prev).add(bundle.added_card))
+        setRun({ phase: 'done', bundle })
+      })
+      .catch((err) => {
+        if (err instanceof ApiError) {
+          setRun({ phase: 'error', detail: err.message, unreachable: false })
+        } else {
+          setRun({ phase: 'error', detail: String(err), unreachable: true })
+        }
+      })
+  }
+
   const toggleSelect = (id: string) =>
     setSelected((prev) => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
-      else if (next.size < MANUAL_MAX_CARDS) next.add(id)
+      else next.add(id)
       return next
     })
 
@@ -170,7 +190,18 @@ export function Home({ cfg, onRetryConfig }: {
               >
                 {run.phase === 'running'
                   ? 'Scoring…'
-                  : `Score selected (${selected.size}/${MANUAL_MAX_CARDS})`}
+                  : `Score selected (${selected.size})`}
+              </button>
+            )}
+            {/* Best-additional-card (v1.10): appears once a portfolio has been
+                scored; adds the single best card and re-scores. */}
+            {mode === 'manual' && run.phase === 'done' && (
+              <button
+                type="button"
+                className="accent-add"
+                onClick={onAddBest}
+              >
+                Add best additional card
               </button>
             )}
             {run.phase === 'running' && (
@@ -181,7 +212,7 @@ export function Home({ cfg, onRetryConfig }: {
               </span>
             )}
             {mode === 'manual' && run.phase !== 'running' && selected.size === 0 && (
-              <span className="status">Pick 1–{MANUAL_MAX_CARDS} cards below to score.</span>
+              <span className="status">Pick cards below to score.</span>
             )}
             {run.phase === 'error' && !run.unreachable && (
               <span className="error">{run.detail}</span>
@@ -301,7 +332,7 @@ export function Home({ cfg, onRetryConfig }: {
                 {runbar}
                 {run.phase === 'done' && <ResultsView bundle={run.bundle} />}
                 {mode === 'manual' && (
-                  <ManualGrid selected={selected} max={MANUAL_MAX_CARDS} onToggle={toggleSelect} />
+                  <ManualGrid selected={selected} onToggle={toggleSelect} />
                 )}
               </>
             ),

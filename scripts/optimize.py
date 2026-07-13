@@ -96,8 +96,7 @@ MAX_SCORED_SUBSETS = 2_000_000
 
 # Manual mode (v1.7): the user hand-picks the portfolio instead of the optimizer
 # searching for it. Scores a single hand-picked subset (no combinatorial search),
-# so it can allow more cards than Auto's search cap without a subset-budget blowout.
-MANUAL_MAX_CARDS = 5
+# so there is no card cap — the subset-budget blowout only applies to Auto's search.
 
 KIND_RANK = {"merchant": 0, "category": 1, "rotating": 2, "fallback": 3, "base": 4}
 
@@ -1471,15 +1470,14 @@ def evaluate(dataset: dict, profile: dict, as_of: date, card_ids: list) -> dict:
     run(), so the web results view renders it unchanged — best_by_size just
     carries a single entry. Selection overrides every Auto filter: a manually
     chosen card is scored even if credit tier / brand-lockin / reward-preference
-    filters would have excluded it in Auto mode."""
+    filters would have excluded it in Auto mode. No card cap — the set is scored
+    as-is (v1.10 removed the old 5-card manual limit)."""
     if not isinstance(card_ids, list) or not card_ids:
         raise InputError("evaluate: 'cards' must be a non-empty list of card ids")
     if any(not isinstance(c, str) for c in card_ids):
         raise InputError(f"evaluate: 'cards' must be a list of card-id strings, got {card_ids!r}")
     if len(set(card_ids)) != len(card_ids):
         raise InputError(f"evaluate: 'cards' has duplicate ids: {card_ids}")
-    if len(card_ids) > MANUAL_MAX_CARDS:
-        raise InputError(f"evaluate: at most {MANUAL_MAX_CARDS} cards, got {len(card_ids)}")
     by_base = {c["id"]: c for c in dataset["cards"]}
     unknown = [c for c in card_ids if c not in by_base]
     if unknown:
@@ -1530,6 +1528,62 @@ def evaluate(dataset: dict, profile: dict, as_of: date, card_ids: list) -> dict:
         "best_by_size": [{"size": len(resolved), **portfolio}],
         "portfolios": [portfolio],
     }
+
+
+def augment(dataset: dict, profile: dict, as_of: date, held_ids: list) -> dict:
+    """Best-additional-card (v1.10): given the user's held Manual-mode set, find the
+    single card whose addition maximizes the active metric, then return the full
+    evaluate() bundle for held + that card, with an extra `added_card` key naming the
+    pick. Uses the joint scorer for every candidate, so inter-card interactions
+    (points pooling, transfer-gateway unlocks, portal-credit de-dup) shape the choice
+    — the same reason Auto's search scores whole subsets rather than single cards."""
+    if not isinstance(held_ids, list) or not held_ids:
+        raise InputError("augment: 'cards' must be a non-empty list of card ids")
+    if any(not isinstance(c, str) for c in held_ids):
+        raise InputError(f"augment: 'cards' must be a list of card-id strings, got {held_ids!r}")
+    if len(set(held_ids)) != len(held_ids):
+        raise InputError(f"augment: 'cards' has duplicate ids: {held_ids}")
+    by_base = {c["id"]: c for c in dataset["cards"]}
+    unknown = [c for c in held_ids if c not in by_base]
+    if unknown:
+        raise InputError(f"augment: unknown card id(s): {sorted(unknown)}")
+    held_set = set(held_ids)
+    candidates = [c["id"] for c in dataset["cards"] if c["id"] not in held_set]
+    if not candidates:
+        raise InputError("augment: no cards left to add")
+
+    # Mirror evaluate(): recompute assumed_usage so no override leaves a stale set.
+    profile["user"]["assumed_usage"] = assumed_usage(
+        profile["user"], dataset.get("usage_questions") or {})
+    programs = dataset["programs"]
+    merchants = dataset["merchants"]
+    categories = dataset["categories"]
+    buckets = build_buckets(profile, merchants, categories)
+    primary = "ongoing_net" if profile["user"]["optimize_for"] == "ongoing" else "year1_net"
+
+    # Score held + each candidate, resolving choose-your-own variants per combo
+    # exactly like evaluate(). Rank like search()/_best_variant_combo: primary metric,
+    # then year1_net, then candidate id — deterministic, no ties left to chance.
+    scored = []
+    for cand in candidates:
+        combo_bases = held_ids + [cand]
+        chosen = [by_base[c] for c in combo_bases]
+        variants = expand_choice_variants(chosen, profile)
+        by_var_base = {}
+        for v in variants:
+            by_var_base.setdefault(v.get("base_id", v["id"]), []).append(v)
+        resolved_ids = _best_variant_combo(combo_bases, by_var_base, profile,
+                                           programs, buckets, as_of)
+        by_id = {v["id"]: v for v in variants}
+        s = score_portfolio([by_id[i] for i in resolved_ids], profile, programs,
+                            buckets, as_of)
+        metric = s["ongoing_net"] if primary == "ongoing_net" else s["year1_net"]
+        scored.append((metric, s["year1_net"], cand))
+    scored.sort(key=lambda r: (-r[0], -r[1], r[2]))
+    best_id = scored[0][2]
+
+    return {**evaluate(dataset, profile, as_of, held_ids + [best_id]),
+            "added_card": best_id}
 
 
 def render_json(bundle: dict) -> str:

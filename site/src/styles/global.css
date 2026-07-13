@@ -94,7 +94,7 @@ body {
   animation: drift3 34s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-  .aurora div, .shimmer-text { animation: none; }
+  .aurora div, .shimmer-text, button.accent-add { animation: none; }
 }
 
 .shimmer-text {
@@ -301,6 +301,18 @@ button.primary {
   box-shadow: 0 12px 40px rgba(143, 168, 255, 0.25);
 }
 button:disabled { opacity: 0.55; cursor: not-allowed; }
+/* Best-additional-card (v1.10): smaller than .primary, filled with the animated
+   theme-violet shimmer gradient so it reads as the secondary accent action. */
+button.accent-add {
+  background: var(--shimmer);
+  background-size: 200% 100%;
+  animation: shimmer 8s ease-in-out infinite;
+  border: 1px solid var(--accent-border);
+  color: #0a0a10;
+  font-size: 13px;
+  padding: 9px 20px;
+  box-shadow: 0 8px 26px rgba(143, 168, 255, 0.25);
+}
 button.linklike {
   background: none; border: none; padding: 2px 0;
   color: var(--accent); font-size: 12.5px; font-weight: 400;
