@@ -8,20 +8,23 @@ interface Props {
   onChange: (patch: Partial<UserState>) => void
 }
 
-/** Maps to the profile's user block. Simplified per plan 08, and further to a
- * single 730 threshold: most "excellent"-labeled cards actually approve around
- * 730, so gating them behind higher bands locked out cards that don't need it.
- * The two choices map to engine tiers — 730+ → 'excellent' (top rank, no tier
- * gating) and below 730 → 'good' (premium/very-good cards filtered out). */
+/** Maps to the profile's user block. Three FICO bands, each mapped to an engine
+ * tier used for approval gating:
+ *   Excellent (740+)   → 'excellent' (top rank, no tier gating — unlocks all)
+ *   Good (670–739)     → 'good'      (premium/very-good cards filtered out)
+ *   Fair/Poor (<670)   → 'fair'      (good + premium cards filtered out) */
 const TIER_OPTIONS: { value: string; label: string; hint: string }[] = [
-  { value: 'excellent', label: '730 or above', hint: 'unlocks every card here' },
-  { value: 'good', label: 'Below 730', hint: 'a few premium cards may be out of reach' },
+  { value: 'excellent', label: 'Excellent · 740+', hint: 'unlocks every card here' },
+  { value: 'good', label: 'Good · 670–739', hint: 'a few premium cards may be out of reach' },
+  { value: 'fair', label: 'Building · below 670', hint: 'only cards for building credit' },
 ]
 
-/** Collapse any stored engine tier into the two buckets. Anything at or above
- * "very good" reads as 730+; the rest (good / fair / building / unset→730+). */
+/** Collapse any stored engine tier into the three bands. 'very_good'/'excellent'
+ * → excellent; 'good' → good; 'fair'/'building' → fair; unset → excellent. */
 function bucketOf(raw: string | null | undefined): string {
-  return raw === 'good' || raw === 'fair' || raw === 'building' ? 'good' : 'excellent'
+  if (raw === 'fair' || raw === 'building') return 'fair'
+  if (raw === 'good') return 'good'
+  return 'excellent'
 }
 
 export function AboutYou({ config: _config, user, onChange }: Props) {
