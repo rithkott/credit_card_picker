@@ -22,11 +22,6 @@ export interface UserState {
  * quarter share of each eligible bucket). */
 export const MAX_CARDS = 3
 
-/** Manual mode grid cap: the user hand-picks a set and evaluate() scores just
- * that one subset (no combinatorial search), so it allows more cards than the
- * Auto search cap above. Kept in sync with server MANUAL_MAX_CARDS. */
-export const MANUAL_MAX_CARDS = 5
-
 const ACTIVATES_ROTATING = true
 
 function nonzeroDollars(cents: Record<string, number | null>): Record<string, number> {

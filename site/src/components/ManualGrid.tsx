@@ -12,10 +12,9 @@ type Phase =
 /** Manual mode (v1.7) card picker: every card as a translucent, selectable
  * tile, grouped by issuer like the Data sources tab. Controlled — selection
  * state lives in Home so the "Score selected" action can read it. Plain tiles,
- * no card art: name, annual fee, and rewards currency. */
-export function ManualGrid({ selected, max, onToggle }: {
+ * no card art: name, annual fee, and rewards currency. No selection cap (v1.10). */
+export function ManualGrid({ selected, onToggle }: {
   selected: Set<string>
-  max: number
   onToggle: (id: string) => void
 }) {
   const [state, setState] = useState<Phase>({ phase: 'loading' })
@@ -42,8 +41,6 @@ export function ManualGrid({ selected, max, onToggle }: {
   if (state.phase === 'loading') return <p style={{ opacity: 0.7 }}>Loading cards…</p>
   if (state.phase === 'error') return <p className="error">Couldn't load the card list.</p>
 
-  const atMax = selected.size >= max
-
   return (
     <div className="manual-grid">
       {byIssuer.map(([issuer, cards]) => (
@@ -52,15 +49,12 @@ export function ManualGrid({ selected, max, onToggle }: {
           <div className="tile-grid">
             {cards.map((c) => {
               const isSel = selected.has(c.id)
-              // Block selecting past the cap, but always allow deselecting.
-              const disabled = !isSel && atMax
               return (
                 <button
                   type="button"
                   key={c.id}
                   className={`card-tile selectable${isSel ? ' selected' : ''}`}
                   aria-pressed={isSel}
-                  disabled={disabled}
                   onClick={() => onToggle(c.id)}
                 >
                   <span className="check" aria-hidden="true">{isSel ? '✓' : ''}</span>

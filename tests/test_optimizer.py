@@ -1493,5 +1493,71 @@ class TestEvaluate(unittest.TestCase):
                          ["active-cash", "double-cash", "blue-cash-preferred", "strata"])
 
 
+class TestAugment(unittest.TestCase):
+    """Best-additional-card (v1.10): augment() picks the single card whose addition
+    maximizes the active metric (variants resolved per combo), then returns
+    evaluate()'s bundle for held + that card with an `added_card` key."""
+
+    def _resolved_metric(self, held, cand, prof, primary):
+        """Score held + cand exactly as augment does — resolving each combo's best
+        choose-your-own variant — so the maximality check is an honest independent
+        recomputation, not a copy of augment's return value."""
+        programs = DATASET["programs"]
+        buckets = opt.build_buckets(prof, DATASET["merchants"], DATASET["categories"])
+        by_base = {c["id"]: c for c in DATASET["cards"]}
+        combo = held + [cand]
+        variants = opt.expand_choice_variants([by_base[c] for c in combo], prof)
+        by_var_base = {}
+        for v in variants:
+            by_var_base.setdefault(v.get("base_id", v["id"]), []).append(v)
+        rids = opt._best_variant_combo(combo, by_var_base, prof, programs, buckets, AS_OF)
+        by_id = {v["id"]: v for v in variants}
+        s = opt.score_portfolio([by_id[i] for i in rids], prof, programs, buckets, AS_OF)
+        return s["ongoing_net"] if primary == "ongoing_net" else s["year1_net"]
+
+    def test_returns_maximal_addition(self):
+        prof = make_profile(P30K)
+        held = ["active-cash"]
+        bundle = opt.augment(DATASET, prof, AS_OF, held)
+        added = bundle["added_card"]
+        # added_card is a real card not already held.
+        self.assertNotIn(added, held)
+        self.assertIn(added, {c["id"] for c in DATASET["cards"]})
+        # Bundle is the evaluate() bundle for exactly held + added_card.
+        self.assertEqual(set(bundle["best_by_size"][0]["cards"]), set(held) | {added})
+        self.assertEqual(set(bundle.keys()),
+                         set(opt.evaluate(DATASET, prof, AS_OF, held + [added]).keys())
+                         | {"added_card"})
+        # Maximality: no other candidate beats the chosen addition (ongoing metric).
+        best = self._resolved_metric(held, added, prof, "ongoing_net")
+        for c in DATASET["cards"]:
+            if c["id"] in held or c["id"] == added:
+                continue
+            self.assertLessEqual(
+                round(self._resolved_metric(held, c["id"], prof, "ongoing_net"), 6),
+                round(best, 6) + 1e-6)
+
+    def test_deterministic(self):
+        prof = make_profile(P30K)
+        a = opt.augment(DATASET, prof, AS_OF, ["active-cash"])["added_card"]
+        b = opt.augment(DATASET, make_profile(P30K), AS_OF, ["active-cash"])["added_card"]
+        self.assertEqual(a, b)
+
+    def test_errors(self):
+        prof = make_profile(P30K)
+        with self.assertRaises(opt.InputError):
+            opt.augment(DATASET, prof, AS_OF, [])
+        with self.assertRaises(opt.InputError):
+            opt.augment(DATASET, prof, AS_OF, ["no-such-card"])
+        with self.assertRaises(opt.InputError):
+            opt.augment(DATASET, prof, AS_OF, ["active-cash", "active-cash"])
+
+    def test_no_candidates_left_errors(self):
+        prof = make_profile(P30K)
+        all_ids = [c["id"] for c in DATASET["cards"]]
+        with self.assertRaises(opt.InputError):
+            opt.augment(DATASET, prof, AS_OF, all_ids)
+
+
 if __name__ == "__main__":
     unittest.main()
