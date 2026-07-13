@@ -51,6 +51,23 @@ export function Home({ cfg, onRetryConfig }: {
     }))
   }, [cfg, fs.restored, setUser])
 
+  // Reconcile persisted reward selections against the server's current
+  // reward_kinds vocabulary: drop keys it no longer offers (a pre-v1.11
+  // localStorage still holds flights/hotels, which parse_profile now rejects)
+  // and default any newly-offered kind to on. Runs for restored users too —
+  // that's the whole point. The equality guard keeps it from re-firing.
+  useEffect(() => {
+    if (cfg.phase !== 'ready') return
+    const valid = cfg.config.reward_kinds
+    setUser((u) => {
+      const reconciled: Record<string, boolean> = {}
+      for (const k of valid) reconciled[k] = u.rewardKinds[k] ?? true
+      const unchanged = Object.keys(u.rewardKinds).length === valid.length
+        && valid.every((k) => u.rewardKinds[k] === reconciled[k])
+      return unchanged ? u : { ...u, rewardKinds: reconciled }
+    })
+  }, [cfg, setUser])
+
   useEffect(() => {
     if (run.phase !== 'running') return
     const timer = setInterval(
@@ -345,12 +362,17 @@ export function Home({ cfg, onRetryConfig }: {
               steps={steps}
               index={step}
               canFinish={errors.length === 0}
+              finishLabel={run.phase === 'running' ? 'Scoring…' : 'Run the numbers'}
               onBack={() => setStep((s) => Math.max(0, s - 1))}
               onNext={() => setStep((s) => Math.min(steps.length - 1, s + 1))}
               onJump={(i) => setStep(i)}
               onFinish={() => {
+                // One press ends onboarding and runs the optimizer (v1.11.1):
+                // collapse to the edit view and kick off the same Auto run the
+                // edit-view runbar would. Wizard is the guided Auto path.
                 fs.setCompleted(true)
                 fs.setView('edit')
+                onRun()
               }}
             />
           )

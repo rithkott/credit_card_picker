@@ -1,7 +1,9 @@
 /** First-run wizard shell (v1.9.0): shows the existing form sections one group
- * at a time. Free navigation — Next is never gated; only the final Finish is
+ * at a time. Free navigation — Next is never gated; only the final action is
  * gated by canFinish (= no blocking validation errors, mirroring the Run gate).
- * Reuses the section components untouched; each step's node is built in Home. */
+ * The final button both completes the wizard and runs the optimizer (v1.11.1),
+ * so its label is caller-supplied ("Run the numbers"). Reuses the section
+ * components untouched; each step's node is built in Home. */
 
 import type { ReactNode } from 'react'
 
@@ -15,13 +17,14 @@ interface Props {
   steps: WizardStep[]
   index: number
   canFinish: boolean
+  finishLabel: string
   onBack: () => void
   onNext: () => void
   onFinish: () => void
   onJump: (index: number) => void
 }
 
-export function WizardShell({ steps, index, canFinish, onBack, onNext, onFinish, onJump }: Props) {
+export function WizardShell({ steps, index, canFinish, finishLabel, onBack, onNext, onFinish, onJump }: Props) {
   const step = steps[index]
   const isLast = index === steps.length - 1
 
@@ -62,7 +65,7 @@ export function WizardShell({ steps, index, canFinish, onBack, onNext, onFinish,
         </button>
         {isLast ? (
           <button type="button" className="primary" onClick={onFinish} disabled={!canFinish}>
-            Finish
+            {finishLabel}
           </button>
         ) : (
           <button type="button" className="primary" onClick={onNext}>
