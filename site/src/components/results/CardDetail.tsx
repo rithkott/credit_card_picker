@@ -139,7 +139,7 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
             <span>− {formatUsd(card.fees.membership_fee_usd)}</span>
           </div>
         )}
-        <div className="line fee">
+        <div className={`line fee${card.fees.annual_fee_usd > 0 ? ' annual-fee' : ''}`}>
           <span>
             Annual fee
             {card.fees.first_year_waived && <span className="note"> waived year 1</span>}
