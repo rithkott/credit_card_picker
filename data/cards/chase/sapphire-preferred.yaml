@@ -1,4 +1,4 @@
-# Mid-tier transferable-points travel card: 5x Chase Travel portal, 3x on dining/gas/streaming/online-grocery, $95 fee.
+# Mid-tier transferable-points travel card: 5x Chase Travel portal, 3x on dining/gas/streaming, $95 fee.
 id: sapphire-preferred
 name: Chase Sapphire Preferred
 issuer: chase
@@ -35,11 +35,13 @@ category_rewards:
     rate: 3                  # "3 points/$1: gas stations; EV charging" (gas category covers EV charging)
   - category: streaming
     rate: 3                  # "3 points/$1: ... top streaming services"
-  - category: groceries
-    rate: 3                  # "3 points/$1: online grocery (excludes Target, Walmart, wholesale clubs)"
-    notes: >-
-      ONLINE grocery only; excludes Target, Walmart, and wholesale clubs. In-store
-      grocery purchases earn the 1x base rate, not 3x.
+  # NOT MODELED: the 3x grocery rate applies to ONLINE grocery only (excludes Target,
+  # Walmart, wholesale clubs); in-store supermarket spend earns the 1x base rate. The
+  # optimizer has no online-grocery bucket (categories.yaml `groceries` is the whole
+  # supermarket bucket, dominated by in-store), so crediting the `groceries` category at
+  # 3x would overvalue the card. Grocery therefore falls to base 1x here — accurate for
+  # in-store (the dominant share); the online-grocery minority is conservatively
+  # under-credited. Revisit if an online_groceries category is ever added.
 
 merchant_rewards:
   - merchant: lyft
@@ -109,7 +111,10 @@ notes: >-
   verification. MODELING CHOICE: the 5x Chase Travel portal rate is placed on
   travel_other (as the portal channel) with portal_only:true to avoid duplicate travel
   categories; direct flights/hotels are modeled at the 2x non-portal rate. This
-  under-scores portal-booked flights/hotels — flagged for reviewer. The following are
+  under-scores portal-booked flights/hotels — flagged for reviewer. MODELING CHOICE: the
+  3x grocery rate is ONLINE-grocery only (in-store supermarket earns 1x); with no
+  online-grocery category in the model, the groceries reward is omitted so grocery earns
+  base 1x rather than overvaluing the whole supermarket bucket at 3x. The following are
   NOTED, NOT MODELED, because they lack an issuer-stated fixed value or are promotional
   in-kind perks: complimentary Apple TV (12+ mo, activate by 12/31/2026) with $7.50/mo
   Apple One discount; complimentary DashPass (12+ mo, activate by 12/31/2027) with $10-off
