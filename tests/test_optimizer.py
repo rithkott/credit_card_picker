@@ -560,12 +560,12 @@ class TestAssumedUsage(unittest.TestCase):
         self.assertAlmostEqual(r["credits"][0]["value"], 90.0)
         self.assertIn("assumed usable: brandair", r["credits"][0]["note"])
 
-    def test_concrete_flights_pref_also_unlocks(self):
+    def test_concrete_points_pref_also_unlocks(self):
         r = score([synth_card(credits=[dict(self.CREDIT)])],
-                  make_profile({"other": 5000}, reward_preferences=["flights"]))
+                  make_profile({"other": 5000}, reward_preferences=["points"]))
         self.assertAlmostEqual(r["credits"][0]["value"], 90.0)
 
-    def test_no_flights_pref_keeps_strict_gate(self):
+    def test_no_points_pref_keeps_strict_gate(self):
         r = score([synth_card(credits=[dict(self.CREDIT)])],
                   make_profile({"other": 5000}, reward_preferences=["cashback"]))
         self.assertEqual(r["credits"][0]["value"], 0.0)
@@ -894,24 +894,25 @@ class TestFiltersAndSearch(unittest.TestCase):
         self.assertEqual([e["id"] for e in excluded], ["venture-x"])
         self.assertEqual(len(eligible), 7)
 
-    def test_reward_preference_filter_flights(self):
-        # Pure-cash cards can't serve a flights-only user; transferable
+    def test_reward_preference_filter_points(self):
+        # Pure-cash cards can't serve a points-only user; transferable
         # currencies (chase_ur, amex_mr, citi_typ, capital_one_miles) can.
-        prof = make_profile(P30K, reward_preferences=["flights"])
+        # 'points' expands to {flights, hotels} against redeems_for.
+        prof = make_profile(P30K, reward_preferences=["points"])
         eligible, excluded = opt.filter_cards(DATASET["cards"], prof, DATASET["programs"])
         self.assertEqual(sorted(e["id"] for e in excluded),
                          ["active-cash", "blue-cash-preferred"])
         for e in excluded:
-            self.assertIn("does not redeem for any of: flights", e["reason"])
+            self.assertIn("does not redeem for any of: points", e["reason"])
         self.assertEqual(len(eligible), 6)
 
     def test_reward_preference_multi_select_unions(self):
-        prof = make_profile(P30K, reward_preferences=["flights", "cashback"])
+        prof = make_profile(P30K, reward_preferences=["points", "cashback"])
         _, excluded = opt.filter_cards(DATASET["cards"], prof, DATASET["programs"])
         self.assertEqual(excluded, [])
 
     def test_total_value_disables_reward_filter(self):
-        prof = make_profile(P30K, reward_preferences=["flights", "total_value"])
+        prof = make_profile(P30K, reward_preferences=["points", "total_value"])
         _, excluded = opt.filter_cards(DATASET["cards"], prof, DATASET["programs"])
         self.assertEqual(excluded, [])
 
@@ -923,7 +924,7 @@ class TestFiltersAndSearch(unittest.TestCase):
                     "store": {"label": "Store credit", "redeems_for": [],
                               "floor_cpp": 1.0, "optimistic_cpp": 1.0}}
         card = synth_card(currency={"type": "points", "program": "store"})
-        for kind in ("cashback", "flights", "hotels"):
+        for kind in ("cashback", "points"):
             prof = make_profile(P30K, reward_preferences=[kind],
                                 accepts_brand_lockin=True)
             eligible, excluded = opt.filter_cards([card], prof, programs)
@@ -1027,7 +1028,7 @@ class TestProfileValidation(unittest.TestCase):
                              "credit_tier is required")
 
     def test_bad_reward_preferences_rejected(self):
-        for bad in ([], ["cruises"], ["flights", "flights"], "flights"):
+        for bad in ([], ["cruises"], ["flights"], ["points", "points"], "points"):
             self.assert_rejected({"spend": {"groceries": 100},
                                   "user": {"credit_tier": "good",
                                            "reward_preferences": bad}},

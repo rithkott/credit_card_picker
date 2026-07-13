@@ -70,7 +70,7 @@ export function validate(
   }
 
   if (!Object.values(rewardKinds).some(Boolean)) {
-    errors.push({ code: 'E5', message: 'Check at least one reward kind (cash back, flights, hotels).' })
+    errors.push({ code: 'E5', message: 'Check at least one reward kind (cash back or points).' })
   }
 
   const other = spend.categoryCents['other']

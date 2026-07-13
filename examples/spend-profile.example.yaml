@@ -33,7 +33,7 @@ user:
                           # optimistic value only with the brand key. (Issuer travel-portal
                           # use is assumed for every held card — no key needed.) Example:
                           #   confirmed_usage: [doordash, delta, global_entry_tsa]
-  reward_preferences: [total_value]  # any combination of: flights, hotels, cashback,
+  reward_preferences: [total_value]  # any combination of: cashback, points,
                                      # total_value. Concrete kinds keep only cards whose
                                      # currency redeems for one of them (see redeems_for
                                      # in data/meta/point-valuations.yaml); total_value

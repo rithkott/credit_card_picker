@@ -877,6 +877,8 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 .tile-lines .line .note { color: rgba(242, 243, 247, 0.4); }
 .tile-lines .line .pts { color: var(--text-muted); }
 .tile-lines .line.fee { color: rgba(242, 243, 247, 0.5); }
+/* Annual-fee amount reads red — the deduction counterpart to green credits. */
+.tile-lines .line.fee.annual-fee > span:last-child { color: var(--danger); }
 .tile-lines .line.total {
   border-top: 1px solid var(--hairline-strong);
   padding-top: 6px;

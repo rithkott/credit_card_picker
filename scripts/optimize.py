@@ -85,8 +85,29 @@ TIER_ORDER = ["building", "fair", "good", "very_good", "excellent"]
 # Reward kinds a user may ask for (user.reward_preferences / --rewards). Concrete
 # kinds filter candidates by the program-level redeems_for classification in
 # data/meta/point-valuations.yaml; 'total_value' disables the filter entirely.
-REWARD_KINDS = ["cashback", "flights", "hotels"]
+# The user-facing vocabulary is deliberately just two kinds — cashback and
+# points — while the registry's redeems_for taxonomy stays fine-grained
+# (cashback / flights / hotels). 'points' is the umbrella for travel/transferable
+# value: it expands to {flights, hotels} for filtering (see expand_reward_prefs).
+REWARD_KINDS = ["cashback", "points"]
 REWARD_PREF_CHOICES = REWARD_KINDS + ["total_value"]
+
+# redeems_for tokens each user-facing reward kind covers. 'points' spans every
+# travel redemption path (airline + hotel programs both redeem into it).
+REWARD_KIND_REDEEMS = {"cashback": {"cashback"}, "points": {"flights", "hotels"}}
+
+
+def expand_reward_prefs(prefs):
+    """Map user-facing reward_preferences (cashback / points) to the redeems_for
+    tokens used by point-valuations.yaml. Returns None when 'total_value' is
+    present (filter disabled), else the union of covered tokens."""
+    prefs = set(prefs)
+    if "total_value" in prefs:
+        return None
+    tokens = set()
+    for p in prefs:
+        tokens |= REWARD_KIND_REDEEMS.get(p, set())
+    return tokens
 
 # Exhaustive search scores every subset; each score_portfolio call costs
 # ~35-55 µs in pure Python. 2M subsets ≈ one to two minutes — the tolerable
@@ -317,17 +338,17 @@ def validate_user(user: dict, usage_keys: set) -> None:
 def assumed_usage(user: dict, usage_questions: dict) -> list:
     """Usage keys assumed usable without explicit confirmation (derived, never
     a profile input). Brand-loyalty groups in usage-questions.yaml carry
-    assumed_reward_kind (airlines→flights, hotels→hotels): whether the user
-    flies or stays in hotels at all is already declared by reward_preferences,
-    and they're assumed to book whichever brand gives the best value. Assumed
-    keys unlock usage-gated credits at the conservative CREDIT_CAPTURE haircut;
-    only explicit confirmation (brand loyalty) unlocks loyalty-gated optimistic
-    cpp and the softer CONFIRMED_CREDIT_CAPTURE."""
-    prefs = set(user["reward_preferences"])
+    assumed_reward_kind (airlines→flights, hotels→hotels): asking for 'points'
+    (or 'total_value') declares the user takes travel value, and they're assumed
+    to book whichever brand gives the best value. Assumed keys unlock usage-gated
+    credits at the conservative CREDIT_CAPTURE haircut; only explicit
+    confirmation (brand loyalty) unlocks loyalty-gated optimistic cpp and the
+    softer CONFIRMED_CREDIT_CAPTURE."""
+    redeems = expand_reward_prefs(user["reward_preferences"])  # None = total_value
     keys = set()
     for group in usage_questions.values():
         kind = (group or {}).get("assumed_reward_kind")
-        if kind and (kind in prefs or "total_value" in prefs):
+        if kind and (redeems is None or kind in redeems):
             keys.update(group.get("items") or {})
     return sorted(keys)
 
@@ -1115,7 +1136,7 @@ def filter_cards(cards: list, profile: dict, programs: dict) -> tuple:
     (data/meta/point-valuations.yaml) intersects them."""
     user_rank = TIER_ORDER.index(profile["user"]["credit_tier"])
     prefs = set(profile["user"]["reward_preferences"])
-    kind_filter = prefs if "total_value" not in prefs else None
+    kind_filter = expand_reward_prefs(prefs)  # None when total_value; else redeems tokens
     accepts_lockin = profile["user"]["accepts_brand_lockin"]
     eligible, excluded = [], []
     for card in sorted(cards, key=lambda c: c["id"]):
@@ -1132,7 +1153,7 @@ def filter_cards(cards: list, profile: dict, programs: dict) -> tuple:
         elif kind_filter is not None and not (redeems & kind_filter):
             excluded.append({"id": card["id"],
                              "reason": f"currency '{program}' does not redeem for any of: "
-                                       f"{', '.join(sorted(kind_filter))}"})
+                                       f"{', '.join(sorted(prefs))}"})
         else:
             eligible.append(card)
     return eligible, excluded
