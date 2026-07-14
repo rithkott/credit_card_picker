@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { ApiError, evaluateManual, optimize, suggestAddition } from '../api'
 import type { OptimizeBundle } from '../types'
 import { buildProfile } from '../lib/profile'
@@ -38,6 +38,16 @@ export function Home({ cfg, onRetryConfig }: {
   // entered values but returns to step 0 (accepted tradeoff, keeps this simple).
   const [step, setStep] = useState(0)
   const [confirmReset, setConfirmReset] = useState(false)
+  const resultsRef = useRef<HTMLDivElement>(null)
+
+  // Autoscroll to results once any scoring run (Auto / Custom / Add-best) lands
+  // on 'done'. Keyed on run.phase so it fires once per transition; the effect
+  // runs after the commit that mounts ResultsView, so the ref is populated.
+  useEffect(() => {
+    if (run.phase === 'done') {
+      resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [run.phase])
 
   // Seed the option defaults the server declares (single source of truth) — but
   // only for fresh visitors. Returning users have restored values that this
@@ -347,9 +357,13 @@ export function Home({ cfg, onRetryConfig }: {
                 <ChecksPanel errors={errors} />
                 {modeToggle}
                 {runbar}
-                {run.phase === 'done' && <ResultsView bundle={run.bundle} />}
                 {mode === 'manual' && (
                   <ManualGrid selected={selected} onToggle={toggleSelect} />
+                )}
+                {run.phase === 'done' && (
+                  <div ref={resultsRef}>
+                    <ResultsView bundle={run.bundle} />
+                  </div>
                 )}
               </>
             ),
