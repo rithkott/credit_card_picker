@@ -1083,6 +1083,30 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 }
 .manual-grid .issuer-group { margin-bottom: 12px; }
 .manual-grid .issuer-group:last-child { margin-bottom: 0; }
+/* Scroll-driven edge treatment (v2.1): as a block nears either edge of the
+   scroll well it sinks back, flattens (scaleY), and fades out — instead of
+   hard-clipping at the border. Chromium ships view() timelines; browsers
+   without it (Firefox/Safari) fall through to plain overflow clipping, and
+   reduced-motion opts out entirely. The scroller (.manual-grid, overflow-y)
+   is the nearest scrollport, so view(block) measures against it. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .manual-grid { perspective: 900px; }
+    .manual-grid .issuer-group {
+      transform-origin: center;
+      animation: manual-block-sink linear both;
+      animation-timeline: view(block);
+      animation-range: cover 0% cover 100%;
+      will-change: transform, opacity;
+    }
+  }
+}
+@keyframes manual-block-sink {
+  0%   { opacity: 0; transform: translateY(14px) scaleY(0.55) scale(0.92); filter: blur(1.5px); }
+  13%  { opacity: 1; transform: none; filter: none; }
+  87%  { opacity: 1; transform: none; filter: none; }
+  100% { opacity: 0; transform: translateY(-14px) scaleY(0.55) scale(0.92); filter: blur(1.5px); }
+}
 .manual-grid::-webkit-scrollbar { width: 10px; }
 .manual-grid::-webkit-scrollbar-track { background: transparent; }
 .manual-grid::-webkit-scrollbar-thumb {
