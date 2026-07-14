@@ -1,4 +1,4 @@
-# No-annual-fee rotating-5% card: quarterly 5% categories + fixed 3% dining/drugstore + 5% Chase Travel portal, on Ultimate Rewards points.
+# No-annual-fee card: fixed 3% dining/drugstore + 5% Chase Travel portal, on Ultimate Rewards points.
 id: freedom-flex
 name: Chase Freedom Flex
 issuer: chase
@@ -10,20 +10,6 @@ currency:
 base_rate: 1                 # "1% Cash Back: base rate on all purchases"
 
 category_rewards:
-  - category: rotating
-    rate: 5                  # "5% Cash Back total (rotating quarterly categories): up to $1,500 combined spend per quarter, requires quarterly activation"
-    cap:
-      period: quarterly
-      max_spend_usd: 1500
-      fallback_rate: 1       # "falls back to 1% after the $1,500 cap"
-    rotation:
-      frequency: quarterly
-      requires_activation: true
-      note: >-
-        Categories change each quarter (historically gas, groceries, Amazon, PayPal,
-        streaming, etc.) and must be activated by the quarterly deadline; unactivated
-        spend earns 1x. Modeled as a diluted wildcard over the rotating-eligible pool
-        (rotating bonus adjustment: ~1/6 featured-quarter coverage).
   - category: dining
     rate: 3                  # "3% Cash Back total: ... dining at restaurants (incl. takeout/delivery)"
   - category: drugstores
