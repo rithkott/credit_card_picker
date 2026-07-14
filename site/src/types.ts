@@ -51,6 +51,9 @@ export interface CardSummary {
   network: string | null
   availability: 'active' | 'discontinued'
   annual_fee_usd: number
+  /** A mandatory card-exclusive membership (e.g. Robinhood Gold, $50/yr) the
+   * optimizer scores like an annual fee; null when the card has none. */
+  required_membership: { name: string; annual_cost_usd: number } | null
   currency: { type: string; program: string; program_label: string }
   base_rate: number | null
   verification: {
