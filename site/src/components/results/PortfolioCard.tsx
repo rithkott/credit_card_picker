@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import type { BestBySize, OptimizeBundle, PerCard } from '../../types'
 import { formatNumber, formatUsd } from '../../lib/money'
+import { cardSpendDrop, entryDrop } from '../../lib/worstCase'
 
 const SIZE_WORDS = ['', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE']
 
@@ -73,22 +74,29 @@ function fanBox(count: number): CSSProperties {
  * the stacked credit-card renders for the selected portfolio. Every number
  * derives from the bundle's per_card blocks — earnings are assignment
  * usd_values, credits are credit values, fees are annual + membership. */
-export function PortfolioCard({ portfolio, bundle, isBest, stack }: {
+export function PortfolioCard({ portfolio, bundle, isBest, stack, worstCase }: {
   portfolio: BestBySize
   bundle: OptimizeBundle
   isBest: boolean
   stack: string[]
+  worstCase: boolean
 }) {
   const cards = portfolio.cards.map((id) => portfolio.per_card[id]).filter(Boolean)
+  const cppTable = bundle.cpp_table
+  // Worst-case (cash-out) re-prices points at the program floor: earnings and
+  // the net figures each drop by the per-portfolio points-value drop; nothing
+  // else in the receipt moves. See lib/worstCase.
   // Assignment usd_values are pre-clamp; card-wide reward caps subtract from
   // earnings (optimize.py reward_cap_clamps), so the receipt rows sum to net.
   const earnings = cards.reduce(
     (sum, c) => sum + c.assignments.reduce((s, a) => s + a.usd_value, 0)
-      - (c.reward_cap_clamp ?? 0), 0)
+      - (c.reward_cap_clamp ?? 0)
+      - (worstCase ? cardSpendDrop(c, cppTable) : 0), 0)
   const credits = cards.reduce(
     (sum, c) => sum + c.credits.reduce((s, cr) => s + cr.value, 0), 0)
   const fees = cards.reduce((sum, c) => sum + totalFees(c), 0)
-  const bonuses = cards.reduce((sum, c) => sum + c.bonus.value, 0)
+  const bonuses = cards.reduce(
+    (sum, c) => sum + (worstCase ? c.bonus.floor_value : c.bonus.value), 0)
   const spendTotal =
     cards.reduce((sum, c) => sum + c.assignments.reduce((s, a) => s + a.usd_assigned, 0), 0) +
     Object.values(portfolio.unassigned_spend).reduce((s, v) => s + v, 0)
@@ -110,10 +118,14 @@ export function PortfolioCard({ portfolio, bundle, isBest, stack }: {
       : 'after fees and memberships'
 
   const year1 = bundle.optimize_for === 'year1'
-  const netMain = year1 ? portfolio.year1_net : portfolio.ongoing_net
+  // Year-1 net carries the signup bonus (its points drop too); ongoing net does
+  // not, so each horizon's drop includes the bonus only when it's a year-1 net.
+  const mainDrop = worstCase ? entryDrop(portfolio, cppTable, { includeBonus: year1 }) : 0
+  const secondDrop = worstCase ? entryDrop(portfolio, cppTable, { includeBonus: !year1 }) : 0
+  const netMain = (year1 ? portfolio.year1_net : portfolio.ongoing_net) - mainDrop
   // The other horizon gets its own big figure below the headline — a small
   // sentence buried the number people ask about most (year one with bonuses).
-  const netSecond = year1 ? portfolio.ongoing_net : portfolio.year1_net
+  const netSecond = (year1 ? portfolio.ongoing_net : portfolio.year1_net) - secondDrop
   const secondLabel = year1
     ? 'each year after the bonuses'
     : `in year one with the signup bonus${cards.filter((c) => c.bonus.value > 0).length > 1 ? 'es' : ''} included`

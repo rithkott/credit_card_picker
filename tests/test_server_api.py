@@ -252,6 +252,11 @@ class TestServerAPI(unittest.TestCase):
                 self.assertIn(d["currency"]["kind"], ("cash", "points"))
                 self.assertIn("program", d["currency"])
                 self.assertIn("label", d["currency"])
+                # Contract: bonus carries floor_value (worst-case cash-out
+                # valuation of any bonus points) and it never exceeds value
+                # (v1.11.14 worst-case toggle).
+                self.assertIn("floor_value", d["bonus"])
+                self.assertLessEqual(d["bonus"]["floor_value"], d["bonus"]["value"] + 1e-9)
                 # Contract: potential_value (full face of a usage-gated perk the
                 # user hasn't confirmed) appears only on $0 credits and is
                 # display-only — it never rides on an earning credit (v1.6.5).

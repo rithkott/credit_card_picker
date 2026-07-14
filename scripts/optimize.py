@@ -829,11 +829,15 @@ def score_bonus(card: dict, profile: dict, programs: dict, as_of: date,
     earn it."""
     bonus = card["signup_bonus"]
     if bonus is None:
-        return {"value": 0.0, "note": "no signup bonus"}
+        return {"value": 0.0, "note": "no signup bonus", "floor_value": 0.0}
     if "expires" in bonus and date.fromisoformat(bonus["expires"]) < as_of:
-        return {"value": 0.0, "note": f"$0 — offer expired {bonus['expires']}"}
+        return {"value": 0.0, "note": f"$0 — offer expired {bonus['expires']}",
+                "floor_value": 0.0}
     if bonus.get("first_year_match"):
-        return {"value": card_earnings,
+        # Match is valued as this card's own computed earnings (already at the
+        # card's effective cpp); the worst-case earnings drop is applied to the
+        # per-assignment values, so the match tracks them — no separate floor.
+        return {"value": card_earnings, "floor_value": card_earnings,
                 "note": f"first-year match of this card's computed earnings (${card_earnings:,.2f})"}
     # Spend-requirement feasibility measures the spend actually routed onto this
     # card (card_spend from the finalized assignments) — a bonus counts only if
@@ -841,31 +845,41 @@ def score_bonus(card: dict, profile: dict, programs: dict, as_of: date,
     window_spend = card_spend * bonus["window_months"] / 12.0
     if window_spend < bonus["spend_requirement_usd"] - EPS:
         return {"value": 0.0, "note": "$0 — spend requirement unreachable "
-                                       "by the spend routed onto this card"}
+                                       "by the spend routed onto this card",
+                "floor_value": 0.0}
     cpp, _ = effective_cpp(card, programs,
                            set(profile["user"]["confirmed_usage"]), unlocked,
                            cashback_only=is_cashback_only(profile))
+    # Worst-case (cash-out) valuation of bonus points: the program's floor_cpp.
+    # For cash bonuses (usd only) and fixed-value programs (floor == effective)
+    # this equals the normal value, so floor_value never exceeds value.
+    floor_cpp = programs.get(card["currency"]["program"], {}).get("floor_cpp", cpp)
 
     def usd_of(value):
-        parts, worth = [], 0.0
+        """(worth at effective cpp, worth at floor cpp, human note). The floor
+        worth re-prices only the points portion; usd portions are unchanged."""
+        parts, worth, floor_worth = [], 0.0, 0.0
         if "points" in value:
             worth += value["points"] * cpp / 100.0
+            floor_worth += value["points"] * floor_cpp / 100.0
             parts.append(f"{value['points']:,.0f} points × {cpp}cpp")
         if "usd" in value:
             worth += float(value["usd"])
+            floor_worth += float(value["usd"])
             parts.append(f"${value['usd']:,.0f} cash")
-        return worth, " + ".join(parts)
+        return worth, floor_worth, " + ".join(parts)
 
-    total, note = usd_of(bonus["value"])
+    total, floor_total, note = usd_of(bonus["value"])
     tiers = bonus.get("tiers", [])
     reached = [t for t in tiers if window_spend >= t["spend_requirement_usd"] - EPS]
     for tier in reached:
-        worth, desc = usd_of(tier["value"])
+        worth, floor_worth, desc = usd_of(tier["value"])
         total += worth
+        floor_total += floor_worth
         note += f"; +tier at ${tier['spend_requirement_usd']:,.0f} spend ({desc})"
     if len(reached) < len(tiers):
         note += f"; {len(tiers) - len(reached)} tier(s) unreachable at your volume"
-    return {"value": total, "note": note}
+    return {"value": total, "note": note, "floor_value": floor_total}
 
 
 def membership_fee(card: dict) -> float:
@@ -1432,7 +1446,11 @@ def assemble_portfolio(entry: dict, by_id: dict, profile: dict, programs: dict,
                     if "potential_value" in c else {})}
                 for c in scored["credits"] if c["card_id"] == cid],
             "bonus": {"value": _round2(scored["bonuses"][cid]["value"]),
-                      "note": scored["bonuses"][cid]["note"]},
+                      "note": scored["bonuses"][cid]["note"],
+                      # Worst-case (cash-out) valuation of any bonus points; the
+                      # UI subtracts (value − floor_value) when the worst-case
+                      # toggle is on. Equals value for cash/fixed-value bonuses.
+                      "floor_value": _round2(scored["bonuses"][cid]["floor_value"])},
             "fees": {"annual_fee_usd": card["fees"]["annual_fee_usd"],
                      "first_year_waived": bool(card["fees"].get("first_year_waived"))},
             "warnings": card_warnings(card, as_of),

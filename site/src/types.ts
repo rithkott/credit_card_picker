@@ -121,7 +121,10 @@ export interface PerCard {
   currency: { kind: 'cash' | 'points'; program: string; label: string }
   assignments: Assignment[]
   credits: CreditLine[]
-  bonus: { value: number; note: string }
+  /** value = signup bonus at the effective (avg) cpp; floor_value = the same
+   * bonus with any points re-priced at the program's cash-out floor_cpp. The
+   * worst-case toggle subtracts (value − floor_value). Equal for cash bonuses. */
+  bonus: { value: number; note: string; floor_value: number }
   fees: {
     annual_fee_usd: number
     first_year_waived: boolean
