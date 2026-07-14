@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import { getConfig } from './api'
 import type { Config } from './types'
 import { AuroraBackground } from './components/AuroraBackground'
@@ -129,6 +130,7 @@ export default function App() {
   return (
     <Router>
       <Shell />
+      <Analytics />
     </Router>
   )
 }
