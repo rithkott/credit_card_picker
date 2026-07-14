@@ -147,6 +147,7 @@ def cards() -> dict:
             "name": card["name"],
             "issuer": card["issuer"],
             "network": card.get("network"),
+            "availability": card.get("availability", "active"),
             "annual_fee_usd": card["fees"]["annual_fee_usd"],
             "currency": {
                 "type": cur["type"],

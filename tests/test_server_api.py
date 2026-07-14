@@ -114,6 +114,7 @@ class TestServerAPI(unittest.TestCase):
             self.assertEqual(row["name"], src["name"])
             self.assertEqual(row["issuer"], src["issuer"])
             self.assertEqual(row["annual_fee_usd"], src["fees"]["annual_fee_usd"])
+            self.assertEqual(row["availability"], src.get("availability", "active"))
             self.assertEqual(row["currency"]["program"], src["currency"]["program"])
             self.assertEqual(
                 row["currency"]["program_label"],

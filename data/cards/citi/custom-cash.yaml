@@ -1,0 +1,75 @@
+# Auto-top-category 5% card (5X ThankYou pts on your top eligible spend category, first $500/cycle). DISCONTINUED — Custom-mode only.
+id: custom-cash
+name: Citi Custom Cash
+issuer: citi
+network: mastercard           # not stated in a fetched source; Citi Custom Cash is a Mastercard — inferred. NEEDS human verification.
+availability: discontinued     # closed to new applicants — excluded from Auto recommendations, still scorable in Custom mode for existing holders
+currency:
+  type: points
+  program: citi_typ
+base_rate: 1                  # "1% cash back on all other purchases" = 1 ThankYou point per $1
+
+category_rewards:
+  - category: choice
+    rate: 5                   # "5% cash back (5 ThankYou points/$1) on purchases in your top eligible spend category each billing cycle, on up to $500 spent"
+    choice:
+      options: [dining, gas, groceries, travel_other, transit, streaming, drugstores, entertainment]
+      note: >-
+        Citi AUTOMATICALLY applies the 5X to whichever eligible category the cardholder spends the
+        most in each billing cycle — there is no manual selection and no activation. Modeled with the
+        'choice' pseudo-category (the optimizer picks the best-fit option per portfolio), which mirrors
+        the automatic top-category behavior. Issuer's eligible list: restaurants→dining, gas
+        stations→gas, grocery stores→groceries, select travel→travel_other, select transit→transit,
+        select streaming→streaming, drugstores→drugstores, live entertainment→entertainment.
+        REGISTRY GAP: "home improvement stores" and "fitness clubs" have no registry keys and are
+        omitted from options.
+    cap:
+      period: monthly          # per billing cycle ≈ monthly
+      max_spend_usd: 500       # "on up to $500 spent per billing cycle"
+      fallback_rate: 1         # spend above $500/cycle in the top category earns the 1% base
+    notes: >-
+      The 5X applies to the first $500 of top-category spend each billing cycle; above that, 1%.
+      Only ONE category earns 5X per cycle (the highest-spend eligible one), which the choice
+      expansion models by selecting a single option per portfolio.
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus: null           # No current bonus modeled — card is discontinued (closed to new applicants), so any historical welcome offer no longer applies
+
+fees:
+  annual_fee_usd: 0           # Citi Custom Cash carried no annual fee
+  foreign_transaction_pct: 3  # Citi consumer cards without an FTX waiver charge 3% — inferred, not fetched. NEEDS human verification.
+
+approval:
+  credit_tier: good
+  notes: >-
+    credit_tier estimated from the card's mainstream no-annual-fee positioning; not fetched from an
+    issuer source. Card is DISCONTINUED (closed to new applicants) — approval is moot for new
+    accounts; the tier is retained only for Custom-mode scoring parity. NEEDS human verification.
+
+benefit_flags: []
+
+sources:
+  - url: https://www.citi.com/credit-cards/citi-custom-cash-credit-card
+    supports: [identity, currency, base_rate, category_rewards, fees, approval]
+    accessed: "2026-07-14"
+    added_by: claude-opus-4-8
+    note: >-
+      Canonical Citi product-page URL; NOT fetched this session — all figures drafted from prior
+      knowledge of the card, unconfirmed. NEEDS human verification.
+
+notes: >-
+  Drafted offline from memory of the Citi Custom Cash card at the user's request; no issuer source
+  was fetched, so all figures are unconfirmed. Added as availability: discontinued — the card is
+  closed to new applicants, so it is EXCLUDED from Auto-mode recommendations (filter_cards) and only
+  appears/scores when hand-picked in Custom (Manual) mode, for people who already hold it. Earns
+  ThankYou points (citi_typ), cash-redeemable at 10,000 pts = $100 (1cpp). The 5X is automatic on the
+  single highest-spend eligible category each billing cycle (first $500), modeled via the 'choice'
+  pseudo-category. network (mastercard) and foreign_transaction_pct (3%) are inferred, not fetched.
+
+verification:
+  last_verified_date: "2026-07-14"
+  verified_by: "claude-opus-4-8 (AI draft) — NEEDS human verification"
+  confidence: low

@@ -58,7 +58,12 @@ export function ManualGrid({ selected, onToggle }: {
                   onClick={() => onToggle(c.id)}
                 >
                   <span className="check" aria-hidden="true">{isSel ? '✓' : ''}</span>
-                  <h3>{c.name}</h3>
+                  <h3>
+                    {c.name}
+                    {c.availability === 'discontinued' && (
+                      <span className="badge-discontinued" title="No longer open to new applicants — pick it here only if you already hold it.">Discontinued</span>
+                    )}
+                  </h3>
                   <div className="role">
                     {c.annual_fee_usd > 0
                       ? <><span className="fee-amount">${formatNumber(c.annual_fee_usd)}</span> annual fee</>

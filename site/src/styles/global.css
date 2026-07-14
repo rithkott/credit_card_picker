@@ -872,6 +872,20 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   color: #0b1020;
 }
 .card-tile.selectable h3 { padding-right: 28px; }
+.badge-discontinued {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  color: var(--muted);
+  background: var(--surface-2, rgba(128, 128, 128, 0.14));
+  border: 1px solid var(--hairline-strong);
+}
 .manual-grid .issuer-group h2 { margin: 0 0 4px; font-size: 15px; }
 
 /* Auto / Manual mode toggle */

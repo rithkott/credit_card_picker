@@ -144,6 +144,8 @@ pre#yaml .k{color:var(--code-key)} pre#yaml .s{color:var(--code-str)} pre#yaml .
       <input type="text" id="issuer" class="mono" placeholder="amex"></div>
     <div class="field"><label for="network">network <span class="req">*</span></label>
       <select id="network"><option value="visa">visa</option><option value="mastercard">mastercard</option><option value="amex">amex</option><option value="discover">discover</option></select></div>
+    <div class="field"><label for="availability">availability <span class="hint">discontinued = closed to new applicants; hidden from Auto, still pickable in Custom mode</span></label>
+      <select id="availability"><option value="active">active</option><option value="discontinued">discontinued</option></select></div>
     <div class="field"><label for="portal">issuer travel portal <span class="hint">required iff any reward is portal-only; which portal those rates book through</span></label>
       <select id="portal"></select></div>
     <label class="check"><input type="checkbox" id="unlockstransfers"> transfer gateway — holding this card unlocks the program's transfer partners for the whole portfolio (Sapphire, Strata Premier/Elite, Autograph Journey). Only on transfer_gateway_required programs</label>
@@ -591,6 +593,7 @@ function build(){
   L.push(`name: ${name?ystr(name):"?"}`);
   L.push(`issuer: ${issuer||"?"}`);
   L.push(`network: ${val("network")}`);
+  if (val("availability")==="discontinued") L.push(`availability: discontinued   # closed to new applicants — excluded from Auto, Custom-mode only`);
   if (val("portal")) L.push(`portal: ${val("portal")}    # portal_only rates book through this portal`);
   if ($("#unlockstransfers").checked){
     if (!GATEWAY_PROGRAMS.includes(program)) errs.push(`unlocks_transfers is only meaningful on transfer_gateway_required programs (${GATEWAY_PROGRAMS.join(", ")}) — '${program}' either transfers natively or never`);

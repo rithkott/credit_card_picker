@@ -49,6 +49,7 @@ export interface CardSummary {
   name: string
   issuer: string
   network: string | null
+  availability: 'active' | 'discontinued'
   annual_fee_usd: number
   currency: { type: string; program: string; program_label: string }
   base_rate: number | null
