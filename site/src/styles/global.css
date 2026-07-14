@@ -181,6 +181,13 @@ section.block > .why {
   font-size: 13.5px; color: var(--ink-2);
   max-width: 60ch; line-height: 1.55;
 }
+/* Highlighted call-out inside a .why paragraph — bigger, bolder, accent-tinted
+ * so the "skip this if…" escape hatch reads at a glance. */
+.why-emph {
+  font-weight: 700;
+  font-size: 1.12em;
+  color: var(--accent);
+}
 /* A mono eyebrow tag, when a block wants an "01 · SECTION" kicker. */
 section.block > .eyebrow-tag,
 .eyebrow-tag {

@@ -26,7 +26,7 @@ function defaultUser(): UserState {
     credit_tier: 'excellent',
     optimize_for: 'ongoing',
     accepts_brand_lockin: false,
-    rewardKinds: { cashback: true, points: true },
+    rewardKinds: { cashback: false, points: false },
     confirmed_usage: new Set(),
   }
 }

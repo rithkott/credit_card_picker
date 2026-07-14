@@ -24,7 +24,8 @@ export function BrandLoyalty({ config, confirmed, onToggle }: {
         Since you'd book whichever airline or hotel gives the best value, their perks
         already count when flights or hotels are among your priorities above. Loyalty to
         a specific brand does more: its points are valued at their higher loyalty rate,
-        and its credits count at full capture. Skip this if you just chase the best deal.
+        and its credits count at full capture.{' '}
+        <strong className="why-emph">Skip this if you just chase the best deal.</strong>
       </p>
       <div className="ug-grid">
         {groups.map((group) => (
