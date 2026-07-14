@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { Analytics } from '@vercel/analytics/react'
 import { getConfig } from './api'
 import type { Config } from './types'
-import { AuroraBackground } from './components/AuroraBackground'
 import { Link, Router, usePath } from './lib/router'
 import { Home } from './pages/Home'
 import { HowItWorks } from './pages/HowItWorks'
@@ -63,7 +62,6 @@ function Shell() {
 
   return (
     <>
-      <AuroraBackground />
       <div className="page">
         <div className="nav-wrap">
           <div className="nav-pill">

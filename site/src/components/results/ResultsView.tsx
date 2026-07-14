@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import type { PointerEvent as ReactPointerEvent, KeyboardEvent as ReactKeyboardEvent } from 'react'
 import type { BestBySize, OptimizeBundle } from '../../types'
 import { formatNumber } from '../../lib/money'
 import { entryDrop, hasWorstCaseGap } from '../../lib/worstCase'
@@ -41,6 +42,7 @@ export function ResultsView({ bundle }: { bundle: OptimizeBundle }) {
   // — the shown sizes and their order are chosen on the true (avg) metric; only
   // the displayed dollars drop. Offered only when a points card actually moves.
   const [worstCase, setWorstCase] = useState(false)
+  const trackRef = useRef<HTMLDivElement>(null)
   const canWorstCase = hasWorstCaseGap(shown.map((s) => s.entry), bundle.cpp_table)
   const worst = worstCase && canWorstCase
   const netOf = (entry: BestBySize): number =>
@@ -78,6 +80,39 @@ export function ResultsView({ bundle }: { bundle: OptimizeBundle }) {
   const bestNet = Math.max(netOf(best.entry), 1)
   const perYear = bundle.optimize_for === 'ongoing' ? '/yr' : ' yr 1'
 
+  // Portfolio-size control panel: an inset slider (and a decorative rotary knob
+  // that mirrors it) that sets `selectedSize` — the same selection the ladder
+  // rows drive. Shown only when more than one size made the cut.
+  const selIdx = shown.findIndex((s) => s === selected)
+  const lastIdx = shown.length - 1
+  const selPct = lastIdx > 0 ? (selIdx / lastIdx) * 100 : 0
+  const knobAngle = -50 + selPct
+  const pickFromClientX = (clientX: number) => {
+    const el = trackRef.current
+    if (!el || lastIdx < 1) return
+    const r = el.getBoundingClientRect()
+    const t = Math.max(0, Math.min(1, (clientX - r.left) / r.width))
+    setSelectedSize(shown[Math.round(t * lastIdx)].entry.size)
+  }
+  const onSliderDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId)
+    pickFromClientX(e.clientX)
+  }
+  const onSliderMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (e.buttons !== 1) return
+    pickFromClientX(e.clientX)
+  }
+  const onSliderKey = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    let next = selIdx
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') next = Math.min(lastIdx, selIdx + 1)
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') next = Math.max(0, selIdx - 1)
+    else if (e.key === 'Home') next = 0
+    else if (e.key === 'End') next = lastIdx
+    else return
+    e.preventDefault()
+    setSelectedSize(shown[next].entry.size)
+  }
+
   return (
     <div>
       <RunHeader bundle={bundle} />
@@ -97,6 +132,49 @@ export function ResultsView({ bundle }: { bundle: OptimizeBundle }) {
           </span>
         </label>
       )}
+      {shown.length > 1 && (
+        <div className="control-panel">
+          <span className="screw tl" aria-hidden="true" />
+          <span className="screw tr" aria-hidden="true" />
+          <span className="screw bl" aria-hidden="true" />
+          <span className="screw br" aria-hidden="true" />
+          <div className="cp-slider-wrap">
+            <div className="cp-eyebrow">
+              PORTFOLIO SIZE · {selected.entry.size} CARD{selected.entry.size > 1 ? 'S' : ''}
+            </div>
+            <div
+              ref={trackRef}
+              className="cp-slider"
+              role="slider"
+              tabIndex={0}
+              aria-label="Portfolio size"
+              aria-valuemin={shown[0].entry.size}
+              aria-valuemax={shown[lastIdx].entry.size}
+              aria-valuenow={selected.entry.size}
+              aria-valuetext={`${selected.entry.size} card${selected.entry.size > 1 ? 's' : ''}`}
+              onPointerDown={onSliderDown}
+              onPointerMove={onSliderMove}
+              onKeyDown={onSliderKey}
+            >
+              <div className="cp-fill" style={{ width: `${selPct}%` }} />
+              <div className="cp-handle" style={{ left: `${selPct}%` }} />
+            </div>
+            <div className="cp-ticks">
+              {shown.map((s) => (
+                <span key={s.entry.size}>
+                  {s.entry.size} card{s.entry.size > 1 ? 's' : ''}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="cp-knob-wrap" aria-hidden="true">
+            <div className="cp-knob" title="Follows the portfolio-size slider">
+              <div className="cp-knob-face" style={{ transform: `rotate(${knobAngle}deg)` }} />
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="ladder">
         {shown.map((s, i) => {
           const isBest = s === best
@@ -145,7 +223,6 @@ export function ResultsView({ bundle }: { bundle: OptimizeBundle }) {
         portfolio={selected.entry}
         bundle={bundle}
         isBest={selected === best}
-        stack={stack}
         worstCase={worst}
       />
 
