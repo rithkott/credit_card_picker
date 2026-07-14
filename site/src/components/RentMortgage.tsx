@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { MoneyInput } from './CategoryRow'
 import { otherUnitAnnotation } from '../lib/money'
 import { SectionIcon } from './SectionIcon'
@@ -15,8 +14,6 @@ export function RentMortgage({ cents, onChange }: {
   cents: number | null
   onChange: (cents: number | null) => void
 }) {
-  const hasHousing = cents !== null && !Number.isNaN(cents) && cents > 0
-  const [pays, setPays] = useState(hasHousing)
   // Rent is always entered monthly — the single most natural unit for housing.
   // No unit toggle here (unlike the general spending grid).
   const unit = 'monthly' as const
@@ -34,27 +31,12 @@ export function RentMortgage({ cents, onChange }: {
           </p>
         </div>
       </div>
-      <div className="chips lg" style={{ marginTop: 6 }}>
-        <label className="chip">
-          <input
-            type="checkbox"
-            checked={pays}
-            onChange={(e) => {
-              setPays(e.target.checked)
-              if (!e.target.checked) onChange(null)
-            }}
-          />
-          I pay rent or a mortgage
-        </label>
+      <div className="cat-row" style={{ marginTop: 14 }}>
+        <label htmlFor="cat-housing">How much per month?</label>
+        <MoneyInput id="cat-housing" cents={cents} unit={unit} onChange={onChange} />
+        <span className="annot">{otherUnitAnnotation(cents, unit)}</span>
+        <span className="spacer" />
       </div>
-      {pays && (
-        <div className="cat-row" style={{ marginTop: 14 }}>
-          <label htmlFor="cat-housing">How much per month?</label>
-          <MoneyInput id="cat-housing" cents={cents} unit={unit} onChange={onChange} />
-          <span className="annot">{otherUnitAnnotation(cents, unit)}</span>
-          <span className="spacer" />
-        </div>
-      )}
     </section>
   )
 }
