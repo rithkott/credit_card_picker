@@ -51,7 +51,13 @@ function userFacing(warnings: string[]): string[] {
 
 /** Per-card tile (design handoff v2): name, role, the money line items, and
  * an "Adds each year" total — with the existing full AssignmentsTable and
- * credits/bonus detail one disclosure away for power users. */
+ * credits/bonus detail one disclosure away for power users.
+ *
+ * Layout: every tile renders the SAME fixed sequence of section slots, empty
+ * where a card has no such section. Combined with the CSS subgrid on
+ * `.tile-grid`, that makes each band (earn table, credits, annual fee, adds,
+ * bonus, max value…) line up horizontally across every card in the row —
+ * shorter sections get whitespace so the next band still aligns. */
 export function CardDetail({ id, card, cppTable, worstCase }: {
   id: string
   card: PerCard
@@ -104,57 +110,88 @@ export function CardDetail({ id, card, cppTable, worstCase }: {
     ? Math.round((earn + credits) / card.fees.annual_fee_usd)
     : null
 
+  const hasMembership = card.fees.membership_fee_usd !== undefined
+  // Coverage/pairing/warning note — at most a pairing line plus one of
+  // warn/coverage/credits, both living in the single note band.
+  const feeNote = warnText
+    ? <div className="tile-note warn">⚠ {warnText}</div>
+    : coverage !== null && coverage >= 2
+      ? (
+        <div className="tile-note">
+          The {formatUsd(card.fees.annual_fee_usd).replace('.00', '')} fee is covered ~{coverage}×
+          by what this card earns for you.
+        </div>
+      )
+      : credits > 0
+        ? (
+          <div className="tile-note">
+            Credit values are discounted to what you'll realistically capture, not face value.
+          </div>
+        )
+        : null
+  const hasNote = Boolean(card.pairing_note) || Boolean(feeNote)
+
   return (
     <div className="card-tile">
-      <h3>{card.name}</h3>
-      <div className="role">
-        {card.choice_category
-          ? `Choice category: ${pretty(card.choice_category)}`
-          : roleSubtitle(card)}
+      {/* 1 · header */}
+      <div className="tile-slot slot-header">
+        <h3>{card.name}</h3>
+        <div className="role">
+          {card.choice_category
+            ? `Choice category: ${pretty(card.choice_category)}`
+            : roleSubtitle(card)}
+        </div>
+        {card.points_gateway_caveat && (
+          <div className="gateway-caveat">🔑 {card.points_gateway_caveat}</div>
+        )}
       </div>
-      {card.points_gateway_caveat && (
-        <div className="gateway-caveat">🔑 {card.points_gateway_caveat}</div>
-      )}
-      {shownAssignments.length > 0 && (
-        <table className="earn-table">
-          {isPoints && (
-            <caption>
-              points valued at{' '}
-              {useWorst
-                ? `${floorCpp}¢ each (cash-out floor)`
-                : `${[...new Set(shownAssignments.map((a) => a.cpp))].join(' / ')}¢ each`}
-            </caption>
-          )}
-          <thead>
-            <tr>
-              <th>Earns</th>
-              <th className="num">Spend</th>
-              {isPoints && <th className="num">Points</th>}
-              <th className="num">Value/yr</th>
-            </tr>
-          </thead>
-          <tbody>
-            {shownAssignments.map((a, i) => {
-              const frac = fractionLabel(a)
-              return (
-              <tr key={`a-${a.bucket}-${i}`}>
-                <td>
-                  {isPoints ? `${a.rate}x` : `${a.rate}%`}
-                  {frac && <span className="frac"> × {frac}</span>} {pretty(a.bucket)}
-                  {a.note && <span className="note">{a.note}</span>}
-                </td>
-                <td className="num">{formatUsd(fullSpend(a)).replace('.00', '')}</td>
-                {isPoints && (
-                  <td className="num">{formatNumber(Math.round(a.usd_assigned * a.rate))}</td>
-                )}
-                <td className="num val">{formatUsd(rowValue(a))}</td>
+
+      {/* 2 · earn table */}
+      {shownAssignments.length > 0 ? (
+        <div className="tile-slot slot-earn">
+          <table className="earn-table">
+            {isPoints && (
+              <caption>
+                points valued at{' '}
+                {useWorst
+                  ? `${floorCpp}¢ each (cash-out floor)`
+                  : `${[...new Set(shownAssignments.map((a) => a.cpp))].join(' / ')}¢ each`}
+              </caption>
+            )}
+            <thead>
+              <tr>
+                <th>Earns</th>
+                <th className="num">Spend</th>
+                {isPoints && <th className="num">Points</th>}
+                <th className="num">Value/yr</th>
               </tr>
-            )})}
-          </tbody>
-        </table>
-      )}
-      {shownCredits.length > 0 && (
-        <div className="tile-lines tile-credits">
+            </thead>
+            <tbody>
+              {shownAssignments.map((a, i) => {
+                const frac = fractionLabel(a)
+                return (
+                  <tr key={`a-${a.bucket}-${i}`}>
+                    <td>
+                      {isPoints ? `${a.rate}x` : `${a.rate}%`}
+                      {frac && <span className="frac"> × {frac}</span>} {pretty(a.bucket)}
+                      {a.note && <span className="note">{a.note}</span>}
+                    </td>
+                    <td className="num">{formatUsd(fullSpend(a)).replace('.00', '')}</td>
+                    {isPoints && (
+                      <td className="num">{formatNumber(Math.round(a.usd_assigned * a.rate))}</td>
+                    )}
+                    <td className="num val">{formatUsd(rowValue(a))}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      ) : <div className="tile-slot" />}
+
+      {/* 3 · credits */}
+      {shownCredits.length > 0 ? (
+        <div className="tile-slot tile-lines tile-credits">
           <div className="sublabel">Credits</div>
           {shownCredits.map((c, i) => (
             <div className="line" key={`c-${c.name}-${i}`}>
@@ -166,15 +203,21 @@ export function CardDetail({ id, card, cppTable, worstCase }: {
             </div>
           ))}
         </div>
-      )}
-      <div className="tile-lines tile-costs">
-        {card.fees.membership_fee_usd !== undefined && (
+      ) : <div className="tile-slot" />}
+
+      {/* 4 · required membership (optional) */}
+      {hasMembership ? (
+        <div className="tile-slot tile-lines slot-cost slot-cost-first">
           <div className="line fee">
             <span>{card.fees.membership_name ?? 'Required'} membership</span>
             <i className="lead" aria-hidden="true" />
-            <span>− {formatUsd(card.fees.membership_fee_usd)}</span>
+            <span>− {formatUsd(card.fees.membership_fee_usd as number)}</span>
           </div>
-        )}
+        </div>
+      ) : <div className="tile-slot" />}
+
+      {/* 5 · annual fee (always) */}
+      <div className={`tile-slot tile-lines slot-cost${hasMembership ? '' : ' slot-cost-first'}`}>
         <div className={`line fee${card.fees.annual_fee_usd > 0 ? ' annual-fee' : ''}`}>
           <span>
             Annual fee
@@ -185,33 +228,38 @@ export function CardDetail({ id, card, cppTable, worstCase }: {
             {card.fees.annual_fee_usd > 0 ? `− ${formatUsd(card.fees.annual_fee_usd)}` : '$0'}
           </span>
         </div>
-        {card.reward_cap_clamp !== undefined && (
+      </div>
+
+      {/* 6 · card-wide reward cap (optional) */}
+      {card.reward_cap_clamp !== undefined ? (
+        <div className="tile-slot tile-lines slot-cost">
           <div className="line fee">
             <span>Card-wide reward cap</span>
             <i className="lead" aria-hidden="true" />
             <span>− {formatUsd(card.reward_cap_clamp)}</span>
           </div>
-        )}
+        </div>
+      ) : <div className="tile-slot" />}
+
+      {/* 7 · adds each year (always) */}
+      <div className="tile-slot tile-lines slot-adds">
         <div className={`line total adds-year${adds < 0 ? ' neg' : ''}`}>
           <span>Adds each year</span>
           <span>{formatUsd(adds)}</span>
         </div>
       </div>
-      {card.pairing_note && <div className="tile-note">✓ {card.pairing_note}</div>}
-      {warnText ? (
-        <div className="tile-note warn">⚠ {warnText}</div>
-      ) : coverage !== null && coverage >= 2 ? (
-        <div className="tile-note">
-          The {formatUsd(card.fees.annual_fee_usd).replace('.00', '')} fee is covered ~{coverage}×
-          by what this card earns for you.
+
+      {/* 8 · note (optional) */}
+      {hasNote ? (
+        <div className="tile-slot slot-note">
+          {card.pairing_note && <div className="tile-note">✓ {card.pairing_note}</div>}
+          {feeNote}
         </div>
-      ) : credits > 0 ? (
-        <div className="tile-note">
-          Credit values are discounted to what you'll realistically capture, not face value.
-        </div>
-      ) : null}
-      {bonusValue > 0 && (
-        <div className="tile-lines tile-perks tile-bonus">
+      ) : <div className="tile-slot" />}
+
+      {/* 9 · signup bonus (optional) */}
+      {bonusValue > 0 ? (
+        <div className="tile-slot tile-lines tile-perks tile-bonus">
           <div className="sublabel">
             Signup bonus <span className="note">first year only, not in the yearly total</span>
           </div>
@@ -221,9 +269,11 @@ export function CardDetail({ id, card, cppTable, worstCase }: {
             <span>{formatUsd(bonusValue)}</span>
           </div>
         </div>
-      )}
-      {unusedPerks.length > 0 && (
-        <div className="tile-lines tile-perks">
+      ) : <div className="tile-slot" />}
+
+      {/* 10 · perks you'd get anyway (optional) */}
+      {unusedPerks.length > 0 ? (
+        <div className="tile-slot tile-lines tile-perks">
           <div className="sublabel">
             Perks you'd get anyway <span className="note">not counted above</span>
           </div>
@@ -235,16 +285,20 @@ export function CardDetail({ id, card, cppTable, worstCase }: {
             </div>
           ))}
         </div>
-      )}
-      {showMaxValue && (
-        <div className="tile-lines tile-maxvalue">
+      ) : <div className="tile-slot" />}
+
+      {/* 11 · max value (optional) */}
+      {showMaxValue ? (
+        <div className="tile-slot tile-lines tile-maxvalue">
           <div className={`line total max-value${maxValue < 0 ? ' neg' : ''}`}>
             <span>Max value</span>
             <span>{formatUsd(maxValue)}</span>
           </div>
         </div>
-      )}
-      <details className="full-detail">
+      ) : <div className="tile-slot" />}
+
+      {/* 12 · full detail (always) */}
+      <details className="tile-slot full-detail">
         <summary>full detail</summary>
         <AssignmentsTable
           assignments={card.assignments}

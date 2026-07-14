@@ -907,7 +907,12 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   margin-top: 14px;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
+  /* 12 fixed section bands (header, earn, credits, membership, fee, cap,
+     adds, note, bonus, perks, max-value, detail) — every tile subgrids onto
+     these so each band lines up horizontally across the row. */
+  grid-template-rows: repeat(12, auto);
+  column-gap: 12px;
+  row-gap: 0;
   align-items: stretch;
 }
 .card-tile {
@@ -917,6 +922,25 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   padding: 18px;
   box-shadow: var(--raised);
 }
+/* Results tiles share the parent's 12 row tracks; a card spans all of them and
+   places each section slot into its band. Empty slots collapse, so a shorter
+   card just gets whitespace and the next band stays aligned with its neighbours. */
+.tile-grid > .card-tile {
+  display: grid;
+  grid-row: 1 / -1;
+  grid-template-rows: subgrid;
+  row-gap: 0;
+}
+.tile-slot { min-width: 0; }
+/* Cost lines sit tight as a group; the first one carries the group divider. */
+.tile-grid > .card-tile .slot-cost { margin-top: 4px; }
+.tile-grid > .card-tile .slot-cost-first {
+  margin-top: 12px;
+  border-top: 1px solid var(--divider-soft);
+  padding-top: 8px;
+}
+.tile-grid > .card-tile .slot-adds { margin-top: 4px; }
+.tile-grid > .card-tile .slot-note { margin-top: 12px; }
 .card-tile h3 { margin: 0; font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.2; }
 .card-tile .role { font: 11px var(--mono); color: var(--faint); margin-top: 4px; }
 .card-tile .role .fee-amount { color: var(--neg); font-weight: 700; }
