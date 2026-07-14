@@ -46,6 +46,36 @@ export function otherUnitAnnotation(cents: number | null, unit: Unit): string {
     : `≈ $${formatNumber(Math.round(cents / 1200))} /mo`
 }
 
+/** main + each positive extra (a "+"-added sub-amount for the same topic). NaN
+ * and null and 0 contribute nothing to the sum. Returns `main` untouched when
+ * nothing positive is present, so null stays null and a garbage NaN main is
+ * still surfaced by validation E2 / rendered as empty. */
+export function sumAmount(main: number | null, extras: (number | null)[]): number | null {
+  let sum = 0
+  let any = false
+  for (const c of [main, ...extras]) {
+    if (c !== null && !Number.isNaN(c) && c > 0) {
+      sum += c
+      any = true
+    }
+  }
+  return any ? sum : main
+}
+
+/** Fold each key's main amount together with its extra sub-amounts into one
+ * per-key total, the value the optimizer actually sees. Keys present only in
+ * `extras` are included. */
+export function foldCents(
+  main: Record<string, number | null>,
+  extras: Record<string, (number | null)[]>,
+): Record<string, number | null> {
+  const out: Record<string, number | null> = {}
+  for (const k of new Set([...Object.keys(main), ...Object.keys(extras)])) {
+    out[k] = sumAmount(main[k] ?? null, extras[k] ?? [])
+  }
+  return out
+}
+
 /** Annual cents -> the number sent in the profile: integer when whole,
  * two decimals otherwise (8000, not 8000.0; 641.67, never 641.6700000001). */
 export function centsToDollars(cents: number): number {

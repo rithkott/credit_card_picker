@@ -1,5 +1,5 @@
-import { MoneyInput } from './CategoryRow'
-import { otherUnitAnnotation } from '../lib/money'
+import { MoneyInputGroup } from './CategoryRow'
+import { otherUnitAnnotation, sumAmount } from '../lib/money'
 import { SectionIcon } from './SectionIcon'
 
 /** Rent / mortgage lives in its own block, not the general spending grid,
@@ -10,13 +10,16 @@ import { SectionIcon } from './SectionIcon'
  * high-rent household is exactly who a Bilt card can win as a standalone
  * pick. The amount still lands in spend.categoryCents.housing, so the rest of
  * the profile machinery is unchanged. */
-export function RentMortgage({ cents, onChange }: {
+export function RentMortgage({ cents, extras, onChange, onExtrasChange }: {
   cents: number | null
+  extras: (number | null)[]
   onChange: (cents: number | null) => void
+  onExtrasChange: (extras: (number | null)[]) => void
 }) {
   // Rent is always entered monthly — the single most natural unit for housing.
   // No unit toggle here (unlike the general spending grid).
   const unit = 'monthly' as const
+  const folded = sumAmount(cents, extras)
 
   return (
     <section className="block has-icon block-accent">
@@ -33,8 +36,15 @@ export function RentMortgage({ cents, onChange }: {
       </div>
       <div className="cat-row" style={{ marginTop: 14 }}>
         <label htmlFor="cat-housing">How much per month?</label>
-        <MoneyInput id="cat-housing" cents={cents} unit={unit} onChange={onChange} />
-        <span className="annot">{otherUnitAnnotation(cents, unit)}</span>
+        <MoneyInputGroup
+          id="cat-housing"
+          cents={cents}
+          extras={extras}
+          unit={unit}
+          onChange={onChange}
+          onExtrasChange={onExtrasChange}
+        />
+        <span className="annot">{otherUnitAnnotation(folded, unit)}</span>
         <span className="spacer" />
       </div>
     </section>

@@ -3,7 +3,8 @@
  * docs/plans/04-tech-stack.md instead. */
 import { describe, expect, it } from 'vitest'
 import {
-  centsToDollars, displayFromAnnualCents, otherUnitAnnotation, parseToAnnualCents,
+  centsToDollars, displayFromAnnualCents, foldCents, otherUnitAnnotation,
+  parseToAnnualCents, sumAmount,
 } from './money'
 import { buildProfile, type UserState } from './profile'
 import { validate, type SpendState } from './validation'
@@ -23,9 +24,16 @@ const baseUser = (): UserState => ({
   confirmed_usage: new Set(['doordash', 'delta']),
 })
 
-const spendOf = (cats: Record<string, number | null>, mers: Record<string, number | null> = {}): SpendState => ({
+const spendOf = (
+  cats: Record<string, number | null>,
+  mers: Record<string, number | null> = {},
+  catExtras: Record<string, (number | null)[]> = {},
+  merExtras: Record<string, (number | null)[]> = {},
+): SpendState => ({
   categoryCents: cats,
   merchantCents: mers,
+  categoryExtraCents: catExtras,
+  merchantExtraCents: merExtras,
 })
 
 describe('money: integer-cents canonical state (plan 03 §3.2)', () => {
@@ -128,5 +136,42 @@ describe('profile emission (plan 03 §2 rules)', () => {
     user.rewardKinds = { cashback: false, points: true }
     const p = buildProfile(spendOf({ other: 100 }), user)
     expect(p.user.reward_preferences).toEqual(['points'])
+  })
+})
+
+describe('"+"-added sub-amounts fold into the topic total', () => {
+  it('sumAmount adds positive extras, ignoring null/0/NaN, and preserves an empty main', () => {
+    expect(sumAmount(5000, [3000, null, 0, NaN])).toBe(8000)
+    expect(sumAmount(null, [])).toBeNull()
+    expect(sumAmount(null, [2000])).toBe(2000)
+    expect(Number.isNaN(sumAmount(NaN, []) as number)).toBe(true)
+  })
+  it('foldCents merges keys from both main and extras records', () => {
+    expect(foldCents({ groceries: 5000 }, { groceries: [3000], dining: [1000] }))
+      .toEqual({ groceries: 8000, dining: 1000 })
+  })
+  it('buildProfile emits the folded per-category dollar total', () => {
+    const p = buildProfile(spendOf({ groceries: 500000 }, {}, { groceries: [300000, 200000] }), baseUser())
+    expect(p.spend).toEqual({ groceries: 10000 }) // 5000 + 3000 + 2000
+  })
+  it('buildProfile folds merchant carve-out sub-amounts too', () => {
+    const p = buildProfile(spendOf({ groceries: 800000 }, { costco: 200000 }, {}, { costco: [100000] }), baseUser())
+    expect(p.merchant_spend).toEqual({ costco: 3000 })
+  })
+  it('E1 is satisfied by a category whose total comes only from extras', () => {
+    const { errors } = validate(spendOf({ groceries: null }, {}, { groceries: [50000] }),
+      MERCHANTS, 'good', { cashback: true }, LABELS)
+    expect(errors.map((e) => e.code)).not.toContain('E1')
+  })
+  it('E2 flags a NaN inside an extras array', () => {
+    const { errors } = validate(spendOf({ other: 100 }, {}, { other: [NaN] }),
+      MERCHANTS, 'good', { cashback: true }, LABELS)
+    expect(errors.map((e) => e.code)).toContain('E2')
+  })
+  it('E3 compares folded carve-out totals against the folded parent', () => {
+    // Parent groceries folds to 100000; costco folds to 100001 → over by 1 cent.
+    const over = validate(spendOf({ groceries: 60000 }, { costco: 60000 },
+      { groceries: [40000] }, { costco: [40001] }), MERCHANTS, 'good', { cashback: true }, LABELS)
+    expect(over.errors.map((e) => e.code)).toContain('E3')
   })
 })

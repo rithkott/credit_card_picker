@@ -301,8 +301,11 @@ export function Home({ cfg, onRetryConfig }: {
               <>
                 <RentMortgage
                   cents={spend.categoryCents['housing'] ?? null}
+                  extras={spend.categoryExtraCents['housing'] ?? []}
                   onChange={(cents) =>
                     setSpend((s) => ({ ...s, categoryCents: { ...s.categoryCents, housing: cents } }))}
+                  onExtrasChange={(extras) =>
+                    setSpend((s) => ({ ...s, categoryExtraCents: { ...s.categoryExtraCents, housing: extras } }))}
                 />
                 <SpendEntry
                   config={config}
@@ -312,8 +315,12 @@ export function Home({ cfg, onRetryConfig }: {
                   onUnitChange={setUnit}
                   onCategoryChange={(key, cents) =>
                     setSpend((s) => ({ ...s, categoryCents: { ...s.categoryCents, [key]: cents } }))}
+                  onCategoryExtrasChange={(key, extras) =>
+                    setSpend((s) => ({ ...s, categoryExtraCents: { ...s.categoryExtraCents, [key]: extras } }))}
                   onMerchantChange={(key, cents) =>
                     setSpend((s) => ({ ...s, merchantCents: { ...s.merchantCents, [key]: cents } }))}
+                  onMerchantExtrasChange={(key, extras) =>
+                    setSpend((s) => ({ ...s, merchantExtraCents: { ...s.merchantExtraCents, [key]: extras } }))}
                 />
               </>
             ),

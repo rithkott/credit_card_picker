@@ -12,11 +12,15 @@
  */
 
 import type { ConfigMerchant } from '../types'
-import { formatNumber } from './money'
+import { foldCents, formatNumber } from './money'
 
 export interface SpendState {
   categoryCents: Record<string, number | null>
   merchantCents: Record<string, number | null>
+  /** "+"-added sub-amounts per category (summed into the category total). */
+  categoryExtraCents: Record<string, (number | null)[]>
+  /** "+"-added sub-amounts per merchant carve-out. */
+  merchantExtraCents: Record<string, (number | null)[]>
 }
 
 export interface Issue { code: string; message: string }
@@ -31,13 +35,22 @@ export function validate(
   const errors: Issue[] = []
   const warnings: Issue[] = []
 
-  const cents = Object.values(spend.categoryCents)
+  // Fold each topic's main amount with its "+"-added sub-amounts before every
+  // check — the optimizer only sees the per-topic total, so validation mirrors it.
+  const catFolded = foldCents(spend.categoryCents, spend.categoryExtraCents)
+  const merFolded = foldCents(spend.merchantCents, spend.merchantExtraCents)
+
+  const cents = Object.values(catFolded)
   if (!cents.some((c) => c !== null && !Number.isNaN(c) && c > 0)) {
     errors.push({ code: 'E1', message: 'Enter at least one category with spend > $0.' })
   }
 
-  const bad = [...Object.values(spend.categoryCents), ...Object.values(spend.merchantCents)]
-    .some((c) => c !== null && Number.isNaN(c))
+  const bad = [
+    ...Object.values(spend.categoryCents),
+    ...Object.values(spend.merchantCents),
+    ...Object.values(spend.categoryExtraCents).flat(),
+    ...Object.values(spend.merchantExtraCents).flat(),
+  ].some((c) => c !== null && Number.isNaN(c))
   if (bad) {
     errors.push({ code: 'E2', message: 'Every amount must be a number ≥ 0.' })
   }
@@ -45,13 +58,13 @@ export function validate(
   // E3: per parent category, carve-out sum <= category amount (integer cents).
   const carved: Record<string, number> = {}
   for (const m of merchants) {
-    const c = spend.merchantCents[m.key]
+    const c = merFolded[m.key]
     if (c !== null && c !== undefined && !Number.isNaN(c) && c > 0) {
       carved[m.category] = (carved[m.category] ?? 0) + c
     }
   }
   for (const [cat, total] of Object.entries(carved)) {
-    const parent = spend.categoryCents[cat]
+    const parent = catFolded[cat]
     const parentCents = parent !== null && parent !== undefined && !Number.isNaN(parent) ? parent : 0
     if (total > parentCents) {
       const label = categoryLabels[cat] ?? cat
@@ -73,8 +86,8 @@ export function validate(
     errors.push({ code: 'E5', message: 'Check at least one reward kind (cash back or points).' })
   }
 
-  const other = spend.categoryCents['other']
-  const anyNonzero = Object.entries(spend.categoryCents)
+  const other = catFolded['other']
+  const anyNonzero = Object.entries(catFolded)
     .some(([k, c]) => k !== 'other' && c !== null && !Number.isNaN(c!) && c! > 0)
   if (anyNonzero && (other === null || other === 0)) {
     warnings.push({
