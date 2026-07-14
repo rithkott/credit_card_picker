@@ -992,7 +992,9 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 .card-tile.selectable:hover:not(:disabled) { color: inherit; }
 .card-tile.selectable:active:not(:disabled) { transform: translateY(1px); box-shadow: var(--inset-sm); }
 .card-tile.selectable:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: var(--raised); }
-.card-tile.selectable.selected { box-shadow: var(--raised), inset 0 0 0 2.5px var(--accent); }
+/* Ring drawn as an outline (not an inset box-shadow layer) so the scroll-edge
+   sink animation, which animates box-shadow, can't clobber it. */
+.card-tile.selectable.selected { box-shadow: var(--raised); outline: 2.5px solid var(--accent); outline-offset: -2.5px; }
 .card-tile.selectable.selected h3 { color: var(--accent); }
 .card-tile.selectable .check {
   position: absolute;
@@ -1083,6 +1085,32 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 }
 .manual-grid .issuer-group { margin-bottom: 12px; }
 .manual-grid .issuer-group:last-child { margin-bottom: 0; }
+/* Scroll-driven edge treatment (v2.1): each raised tile keeps its footprint but
+   loses its lift — the neomorphic box-shadow collapses from --raised to flush as
+   the tile nears either edge of the scroll well, so buttons read as sinking into
+   the page's depth and flattening before they fade, instead of shrinking or
+   hard-clipping at the border. Chromium ships view() timelines; browsers without
+   it (Firefox/Safari) fall through to plain overflow clipping, and reduced-motion
+   opts out. The scroller (.manual-grid, overflow-y) is the nearest scrollport, so
+   view(block) measures each tile against it. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .manual-grid .card-tile {
+      animation: manual-tile-sink linear both;
+      animation-timeline: view(block);
+      animation-range: cover 0% cover 100%;
+      will-change: box-shadow, opacity, transform;
+    }
+  }
+}
+@keyframes manual-tile-sink {
+  /* Off-edge: flush with the surface (no lift), pushed a hair into depth, faded. */
+  0%   { opacity: 0; transform: translateY(4px); box-shadow: 0 0 0 var(--sh-dark), 0 0 0 var(--sh-light); }
+  /* Plateau: full neomorphic lift for tiles resting in the middle of the well. */
+  18%  { opacity: 1; transform: none; box-shadow: var(--raised); }
+  82%  { opacity: 1; transform: none; box-shadow: var(--raised); }
+  100% { opacity: 0; transform: translateY(-4px); box-shadow: 0 0 0 var(--sh-dark), 0 0 0 var(--sh-light); }
+}
 .manual-grid::-webkit-scrollbar { width: 10px; }
 .manual-grid::-webkit-scrollbar-track { background: transparent; }
 .manual-grid::-webkit-scrollbar-thumb {
@@ -1094,6 +1122,10 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
    per card = runaway horizontal overflow). */
 .manual-grid .tile-grid {
   grid-template-rows: none;
+  /* Base .tile-grid sets row-gap:0 (results subgrid handles its own spacing);
+     manual tiles wrap freely, so give them a row gap matching the 12px column
+     gap for even spacing between buttons in every direction. */
+  row-gap: 12px;
 }
 .manual-grid .tile-grid > .card-tile {
   display: block;
