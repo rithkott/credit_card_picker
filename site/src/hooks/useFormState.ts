@@ -19,7 +19,7 @@ type Mode = 'auto' | 'manual'
  * additionally get optimize_for/accepts_brand_lockin re-seeded from the server
  * config in Home; reset() folds those in directly. */
 function defaultSpend(): SpendState {
-  return { categoryCents: {}, merchantCents: {} }
+  return { categoryCents: {}, merchantCents: {}, categoryExtraCents: {}, merchantExtraCents: {} }
 }
 function defaultUser(): UserState {
   return {

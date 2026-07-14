@@ -373,6 +373,34 @@ button.linklike:active { transform: none; }
 .money-input input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .money-input input[type='number'] { -moz-appearance: textfield; appearance: textfield; }
 
+/* "+ add another amount" group: a money well plus stacked sub-amounts that sum
+   into the topic total. Lives inside the one grid cell the input occupied. */
+.money-group { display: flex; flex-direction: column; gap: 6px; }
+.money-row { display: flex; align-items: center; gap: 6px; }
+.money-row .money-input { flex: 1; min-width: 0; }
+.add-sub, .rm-sub {
+  flex: none;
+  width: 26px; height: 26px;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--raised-sm);
+  color: var(--muted);
+  font: 700 16px/1 var(--font);
+  cursor: pointer;
+}
+.add-sub:hover { color: var(--accent); }
+.rm-sub { font-size: 15px; }
+.rm-sub:hover { color: #a83a08; }
+.money-row.sub .money-input { box-shadow: var(--inset-sm); opacity: 0.92; }
+.group-total {
+  text-align: right;
+  font: 11px var(--mono);
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
 /* Segmented unit toggle — an inset track with a raised active thumb. */
 .segmented {
   display: inline-flex;
@@ -1427,6 +1455,9 @@ footer.site nav a:hover { color: var(--ink); }
   .cat-row .annot { display: none; }
   .cat-row .disclose { grid-column: 1 / -1; text-align: left; }
   .carveouts .cat-row { grid-template-columns: 1fr 118px; }
+  /* Keep the "+" / "×" affordances aligned to the top of a grown group. */
+  .cat-row { align-items: start; }
+  .cat-row > label { padding-top: 9px; }
 }
 
 /* ── Reward-kind tiles ────────────────────────────────────────────────── */

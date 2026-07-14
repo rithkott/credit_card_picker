@@ -1,6 +1,6 @@
 import type { Config } from '../types'
 import type { Issue, SpendState } from '../lib/validation'
-import { formatNumber, type Unit } from '../lib/money'
+import { formatNumber, sumAmount, type Unit } from '../lib/money'
 import { SectionIcon } from './SectionIcon'
 import { CategoryRow } from './CategoryRow'
 import { UnitToggle } from './UnitToggle'
@@ -12,7 +12,9 @@ interface Props {
   warnings: Issue[]
   onUnitChange: (u: Unit) => void
   onCategoryChange: (key: string, cents: number | null) => void
+  onCategoryExtrasChange: (key: string, extras: (number | null)[]) => void
   onMerchantChange: (key: string, cents: number | null) => void
+  onMerchantExtrasChange: (key: string, extras: (number | null)[]) => void
 }
 
 /** Every real spend category always visible, registry order/labels — the fixed
@@ -22,9 +24,13 @@ interface Props {
  * under their parent category rows. The totals row lives in this panel's footer
  * (always annual regardless of the unit toggle; carve-outs excluded — they are
  * already inside their parents, plan 03 §3.5). */
-export function SpendEntry({ config, spend, unit, warnings, onUnitChange, onCategoryChange, onMerchantChange }: Props) {
+export function SpendEntry({
+  config, spend, unit, warnings, onUnitChange,
+  onCategoryChange, onCategoryExtrasChange, onMerchantChange, onMerchantExtrasChange,
+}: Props) {
   const categories = config.categories.filter((c) => c.key !== 'housing')
-  const gridCents = categories.map((c) => spend.categoryCents[c.key] ?? null)
+  const gridCents = categories.map((c) =>
+    sumAmount(spend.categoryCents[c.key] ?? null, spend.categoryExtraCents[c.key] ?? []))
   const totalCents = gridCents
     .reduce<number>((sum, c) => sum + (c !== null && !Number.isNaN(c) && c > 0 ? c : 0), 0)
   const nonzero = gridCents
@@ -56,7 +62,9 @@ export function SpendEntry({ config, spend, unit, warnings, onUnitChange, onCate
             spend={spend}
             unit={unit}
             onCategoryChange={onCategoryChange}
+            onCategoryExtrasChange={onCategoryExtrasChange}
             onMerchantChange={onMerchantChange}
+            onMerchantExtrasChange={onMerchantExtrasChange}
           />
         ))}
       </div>

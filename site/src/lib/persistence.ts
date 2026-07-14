@@ -38,9 +38,28 @@ function coerceCents(v: unknown): Record<string, number | null> {
   return out
 }
 
+/** Record<string, (number|null)[]> — the "+"-added sub-amounts. Drops any
+ * non-array entry and any non-number/non-null element; older blobs (pre this
+ * feature) simply lack these keys and coerce to {}, so no version bump / reset. */
+function coerceExtras(v: unknown): Record<string, (number | null)[]> {
+  if (!isObject(v)) return {}
+  const out: Record<string, (number | null)[]> = {}
+  for (const [k, val] of Object.entries(v)) {
+    if (Array.isArray(val)) {
+      out[k] = val.filter((x): x is number | null => x === null || typeof x === 'number')
+    }
+  }
+  return out
+}
+
 function coerceSpend(v: unknown): SpendState {
   const o = isObject(v) ? v : {}
-  return { categoryCents: coerceCents(o.categoryCents), merchantCents: coerceCents(o.merchantCents) }
+  return {
+    categoryCents: coerceCents(o.categoryCents),
+    merchantCents: coerceCents(o.merchantCents),
+    categoryExtraCents: coerceExtras(o.categoryExtraCents),
+    merchantExtraCents: coerceExtras(o.merchantExtraCents),
+  }
 }
 
 function coerceStringSet(v: unknown): Set<string> {

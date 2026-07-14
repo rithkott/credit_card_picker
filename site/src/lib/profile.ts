@@ -5,7 +5,7 @@
  * total_value — both kinds checked is the everything-run). */
 
 import type { Profile } from '../types'
-import { centsToDollars } from './money'
+import { centsToDollars, foldCents } from './money'
 import type { SpendState } from './validation'
 
 export interface UserState {
@@ -34,7 +34,7 @@ function nonzeroDollars(cents: Record<string, number | null>): Record<string, nu
 
 export function buildProfile(spend: SpendState, user: UserState): Profile {
   const profile: Profile = {
-    spend: nonzeroDollars(spend.categoryCents),
+    spend: nonzeroDollars(foldCents(spend.categoryCents, spend.categoryExtraCents)),
     user: {
       credit_tier: user.credit_tier ?? '',
       max_cards: MAX_CARDS,
@@ -47,7 +47,7 @@ export function buildProfile(spend: SpendState, user: UserState): Profile {
         .map(([kind]) => kind),
     },
   }
-  const merchantSpend = nonzeroDollars(spend.merchantCents)
+  const merchantSpend = nonzeroDollars(foldCents(spend.merchantCents, spend.merchantExtraCents))
   if (Object.keys(merchantSpend).length > 0) profile.merchant_spend = merchantSpend
   return profile
 }
