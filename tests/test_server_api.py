@@ -115,6 +115,16 @@ class TestServerAPI(unittest.TestCase):
             self.assertEqual(row["issuer"], src["issuer"])
             self.assertEqual(row["annual_fee_usd"], src["fees"]["annual_fee_usd"])
             self.assertEqual(row["availability"], src.get("availability", "active"))
+            # A card_exclusive required membership is surfaced as a carrying
+            # cost; non-exclusive (or absent) memberships resolve to null.
+            rm = src.get("required_membership") or {}
+            if rm.get("card_exclusive"):
+                self.assertEqual(row["required_membership"], {
+                    "name": rm["name"],
+                    "annual_cost_usd": float(rm.get("annual_cost_usd") or 0),
+                })
+            else:
+                self.assertIsNone(row["required_membership"])
             self.assertEqual(row["currency"]["program"], src["currency"]["program"])
             self.assertEqual(
                 row["currency"]["program_label"],

@@ -142,6 +142,16 @@ def cards() -> dict:
     for card in ds["cards"]:
         cur = card["currency"]
         ver = card.get("verification", {})
+        # A card_exclusive required membership (e.g. Robinhood Gold) is a
+        # mandatory carrying cost the optimizer scores like an annual fee, so
+        # surface it here — a $0 card annual fee alone reads as "free" when it
+        # is not. Non-exclusive memberships have standalone value and aren't a
+        # pure card cost, so they're omitted.
+        rm = card.get("required_membership") or {}
+        required_membership = (
+            {"name": rm["name"], "annual_cost_usd": float(rm.get("annual_cost_usd") or 0)}
+            if rm.get("card_exclusive") else None
+        )
         out.append({
             "id": card["id"],
             "name": card["name"],
@@ -149,6 +159,7 @@ def cards() -> dict:
             "network": card.get("network"),
             "availability": card.get("availability", "active"),
             "annual_fee_usd": card["fees"]["annual_fee_usd"],
+            "required_membership": required_membership,
             "currency": {
                 "type": cur["type"],
                 "program": cur["program"],

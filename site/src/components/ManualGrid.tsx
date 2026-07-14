@@ -67,7 +67,9 @@ export function ManualGrid({ selected, onToggle }: {
                   <div className="role">
                     {c.annual_fee_usd > 0
                       ? <><span className="fee-amount">${formatNumber(c.annual_fee_usd)}</span> annual fee</>
-                      : 'No annual fee'}
+                      : c.required_membership
+                        ? <><span className="fee-amount">${formatNumber(c.required_membership.annual_cost_usd)}</span>/yr {c.required_membership.name}</>
+                        : 'No annual fee'}
                     {' · '}{c.currency.program_label}
                   </div>
                 </button>

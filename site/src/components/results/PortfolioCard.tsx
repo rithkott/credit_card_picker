@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react'
 import type { BestBySize, OptimizeBundle, PerCard } from '../../types'
 import { formatNumber, formatUsd } from '../../lib/money'
 import { cardSpendDrop, entryDrop } from '../../lib/worstCase'
@@ -9,76 +8,15 @@ function totalFees(card: PerCard): number {
   return card.fees.annual_fee_usd + (card.fees.membership_fee_usd ?? 0)
 }
 
-/** Deterministic dark hue family per card id, for the CSS card render. */
-function hueOf(id: string): number {
-  let h = 0
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) % 360
-  return h
-}
-
-/** Deterministic per-id background: a corner glow over a two-hue diagonal, so
- * every card gets a distinct-but-cohesive dark face. Hue is stable per id. */
-function faceStyle(id: string): CSSProperties {
-  const h = hueOf(id)
-  const h2 = (h + 28) % 360
-  return {
-    background:
-      `radial-gradient(130% 150% at 16% -10%, hsl(${h} 34% 24% / 0.95), transparent 52%), ` +
-      `linear-gradient(120deg, hsl(${h} 26% 17%), hsl(${h} 24% 9%) 62%, hsl(${h2} 24% 13%))`,
-  }
-}
-
-const FAN_STEP = 150 // px between adjacent cards in the fan
-const FAN_ANGLE = 6 // deg of splay per fan position
-const FAN_DIP = 22 // px each outer position drops, to arc the fan
-
-/** Fan slot for the i-th card: best card (0) sits center, the rest alternate
- * outward — -1, +1, -2, +2 … — so the strongest card is the featured center. */
-function fanSlot(i: number): number {
-  const k = Math.ceil(i / 2)
-  return i % 2 ? -k : k
-}
-
-/** One credit-card render: a deterministic gradient face in the id's hue
- * family, a chip, and the card name as the hero. In a multi-card portfolio the
- * cards are laid out as a fan (via index/count); the sheen sweep is offset per
- * card so they shimmer out of sync. No external art. */
-function CardRender({ id, name, index, count }: { id: string; name: string; index: number; count: number }) {
-  // Centre the whole fan: even counts shift by half a slot so the arc is symmetric.
-  const off = fanSlot(index) + (count % 2 === 0 ? 0.5 : 0)
-  // Base fan transform lives in a CSS var so :hover can compose a lift on top
-  // of it (a plain transform on hover would drop the card's fan position).
-  const style = { ...faceStyle(id) } as CSSProperties & Record<string, string | number>
-  style['--z'] = 100 - index
-  style['--sheen-delay'] = `${(index * -1.15).toFixed(2)}s`
-  if (count > 1) {
-    style['--ft'] =
-      `translate(${off * FAN_STEP}px, ${Math.abs(off) * FAN_DIP}px) rotate(${off * FAN_ANGLE}deg)`
-  }
-  return (
-    <div className="card-render" style={style}>
-      <span className="sheen" />
-      <span className="cchip" />
-      <span className="cname">{name}</span>
-    </div>
-  )
-}
-
-/** Width/height the fan needs so every card is fully visible and centered. */
-function fanBox(count: number): CSSProperties {
-  const maxOff = (count - 1) / 2
-  return { width: 300 + maxOff * 2 * FAN_STEP, height: 190 + maxOff * (FAN_DIP + 12) }
-}
-
-/** The receipt panel: eyebrow, big shimmer net, the four receipt rows, and
- * the stacked credit-card renders for the selected portfolio. Every number
+/** The receipt panel: eyebrow, the big dot-matrix net figure, the two horizon
+ * lines, and the itemised receipt rows for the selected portfolio. Every number
  * derives from the bundle's per_card blocks — earnings are assignment
- * usd_values, credits are credit values, fees are annual + membership. */
-export function PortfolioCard({ portfolio, bundle, isBest, stack, worstCase }: {
+ * usd_values, credits are credit values, fees are annual + membership. (Card
+ * art is retired in v2 — the neomorphic surface has no dark card renders.) */
+export function PortfolioCard({ portfolio, bundle, isBest, worstCase }: {
   portfolio: BestBySize
   bundle: OptimizeBundle
   isBest: boolean
-  stack: string[]
   worstCase: boolean
 }) {
   const cards = portfolio.cards.map((id) => portfolio.per_card[id]).filter(Boolean)
@@ -133,9 +71,6 @@ export function PortfolioCard({ portfolio, bundle, isBest, stack, worstCase }: {
     (bonuses > 0 ? '' : ' · no signup bonuses in this combination')
 
   const unassigned = Object.entries(portfolio.unassigned_spend)
-  const stackCards = stack
-    .map((id) => ({ id, card: portfolio.per_card[id] }))
-    .filter((s) => s.card)
 
   return (
     <section className="block receipt">
@@ -186,13 +121,6 @@ export function PortfolioCard({ portfolio, bundle, isBest, stack, worstCase }: {
               {unassigned.map(([bucket, v]) => `${bucket} ${formatUsd(v)}`).join(', ')}
             </div>
           )}
-      </div>
-      <div className="card-fan-wrap">
-        <div className="card-fan" style={fanBox(stackCards.length)}>
-          {stackCards.map((s, i) => (
-            <CardRender key={s.id} id={s.id} name={s.card.name} index={i} count={stackCards.length} />
-          ))}
-        </div>
       </div>
     </section>
   )

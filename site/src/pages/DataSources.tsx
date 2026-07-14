@@ -98,7 +98,11 @@ export function DataSources() {
                       <tr key={c.id}>
                         <td>{c.name}</td>
                         <td className="num">
-                          {c.annual_fee_usd === 0 ? '$0' : `$${c.annual_fee_usd}`}
+                          {c.annual_fee_usd > 0
+                            ? `$${c.annual_fee_usd}`
+                            : c.required_membership
+                              ? <>${c.required_membership.annual_cost_usd}<span className="dim"> {c.required_membership.name}</span></>
+                              : '$0'}
                         </td>
                         <td>{c.currency.program_label}</td>
                         <td>
