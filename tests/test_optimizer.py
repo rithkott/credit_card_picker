@@ -348,7 +348,9 @@ class TestCreditVariants(unittest.TestCase):
         self.assertAlmostEqual(r["credits"][0]["value"], 200.0)  # no category → face
         r = score([card], make_profile({"other": 8000}))
         self.assertAlmostEqual(r["credits"][0]["value"], 0.0)
-        self.assertIn("unreachable", r["credits"][0]["note"])
+        # $8,000 routed onto the card < $10,000 unlock → uncounted locked perk.
+        self.assertIn("needs $10,000", r["credits"][0]["note"])
+        self.assertAlmostEqual(r["credits"][0]["potential_value"], 200.0)
 
     def test_unlock_spend_is_per_period(self):
         # $10/month unlocked at $1,000/month: $6,000/yr total = $500/month < $1,000.
@@ -396,6 +398,71 @@ class TestCreditVariants(unittest.TestCase):
         self.assertAlmostEqual(r["credits"][0]["value"], 135.0)
 
 
+class TestCashbackOnlyFloor(unittest.TestCase):
+    """Cashback-only redeems points only for cash, so every program is valued at
+    its floor_cpp — not the blended avg."""
+
+    def test_cashback_only_floors_multicurrency_cpp(self):
+        # A chase_ur card that is its own transfer gateway is normally 1.5cpp
+        # (avg of 1.0 floor + 2.0 optimistic). Under cashback-only it prices at
+        # the 1.0cpp cash floor everywhere.
+        card = synth_card(currency={"type": "points", "program": "chase_ur"},
+                          unlocks_transfers=True, base_rate=1)
+        avg = score([card], make_profile({"other": 5000},
+                    reward_preferences=["points"]))
+        floor = score([card], make_profile({"other": 5000},
+                      reward_preferences=["cashback"]))
+        self.assertEqual({a["cpp"] for a in avg["assignments"]}, {1.5})
+        self.assertEqual({a["cpp"] for a in floor["assignments"]}, {1.0})
+        self.assertAlmostEqual(avg["earnings"], 75.0)   # 5000 × 1x × 1.5cpp
+        self.assertAlmostEqual(floor["earnings"], 50.0)  # 5000 × 1x × 1.0cpp
+
+    def test_pure_cash_unaffected_by_cashback_only(self):
+        # floor == optimistic for cash, so the mode is a no-op (and emits no note).
+        card = synth_card(base_rate=2)
+        r = score([card], make_profile({"other": 5000}, reward_preferences=["cashback"]))
+        self.assertAlmostEqual(r["earnings"], 100.0)
+
+
+class TestPerCardSpendGate(unittest.TestCase):
+    """Spend-linked rewards gate on spend actually routed onto the card, not
+    portfolio-wide volume."""
+
+    def test_unlock_credit_gates_on_routed_not_total(self):
+        # $80k everyday spend (> the $75k unlock), but a 5x winner card takes all
+        # of it and the unlock card wins none — so its credit stays a locked perk
+        # despite the portfolio spending $80k.
+        winner = synth_card(id="winner", base_rate=5)
+        unlock_credit = {"name": "big spend perk", "amount_usd": 250,
+                         "period": "annual", "unlock_spend_usd": 75000,
+                         "realistic_capture_rate_note": "x"}
+        loser = synth_card(id="loser", base_rate=1, credits=[unlock_credit])
+        r = score([winner, loser], make_profile({"other": 80000}))
+        credit = next(c for c in r["credits"] if c["card_id"] == "loser")
+        self.assertEqual(credit["value"], 0.0)
+        self.assertEqual(credit["potential_value"], 250.0)
+        self.assertIn("routed here", credit["note"])
+
+    def test_unlock_credit_counts_when_card_wins_spend(self):
+        unlock_credit = {"name": "big spend perk", "amount_usd": 250,
+                         "period": "annual", "unlock_spend_usd": 75000,
+                         "realistic_capture_rate_note": "x"}
+        card = synth_card(base_rate=1, credits=[unlock_credit])
+        r = score([card], make_profile({"other": 80000}))
+        self.assertEqual(r["credits"][0]["value"], 250.0)
+
+    def test_signup_bonus_gates_on_routed_spend(self):
+        # A bonus needing $4k in 3 months: the card must win ≥ $4k of the window's
+        # spend. Winner steals everything, so the loser's bonus is $0.
+        winner = synth_card(id="winner", base_rate=5)
+        bonus = {"value": {"usd": 200}, "spend_requirement_usd": 4000,
+                 "window_months": 3}
+        loser = synth_card(id="loser", base_rate=1, signup_bonus=bonus)
+        r = score([winner, loser], make_profile({"other": 80000}))
+        self.assertEqual(r["bonuses"]["loser"]["value"], 0.0)
+        self.assertIn("routed onto this card", r["bonuses"]["loser"]["note"])
+
+
 class TestConfirmedUsage(unittest.TestCase):
     """Plan 07: usage-gated credits and loyalty-aware point valuation."""
 
@@ -411,9 +478,10 @@ class TestConfirmedUsage(unittest.TestCase):
         self.assertAlmostEqual(r["credits"][0]["potential_value"], 120.0)  # 10 × 12
 
     def test_potential_value_only_on_usage_gated_zero(self):
-        # potential_value is scoped strictly to the usage-gate branch. Other $0
-        # credits (expired, unlock-unreachable, no category spend) omit it, and
-        # earning credits never carry it.
+        # potential_value surfaces on the two "you'd get it but it isn't counted"
+        # branches — usage-gated (unconfirmed merchant) and unlock-unreachable
+        # (not enough spend routed onto this card). Other $0 credits (expired, no
+        # category spend) omit it, and earning credits never carry it.
         gated = {"name": "ride", "amount_usd": 10, "period": "monthly",
                  "usage_keys": ["uber"], "realistic_capture_rate_note": "x"}
         unreachable = {"name": "big", "amount_usd": 10, "period": "monthly",
@@ -424,7 +492,8 @@ class TestConfirmedUsage(unittest.TestCase):
                   make_profile({"other": 6000}))
         by_name = {c["name"]: c for c in r["credits"]}
         self.assertEqual(by_name["ride"]["potential_value"], 120.0)
-        self.assertNotIn("potential_value", by_name["big"])
+        # $6,000/yr = $500/mo routed < $1,000/mo unlock → locked perk, face 120.
+        self.assertEqual(by_name["big"]["potential_value"], 120.0)
         self.assertNotIn("potential_value", by_name["auto"])
 
     def test_points_usage_gated_potential_value_by_cpp(self):
@@ -1153,8 +1222,9 @@ class TestExplicitOnlyHousing(unittest.TestCase):
         self.assertIn("unreachable", r["bonuses"]["synth"]["note"])
 
     def test_housing_excluded_from_credit_unlock_feasibility(self):
-        # unlock_spend_usd is measured against card-payable (everyday) spend,
-        # so a $10k/yr unlock is unreachable when only $2k is non-housing.
+        # unlock_spend_usd is measured against card-payable (everyday) spend
+        # routed onto the card, so a $10k/yr unlock stays locked when only $2k of
+        # non-housing spend lands here — the $30k of housing doesn't count.
         credit = {"name": "spend-unlock perk", "amount_usd": 100,
                   "period": "annual", "unlock_spend_usd": 10000,
                   "realistic_capture_rate_note": "x"}
@@ -1164,7 +1234,7 @@ class TestExplicitOnlyHousing(unittest.TestCase):
         prof = make_profile({"housing": 30000, "other": 2000})
         r = score([card], prof)
         self.assertEqual(r["credits"][0]["value"], 0.0)
-        self.assertIn("unreachable", r["credits"][0]["note"])
+        self.assertIn("needs $10,000", r["credits"][0]["note"])
 
 
 # earn_ratio tiers matching Bilt's Everyday Spend Ratio. Denominator = housing.

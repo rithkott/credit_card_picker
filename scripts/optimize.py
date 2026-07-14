@@ -415,12 +415,24 @@ def avg_cpp(prog: dict) -> float:
     return (prog["floor_cpp"] + prog["optimistic_cpp"]) / 2.0
 
 
+def is_cashback_only(profile: dict) -> bool:
+    """True when the user asked for cashback and nothing else — cashback is a
+    reward preference, points is not, and it isn't the everything-run
+    (total_value). Under this mode points are only ever redeemed for cash, so
+    every program is valued at its floor_cpp (see effective_cpp)."""
+    prefs = profile["user"].get("reward_preferences") or []
+    return "cashback" in prefs and "points" not in prefs and "total_value" not in prefs
+
+
 def effective_cpp(card: dict, programs: dict, confirmed: set,
                   unlocked: frozenset = frozenset(),
-                  gateways: dict = None) -> tuple:
+                  gateways: dict = None, cashback_only: bool = False) -> tuple:
     """Context-aware cents-per-point: (cpp, note-or-None). Points are valued
     at the program's engaged average (avg_cpp) — mean of floor and optimistic —
     except when a gate mechanically limits redemption to the cash floor:
+      - cashback-only: the user redeems points only for cash (is_cashback_only),
+        so every program is worth its floor_cpp cash-out rate — this gate wins
+        over the loyalty/transfer gates because none of that upside is reachable.
       - loyalty: lock-in currencies (no cashback path, loyalty_keys in
         data/meta/point-valuations.yaml) require confirmed loyalty in
         user.confirmed_usage.
@@ -431,6 +443,11 @@ def effective_cpp(card: dict, programs: dict, confirmed: set,
     Cash and fixed-value currencies have floor == optimistic, so the average
     is a no-op for them."""
     prog = programs[card["currency"]["program"]]
+    if cashback_only:
+        note = (None if prog["floor_cpp"] == prog["optimistic_cpp"]
+                else f"cashback-only: points valued at floor {prog['floor_cpp']}cpp "
+                     f"(cash redemption)")
+        return prog["floor_cpp"], note
     loyalty = prog.get("loyalty_keys") or []
     if loyalty and not (set(loyalty) & confirmed):
         return prog["floor_cpp"], (
@@ -459,7 +476,8 @@ def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
     the card standalone."""
     user = profile["user"]
     confirmed = set(user["confirmed_usage"])
-    cpp, _ = effective_cpp(card, programs, confirmed, unlocked)
+    cpp, _ = effective_cpp(card, programs, confirmed, unlocked,
+                           cashback_only=is_cashback_only(profile))
     closed = set(card.get("closed_loop", {}).get("merchants", []))
     lines = []
 
@@ -638,7 +656,7 @@ def assign_spend(lines: list, buckets: dict) -> tuple:
 # ---------------------------------------------------------------------------
 
 def score_credits(cards: list, profile: dict, programs: dict,
-                  as_of: date, everyday_spend: float) -> list:
+                  as_of: date, per_card_spend: dict) -> list:
     """Value every credit across the portfolio against a shared per-category
     remaining-spend tracker, so stacked credits can never exceed the user's real
     spend. Draw order is deterministic: file order within a card, card-id order
@@ -654,9 +672,13 @@ def score_credits(cards: list, profile: dict, programs: dict,
     credits and keyless credits keep the conservative CREDIT_CAPTURE.
 
     Credit variants beyond the classic USD statement credit:
-      - unlock_spend_usd: the credit is $0 unless the user's per-period total
-        spend can plausibly reach the unlock threshold (same optimistic
-        feasibility rule as signup bonuses — all spend could go on this card).
+      - unlock_spend_usd: the credit is $0 unless the spend the optimizer
+        actually routes onto THIS card (per_card_spend, from the finalized
+        assignments) reaches the unlock threshold — not portfolio-wide volume.
+        assign_spend is greedy per-bucket and never chases unlock thresholds, so
+        these credits fire only when the card wins the required spend on raw earn
+        rate; otherwise the credit is surfaced as an uncounted locked perk
+        (value 0 + potential_value). Same per-card rule as signup bonuses.
       - amount_points: points-denominated drops (anniversary miles), valued via
         the card's loyalty-aware program cpp; they don't offset spend, so no
         tracker draw.
@@ -671,15 +693,17 @@ def score_credits(cards: list, profile: dict, programs: dict,
         credits (no keys, no category; anniversary points/cash).
     """
     tracker = {cat: float(v) for cat, v in profile["spend"].items()}
-    # unlock_spend_usd feasibility measures card-payable volume, so the
-    # explicit_only categories (housing) are excluded — see score_portfolio.
-    total_spend = everyday_spend
     confirmed = set(profile["user"]["confirmed_usage"])
     assumed = set(profile["user"].get("assumed_usage", []))
     unlocked = unlocked_programs(cards)
+    cashback_only = is_cashback_only(profile)
     results = []
     for card in sorted(cards, key=lambda c: c["id"]):
-        cpp, _ = effective_cpp(card, programs, confirmed, unlocked)
+        cpp, _ = effective_cpp(card, programs, confirmed, unlocked,
+                               cashback_only=cashback_only)
+        # unlock_spend_usd gates on the spend actually routed onto THIS card, not
+        # portfolio-wide volume (see docstring + score_portfolio.per_card_spend).
+        card_spend = per_card_spend.get(card["id"], 0.0)
         for credit in card["credits"]:
             if "expires" in credit and date.fromisoformat(credit["expires"]) < as_of:
                 results.append({"card_id": card["id"], "name": credit["name"],
@@ -721,10 +745,19 @@ def score_credits(cards: list, profile: dict, programs: dict,
             in_kind = credit.get("kind") == "in_kind"
 
             unlock = credit.get("unlock_spend_usd")
-            if unlock is not None and total_spend / periods < unlock - EPS:
+            if unlock is not None and card_spend / periods < unlock - EPS:
+                # Not enough spend routed onto this card to unlock it. Surface the
+                # full annual face as a locked perk (potential_value, uncounted) so
+                # the user still sees the benefit and its unlock condition.
+                if "amount_points" in credit:
+                    potential = credit["amount_points"] * periods * cpp / 100.0
+                else:
+                    potential = credit["amount_usd"] * periods
                 results.append({"card_id": card["id"], "name": credit["name"],
                                 "value": 0.0,
-                                "note": f"$0 — unlock spend ${unlock:,.0f}/{credit['period']} unreachable at your volume"})
+                                "potential_value": round(potential, 2),
+                                "note": f"$0 — needs ${unlock:,.0f}/{credit['period']} on "
+                                        f"this card (only ${card_spend:,.0f} routed here)"})
                 continue
             unlock_note = f"; unlocked (${unlock:,.0f}/{credit['period']} spend)" if unlock is not None else ""
 
@@ -785,12 +818,15 @@ def score_credits(cards: list, profile: dict, programs: dict,
 def score_bonus(card: dict, profile: dict, programs: dict, as_of: date,
                 card_earnings: float = 0.0,
                 unlocked: frozenset = frozenset(),
-                everyday_spend: float = None) -> dict:
+                card_spend: float = 0.0) -> dict:
     """Signup-bonus value — counted once, year-1 only. A bonus's `value` may mix
     points and usd (both summed); `tiers` add tranches whose cumulative spend
     requirements are checked with the same feasibility rule as the base;
     `first_year_match` (Discover) is valued as the card's own computed
-    first-year earnings."""
+    first-year earnings. The spend requirement is feasibility-tested against
+    `card_spend` — the spend the optimizer actually routes onto this card — not
+    portfolio-wide volume, so a bonus counts only if this card wins the spend to
+    earn it."""
     bonus = card["signup_bonus"]
     if bonus is None:
         return {"value": 0.0, "note": "no signup bonus"}
@@ -799,16 +835,16 @@ def score_bonus(card: dict, profile: dict, programs: dict, as_of: date,
     if bonus.get("first_year_match"):
         return {"value": card_earnings,
                 "note": f"first-year match of this card's computed earnings (${card_earnings:,.2f})"}
-    # Spend-requirement feasibility measures card-payable volume: housing
-    # (explicit_only) is excluded — Bilt's own bonuses require "Everyday
-    # Spend", and rent can't be charged to any other card anyway.
-    total_spend = (everyday_spend if everyday_spend is not None
-                   else sum(profile["spend"].values()))
-    window_spend = total_spend * bonus["window_months"] / 12.0
+    # Spend-requirement feasibility measures the spend actually routed onto this
+    # card (card_spend from the finalized assignments) — a bonus counts only if
+    # this card wins enough spend to hit the requirement in the window.
+    window_spend = card_spend * bonus["window_months"] / 12.0
     if window_spend < bonus["spend_requirement_usd"] - EPS:
-        return {"value": 0.0, "note": "$0 — spend requirement unreachable at your volume"}
+        return {"value": 0.0, "note": "$0 — spend requirement unreachable "
+                                       "by the spend routed onto this card"}
     cpp, _ = effective_cpp(card, programs,
-                           set(profile["user"]["confirmed_usage"]), unlocked)
+                           set(profile["user"]["confirmed_usage"]), unlocked,
+                           cashback_only=is_cashback_only(profile))
 
     def usd_of(value):
         parts, worth = [], 0.0
@@ -1016,10 +1052,6 @@ def score_portfolio(cards: list, profile: dict, programs: dict,
     subset's lines, plus credits (shared tracker), plus eligible signup bonuses
     (year-1 only), minus fees."""
     unlocked = unlocked_programs(cards)
-    # Card-payable volume: bonus and credit-unlock feasibility windows exclude
-    # explicit_only (housing) spend, which can't be charged to a card.
-    everyday_spend = sum(bk["amount"] for bk in buckets.values()
-                         if not bk["explicit_only"])
     lines = []
     for card in cards:
         lines += build_lines(card, profile, programs, buckets, unlocked)
@@ -1028,7 +1060,18 @@ def score_portfolio(cards: list, profile: dict, programs: dict,
     # line by the Everyday Spend Ratio and may route everyday spend onto the card
     # (plan 05). No-op for portfolios without an earn_ratio card.
     steer_earn_ratio(cards, lines, assignments, unassigned, buckets, programs, profile)
-    credits = score_credits(cards, profile, programs, as_of, everyday_spend)
+    # Card-payable spend the optimizer actually routes onto each card, from the
+    # finalized assignments. Spend-linked rewards (unlock_spend_usd credits,
+    # signup-bonus spend requirements) gate on this per-card figure — never
+    # portfolio-wide volume — so a card is credited a threshold reward only when
+    # it wins the spend to earn it. explicit_only (housing) assignments are
+    # excluded: rent isn't "everyday spend" for unlock/bonus purposes, matching
+    # the prior card-payable-volume rule.
+    per_card_spend = {card["id"]: 0.0 for card in cards}
+    for a in assignments:
+        if not buckets[a["bucket"]]["explicit_only"]:
+            per_card_spend[a["card_id"]] += a["usd_assigned"]
+    credits = score_credits(cards, profile, programs, as_of, per_card_spend)
     # Portal credits (Amex FHR, Chase Travel/The Edit, Cap One Travel, etc.) are
     # not stackable across cards — a user books through one portal — so the
     # portfolio counts only the single highest-value portal credit and deducts
@@ -1053,7 +1096,7 @@ def score_portfolio(cards: list, profile: dict, programs: dict,
     earnings = sum(per_card_earnings.values())
     bonuses = {card["id"]: score_bonus(card, profile, programs, as_of,
                                        per_card_earnings[card["id"]], unlocked,
-                                       everyday_spend)
+                                       per_card_spend[card["id"]])
                for card in cards}
     bonus_total = sum(b["value"] for b in bonuses.values())
     # Card-exclusive membership costs (Robinhood Gold) count in both metrics —
@@ -1392,7 +1435,7 @@ def assemble_portfolio(entry: dict, by_id: dict, profile: dict, programs: dict,
         }
         _, valuation_note = effective_cpp(
             card, programs, set(profile["user"]["confirmed_usage"]),
-            unlocked, gateways)
+            unlocked, gateways, cashback_only=is_cashback_only(profile))
         # Always-on redemption caveat: a transfer-gateway card (Freedom family)
         # must show, up front, that its points need a gateway card (Sapphire) —
         # independent of whether one is currently in the scored portfolio.
