@@ -368,9 +368,11 @@ button.linklike:active { transform: none; }
   user-select: none;
 }
 .segmented label:has(input:checked) {
-  background: var(--surface);
-  color: var(--accent);
-  box-shadow: var(--raised-sm);
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 2px 2px 5px var(--sh-dark), -2px -2px 5px var(--sh-light),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 .segmented input { position: absolute; opacity: 0; pointer-events: none; }
 
@@ -433,10 +435,13 @@ button.linklike:active { transform: none; }
 }
 .chip:hover { color: var(--ink); }
 .chip:has(input:checked) {
-  background: var(--surface);
-  color: var(--accent);
-  box-shadow: var(--inset-sm);
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 2px 2px 5px var(--sh-dark), -2px -2px 5px var(--sh-light),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
+.chip:has(input:checked):hover { color: #fff; }
 .chip:has(input:checked)::before { content: '✓'; margin-right: 6px; font-weight: 700; }
 .chip input { position: absolute; opacity: 0; pointer-events: none; }
 .chips.lg .chip { padding: 9px 16px; font-size: 12.5px; }
@@ -646,9 +651,14 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   box-shadow: var(--raised-sm);
   transition: left 0.3s var(--ease);
 }
-.worst-case-toggle input:checked::after { left: 30px; }
 .worst-case-toggle input:checked {
-  box-shadow: var(--inset-sm), inset 0 0 0 2px rgba(194, 68, 9, 0.25);
+  background: var(--accent);
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.28), inset -2px -2px 5px rgba(255, 255, 255, 0.18);
+}
+.worst-case-toggle input:checked::after {
+  left: 30px;
+  background: #fff;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.35);
 }
 .worst-case-toggle input:checked + span .note::before { content: ''; }
 .worst-case-toggle > span { min-width: 0; font-weight: 700; font-size: 13px; }
@@ -931,7 +941,8 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 .card-tile.selectable:hover:not(:disabled) { color: inherit; }
 .card-tile.selectable:active { transform: none; }
 .card-tile.selectable:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: var(--raised); }
-.card-tile.selectable.selected { box-shadow: var(--raised), inset 0 0 0 2px var(--accent); }
+.card-tile.selectable.selected { box-shadow: var(--raised), inset 0 0 0 2.5px var(--accent); }
+.card-tile.selectable.selected h3 { color: var(--accent); }
 .card-tile.selectable .check {
   position: absolute;
   top: 16px; left: 15px;
@@ -939,11 +950,15 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   border-radius: 6px;
   display: grid; place-items: center;
   font: 700 12px var(--font);
-  color: var(--accent);
+  color: var(--faint);
   background: var(--surface);
   box-shadow: var(--inset-xs);
 }
-.card-tile.selectable.selected .check { color: var(--accent); }
+.card-tile.selectable.selected .check {
+  color: #fff;
+  background: var(--accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
 .card-tile.selectable h3 { padding-right: 4px; }
 .badge-discontinued {
   display: inline-block;
@@ -983,10 +998,14 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 .mode-toggle button:hover { color: var(--ink); }
 .mode-toggle button:active { transform: none; }
 .mode-toggle button.active {
-  color: var(--accent);
-  box-shadow: var(--inset), inset 0 0 0 2px rgba(194, 68, 9, 0.22);
+  background: var(--accent);
+  color: #fff;
+  box-shadow: var(--raised), inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
+.mode-toggle button.active:hover { color: #fff; }
 .mode-toggle .mode-hint { font: 400 10.5px/1.45 var(--mono); color: var(--muted); }
+.mode-toggle button.active .mode-hint,
+.mode-toggle button.active .mode-bullets { color: rgba(255, 255, 255, 0.88); }
 .mode-toggle .mode-bullets {
   margin: 4px 0 0;
   padding-left: 16px;
@@ -996,8 +1015,6 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   text-align: left;
 }
 .mode-toggle .mode-bullets li { margin-top: 2px; }
-.mode-toggle button.active .mode-hint,
-.mode-toggle button.active .mode-bullets { color: var(--muted); }
 
 .tile-lines {
   margin-top: 12px;
@@ -1304,10 +1321,13 @@ footer.site nav a:hover { color: var(--ink); }
 }
 .reward-tile:hover { color: var(--ink); }
 .reward-tile:active { transform: translateY(1px); }
+/* Selected reward = filled accent slab: unmistakably ON. */
 .reward-tile.active {
-  color: var(--accent);
-  box-shadow: var(--raised), inset 0 0 0 2px rgba(194, 68, 9, 0.22);
+  background: var(--accent);
+  color: #fff;
+  box-shadow: var(--raised), inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
+.reward-tile.active:hover { color: #fff; }
 /* The icon becomes an inset "well" holding the reward glyph. */
 .reward-tile-icon {
   display: flex; align-items: center; justify-content: center;
@@ -1317,15 +1337,26 @@ footer.site nav a:hover { color: var(--ink); }
   color: var(--accent);
 }
 .reward-tile-icon svg { width: 28px; height: 28px; display: block; }
+.reward-tile.active .reward-tile-icon {
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.22), inset -2px -2px 4px rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
 .reward-tile-label { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; margin-top: 16px; color: var(--ink); }
-.reward-tile.active .reward-tile-label { color: var(--accent); }
+.reward-tile.active .reward-tile-label { color: #fff; }
 .reward-tile-check {
   position: absolute; top: 14px; right: 14px;
   width: 22px; height: 22px; border-radius: 6px;
   display: grid; place-items: center;
   font: 700 13px var(--font); line-height: 1;
+  color: var(--faint);
+}
+/* Only the selected tile shows a check badge; unselected shows nothing. */
+.reward-tile.active .reward-tile-check { box-shadow: none; }
+.reward-tile.active .reward-tile-check {
   color: var(--accent);
-  box-shadow: var(--inset-xs);
+  background: #fff;
+  box-shadow: none;
 }
 
 @media (max-width: 560px) {
