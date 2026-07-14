@@ -40,6 +40,13 @@ export function SpendEntry({ config, spend, unit, warnings, onUnitChange, onCate
         <span className="spacer" />
         <UnitToggle unit={unit} onChange={onUnitChange} />
       </div>
+      <div className="spend-help">
+        <strong>Where to find this:</strong> pull up your spending in your bank or
+        credit-card website or app — most show yearly or monthly totals broken out by
+        category. Enter each as accurately as you can. If a category here doesn't match
+        the labels your bank uses, make your best guess as to which one the spending
+        belongs in.
+      </div>
       <div className="spend-rows">
         {categories.map((cat) => (
           <CategoryRow
