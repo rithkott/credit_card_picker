@@ -19,6 +19,11 @@
       "description": "Issuer slug, must match the parent directory name"
     },
     "network": { "enum": ["visa", "mastercard", "amex", "discover"] },
+    "availability": {
+      "enum": ["active", "discontinued"],
+      "default": "active",
+      "description": "active (default) = open to new applicants; the optimizer may recommend it in Auto mode. discontinued = no longer offered to new applicants (product retired or closed to new accounts). Discontinued cards are EXCLUDED from Auto-mode recommendations (filter_cards) but stay selectable in Custom/Manual mode so existing holders can still score a card they carry. Omit for active cards"
+    },
     "currency": {
       "type": "object",
       "additionalProperties": false,

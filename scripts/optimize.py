@@ -1200,7 +1200,11 @@ def filter_cards(cards: list, profile: dict, programs: dict) -> tuple:
     for card in sorted(cards, key=lambda c: c["id"]):
         program = card["currency"]["program"]
         redeems = set(programs[program].get("redeems_for", []))
-        if TIER_ORDER.index(card["approval"]["credit_tier"]) > user_rank:
+        if card.get("availability", "active") == "discontinued":
+            excluded.append({"id": card["id"],
+                             "reason": "discontinued — no longer open to new applicants; "
+                                       "select it in Custom mode to score a card you already hold"})
+        elif TIER_ORDER.index(card["approval"]["credit_tier"]) > user_rank:
             excluded.append({"id": card["id"],
                              "reason": f"requires credit tier '{card['approval']['credit_tier']}'"})
         elif not accepts_lockin and "cashback" not in redeems:

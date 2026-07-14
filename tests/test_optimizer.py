@@ -1017,6 +1017,26 @@ class TestFiltersAndSearch(unittest.TestCase):
         self.assertEqual([c["id"] for c in eligible], ["synth"])
         self.assertEqual(excluded, [])
 
+    def test_discontinued_excluded_from_auto(self):
+        # availability: discontinued -> dropped by filter_cards (Auto mode) even
+        # for an otherwise-eligible cashback card; active/omitted survive.
+        gone = synth_card(id="gone", availability="discontinued")
+        live = synth_card(id="live")  # no availability key = active
+        eligible, excluded = opt.filter_cards([gone, live], make_profile(P30K),
+                                              DATASET["programs"])
+        self.assertEqual([c["id"] for c in eligible], ["live"])
+        self.assertEqual([e["id"] for e in excluded], ["gone"])
+        self.assertIn("discontinued", excluded[0]["reason"])
+
+    def test_discontinued_still_scores_in_manual(self):
+        # Custom/Manual mode (evaluate) bypasses filter_cards, so a hand-picked
+        # discontinued card is still scored for existing holders.
+        gone = synth_card(id="gone", availability="discontinued")
+        ds = {**DATASET, "cards": [gone]}
+        bundle = opt.evaluate(ds, make_profile(P30K), AS_OF, ["gone"])
+        self.assertEqual(list(bundle["portfolios"][0]["cards"]), ["gone"])
+        self.assertEqual(bundle["excluded"], [])
+
     def test_brand_lockin_filter(self):
         # Default (accepts_brand_lockin: false): a no-cashback-path currency is
         # excluded outright, whatever the reward preferences — willingness to
