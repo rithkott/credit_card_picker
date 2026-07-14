@@ -621,6 +621,25 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 .results-head h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.015em; }
 .results-head .meta { font-size: 12.5px; color: var(--text-faint); }
 
+/* Worst-case (cash-out) points valuation toggle */
+.worst-case-toggle {
+  margin-top: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-inner);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  font-size: 13.5px;
+  color: var(--text-2);
+  line-height: 1.45;
+}
+.worst-case-toggle:hover { border-color: var(--border-input); }
+.worst-case-toggle input { margin-top: 2px; flex: none; accent-color: var(--accent); cursor: pointer; }
+.worst-case-toggle .note { display: block; color: var(--text-faint); font-size: 12px; margin-top: 2px; }
+
 /* Escalation ladder */
 .ladder { margin-top: 16px; display: grid; gap: 10px; }
 .ladder-row {

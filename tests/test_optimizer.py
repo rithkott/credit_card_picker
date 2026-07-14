@@ -280,6 +280,8 @@ class TestCreditsAndBonus(unittest.TestCase):
         live = dict(bonus, expires="2026-12-31")
         ok = score([synth_card(signup_bonus=live)], prof)
         self.assertEqual(ok["bonuses"]["synth"]["value"], 100.0)
+        # Cash (usd-only) bonus: worst-case equals value — nothing to floor.
+        self.assertEqual(ok["bonuses"]["synth"]["floor_value"], 100.0)
 
 
 class TestSyntheticFixtures(unittest.TestCase):
@@ -585,10 +587,16 @@ class TestConfirmedUsage(unittest.TestCase):
         r = score([card], prof)
         self.assertAlmostEqual(r["bonuses"]["synth"]["value"], 80.0)   # 10000 × 0.8cpp
         self.assertAlmostEqual(r["credits"][0]["value"], 40.0)        # 5000 × 0.8cpp
+        # Worst-case bonus always values points at floor_cpp (0.8), regardless
+        # of the effective cpp: locked here it already equals value.
+        self.assertAlmostEqual(r["bonuses"]["synth"]["floor_value"], 80.0)
         loyal = make_profile({"other": 10000}, confirmed_usage=["brandair"])
         r = score([card], loyal)
         self.assertAlmostEqual(r["bonuses"]["synth"]["value"], 115.0)  # avg 1.15cpp
         self.assertAlmostEqual(r["credits"][0]["value"], 57.5)
+        # Unlocked, the bonus is valued at avg 1.15cpp but the worst-case
+        # floor stays at 0.8cpp → 80.0, so floor_value < value.
+        self.assertAlmostEqual(r["bonuses"]["synth"]["floor_value"], 80.0)
 
     def test_valuation_note_surfaced_in_bundle_and_text(self):
         dataset = {**{k: DATASET[k] for k in

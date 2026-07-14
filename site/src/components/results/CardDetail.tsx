@@ -1,5 +1,6 @@
-import type { PerCard } from '../../types'
+import type { OptimizeBundle, PerCard } from '../../types'
 import { formatNumber, formatUsd } from '../../lib/money'
+import { assignmentDrop, floorCppOf } from '../../lib/worstCase'
 import { AssignmentsTable } from './AssignmentsTable'
 import { CreditsList } from './CreditsList'
 
@@ -51,16 +52,29 @@ function userFacing(warnings: string[]): string[] {
 /** Per-card tile (design handoff v2): name, role, the money line items, and
  * an "Adds each year" total — with the existing full AssignmentsTable and
  * credits/bonus detail one disclosure away for power users. */
-export function CardDetail({ id, card }: { id: string; card: PerCard }) {
+export function CardDetail({ id, card, cppTable, worstCase }: {
+  id: string
+  card: PerCard
+  cppTable: OptimizeBundle['cpp_table']
+  worstCase: boolean
+}) {
+  const isPoints = card.currency.kind === 'points'
+  // Worst-case (cash-out): re-price this card's points at the program floor.
+  // floorCpp drives the earn-table caption and the per-row value/total drop;
+  // cash cards and missing programs resolve to no drop. See lib/worstCase.
+  const floorCpp = isPoints ? floorCppOf(card, cppTable) : null
+  const useWorst = worstCase && floorCpp !== null
+  const rowValue = (a: PerCard['assignments'][number]): number =>
+    useWorst ? a.usd_value - assignmentDrop(a, floorCpp as number) : a.usd_value
+
   // Assignment usd_values are pre-clamp; a card-wide reward cap subtracts
   // from earnings (optimize.py reward_cap_clamps) and shows as its own line.
-  const earn = card.assignments.reduce((s, a) => s + a.usd_value, 0)
+  const earn = card.assignments.reduce((s, a) => s + rowValue(a), 0)
     - (card.reward_cap_clamp ?? 0)
   const credits = card.credits.reduce((s, c) => s + c.value, 0)
   const fees = card.fees.annual_fee_usd + (card.fees.membership_fee_usd ?? 0)
   const adds = earn + credits - fees
-
-  const isPoints = card.currency.kind === 'points'
+  const bonusValue = useWorst ? card.bonus.floor_value : card.bonus.value
 
   const shownWarnings = userFacing(card.warnings)
   const warnText = [
@@ -83,8 +97,8 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
   // perk they'd get anyway at full face value. The optimistic ceiling, shown
   // as its own highlighted total when there's anything beyond `adds` to add.
   const unusedPerksValue = unusedPerks.reduce((s, c) => s + (c.potential_value ?? 0), 0)
-  const maxValue = adds + card.bonus.value + unusedPerksValue
-  const showMaxValue = card.bonus.value > 0 || unusedPerksValue > 0
+  const maxValue = adds + bonusValue + unusedPerksValue
+  const showMaxValue = bonusValue > 0 || unusedPerksValue > 0
 
   const coverage = card.fees.annual_fee_usd > 0 && earn + credits > card.fees.annual_fee_usd
     ? Math.round((earn + credits) / card.fees.annual_fee_usd)
@@ -105,7 +119,10 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
         <table className="earn-table">
           {isPoints && (
             <caption>
-              points valued at {[...new Set(shownAssignments.map((a) => a.cpp))].join(' / ')}¢ each
+              points valued at{' '}
+              {useWorst
+                ? `${floorCpp}¢ each (cash-out floor)`
+                : `${[...new Set(shownAssignments.map((a) => a.cpp))].join(' / ')}¢ each`}
             </caption>
           )}
           <thead>
@@ -130,7 +147,7 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
                 {isPoints && (
                   <td className="num">{formatNumber(Math.round(a.usd_assigned * a.rate))}</td>
                 )}
-                <td className="num val">{formatUsd(a.usd_value)}</td>
+                <td className="num val">{formatUsd(rowValue(a))}</td>
               </tr>
             )})}
           </tbody>
@@ -193,7 +210,7 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
           Credit values are discounted to what you'll realistically capture, not face value.
         </div>
       ) : null}
-      {card.bonus.value > 0 && (
+      {bonusValue > 0 && (
         <div className="tile-lines tile-perks tile-bonus">
           <div className="sublabel">
             Signup bonus <span className="note">first year only, not in the yearly total</span>
@@ -201,7 +218,7 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
           <div className="line">
             <span>New-cardmember offer</span>
             <i className="lead" aria-hidden="true" />
-            <span>{formatUsd(card.bonus.value)}</span>
+            <span>{formatUsd(bonusValue)}</span>
           </div>
         </div>
       )}
@@ -229,11 +246,15 @@ export function CardDetail({ id, card }: { id: string; card: PerCard }) {
       )}
       <details className="full-detail">
         <summary>full detail</summary>
-        <AssignmentsTable assignments={card.assignments} currencyKind={card.currency.kind} />
+        <AssignmentsTable
+          assignments={card.assignments}
+          currencyKind={card.currency.kind}
+          worstCaseFloorCpp={useWorst ? (floorCpp as number) : null}
+        />
         <div className="detail-lines">
           <CreditsList credits={card.credits} />
           <div>
-            signup bonus (year 1 only): {formatUsd(card.bonus.value)}{' '}
+            signup bonus (year 1 only): {formatUsd(bonusValue)}{' '}
             <span className="line-note">[{card.bonus.note}]</span>
           </div>
           {card.reward_cap_clamp !== undefined && (

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { BestBySize, OptimizeBundle } from '../../types'
 import { formatNumber } from '../../lib/money'
+import { entryDrop, hasWorstCaseGap } from '../../lib/worstCase'
 import { RunHeader } from './RunHeader'
 import { PortfolioCard } from './PortfolioCard'
 import { CardDetail } from './CardDetail'
@@ -36,6 +37,17 @@ export function ResultsView({ bundle }: { bundle: OptimizeBundle }) {
   const best = shown[shown.length - 1]
   const selected = shown.find((s) => s.entry.size === selectedSize) ?? best
 
+  // Worst-case (cash-out) points valuation toggle: display-only, never re-ranks
+  // — the shown sizes and their order are chosen on the true (avg) metric; only
+  // the displayed dollars drop. Offered only when a points card actually moves.
+  const [worstCase, setWorstCase] = useState(false)
+  const canWorstCase = hasWorstCaseGap(shown.map((s) => s.entry), bundle.cpp_table)
+  const worst = worstCase && canWorstCase
+  const netOf = (entry: BestBySize): number =>
+    entry[metric] - (worst
+      ? entryDrop(entry, bundle.cpp_table, { includeBonus: metric === 'year1_net' })
+      : 0)
+
   if (shown.length === 0) {
     return (
       <div>
@@ -63,19 +75,37 @@ export function ResultsView({ bundle }: { bundle: OptimizeBundle }) {
   }
   const stack = additionOrder.filter((id) => selected.entry.cards.includes(id))
 
-  const bestNet = Math.max(best.entry[metric], 1)
+  const bestNet = Math.max(netOf(best.entry), 1)
   const perYear = bundle.optimize_for === 'ongoing' ? '/yr' : ' yr 1'
 
   return (
     <div>
       <RunHeader bundle={bundle} />
+      {canWorstCase && (
+        <label className="worst-case-toggle">
+          <input
+            type="checkbox"
+            checked={worstCase}
+            onChange={(e) => setWorstCase(e.target.checked)}
+          />
+          <span>
+            Value points at cash-out floor
+            <span className="note">
+              {' '}worst case — what your points are worth as cash or gift cards,
+              not optimal transfers. The recommended cards don't change.
+            </span>
+          </span>
+        </label>
+      )}
       <div className="ladder">
-        {shown.map((s) => {
+        {shown.map((s, i) => {
           const isBest = s === best
           const isSelected = s === selected
           const label = s.entry.cards
             .map((id) => s.entry.per_card[id]?.name ?? id).join(' + ')
-          const width = Math.max(0, Math.min(1, s.entry[metric] / bestNet)) * 100
+          const net = netOf(s.entry)
+          const gain = i > 0 ? net - netOf(shown[i - 1].entry) : null
+          const width = Math.max(0, Math.min(1, net / bestNet)) * 100
           return (
             <button
               type="button"
@@ -89,14 +119,14 @@ export function ResultsView({ bundle }: { bundle: OptimizeBundle }) {
               <span className="content">
                 <span className="size">{s.entry.size} card{s.entry.size > 1 ? 's' : ''}</span>
                 <span className="name">{label}</span>
-                {s.gain !== null && (
-                  <span className="gain">+${formatNumber(Math.round(s.gain))}/yr</span>
+                {gain !== null && (
+                  <span className="gain">+${formatNumber(Math.round(gain))}/yr</span>
                 )}
                 {isBest && <span className="tag best">BEST</span>}
                 {isSelected && <span className="tag">viewing</span>}
                 <span className="spacer" />
                 <span className="net">
-                  ${formatNumber(Math.round(s.entry[metric]))}{perYear}
+                  ${formatNumber(Math.round(net))}{perYear}
                 </span>
               </span>
             </button>
@@ -116,11 +146,18 @@ export function ResultsView({ bundle }: { bundle: OptimizeBundle }) {
         bundle={bundle}
         isBest={selected === best}
         stack={stack}
+        worstCase={worst}
       />
 
       <div className="tile-grid">
         {stack.map((id) => (
-          <CardDetail key={id} id={id} card={selected.entry.per_card[id]} />
+          <CardDetail
+            key={id}
+            id={id}
+            card={selected.entry.per_card[id]}
+            cppTable={bundle.cpp_table}
+            worstCase={worst}
+          />
         ))}
       </div>
 
