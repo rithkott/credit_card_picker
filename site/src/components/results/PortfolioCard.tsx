@@ -70,8 +70,6 @@ export function PortfolioCard({ portfolio, bundle, isBest, worstCase }: {
   const netSub = `left over ${year1 ? 'in year one' : 'each year'}, ${feePhrase}` +
     (bonuses > 0 ? '' : ' · no signup bonuses in this combination')
 
-  const unassigned = Object.entries(portfolio.unassigned_spend)
-
   return (
     <section className="block receipt">
       <div className="receipt-main">
@@ -115,17 +113,6 @@ export function PortfolioCard({ portfolio, bundle, isBest, worstCase }: {
               <span>{formatUsd(netMain)}</span>
             </div>
           </div>
-          {unassigned.length > 0 && (
-            <div className="warn-note">
-              ⚠ unassignable spend earning $0:{' '}
-              {unassigned
-                .map(([bucket, v]) => {
-                  const why = portfolio.unassigned_notes?.[bucket]
-                  return `${bucket} ${formatUsd(v)}${why ? ` (${why})` : ''}`
-                })
-                .join(', ')}
-            </div>
-          )}
       </div>
     </section>
   )
