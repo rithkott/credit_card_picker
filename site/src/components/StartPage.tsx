@@ -1,10 +1,11 @@
-/** First-run landing (v1.9.1; three-path chooser v2.2; machine selector v2.3.1):
- * the FIRST thing a fresh visitor sees is the path selector itself — a machined
- * faceplate with three latching push-buttons in the results control-panel's
- * hardware language (corner screws, engraved legend, status LEDs). Pressing a
- * key visibly latches (sinks + LED lights), then hands off to the wizard. The
- * hero copy and trust points support the panel from below. Returning visitors
- * (completed) never see this; they land in 'edit'. */
+/** Landing page (v1.9.1; three-path chooser v2.2; machine selector v2.3.1;
+ * always-first since v2.3.3): EVERY visit opens here — returning visitors too,
+ * with their saved values intact behind the chooser. Order: hero headline,
+ * then the path selector — a machined faceplate (corner screws, engraved
+ * legend) whose three latching push-buttons idle with a staggered accent
+ * breathe so they read as the thing to press — then the trust points.
+ * Pressing a key latches it (sinks + LED lights) and hands off: completed
+ * visitors to their edit view, everyone else into the wizard. */
 
 import { useState } from 'react'
 import type { Mode } from '../hooks/useFormState'
@@ -88,6 +89,22 @@ export function StartPage({ onStart }: { onStart: (mode: Mode) => void }) {
 
   return (
     <div className="start">
+      <div className="start-hero">
+        <span className="privacy-pill start-pill">
+          <span className="dot" aria-hidden="true" />
+          Runs in your browser · no accounts, no tracking
+        </span>
+        <h1>
+          Find the credit cards
+          <br />
+          <span className="shimmer-text">actually worth it for you.</span>
+        </h1>
+        <p className="sub">
+          A deterministic optimizer built on a hand-curated dataset. Tell it what you spend and it
+          shows every major card combination, ranked — and all of its work.
+        </p>
+      </div>
+
       <div className="start-bank" role="group" aria-label="Choose your path">
         <span className="screw tl" aria-hidden="true" />
         <span className="screw tr" aria-hidden="true" />
@@ -108,25 +125,10 @@ export function StartPage({ onStart }: { onStart: (mode: Mode) => void }) {
               <span className="start-option-led" aria-hidden="true" />
               <span className="start-option-title">{o.title}</span>
               <span className="start-option-sub">{o.subtitle}</span>
+              <span className="start-option-cta" aria-hidden="true">Select ▸</span>
             </button>
           ))}
         </div>
-      </div>
-
-      <div className="start-hero">
-        <span className="privacy-pill start-pill">
-          <span className="dot" aria-hidden="true" />
-          Runs in your browser · no accounts, no tracking
-        </span>
-        <h1>
-          Find the credit cards
-          <br />
-          <span className="shimmer-text">actually worth it for you.</span>
-        </h1>
-        <p className="sub">
-          A deterministic optimizer built on a hand-curated dataset. Tell it what you spend and it
-          shows every major card combination, ranked — and all of its work.
-        </p>
       </div>
 
       <ul className="start-points">

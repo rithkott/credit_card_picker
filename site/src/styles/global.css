@@ -1667,26 +1667,26 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
 .start-pill { display: inline-flex; margin: 0 auto 22px; }
 .start-hero h1 {
   margin: 0;
-  font-size: 38px; font-weight: 700;
-  letter-spacing: -0.04em; line-height: 1.06;
+  font-size: 52px; font-weight: 700;
+  letter-spacing: -0.045em; line-height: 1.04;
 }
 .start-hero h1 .accent { color: var(--accent); }
 .start-hero .sub {
-  margin: 16px auto 0;
-  font-size: 15px; line-height: 1.6;
+  margin: 18px auto 0;
+  font-size: 16px; line-height: 1.6;
   color: var(--ink-2);
   max-width: 540px;
   text-wrap: pretty;
 }
 
-/* ── Path selector bank (v2.3.1) — the page opens on this. A machined
+/* ── Path selector bank (v2.3.1, mid-page + idle glow v2.3.3) — a machined
    faceplate in the results control-panel's hardware language: corner screws,
-   an engraved legend, and three latching push-buttons. Keys rest raised;
-   hover arms them (LED warms); pressing latches — the key sinks to a full
-   inset and the LED lights accent — then the wizard takes over. */
+   an engraved legend, and three latching push-buttons. Keys idle with a
+   staggered accent breathe (halo + LED) so they read as THE control to press;
+   hover arms a key steadily; pressing latches — the key sinks to a full inset
+   and the LED lights — then the form takes over. */
 .start-bank {
   position: relative;
-  margin-top: clamp(18px, 4vh, 44px);
   border-radius: var(--r-panel);
   background: var(--surface);
   box-shadow: var(--raised-lg);
@@ -1718,12 +1718,24 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
   background: var(--surface);
   border: none;
   border-radius: var(--r-tile);
-  padding: 20px 18px 18px;
+  padding: 20px 18px 16px;
   box-shadow: var(--raised);
   display: flex; flex-direction: column; gap: 8px;
   text-align: left;
   cursor: pointer;
   transition: box-shadow 0.16s var(--ease), transform 0.16s var(--ease);
+  animation: key-breathe 3.6s ease-in-out infinite;
+}
+/* Stagger the three keys so the bank ripples instead of blinking in unison. */
+.start-option:nth-child(2), .start-option:nth-child(2) .start-option-led { animation-delay: 1.2s; }
+.start-option:nth-child(3), .start-option:nth-child(3) .start-option-led { animation-delay: 2.4s; }
+@keyframes key-breathe {
+  0%, 100% { box-shadow: var(--raised); }
+  50% { box-shadow: var(--raised), 0 0 20px 3px rgba(194, 68, 9, 0.22); }
+}
+@keyframes led-breathe {
+  0%, 100% { background: var(--surface); box-shadow: var(--inset-xs); }
+  50% { background: var(--accent-2); box-shadow: var(--inset-xs), 0 0 8px rgba(240, 118, 47, 0.6); }
 }
 /* Status LED: a recessed lens that warms on hover/focus and lights when the
    key latches. */
@@ -1733,6 +1745,18 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
   background: var(--surface);
   box-shadow: var(--inset-xs);
   transition: background 0.16s var(--ease), box-shadow 0.16s var(--ease);
+  animation: led-breathe 3.6s ease-in-out infinite;
+}
+/* Interaction takes over from the idle breathe: hover/press hold a steady
+   armed state instead of pulsing. */
+.start-option:hover, .start-option:focus-visible, .start-option:active, .start-option.latched {
+  animation: none;
+}
+.start-option:hover .start-option-led,
+.start-option:focus-visible .start-option-led,
+.start-option:active .start-option-led,
+.start-option.latched .start-option-led {
+  animation: none;
 }
 .start-option:hover, .start-option:focus-visible {
   transform: translateY(-1px);
@@ -1763,6 +1787,12 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
   text-shadow: 0 1px 0 var(--sh-light);
 }
 .start-option-sub { font: 400 12px/1.55 var(--mono); color: var(--muted); }
+.start-option-cta {
+  margin-top: auto; padding-top: 10px;
+  align-self: flex-end;
+  font: 700 10px var(--mono); letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--accent);
+}
 
 .start-points {
   list-style: none; margin: 0; padding: 0;
