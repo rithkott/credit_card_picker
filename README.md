@@ -59,12 +59,11 @@ An annotated diagram of the whole system — data schema, validation pipeline, o
 docs/research.md          competitive research + product decisions
 docs/architecture.md      annotated diagram of the whole system — data, optimizer, web, deploy (kept current, built-only)
 docs/curation-guide.md    how to write & verify card files (start here to contribute data)
-docs/plans/               design specs (02 = optimizer, 04 = tech stack, ...)
 data/schema/              JSON Schema every card file must conform to
 data/cards/<issuer>/      one hand-curated YAML file per card (source of truth)
 data/meta/                canonical registries: categories, merchants, point valuations
 scripts/validate_cards.py schema + registry + staleness validation (runs in CI)
-scripts/optimize.py       deterministic portfolio optimizer (spec: docs/plans/02-optimizer.md)
+scripts/optimize.py       deterministic portfolio optimizer
 server/                   FastAPI wrapper exposing the optimizer to the web UI
 site/                     the web UI (Vite + React + TS; static build served by Vercel or the local server)
 api/index.py              Vercel entrypoint — import shim re-exporting server/app.py's FastAPI app
@@ -81,7 +80,7 @@ pip install pyyaml jsonschema
 python3 scripts/validate_cards.py
 ```
 
-**Optimizer details:** ranks every 1–`max_cards` portfolio of approvable cards by net annual value (`--json` for machine output, `--as-of` for reproducible runs; point pricing per [docs/plans/08-simplified-valuation.md](docs/plans/08-simplified-valuation.md)). Design spec: [docs/plans/02-optimizer.md](docs/plans/02-optimizer.md).
+**Optimizer details:** ranks every 1–`max_cards` portfolio of approvable cards by net annual value (`--json` for machine output, `--as-of` for reproducible runs).
 
 ## Adding & verifying cards
 
