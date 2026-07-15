@@ -45,6 +45,17 @@ def score(cards, profile):
     return opt.score_portfolio(cards, profile, DATASET["programs"], buckets, AS_OF)
 
 
+def display(cards, profile):
+    """The user-facing display bundle for a fixed set (assemble_portfolio) —
+    where credit lines carry the FULL annual face, unlike score()'s ranking
+    value which keeps the capture haircut."""
+    cards = [seed_card(c) if isinstance(c, str) else c for c in cards]
+    by_id = {c["id"]: c for c in cards}
+    buckets = opt.build_buckets(profile, DATASET["merchants"], DATASET["categories"])
+    return opt.assemble_portfolio({"cards": [c["id"] for c in cards]}, by_id,
+                                  profile, DATASET["programs"], buckets, AS_OF)
+
+
 def synth_card(**overrides):
     card = {
         "id": "synth", "name": "Synthetic", "issuer": "test", "network": "visa",
@@ -119,6 +130,24 @@ class TestSingleCardGolden(unittest.TestCase):
         self.assertAlmostEqual(sum(c["value"] for c in r["credits"]), 253.2)
         self.assertAlmostEqual(r["ongoing_net"], 790.7)
         self.assertAlmostEqual(r["year1_net"], 1540.7)
+
+    def test_amex_gold_credits_display_full_face(self):
+        # Ranking keeps the capture haircut (score → 253.2, test_amex_gold), but
+        # the display bundle surfaces each credit's FULL annual face: dining
+        # $10×12=120, Resy $50×2=100, Dunkin $7×12=84 (Uber $0 — no transit
+        # spend, so face_value stays 0). Displayed net uses face too.
+        prof = make_profile(P30K, confirmed_usage=GOLD_KEYS)
+        self.assertAlmostEqual(sum(c["value"] for c in score(["gold"], prof)["credits"]), 253.2)
+        disp = display(["gold"], prof)
+        creds = {c["name"]: c["value"] for c in disp["per_card"]["gold"]["credits"]}
+        self.assertAlmostEqual(creds["Dining credit (Grubhub, Cheesecake Factory, etc.)"], 120.0)
+        self.assertAlmostEqual(creds["Resy dining credit"], 100.0)
+        self.assertAlmostEqual(creds["Dunkin' credit"], 84.0)
+        self.assertAlmostEqual(creds["Uber Cash"], 0.0)
+        self.assertAlmostEqual(sum(creds.values()), 304.0)
+        # Displayed net counts full face: 862.5 earn + 304 credits − 325 fee.
+        self.assertAlmostEqual(disp["ongoing_net"], 841.5)
+        self.assertAlmostEqual(disp["year1_net"], 1591.5)
 
     def test_amex_gold_unconfirmed(self):
         # No confirmed usage: every merchant credit is $0 with an explicit
