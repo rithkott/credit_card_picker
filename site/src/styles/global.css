@@ -1661,50 +1661,108 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
   padding: 8px;
   min-height: calc(100vh - 210px);
   display: flex; flex-direction: column; justify-content: center;
-  gap: clamp(40px, 7vh, 88px);
+  gap: clamp(36px, 6vh, 72px);
 }
 .start-hero { text-align: center; padding: 0 20px; }
-.start-pill { display: inline-flex; margin: 0 auto 26px; }
+.start-pill { display: inline-flex; margin: 0 auto 22px; }
 .start-hero h1 {
   margin: 0;
-  font-size: 52px; font-weight: 700;
-  letter-spacing: -0.045em; line-height: 1.04;
+  font-size: 38px; font-weight: 700;
+  letter-spacing: -0.04em; line-height: 1.06;
 }
 .start-hero h1 .accent { color: var(--accent); }
 .start-hero .sub {
-  margin: 18px auto 0;
-  font-size: 16px; line-height: 1.6;
+  margin: 16px auto 0;
+  font-size: 15px; line-height: 1.6;
   color: var(--ink-2);
   max-width: 540px;
   text-wrap: pretty;
 }
-.start-cta { margin-top: 34px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
-.start-cta-note { font: 11px var(--mono); color: var(--faint); text-transform: uppercase; letter-spacing: 0.06em; }
 
-/* Three-path chooser (v2.2): raised selectable tiles, same language as
-   .start-point but interactive — hover lift, accent title. */
+/* ── Path selector bank (v2.3.1) — the page opens on this. A machined
+   faceplate in the results control-panel's hardware language: corner screws,
+   an engraved legend, and three latching push-buttons. Keys rest raised;
+   hover arms them (LED warms); pressing latches — the key sinks to a full
+   inset and the LED lights accent — then the wizard takes over. */
+.start-bank {
+  position: relative;
+  margin-top: clamp(18px, 4vh, 44px);
+  border-radius: var(--r-panel);
+  background: var(--surface);
+  box-shadow: var(--raised-lg);
+  padding: 26px 28px 28px;
+}
+.start-bank-legend {
+  display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+  padding: 0 4px 18px;
+}
+.start-bank-title {
+  font: 700 17px/1.3 var(--font); letter-spacing: -0.02em; color: var(--ink);
+}
+.start-bank-note {
+  font: 700 10px var(--mono); letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--faint);
+}
+/* Keys sit in a recessed bay milled into the faceplate — raised buttons
+   inside an inset well is what makes the bank read as hardware rather than
+   three more content tiles. */
 .start-options {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
-  width: 100%; max-width: 880px;
+  padding: 16px;
+  border-radius: var(--r-inner);
+  background: var(--inset-well);
+  box-shadow: var(--inset-sm);
 }
 .start-option {
+  position: relative;
   background: var(--surface);
   border: none;
-  border-radius: 18px;
-  padding: 22px 20px;
+  border-radius: var(--r-tile);
+  padding: 20px 18px 18px;
   box-shadow: var(--raised);
   display: flex; flex-direction: column; gap: 8px;
   text-align: left;
   cursor: pointer;
-  transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease);
+  transition: box-shadow 0.16s var(--ease), transform 0.16s var(--ease);
 }
-.start-option:hover { transform: translateY(-2px); }
-.start-option:active { transform: translateY(1px); }
-.start-option:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Status LED: a recessed lens that warms on hover/focus and lights when the
+   key latches. */
+.start-option-led {
+  position: absolute; top: 14px; right: 14px;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--inset-xs);
+  transition: background 0.16s var(--ease), box-shadow 0.16s var(--ease);
+}
+.start-option:hover, .start-option:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: var(--raised-lg);
+}
+.start-option:hover .start-option-led,
+.start-option:focus-visible .start-option-led {
+  background: var(--accent-2);
+  box-shadow: var(--inset-xs), 0 0 6px rgba(240, 118, 47, 0.55);
+}
+.start-option:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+/* Pressed / latched: the key sinks flush into the faceplate and holds there
+   while the LED goes full accent — the mechanical moment. :active covers the
+   mouse-down instant; .latched holds the state until navigation. */
+.start-option:active,
+.start-option.latched {
+  transform: translateY(1.5px);
+  box-shadow: var(--inset-sm);
+}
+.start-option.latched .start-option-led,
+.start-option:active .start-option-led {
+  background: var(--accent);
+  box-shadow: var(--inset-xs), 0 0 9px rgba(194, 68, 9, 0.65);
+}
 .start-option-title {
   font: 700 15px/1.35 var(--font); letter-spacing: -0.01em; color: var(--ink);
+  padding-right: 18px;
+  text-shadow: 0 1px 0 var(--sh-light);
 }
-.start-option-sub { font: 400 12.5px/1.55 var(--mono); color: var(--muted); }
+.start-option-sub { font: 400 12px/1.55 var(--mono); color: var(--muted); }
 
 .start-points {
   list-style: none; margin: 0; padding: 0;
@@ -1731,6 +1789,6 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
 .start-point-body { font-size: 13px; line-height: 1.55; color: var(--ink-2); }
 
 @media (max-width: 720px) {
-  .start-hero h1 { font-size: 40px; }
+  .start-bank { padding: 22px 18px; }
   .start-points, .start-options { grid-template-columns: 1fr; }
 }
