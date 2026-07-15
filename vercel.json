@@ -15,7 +15,7 @@
   ],
   "functions": {
     "api/index.py": {
-      "excludeFiles": "{site/**,testdata/**,tests/**,data/offer_files/**,design-handoff-extracted/**,Design-Handoff-package.zip,v2_considerations/**,examples/**,docs/**,tools/**,.github/**,server/debug-runs/**}",
+      "excludeFiles": "{site/**,testdata/**,tests/**,data/offer_files/**,design-handoff-extracted/**,Design-Handoff-package.zip,v2_considerations/**,examples/**,docs/**,tools/**,.github/**,server/debug-runs/**,.claude/**,.gitnexus/**,.pytest_cache/**,.git/**}",
       "memory": 1024,
       "maxDuration": 60
     }

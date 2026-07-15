@@ -1,0 +1,24 @@
+# CLI deploys (vercel deploy) upload the local directory; without this file
+# the CLI can ship local-only junk (worktrees, code index, node_modules,
+# test corpora) into the Python function bundle and blow the 225 MB limit.
+# Git-triggered deploys only see tracked files, but keep the two paths equal.
+.git/
+.gitnexus/
+.claude/
+.pytest_cache/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Repo dirs never needed in the deployment (mirrors .gitignore + excludeFiles)
+testdata/
+data/build/
+docs/local/
+server/debug-runs/
+tools/debug-runs/
+design-handoff-extracted/
+Design-Handoff-package.zip
+
+# Build inputs are site/src etc.; artifacts and deps are produced in-cloud
+site/node_modules/
+site/dist/
