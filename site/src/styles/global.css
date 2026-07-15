@@ -30,9 +30,9 @@
   /* ── Accent + semantic ────────────────────────────────────────────────── */
   --accent: #e2560f;           /* brand accent, primary buttons, active, net */
   --accent-2: #f0762f;         /* slider-fill gradient end only */
-  --pos: #0c7d3e;              /* credits, gains, "adds" */
-  --pos-2: #0f8a45;
-  --neg: #c22a1f;              /* fees, memberships, negative deltas */
+  --pos: #128f49;              /* credits, gains, "adds" */
+  --pos-2: #15a052;
+  --neg: #dc3324;              /* fees, memberships, negative deltas */
   --rule: #b8b4a9;             /* receipt / earn-row dotted leader lines */
   --divider: rgba(0, 0, 0, 0.1);
   --divider-strong: rgba(0, 0, 0, 0.14);
@@ -84,7 +84,7 @@ body {
   margin: 0;
   background: var(--surface);
   color: var(--ink);
-  font: 14.5px/1.55 var(--font);
+  font: 500 14.5px/1.55 var(--font);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
@@ -129,7 +129,7 @@ a:hover { color: #a83a08; }
   background: var(--divider-strong); margin: 0 6px 0 2px;
 }
 .nav-pill nav a {
-  color: var(--muted); font-weight: 600;
+  color: var(--muted); font-weight: 700;
   padding: 6px 10px; border-radius: 8px;
 }
 .nav-pill nav a:hover { color: var(--ink); }
@@ -146,7 +146,7 @@ a:hover { color: #a83a08; }
   background: var(--surface);
   box-shadow: var(--raised-sm);
   color: var(--muted);
-  font-size: 12.5px; font-weight: 600;
+  font-size: 12.5px; font-weight: 700;
   transition: color 0.15s ease;
 }
 .github-corner:hover { color: var(--ink); }
@@ -247,7 +247,7 @@ section.block.block-accent .block-icon { color: var(--accent); }
   .block-icon.duo .duo-a { top: 10px; left: 9px; width: 17px; height: 17px; }
   .block-icon.duo .duo-b { right: 9px; bottom: 9px; width: 16px; height: 16px; }
 }
-.optional { color: var(--faint); font-weight: 500; font-size: 12.5px; }
+.optional { color: var(--faint); font-weight: 600; font-size: 12.5px; }
 
 .privacy-pill {
   display: inline-flex; align-items: center; gap: 8px;
@@ -296,7 +296,7 @@ input:focus-visible, select:focus-visible, button:focus-visible, .chip:has(input
   outline-offset: 2px;
 }
 button {
-  font: 600 13.5px var(--font);
+  font: 700 13.5px var(--font);
   border: none;
   border-radius: 999px;
   background: var(--surface);
@@ -340,7 +340,7 @@ button.accent-add {
 button.accent-add:hover { color: var(--accent); }
 button.linklike {
   background: none; box-shadow: none; padding: 2px 0;
-  color: var(--accent); font-size: 12.5px; font-weight: 600;
+  color: var(--accent); font-size: 12.5px; font-weight: 700;
   border-radius: 4px;
 }
 button.linklike:hover { color: #a83a08; }
@@ -357,7 +357,7 @@ button.linklike:active { transform: none; }
   font: 700 14.5px var(--mono);
   font-variant-numeric: tabular-nums;
 }
-.money-input.empty { font-weight: 400; color: var(--faint); }
+.money-input.empty { font-weight: 500; color: var(--faint); }
 .money-input:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
 .money-input .prefix { color: var(--faint); margin-right: 1px; }
 .money-input input {
@@ -412,7 +412,7 @@ button.linklike:active { transform: none; }
 .segmented label {
   padding: 6px 16px;
   border-radius: 999px;
-  font: 600 12.5px var(--font);
+  font: 700 12.5px var(--font);
   color: var(--muted);
   cursor: pointer;
   user-select: none;
@@ -439,7 +439,7 @@ button.linklike:active { transform: none; }
   border-bottom: 1px solid var(--divider-soft);
 }
 .spend-rows > .cat-row:last-of-type { border-bottom: none; }
-.cat-row > label { font-size: 14px; font-weight: 500; color: var(--ink-2); }
+.cat-row > label { font-size: 14px; font-weight: 600; color: var(--ink-2); }
 .cat-row.empty > label { color: var(--muted); }
 .cat-row .annot { color: var(--faint); font: 11px var(--mono); text-align: right; }
 .cat-row .disclose { text-align: right; }
@@ -468,7 +468,7 @@ button.linklike:active { transform: none; }
 .spend-foot .big {
   font: 700 22px var(--mono); font-variant-numeric: tabular-nums; color: var(--ink);
 }
-.spend-foot .big .unit { font-size: 12px; color: var(--faint); font-weight: 400; }
+.spend-foot .big .unit { font-size: 12px; color: var(--faint); font-weight: 500; }
 .spend-foot .muted { font: 12px var(--mono); color: var(--muted); }
 
 /* ── Chips (habits, rewards, radio chips) ─────────────────────────────── */
@@ -478,7 +478,7 @@ button.linklike:active { transform: none; }
   border: none;
   border-radius: 999px;
   padding: 8px 14px;
-  font: 600 12px var(--font);
+  font: 700 12px var(--font);
   color: var(--muted);
   cursor: pointer; user-select: none;
   background: var(--surface);
@@ -521,7 +521,7 @@ button.linklike:active { transform: none; }
   font: 700 11px var(--mono); letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--ink-2); display: block; margin-bottom: 8px;
 }
-.opts .field .hint { font-weight: 400; color: var(--faint); letter-spacing: 0; text-transform: none; }
+.opts .field .hint { font-weight: 500; color: var(--faint); letter-spacing: 0; text-transform: none; }
 .lockin-q { margin-top: 14px; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
 .lockin-chips { margin-top: 8px; }
 
@@ -719,7 +719,7 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 .worst-case-toggle > span { min-width: 0; font-weight: 700; font-size: 13px; }
 .worst-case-toggle .note {
   display: block; color: var(--muted); font: 11px/1.5 var(--mono);
-  margin-top: 3px; font-weight: 400;
+  margin-top: 3px; font-weight: 500;
 }
 
 /* ── Results control panel (size slider + rotary knob + dot-matrix) ────── */
@@ -835,7 +835,7 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   box-shadow: var(--raised);
   cursor: pointer;
   padding: 14px 15px;
-  font-weight: 400;
+  font-weight: 500;
   text-align: left;
   transition: box-shadow 0.15s ease;
 }
@@ -863,7 +863,7 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 }
 .ladder-row .name {
   order: 3; flex-basis: 100%;
-  font: 11px var(--mono); color: var(--muted); font-weight: 400;
+  font: 11px var(--mono); color: var(--muted); font-weight: 500;
   margin-top: 3px;
   min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
@@ -926,7 +926,7 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   color: var(--pos-2);
 }
 .receipt .net-second .per {
-  font-size: 12px; font-weight: 400;
+  font-size: 12px; font-weight: 500;
   color: var(--muted);
   letter-spacing: 0;
 }
@@ -1022,10 +1022,10 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 .card-tile .role { font: 11px var(--mono); color: var(--faint); margin-top: 4px; }
 .card-tile .role .fee-amount { color: var(--accent); font-weight: 700; }
 .card-tile .gateway-caveat {
-  font-size: 12px; font-weight: 600; color: var(--warn);
+  font-size: 12px; font-weight: 700; color: var(--warn);
   margin-top: 6px; line-height: 1.35;
 }
-.earn-table .frac, .assign .frac { color: var(--muted); font-weight: 600; white-space: nowrap; }
+.earn-table .frac, .assign .frac { color: var(--muted); font-weight: 700; white-space: nowrap; }
 
 /* Manual mode: the same tile made a selectable button with an inset checkbox. */
 .card-tile.selectable {
@@ -1111,11 +1111,11 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   border-radius: var(--r-input);
   background: var(--surface);
   box-shadow: var(--inset-sm);
-  font: 600 14px var(--font);
+  font: 700 14px var(--font);
   color: var(--ink);
   transition: box-shadow 0.15s var(--ease);
 }
-.manual-search input::placeholder { color: var(--faint); font-weight: 400; }
+.manual-search input::placeholder { color: var(--faint); font-weight: 500; }
 .manual-search input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .manual-search .search-icon {
   position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
@@ -1225,14 +1225,14 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   box-shadow: var(--raised), inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 .mode-toggle button.active:hover { color: #fff; }
-.mode-toggle .mode-hint { font: 400 10.5px/1.45 var(--mono); color: var(--muted); }
+.mode-toggle .mode-hint { font: 500 10.5px/1.45 var(--mono); color: var(--muted); }
 .mode-toggle button.active .mode-hint,
 .mode-toggle button.active .mode-bullets { color: rgba(255, 255, 255, 0.88); }
 .mode-toggle .mode-bullets {
   margin: 4px 0 0;
   padding-left: 16px;
   list-style: disc;
-  font: 400 10.5px/1.5 var(--mono);
+  font: 500 10.5px/1.5 var(--mono);
   color: var(--muted);
   text-align: left;
 }
@@ -1246,11 +1246,12 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   color: var(--ink-2);
 }
 .tile-lines .line { display: flex; align-items: center; gap: 8px; }
+.tile-lines .line > span:first-child { min-width: 0; overflow-wrap: break-word; }
 /* Value column: nowrap mono only when the line is a label/value pair — a
    lone span (e.g. the assumed-membership disclosure) is prose and must wrap. */
 .tile-lines .line > span:last-child:not(:only-child) { white-space: nowrap; font-family: var(--mono); font-weight: 700; }
 .tile-lines .line > span:only-child { min-width: 0; }
-.tile-lines .line .note { color: var(--faint); font-weight: 400; }
+.tile-lines .line .note { color: var(--faint); font-weight: 500; }
 .tile-lines .line .pts { color: var(--muted); }
 .tile-lines .line.fee { color: var(--ink-2); }
 .tile-lines .line.fee.annual-fee > span:last-child { color: var(--neg); }
@@ -1324,11 +1325,11 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 .tile-credits .line > span:last-child { color: var(--pos); }
 .tile-perks { margin-top: 12px; }
 .tile-perks .sublabel .note {
-  text-transform: none; letter-spacing: 0; font-weight: 400;
+  text-transform: none; letter-spacing: 0; font-weight: 500;
   color: var(--faint);
 }
 .tile-perks .line { color: var(--faint); }
-.tile-perks .line > span:last-child { color: var(--faint); font-weight: 400; font-family: var(--mono); }
+.tile-perks .line > span:last-child { color: var(--faint); font-weight: 500; font-family: var(--mono); }
 .tile-bonus {
   margin-top: 12px;
   border-radius: 10px;
@@ -1382,7 +1383,7 @@ table.assign th:first-child, table.assign td:first-child { text-align: left; }
 table.assign .note { color: var(--muted); font-size: 0.92em; }
 .line-note { color: var(--muted); font-size: 0.92em; }
 .warn-note { color: var(--warn); font-size: 12.5px; margin-top: 8px; }
-.credit-zero { color: var(--muted); }
+.credit-zero { color: #605c54; }
 .detail-lines { font-size: 11.5px; color: var(--ink-2); display: grid; gap: 3px; margin-top: 4px; }
 
 /* ── Disclosure rows (exclusions, assumptions) ────────────────────────── */
@@ -1415,7 +1416,7 @@ details.disclosure pre {
   margin: 0; font-size: 13px; font-weight: 700; color: var(--ink);
   display: flex; align-items: baseline; gap: 8px;
 }
-.pc-unit { font: 11px var(--mono); font-weight: 400; color: var(--muted); }
+.pc-unit { font: 11px var(--mono); font-weight: 500; color: var(--muted); }
 .pc-list { margin: 0; display: grid; gap: 0; }
 .pc-row {
   display: grid; grid-template-columns: minmax(120px, 200px) 1fr; gap: 14px;
@@ -1771,7 +1772,7 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
   padding-right: 20px;
   text-shadow: 0 1px 0 var(--sh-light);
 }
-.start-option-sub { font: 400 12px/1.55 var(--mono); color: var(--muted); }
+.start-option-sub { font: 500 12px/1.55 var(--mono); color: var(--muted); }
 .start-option-cta {
   margin-top: auto; padding-top: 14px;
   align-self: flex-end;
