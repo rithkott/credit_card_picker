@@ -13,3 +13,10 @@ design-handoff-extracted/
 
 # Claude worktrees (embedded checkouts, never commit)
 .claude/worktrees/
+
+# Local archives — kept on disk, never in remote (plan docs, review runs)
+docs/plans/
+docs/reviews/
+
+# macOS
+.DS_Store
