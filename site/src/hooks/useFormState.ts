@@ -1,9 +1,10 @@
 /** Owns all persisted input-form state (v1.9.0) and mirrors it to localStorage.
  * Extracted from Home so the section components keep the exact same setters they
  * already receive (setSpend, setUser, …) — nothing about their prop wiring
- * changes. Lazy-inits from persistence once; a returning visitor lands in the
- * scrolling 'edit' view, a first-timer in the step-by-step 'wizard' view. Run
- * results stay local to Home (not persisted). */
+ * changes. Lazy-inits from persistence once; every visit opens on the start
+ * chooser, and the path press routes a completed visitor to the scrolling
+ * 'edit' view, everyone else into the step-by-step 'wizard'. Run results stay
+ * local to Home (not persisted). */
 
 import { useEffect, useRef, useState } from 'react'
 import type { Unit } from '../lib/money'
@@ -69,12 +70,11 @@ export function useFormState(): FormState {
   const [mode, setMode] = useState<Mode>(() => loaded?.mode ?? 'generate')
   const [selected, setSelected] = useState<Set<string>>(() => loaded?.selected ?? new Set())
   const [completed, setCompleted] = useState<boolean>(() => loaded?.completed ?? false)
-  // Fresh visitor: land on the start splash (v1.9.1). Returning-but-unfinished
-  // visitor (restored a blob mid-wizard) skips the splash and resumes the wizard;
-  // a completed visitor goes straight to the scrolling edit view.
-  const [view, setView] = useState<FormView>(() =>
-    loaded?.completed ? 'edit' : loaded ? 'wizard' : 'start',
-  )
+  // EVERY visit opens on the start chooser (v2.3.3) — fresh and returning
+  // alike. Restored values survive underneath; pressing a path key routes a
+  // completed visitor to their edit view and everyone else into the wizard
+  // (Home owns that handoff).
+  const [view, setView] = useState<FormView>('start')
   const [restored] = useState(() => loaded !== null)
 
   // Persist on change. Skip the mount pass so a visitor who never touches the

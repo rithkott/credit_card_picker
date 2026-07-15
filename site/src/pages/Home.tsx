@@ -174,14 +174,16 @@ export function Home({ cfg, onRetryConfig }: {
 
   const inWizard = fs.view === 'wizard'
 
-  // Fresh-visitor splash (v1.9.1): its own full-bleed layout, no shared hero.
-  // The three-path chooser sets the journey mode and hands off to the wizard.
+  // The start chooser opens EVERY visit (v2.3.3): its own full-bleed layout,
+  // no shared hero. A path press sets the journey mode, then routes a
+  // completed visitor straight to their filled-in edit view and everyone
+  // else into the guided wizard.
   if (fs.view === 'start') {
     return (
       <StartPage
         onStart={(m) => {
           switchMode(m)
-          fs.setView('wizard')
+          fs.setView(fs.completed ? 'edit' : 'wizard')
         }}
       />
     )
