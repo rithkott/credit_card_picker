@@ -40,7 +40,6 @@ export function RentMortgage({ cents, extras, onChange, onExtrasChange }: {
           id="cat-housing"
           cents={cents}
           extras={extras}
-          unit={unit}
           onChange={onChange}
           onExtrasChange={onExtrasChange}
         />

@@ -3,8 +3,8 @@
  * docs/plans/04-tech-stack.md instead. */
 import { describe, expect, it, vi } from 'vitest'
 import {
-  centsToDollars, displayFromAnnualCents, foldCents, otherUnitAnnotation,
-  parseToAnnualCents, sumAmount,
+  centsToDollars, displayCents, editDisplayCents, foldCents, otherUnitAnnotation,
+  parseCents, sumAmount,
 } from './money'
 import { buildProfile, type UserState } from './profile'
 import { validate, type SpendState } from './validation'
@@ -37,31 +37,30 @@ const spendOf = (
 })
 
 describe('money: integer-cents canonical state (plan 03 §3.2)', () => {
-  it('parses monthly input as x12 annual cents', () => {
-    expect(parseToAnnualCents('666.67', 'monthly')).toBe(66667 * 12)
-    expect(parseToAnnualCents('8000', 'annual')).toBe(800000)
+  it('parses a typed amount into cents, unit-agnostically (no x12 rescale)', () => {
+    expect(parseCents('666.67')).toBe(66667)
+    expect(parseCents('8000')).toBe(800000)
   })
   it('blank is null, garbage is NaN, negatives are NaN', () => {
-    expect(parseToAnnualCents('', 'annual')).toBeNull()
-    expect(parseToAnnualCents('  ', 'monthly')).toBeNull()
-    expect(Number.isNaN(parseToAnnualCents('12e', 'annual') as number)).toBe(true)
-    expect(Number.isNaN(parseToAnnualCents('-5', 'annual') as number)).toBe(true)
+    expect(parseCents('')).toBeNull()
+    expect(parseCents('  ')).toBeNull()
+    expect(Number.isNaN(parseCents('12e') as number)).toBe(true)
+    expect(Number.isNaN(parseCents('-5') as number)).toBe(true)
   })
   it('accepts the grouped display format back ("8,000" round-trips)', () => {
-    expect(parseToAnnualCents('8,000', 'annual')).toBe(800000)
-    expect(parseToAnnualCents(displayFromAnnualCents(800000, 'annual'), 'annual')).toBe(800000)
+    expect(parseCents('8,000')).toBe(800000)
+    expect(parseCents(displayCents(800000))).toBe(800000)
   })
-  it('display round-trips are lossless: toggle never mutates state', () => {
-    const cents = parseToAnnualCents('641.67', 'annual') as number
-    // Simulate toggling display units repeatedly: state is untouched by display.
-    const shownMonthly = displayFromAnnualCents(cents, 'monthly')
-    const shownAnnual = displayFromAnnualCents(cents, 'annual')
-    expect(shownAnnual).toBe('641.67')
-    expect(shownMonthly).toBe('53.47')
-    expect(displayFromAnnualCents(cents, 'annual')).toBe('641.67') // unchanged after "toggling"
+  it('display is unit-independent: toggling never rescales the stored cents', () => {
+    const cents = parseCents('641.67') as number
+    // The stored cents are the digits the user typed; the toggle only relabels
+    // them, so the displayed number is the same in either unit.
+    expect(displayCents(cents)).toBe('641.67')
+    expect(editDisplayCents(cents)).toBe('641.67')
   })
   it('other-unit annotation (whole dollars — it is an approximation)', () => {
-    expect(otherUnitAnnotation(800000, 'monthly')).toBe('≈ $8,000 /yr')
+    // cents are in the current unit; the annotation shows the *other* unit.
+    expect(otherUnitAnnotation(800000, 'monthly')).toBe('≈ $96,000 /yr')
     expect(otherUnitAnnotation(800000, 'annual')).toBe('≈ $667 /mo')
     expect(otherUnitAnnotation(0, 'annual')).toBe('')
     expect(otherUnitAnnotation(null, 'annual')).toBe('')
@@ -114,12 +113,23 @@ describe('validation: exact parse_profile mirror (plan 03 §4)', () => {
 
 describe('profile emission (plan 03 §2 rules)', () => {
   it('omits zero/blank categories and empty merchant_spend', () => {
-    const p = buildProfile(spendOf({ groceries: 800000, dining: 0, other: null }), baseUser())
+    const p = buildProfile(spendOf({ groceries: 800000, dining: 0, other: null }), baseUser(), 'annual')
     expect(p.spend).toEqual({ groceries: 8000 })
     expect(p.merchant_spend).toBeUndefined()
   })
+  it('annualizes monthly entries at the profile boundary (grid + merchants x12)', () => {
+    const p = buildProfile(
+      spendOf({ groceries: 50000 }, { costco: 20000 }), baseUser(), 'monthly')
+    expect(p.spend).toEqual({ groceries: 6000 }) // $500/mo -> $6,000/yr
+    expect(p.merchant_spend).toEqual({ costco: 2400 }) // $200/mo -> $2,400/yr
+  })
+  it('housing is always annualized (its block is monthly regardless of toggle)', () => {
+    // Grid unit annual, but housing cents are monthly -> still x12.
+    const p = buildProfile(spendOf({ housing: 200000, other: 800000 }), baseUser(), 'annual')
+    expect(p.spend).toEqual({ housing: 24000, other: 8000 })
+  })
   it('includes nonzero carve-outs and all user keys', () => {
-    const p = buildProfile(spendOf({ groceries: 800000 }, { costco: 300000, uber: 0 }), baseUser())
+    const p = buildProfile(spendOf({ groceries: 800000 }, { costco: 300000, uber: 0 }), baseUser(), 'annual')
     expect(p.merchant_spend).toEqual({ costco: 3000 })
     expect(p.user).toEqual({
       credit_tier: 'very_good',
@@ -134,13 +144,14 @@ describe('profile emission (plan 03 §2 rules)', () => {
   it('reward_preferences carries only the checked kinds — never total_value', () => {
     const user = baseUser()
     user.rewardKinds = { cashback: false, points: true }
-    const p = buildProfile(spendOf({ other: 100 }), user)
+    const p = buildProfile(spendOf({ other: 100 }), user, 'annual')
     expect(p.user.reward_preferences).toEqual(['points'])
   })
   it('exclude_cards emits the vetoed ids sorted, and is omitted when empty', () => {
-    const p = buildProfile(spendOf({ other: 100 }), baseUser(), new Set(['venture-x', 'active-cash']))
+    const p = buildProfile(
+      spendOf({ other: 100 }), baseUser(), 'annual', new Set(['venture-x', 'active-cash']))
     expect(p.exclude_cards).toEqual(['active-cash', 'venture-x'])
-    expect(buildProfile(spendOf({ other: 100 }), baseUser()).exclude_cards).toBeUndefined()
+    expect(buildProfile(spendOf({ other: 100 }), baseUser(), 'annual').exclude_cards).toBeUndefined()
   })
 })
 
@@ -156,11 +167,13 @@ describe('"+"-added sub-amounts fold into the topic total', () => {
       .toEqual({ groceries: 8000, dining: 1000 })
   })
   it('buildProfile emits the folded per-category dollar total', () => {
-    const p = buildProfile(spendOf({ groceries: 500000 }, {}, { groceries: [300000, 200000] }), baseUser())
+    const p = buildProfile(
+      spendOf({ groceries: 500000 }, {}, { groceries: [300000, 200000] }), baseUser(), 'annual')
     expect(p.spend).toEqual({ groceries: 10000 }) // 5000 + 3000 + 2000
   })
   it('buildProfile folds merchant carve-out sub-amounts too', () => {
-    const p = buildProfile(spendOf({ groceries: 800000 }, { costco: 200000 }, {}, { costco: [100000] }), baseUser())
+    const p = buildProfile(
+      spendOf({ groceries: 800000 }, { costco: 200000 }, {}, { costco: [100000] }), baseUser(), 'annual')
     expect(p.merchant_spend).toEqual({ costco: 3000 })
   })
   it('E1 is satisfied by a category whose total comes only from extras', () => {

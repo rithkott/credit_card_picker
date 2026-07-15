@@ -126,8 +126,8 @@ export function Home({ cfg, onRetryConfig }: {
       })
   }
 
-  const onRun = () => startRun(optimize(buildProfile(spend, user, excluded)))
-  const onRunManual = () => startRun(evaluateManual(buildProfile(spend, user, excluded), [...selected]))
+  const onRun = () => startRun(optimize(buildProfile(spend, user, unit, excluded)))
+  const onRunManual = () => startRun(evaluateManual(buildProfile(spend, user, unit, excluded), [...selected]))
 
   // Switch journey paths, keeping every entered value (spend, user, selected).
   // Results from another path are cleared so stale bundles never render under
@@ -144,7 +144,7 @@ export function Home({ cfg, onRetryConfig }: {
   const onRunImprove = () => {
     setElapsed(0)
     setRun({ phase: 'running', startedAt: Date.now() })
-    suggestAddition(buildProfile(spend, user, excluded), [...selected])
+    suggestAddition(buildProfile(spend, user, unit, excluded), [...selected])
       .then((bundle) => {
         setSelected((prev) => new Set(prev).add(bundle.added_card))
         setRun({ phase: 'done', bundle })

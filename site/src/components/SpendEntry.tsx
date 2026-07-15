@@ -31,8 +31,11 @@ export function SpendEntry({
   const categories = config.categories.filter((c) => c.key !== 'housing')
   const gridCents = categories.map((c) =>
     sumAmount(spend.categoryCents[c.key] ?? null, spend.categoryExtraCents[c.key] ?? []))
-  const totalCents = gridCents
+  const enteredCents = gridCents
     .reduce<number>((sum, c) => sum + (c !== null && !Number.isNaN(c) && c > 0 ? c : 0), 0)
+  // Footer total is always annual regardless of the toggle; stored cents are in
+  // the current unit, so monthly entries are annualized here for the /yr figure.
+  const annualCents = unit === 'monthly' ? enteredCents * 12 : enteredCents
   const nonzero = gridCents
     .filter((c) => c !== null && !Number.isNaN(c) && c > 0).length
   return (
@@ -70,9 +73,9 @@ export function SpendEntry({
       </div>
       <div className="spend-foot">
         <span className="big">
-          ${formatNumber(totalCents / 100)}<span className="unit"> /yr</span>
+          ${formatNumber(annualCents / 100)}<span className="unit"> /yr</span>
         </span>
-        <span className="muted">≈ ${formatNumber(Math.round(totalCents / 1200))} /mo</span>
+        <span className="muted">≈ ${formatNumber(Math.round(annualCents / 1200))} /mo</span>
         <span className="spacer" />
         <span className="muted">
           {nonzero} of {categories.length} categories · skipped categories count $0
