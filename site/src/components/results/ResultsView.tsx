@@ -1,20 +1,13 @@
 import { useRef, useState } from 'react'
-import type { PointerEvent as ReactPointerEvent, KeyboardEvent as ReactKeyboardEvent, CSSProperties } from 'react'
+import type { PointerEvent as ReactPointerEvent, KeyboardEvent as ReactKeyboardEvent } from 'react'
 import type { BestBySize, OptimizeBundle } from '../../types'
 import { formatNumber } from '../../lib/money'
 import { entryDrop, hasWorstCaseGap } from '../../lib/worstCase'
 import { RunHeader } from './RunHeader'
 import { PortfolioCard } from './PortfolioCard'
-import { CardDetail } from './CardDetail'
+import { ResultTiles } from './ResultTiles'
 import { ExcludedPruned } from './ExcludedPruned'
 import { PolicyConstants } from './PolicyConstants'
-
-/** per_card keys are engine variant ids — a choose-your-own card renders as
- * "base-id[option]". Exclusion works on the physical card, so strip the
- * variant suffix before touching the excluded set. */
-function baseId(id: string): string {
-  return id.replace(/\[[^\]]*\]$/, '')
-}
 
 interface ShownEntry {
   entry: BestBySize
@@ -242,38 +235,15 @@ export function ResultsView({ bundle, addedCard, excluded, onToggleExclude }: {
         worstCase={worst}
       />
 
-      {/* Max 3 tiles per row: chunk the stack into rows of ≤3, each its own
-          subgrid. One flat grid can't wrap — every tile's `grid-row: 1 / -1`
-          pins it to the same 12 bands, forcing a single row that overflows.
-          `--cols` = the full-row column count (min(total, 3)); every row sizes
-          its tracks to that so tiles are the SAME width across rows, and a
-          short trailing row centres its tiles at that width. `--tiles` = tiles
-          in this row (the repeat count). */}
-      {(() => {
-        const cols = Math.min(stack.length, 3)
-        const rows: string[][] = []
-        for (let i = 0; i < stack.length; i += 3) rows.push(stack.slice(i, i + 3))
-        return rows.map((row, ri) => (
-          <div
-            className="tile-grid results-tiles"
-            key={ri}
-            style={{ '--cols': cols, '--tiles': row.length } as CSSProperties}
-          >
-            {row.map((id) => (
-              <CardDetail
-                key={id}
-                id={id}
-                card={selected.entry.per_card[id]}
-                cppTable={bundle.cpp_table}
-                worstCase={worst}
-                suggested={id === addedCard}
-                isExcluded={excluded?.has(baseId(id)) ?? false}
-                onToggleExclude={onToggleExclude ? () => onToggleExclude(baseId(id)) : undefined}
-              />
-            ))}
-          </div>
-        ))
-      })()}
+      <ResultTiles
+        cardIds={stack}
+        perCard={selected.entry.per_card}
+        cppTable={bundle.cpp_table}
+        worstCase={worst}
+        addedCard={addedCard}
+        excluded={excluded}
+        onToggleExclude={onToggleExclude}
+      />
 
       <div className="disclosure-rows">
         <ExcludedPruned bundle={bundle} />

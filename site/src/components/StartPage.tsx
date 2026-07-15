@@ -1,7 +1,7 @@
-/** Landing page (v1.9.1; three-path chooser v2.2; free keycaps v2.4):
- * EVERY visit opens here — returning visitors too, with their saved values
- * intact behind the chooser. Order: hero headline, then the path selector —
- * three XL keycaps sitting directly on the page (no faceplate, no idle
+/** Landing page (v1.9.1; three-path chooser v2.2; free keycaps v2.4; fourth
+ * compare key plan 20): EVERY visit opens here — returning visitors too, with
+ * their saved values intact behind the chooser. Order: hero headline, then the
+ * path selector — four XL keycaps sitting directly on the page (no faceplate, no idle
  * animation) with a recessed orange bottom edge so they read as hardware
  * keys; hovering floats a key up, pressing latches it (sinks + LED lights)
  * and hands off: completed visitors to their edit view, everyone else into
@@ -41,6 +41,11 @@ const OPTIONS: { mode: Mode; title: string; subtitle: string }[] = [
     mode: 'improve',
     title: 'Improve my existing card portfolio',
     subtitle: 'Keep your cards and find the best one to add.',
+  },
+  {
+    mode: 'compare',
+    title: 'Compare card portfolios',
+    subtitle: 'Build two to four sets of cards and see which one wins for your spending.',
   },
 ]
 

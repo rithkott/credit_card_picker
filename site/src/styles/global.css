@@ -1201,7 +1201,7 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 }
 
 /* Auto / Manual mode toggle — two raised option cards, inset when active. */
-.mode-toggle { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 18px; }
+.mode-toggle { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 18px; }
 .mode-toggle button {
   display: flex;
   flex-direction: column;
@@ -1725,8 +1725,10 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
   font: 700 10px var(--mono); letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--faint);
 }
+/* Four keys since plan 20 (compare): 2×2 keeps them XL — four across reads
+   skinny and a 3+1 orphan row reads broken. */
 .start-options {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px;
 }
 .start-option {
   position: relative;
@@ -1883,3 +1885,106 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
 }
 .tile-menu-pop button:hover { color: var(--neg); box-shadow: var(--inset-xs); }
 .tile-menu-note { padding: 4px 9px 2px; font: 11px var(--mono); color: var(--faint); }
+
+/* ── Compare portfolios (plan 20) ─────────────────────────────────────────
+   Picker: an inset tab track routes catalog picks into the active portfolio;
+   chip rows keep every portfolio visible while one is edited. Results: each
+   portfolio's receipt stacks vertically, winner ringed in accent, per-card
+   math tiles behind a disclosure. */
+.compare-picker { margin-top: 16px; }
+.compare-tabs {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  padding: 8px;
+  border-radius: 14px;
+  box-shadow: var(--inset-sm);
+}
+.compare-tab { position: relative; display: flex; }
+.compare-tab > button[role='tab'] {
+  border: 0; border-radius: 10px;
+  padding: 8px 30px 8px 12px;
+  background: transparent;
+  font: 700 12.5px var(--font); color: var(--muted);
+  display: flex; align-items: baseline; gap: 8px;
+  cursor: pointer;
+}
+.compare-tab:not(.active) > button[role='tab']:hover { color: var(--ink); }
+.compare-tab.active > button[role='tab'] {
+  background: var(--surface);
+  box-shadow: var(--raised-sm);
+  color: var(--accent);
+}
+.compare-tab-count { font: 500 10.5px var(--mono); color: var(--faint); }
+.compare-tab-x {
+  position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+  width: 18px; height: 18px;
+  border: 0; border-radius: 50%;
+  background: transparent;
+  font: 700 10px var(--mono); color: var(--faint);
+  cursor: pointer;
+  display: grid; place-items: center;
+}
+.compare-tab-x:hover { color: var(--neg); box-shadow: var(--inset-xs); }
+.compare-add {
+  border: 1.5px dashed var(--sh-dark); border-radius: 10px;
+  padding: 7px 12px;
+  background: transparent;
+  font: 700 12px var(--mono); color: var(--muted);
+  cursor: pointer;
+}
+.compare-add:hover { color: var(--accent); border-color: var(--accent); }
+.compare-chips-rows { display: grid; gap: 6px; margin: 12px 2px 14px; }
+.compare-chips {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  font: 12px var(--mono);
+}
+.compare-chips-label {
+  border: 0; background: transparent; padding: 0;
+  font: 700 10.5px var(--mono); letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--faint);
+  cursor: pointer;
+  min-width: 86px; text-align: left;
+}
+.compare-chips.active .compare-chips-label { color: var(--accent); }
+.compare-chips .empty { color: var(--faint); font-size: 11.5px; }
+.compare-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 999px;
+  padding: 4px 8px 4px 11px;
+  background: var(--surface);
+  box-shadow: var(--raised-sm);
+  font: 600 11.5px var(--font); color: var(--ink);
+}
+.compare-chip button {
+  border: 0; background: transparent; padding: 0;
+  width: 15px; height: 15px; border-radius: 50%;
+  font: 700 9px var(--mono); color: var(--faint);
+  cursor: pointer;
+  display: grid; place-items: center;
+}
+.compare-chip button:hover { color: var(--neg); box-shadow: var(--inset-xs); }
+
+/* Results stack */
+.compare-results .compare-result { margin-top: 16px; }
+.compare-result.winner { box-shadow: var(--raised-lg), 0 0 0 2px var(--accent); }
+.compare-result-head {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px;
+  padding-bottom: 4px;
+}
+.compare-result-head .eyebrow {
+  font: 700 11px var(--mono); letter-spacing: 0.14em; color: var(--accent);
+}
+.compare-result-head .cards {
+  font: 11px var(--mono); color: var(--muted);
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.compare-result-head .tag { order: 0; }
+.compare-result-head .spacer { flex: 1; }
+.compare-result-head .net {
+  font: 700 17px var(--mono); font-variant-numeric: tabular-nums; color: var(--ink);
+}
+/* The reused receipt renders its own raised .block — flatten it inside the
+   already-raised compare block so panels don't double-stack. */
+.compare-result .receipt { box-shadow: none; padding: 12px 4px 0; margin: 0; }
+/* Same for the per-card disclosure and the tile grid inside it. */
+.compare-result details.disclosure { box-shadow: var(--inset-xs); margin-top: 12px; }
+.compare-error { font: 600 12.5px var(--mono); color: var(--neg); margin: 8px 0 2px; }
