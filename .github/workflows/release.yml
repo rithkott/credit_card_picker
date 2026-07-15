@@ -56,8 +56,7 @@ jobs:
             esac
             git tag "$TAG" "$GITHUB_SHA"
             if git push origin "refs/tags/$TAG"; then
-              echo "TAG=$TAG" >> "$GITHUB_ENV"
-              echo "PREV=$LATEST" >> "$GITHUB_ENV"
+              PREV="$LATEST"
               break
             fi
             echo "Tag $TAG rejected (race lost); retrying with next number"
