@@ -8,10 +8,10 @@
   color-scheme: light;
 
   /* ── The one surface + its two tinted shadows ─────────────────────────── */
-  --surface: #cbc7bb;          /* page + every panel/control background */
-  --sh-dark: #a29e93;          /* bottom-right shadow */
-  --sh-light: #e7e3d9;         /* top-left highlight */
-  --inset-well: #c6c2b7;       /* recessed dot-matrix readout bg */
+  --surface: #dad6ca;          /* page + every panel/control background */
+  --sh-dark: #b3afa3;          /* bottom-right shadow */
+  --sh-light: #f4f0e6;         /* top-left highlight */
+  --inset-well: #d5d1c5;       /* recessed dot-matrix readout bg */
 
   /* Paired-shadow utilities, scaled by element size. */
   --raised: 6px 6px 14px var(--sh-dark), -6px -6px 14px var(--sh-light);
@@ -28,7 +28,7 @@
   --faint: #67635c;            /* tertiary / captions */
 
   /* ── Accent + semantic ────────────────────────────────────────────────── */
-  --accent: #c24409;           /* brand accent, primary buttons, active, net */
+  --accent: #e2560f;           /* brand accent, primary buttons, active, net */
   --accent-2: #f0762f;         /* slider-fill gradient end only */
   --pos: #0c7d3e;              /* credits, gains, "adds" */
   --pos-2: #0f8a45;
@@ -89,7 +89,7 @@ body {
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
 }
-::selection { background: rgba(194, 68, 9, 0.2); }
+::selection { background: rgba(226, 86, 15, 0.2); }
 a { color: var(--accent); text-decoration: none; }
 a:hover { color: #a83a08; }
 .page {
@@ -236,7 +236,7 @@ section.block.has-icon { padding-left: 96px; }
 
 /* Rent/mortgage: its own distinct decision — a thin accent ring on the panel. */
 section.block.block-accent {
-  box-shadow: var(--raised-lg), inset 0 0 0 2px rgba(194, 68, 9, 0.28);
+  box-shadow: var(--raised-lg), inset 0 0 0 2px rgba(226, 86, 15, 0.28);
 }
 section.block.block-accent .block-icon { color: var(--accent); }
 
@@ -810,7 +810,7 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 }
 .dot-matrix .net-main {
   font: 700 44px/1 var(--mono); color: var(--accent);
-  text-shadow: 0 0 8px rgba(194, 68, 9, 0.3);
+  text-shadow: 0 0 8px rgba(226, 86, 15, 0.3);
   font-variant-numeric: tabular-nums;
 }
 .dot-matrix .net-per { font: 700 14px var(--mono); color: var(--faint); padding-bottom: 5px; }
@@ -915,7 +915,7 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   font: 700 44px/1 var(--mono);
   letter-spacing: -0.01em;
   color: var(--accent);
-  text-shadow: 0 0 8px rgba(194, 68, 9, 0.3);
+  text-shadow: 0 0 8px rgba(226, 86, 15, 0.3);
   font-variant-numeric: tabular-nums;
 }
 .receipt .net-big .per { font-size: 18px; color: var(--faint); padding-bottom: 4px; text-shadow: none; }
@@ -1703,7 +1703,7 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
   border: none;
   border-radius: 18px;
   padding: 24px 22px 20px;
-  box-shadow: var(--raised), inset 0 -4px 0 rgba(194, 68, 9, 0.6);
+  box-shadow: var(--raised), inset 0 -4px 0 rgba(226, 86, 15, 0.6);
   display: flex; flex-direction: column; gap: 10px;
   text-align: left;
   cursor: pointer;
@@ -1737,12 +1737,12 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
 .start-option:active,
 .start-option.latched {
   transform: translateY(2px) scale(1);
-  box-shadow: var(--inset-sm), inset 0 -2px 0 rgba(194, 68, 9, 0.55);
+  box-shadow: var(--inset-sm), inset 0 -2px 0 rgba(226, 86, 15, 0.55);
 }
 .start-option.latched .start-option-led,
 .start-option:active .start-option-led {
   background: var(--accent);
-  box-shadow: var(--inset-xs), 0 0 9px rgba(194, 68, 9, 0.65);
+  box-shadow: var(--inset-xs), 0 0 9px rgba(226, 86, 15, 0.65);
 }
 .start-option-title {
   font: 700 19px/1.25 var(--font); letter-spacing: -0.01em; color: var(--ink);
