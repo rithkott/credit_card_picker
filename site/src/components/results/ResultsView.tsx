@@ -20,7 +20,12 @@ interface ShownEntry {
  * Everything shown comes verbatim from the engine's best_by_size. Each size
  * is optimized independently — the best k-card set need not contain the best
  * (k-1)-card set — so every row lists its complete portfolio. */
-export function ResultsView({ bundle }: { bundle: OptimizeBundle }) {
+export function ResultsView({ bundle, addedCard }: {
+  bundle: OptimizeBundle
+  /** Improve path (suggest-addition): the card the server chose to add — its
+   * tile gets a "Suggested addition" badge. */
+  addedCard?: string
+}) {
   const metric = bundle.optimize_for === 'ongoing' ? 'ongoing_net' : 'year1_net'
   const shown: ShownEntry[] = []
   for (const entry of bundle.best_by_size) {
@@ -234,6 +239,7 @@ export function ResultsView({ bundle }: { bundle: OptimizeBundle }) {
             card={selected.entry.per_card[id]}
             cppTable={bundle.cpp_table}
             worstCase={worst}
+            suggested={id === addedCard}
           />
         ))}
       </div>

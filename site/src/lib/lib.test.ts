@@ -1,7 +1,7 @@
 /** Tests for the parse_profile mirrors — the drift-prone layer (plan 04).
  * Run: npm test (vitest). Components are covered by the manual checklist in
  * docs/plans/04-tech-stack.md instead. */
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   centsToDollars, displayFromAnnualCents, foldCents, otherUnitAnnotation,
   parseToAnnualCents, sumAmount,
@@ -173,5 +173,48 @@ describe('"+"-added sub-amounts fold into the topic total', () => {
     const over = validate(spendOf({ groceries: 60000 }, { costco: 60000 },
       { groceries: [40000] }, { costco: [40001] }), MERCHANTS, 'good', { cashback: true }, LABELS)
     expect(over.errors.map((e) => e.code)).toContain('E3')
+  })
+})
+
+describe('persistence: v2.2 mode migration (auto/manual → generate/analyze)', () => {
+  const store = new Map<string, string>()
+  const fakeStorage = {
+    getItem: (k: string) => store.get(k) ?? null,
+    setItem: (k: string, v: string) => { store.set(k, v) },
+    removeItem: (k: string) => { store.delete(k) },
+  }
+  const blobWithMode = (mode: unknown) => JSON.stringify({
+    v: 1, unit: 'monthly', mode,
+    spend: { categoryCents: { groceries: 50000 }, merchantCents: {}, categoryExtraCents: {}, merchantExtraCents: {} },
+    user: {
+      credit_tier: 'good', optimize_for: 'ongoing', accepts_brand_lockin: false,
+      rewardKinds: { cashback: true }, confirmed_usage: [],
+    },
+    selected: ['chase-freedom-flex'], completed: true,
+  })
+  const loadWithMode = async (mode: unknown) => {
+    vi.stubGlobal('localStorage', fakeStorage)
+    store.set('ccp:form:v1', blobWithMode(mode))
+    try {
+      const { loadForm } = await import('./persistence')
+      return loadForm()
+    } finally {
+      vi.unstubAllGlobals()
+      store.clear()
+    }
+  }
+
+  it("migrates 'manual' to 'analyze' keeping selected cards", async () => {
+    const form = await loadWithMode('manual')
+    expect(form?.mode).toBe('analyze')
+    expect(form?.selected).toEqual(new Set(['chase-freedom-flex']))
+    expect(form?.spend.categoryCents).toEqual({ groceries: 50000 })
+  })
+  it("migrates 'auto' to 'generate'", async () => {
+    expect((await loadWithMode('auto'))?.mode).toBe('generate')
+  })
+  it('passes new values through and defaults junk to generate', async () => {
+    expect((await loadWithMode('improve'))?.mode).toBe('improve')
+    expect((await loadWithMode('bogus'))?.mode).toBe('generate')
   })
 })

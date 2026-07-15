@@ -1,9 +1,9 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { ApiError, evaluateManual, optimize, suggestAddition } from '../api'
-import type { OptimizeBundle } from '../types'
+import type { OptimizeBundle, SuggestAdditionBundle } from '../types'
 import { buildProfile } from '../lib/profile'
 import { validate } from '../lib/validation'
-import { useFormState } from '../hooks/useFormState'
+import { useFormState, type Mode } from '../hooks/useFormState'
 import { ManualGrid } from '../components/ManualGrid'
 import { AboutYou } from '../components/AboutYou'
 import { BrandLoyalty } from '../components/BrandLoyalty'
@@ -23,7 +23,7 @@ import type { ConfigPhase } from '../App'
 type RunPhase =
   | { phase: 'idle' }
   | { phase: 'running'; startedAt: number }
-  | { phase: 'done'; bundle: OptimizeBundle }
+  | { phase: 'done'; bundle: OptimizeBundle | SuggestAdditionBundle }
   | { phase: 'error'; detail: string; unreachable: boolean }
 
 export function Home({ cfg, onRetryConfig }: {
@@ -126,10 +126,19 @@ export function Home({ cfg, onRetryConfig }: {
   const onRun = () => startRun(optimize(buildProfile(spend, user)))
   const onRunManual = () => startRun(evaluateManual(buildProfile(spend, user), [...selected]))
 
-  // Best-additional-card (v1.10): ask the server for the best card to add to the
-  // held set, check it in the grid, and show the augmented score — one action. Can't
+  // Switch journey paths, keeping every entered value (spend, user, selected).
+  // Results from another path are cleared so stale bundles never render under
+  // the new mode's framing.
+  const switchMode = (m: Mode) => {
+    if (m === mode) return
+    setMode(m)
+    setRun({ phase: 'idle' })
+  }
+
+  // Improve path: ask the server for the best card to add to the held set,
+  // check it in the grid, and show the augmented score — one action. Can't
   // reuse startRun() verbatim because of the extra setSelected side effect on success.
-  const onAddBest = () => {
+  const onRunImprove = () => {
     setElapsed(0)
     setRun({ phase: 'running', startedAt: Date.now() })
     suggestAddition(buildProfile(spend, user), [...selected])
@@ -166,9 +175,16 @@ export function Home({ cfg, onRetryConfig }: {
   const inWizard = fs.view === 'wizard'
 
   // Fresh-visitor splash (v1.9.1): its own full-bleed layout, no shared hero.
-  // "Get started" hands off to the guided wizard.
+  // The three-path chooser sets the journey mode and hands off to the wizard.
   if (fs.view === 'start') {
-    return <StartPage onStart={() => fs.setView('wizard')} />
+    return (
+      <StartPage
+        onStart={(m) => {
+          switchMode(m)
+          fs.setView('wizard')
+        }}
+      />
+    )
   }
 
   return (
@@ -197,49 +213,36 @@ export function Home({ cfg, onRetryConfig }: {
       {cfg.phase === 'ready' && (() => {
         const config = cfg.config
 
+        // Per-path run wiring: label, action, and status line. analyze/improve
+        // need at least one held card (the server 422s on an empty set).
+        const needsCards = mode !== 'generate'
+        const runLabel = mode === 'generate'
+          ? 'Run the numbers'
+          : mode === 'analyze'
+            ? `Score my cards (${selected.size})`
+            : `Find my next card (${selected.size})`
+        const runAction = mode === 'generate' ? onRun : mode === 'analyze' ? onRunManual : onRunImprove
+        const runningStatus = mode === 'generate'
+          ? `scoring every 1–3 card portfolio — ${elapsed}s`
+          : mode === 'analyze'
+            ? `scoring your ${selected.size} card${selected.size > 1 ? 's' : ''} — ${elapsed}s`
+            : `finding the best card to add to your ${selected.size} — ${elapsed}s`
+
         const runbar = (
-          <div className={`runbar${mode === 'manual' ? ' runbar--floating' : ''}`}>
-            {mode === 'auto' ? (
-              <button
-                type="button"
-                className="primary"
-                disabled={errors.length > 0 || run.phase === 'running'}
-                onClick={onRun}
-              >
-                {run.phase === 'running' ? 'Scoring…' : 'Run the numbers'}
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="primary"
-                disabled={errors.length > 0 || selected.size === 0 || run.phase === 'running'}
-                onClick={onRunManual}
-              >
-                {run.phase === 'running'
-                  ? 'Scoring…'
-                  : `Score selected (${selected.size})`}
-              </button>
-            )}
-            {/* Best-additional-card (v1.10): appears once a portfolio has been
-                scored; adds the single best card and re-scores. */}
-            {mode === 'manual' && run.phase === 'done' && (
-              <button
-                type="button"
-                className="accent-add"
-                onClick={onAddBest}
-              >
-                Add best additional card
-              </button>
-            )}
+          <div className={`runbar${needsCards ? ' runbar--floating' : ''}`}>
+            <button
+              type="button"
+              className="primary"
+              disabled={errors.length > 0 || (needsCards && selected.size === 0) || run.phase === 'running'}
+              onClick={runAction}
+            >
+              {run.phase === 'running' ? 'Scoring…' : runLabel}
+            </button>
             {run.phase === 'running' && (
-              <span className="status">
-                {mode === 'auto'
-                  ? `scoring every 1–3 card portfolio — ${elapsed}s`
-                  : `scoring your ${selected.size} card${selected.size > 1 ? 's' : ''} — ${elapsed}s`}
-              </span>
+              <span className="status">{runningStatus}</span>
             )}
-            {mode === 'manual' && run.phase !== 'running' && selected.size === 0 && (
-              <span className="status">Pick cards below to score.</span>
+            {needsCards && run.phase !== 'running' && selected.size === 0 && (
+              <span className="status">Pick the cards you have below.</span>
             )}
             {run.phase === 'error' && !run.unreachable && (
               <span className="error">{run.detail}</span>
@@ -248,33 +251,28 @@ export function Home({ cfg, onRetryConfig }: {
         )
 
         const modeToggle = (
-          <div className="mode-toggle" role="tablist" aria-label="Optimization mode">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === 'auto'}
-              className={mode === 'auto' ? 'active' : ''}
-              onClick={() => setMode('auto')}
-            >
-              Auto
-              <ul className="mode-bullets">
-                <li>Find the best profile for you automatically</li>
-              </ul>
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === 'manual'}
-              className={mode === 'manual' ? 'active' : ''}
-              onClick={() => setMode('manual')}
-            >
-              Custom
-              <ul className="mode-bullets">
-                <li>Check how good your existing card profile is</li>
-                <li>Experiment with new card profiles</li>
-                <li>Improve an existing profile</li>
-              </ul>
-            </button>
+          <div className="mode-toggle" role="tablist" aria-label="Journey">
+            {([
+              ['generate', 'Find the best card portfolio for me', 'Generate from scratch.'],
+              ['analyze', 'Analyze my card portfolio',
+                'See how good your cards are and how to best split spending across them.'],
+              ['improve', 'Improve my existing card portfolio',
+                'Keep your cards and find the best one to add.'],
+            ] as [Mode, string, string][]).map(([m, title, subtitle]) => (
+              <button
+                key={m}
+                type="button"
+                role="tab"
+                aria-selected={mode === m}
+                className={mode === m ? 'active' : ''}
+                onClick={() => switchMode(m)}
+              >
+                {title}
+                <ul className="mode-bullets">
+                  <li>{subtitle}</li>
+                </ul>
+              </button>
+            ))}
           </div>
         )
 
@@ -364,12 +362,15 @@ export function Home({ cfg, onRetryConfig }: {
                 <ChecksPanel errors={errors} />
                 {modeToggle}
                 {runbar}
-                {mode === 'manual' && (
+                {mode !== 'generate' && (
                   <ManualGrid selected={selected} onToggle={toggleSelect} />
                 )}
                 {run.phase === 'done' && (
                   <div ref={resultsRef}>
-                    <ResultsView bundle={run.bundle} />
+                    <ResultsView
+                      bundle={run.bundle}
+                      addedCard={'added_card' in run.bundle ? run.bundle.added_card : undefined}
+                    />
                   </div>
                 )}
               </>
@@ -382,25 +383,25 @@ export function Home({ cfg, onRetryConfig }: {
             <WizardShell
               steps={steps}
               index={step}
-              canFinish={errors.length === 0}
-              finishLabel={run.phase === 'running' ? 'Scoring…' : 'Run the numbers'}
+              canFinish={errors.length === 0 && (mode === 'generate' || selected.size > 0)}
+              finishLabel={run.phase === 'running' ? 'Scoring…' : runLabel}
               onBack={() => setStep((s) => Math.max(0, s - 1))}
               onNext={() => setStep((s) => Math.min(steps.length - 1, s + 1))}
               onJump={(i) => setStep(i)}
               onFinish={() => {
-                // One press ends onboarding and runs the optimizer (v1.11.1):
-                // collapse to the edit view and kick off the same Auto run the
-                // edit-view runbar would. Wizard is the guided Auto path.
+                // One press ends onboarding and runs the picked path (v1.11.1):
+                // collapse to the edit view and kick off the same run the
+                // edit-view runbar would.
                 fs.setCompleted(true)
                 fs.setView('edit')
-                onRun()
+                runAction()
               }}
             />
           )
         }
 
         return (
-          <div className={mode === 'manual' ? 'edit-view has-floating-runbar' : 'edit-view'}>
+          <div className={mode !== 'generate' ? 'edit-view has-floating-runbar' : 'edit-view'}>
             <div className="edit-toolbar">
               <button type="button" className="ghost start-over" onClick={() => setConfirmReset(true)}>
                 Start from scratch
@@ -412,7 +413,7 @@ export function Home({ cfg, onRetryConfig }: {
             <ConfirmDialog
               open={confirmReset}
               title="Start from scratch?"
-              body="This clears everything you've entered and reopens the guided setup. This can't be undone."
+              body="This clears everything you've entered and takes you back to the start screen. This can't be undone."
               confirmLabel="Clear and restart"
               cancelLabel="Keep my answers"
               danger

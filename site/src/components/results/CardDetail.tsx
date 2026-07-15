@@ -58,11 +58,13 @@ function userFacing(warnings: string[]): string[] {
  * `.tile-grid`, that makes each band (earn table, credits, annual fee, adds,
  * bonus, max value…) line up horizontally across every card in the row —
  * shorter sections get whitespace so the next band still aligns. */
-export function CardDetail({ id, card, cppTable, worstCase }: {
+export function CardDetail({ id, card, cppTable, worstCase, suggested }: {
   id: string
   card: PerCard
   cppTable: OptimizeBundle['cpp_table']
   worstCase: boolean
+  /** Improve path: this card is the server's suggested addition. */
+  suggested?: boolean
 }) {
   const isPoints = card.currency.kind === 'points'
   // Worst-case (cash-out): re-price this card's points at the program floor.
@@ -135,7 +137,10 @@ export function CardDetail({ id, card, cppTable, worstCase }: {
     <div className="card-tile">
       {/* 1 · header */}
       <div className="tile-slot slot-header">
-        <h3>{card.name}</h3>
+        <h3>
+          {card.name}
+          {suggested && <span className="badge-suggested">Suggested addition</span>}
+        </h3>
         <div className="role">
           {card.choice_category
             ? `Choice category: ${pretty(card.choice_category)}`
