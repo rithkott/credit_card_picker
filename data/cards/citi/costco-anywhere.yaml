@@ -56,7 +56,7 @@ fees:
   foreign_transaction_pct: 0  # "Foreign Transaction Fee: None"
 
 required_membership:
-  name: Costco membership
+  name: Costco
   annual_cost_usd: 65         # "Gold Star/Business $65/yr" (cheapest qualifying tier)
   note: >-
     Requires a current paid Costco membership in the cardholder's name; the account and

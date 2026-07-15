@@ -1224,7 +1224,10 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   color: var(--ink-2);
 }
 .tile-lines .line { display: flex; align-items: center; gap: 8px; }
-.tile-lines .line > span:last-child { white-space: nowrap; font-family: var(--mono); font-weight: 700; }
+/* Value column: nowrap mono only when the line is a label/value pair — a
+   lone span (e.g. the assumed-membership disclosure) is prose and must wrap. */
+.tile-lines .line > span:last-child:not(:only-child) { white-space: nowrap; font-family: var(--mono); font-weight: 700; }
+.tile-lines .line > span:only-child { min-width: 0; }
 .tile-lines .line .note { color: var(--faint); font-weight: 400; }
 .tile-lines .line .pts { color: var(--muted); }
 .tile-lines .line.fee { color: var(--ink-2); }
