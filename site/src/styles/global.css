@@ -1674,31 +1674,19 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
   letter-spacing: -0.045em; line-height: 1.04;
 }
 .start-hero h1 .accent { color: var(--accent); }
-.start-hero .sub {
-  margin: 18px auto 0;
-  font-size: 16px; line-height: 1.6;
-  color: var(--ink-2);
-  max-width: 540px;
-  text-wrap: pretty;
-}
 
-/* ── Path selector bank (v2.3.1, mid-page + idle glow v2.3.3) — a machined
-   faceplate in the results control-panel's hardware language: corner screws,
-   an engraved legend, and three latching push-buttons. Keys idle with a
-   staggered accent breathe (halo + LED) so they read as THE control to press;
-   hover arms a key steadily; pressing latches — the key sinks to a full inset
-   and the LED lights — then the form takes over. */
-.start-bank {
-  position: relative;
-  border-radius: var(--r-panel);
-  background: var(--surface);
-  box-shadow: var(--raised-lg);
-  padding: 26px 28px 28px;
-}
+/* ── Path selector keys (free keycaps, v2.4) — the faceplate is gone: the
+   legend and three XL keycaps sit directly on the page. A recessed orange
+   bottom edge makes each key read as hardware rather than a content tile.
+   Keys idle static; hover floats one up and saturates the edge; pressing
+   latches — the key sinks to a full inset and the LED lights — then the
+   form takes over. */
+.free-bank { padding: 0 8px; }
 .start-bank-legend {
   display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
   padding: 0 4px 18px;
 }
+.free-legend { padding: 0 4px 16px; }
 .start-bank-title {
   font: 700 17px/1.3 var(--font); letter-spacing: -0.02em; color: var(--ink);
 }
@@ -1706,39 +1694,20 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
   font: 700 10px var(--mono); letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--faint);
 }
-/* Keys sit in a recessed bay milled into the faceplate — raised buttons
-   inside an inset well is what makes the bank read as hardware rather than
-   three more content tiles. */
 .start-options {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
-  padding: 16px;
-  border-radius: var(--r-inner);
-  background: var(--inset-well);
-  box-shadow: var(--inset-sm);
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px;
 }
 .start-option {
   position: relative;
   background: var(--surface);
   border: none;
-  border-radius: var(--r-tile);
-  padding: 20px 18px 16px;
-  box-shadow: var(--raised);
-  display: flex; flex-direction: column; gap: 8px;
+  border-radius: 18px;
+  padding: 24px 22px 20px;
+  box-shadow: var(--raised), inset 0 -4px 0 rgba(194, 68, 9, 0.6);
+  display: flex; flex-direction: column; gap: 10px;
   text-align: left;
   cursor: pointer;
-  transition: box-shadow 0.16s var(--ease), transform 0.16s var(--ease);
-  animation: key-breathe 3.6s ease-in-out infinite;
-}
-/* Stagger the three keys so the bank ripples instead of blinking in unison. */
-.start-option:nth-child(2), .start-option:nth-child(2) .start-option-led { animation-delay: 1.2s; }
-.start-option:nth-child(3), .start-option:nth-child(3) .start-option-led { animation-delay: 2.4s; }
-@keyframes key-breathe {
-  0%, 100% { box-shadow: var(--raised); }
-  50% { box-shadow: var(--raised), 0 0 20px 3px rgba(194, 68, 9, 0.22); }
-}
-@keyframes led-breathe {
-  0%, 100% { background: var(--surface); box-shadow: var(--inset-xs); }
-  50% { background: var(--accent-2); box-shadow: var(--inset-xs), 0 0 8px rgba(240, 118, 47, 0.6); }
+  transition: box-shadow 0.22s var(--ease), transform 0.22s var(--ease);
 }
 /* Status LED: a recessed lens that warms on hover/focus and lights when the
    key latches. */
@@ -1748,22 +1717,13 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
   background: var(--surface);
   box-shadow: var(--inset-xs);
   transition: background 0.16s var(--ease), box-shadow 0.16s var(--ease);
-  animation: led-breathe 3.6s ease-in-out infinite;
 }
-/* Interaction takes over from the idle breathe: hover/press hold a steady
-   armed state instead of pulsing. */
-.start-option:hover, .start-option:focus-visible, .start-option:active, .start-option.latched {
-  animation: none;
-}
-.start-option:hover .start-option-led,
-.start-option:focus-visible .start-option-led,
-.start-option:active .start-option-led,
-.start-option.latched .start-option-led {
-  animation: none;
-}
+/* Hover / focus: the key floats up and expands with a deeper cast shadow,
+   the keycap edge saturating to full accent. */
 .start-option:hover, .start-option:focus-visible {
-  transform: translateY(-1px);
-  box-shadow: var(--raised-lg);
+  transform: translateY(-4px) scale(1.035);
+  box-shadow: 10px 12px 24px var(--sh-dark), -8px -8px 20px var(--sh-light),
+    inset 0 -4px 0 var(--accent);
 }
 .start-option:hover .start-option-led,
 .start-option:focus-visible .start-option-led {
@@ -1771,13 +1731,13 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
   box-shadow: var(--inset-xs), 0 0 6px rgba(240, 118, 47, 0.55);
 }
 .start-option:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-/* Pressed / latched: the key sinks flush into the faceplate and holds there
-   while the LED goes full accent — the mechanical moment. :active covers the
-   mouse-down instant; .latched holds the state until navigation. */
+/* Pressed / latched: the key sinks and holds there — the keycap edge thins
+   while sunk — and the LED goes full accent: the mechanical moment. :active
+   covers the mouse-down instant; .latched holds until navigation. */
 .start-option:active,
 .start-option.latched {
-  transform: translateY(1.5px);
-  box-shadow: var(--inset-sm);
+  transform: translateY(2px) scale(1);
+  box-shadow: var(--inset-sm), inset 0 -2px 0 rgba(194, 68, 9, 0.55);
 }
 .start-option.latched .start-option-led,
 .start-option:active .start-option-led {
@@ -1785,43 +1745,27 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
   box-shadow: var(--inset-xs), 0 0 9px rgba(194, 68, 9, 0.65);
 }
 .start-option-title {
-  font: 700 15px/1.35 var(--font); letter-spacing: -0.01em; color: var(--ink);
-  padding-right: 18px;
+  font: 700 19px/1.25 var(--font); letter-spacing: -0.01em; color: var(--ink);
+  padding-right: 20px;
   text-shadow: 0 1px 0 var(--sh-light);
 }
 .start-option-sub { font: 400 12px/1.55 var(--mono); color: var(--muted); }
 .start-option-cta {
-  margin-top: auto; padding-top: 10px;
+  margin-top: auto; padding-top: 14px;
   align-self: flex-end;
-  font: 700 10px var(--mono); letter-spacing: 0.14em; text-transform: uppercase;
+  font: 700 11px var(--mono); letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--accent);
 }
 
-.start-points {
-  list-style: none; margin: 0; padding: 0;
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+/* Trust points: bare text columns — no container, no numbering. The keys are
+   the only raised tiles on the page. */
+.points-bare {
+  list-style: none; margin: 0; padding: 0 12px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px;
 }
-.start-point {
-  background: var(--surface);
-  border-radius: 18px;
-  padding: 22px 20px;
-  box-shadow: var(--raised);
-  display: flex; flex-direction: column; gap: 6px;
-}
-/* The numbered icon becomes a mono "01/02/03" accent kicker. */
-.start-point-icon {
-  width: auto; height: auto;
-  display: block;
-  color: var(--accent);
-  font: 700 11px var(--mono); letter-spacing: 0.12em;
-  background: none; box-shadow: none; border-radius: 0;
-  margin-bottom: 6px;
-}
-.start-point-icon svg { display: none; }
-.start-point-title { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink); }
-.start-point-body { font-size: 13px; line-height: 1.55; color: var(--ink-2); }
+.points-bare .txt { font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+.points-bare .txt strong { color: var(--ink); font-weight: 700; display: block; font-size: 13.5px; }
 
 @media (max-width: 720px) {
-  .start-bank { padding: 22px 18px; }
-  .start-points, .start-options { grid-template-columns: 1fr; }
+  .points-bare, .start-options { grid-template-columns: 1fr; }
 }
