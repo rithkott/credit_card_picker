@@ -1,7 +1,10 @@
-/** First-run landing (v1.9.1): a calm splash shown before the wizard for fresh
- * visitors. Its only job is to set the frame and hand off to the guided setup —
- * the "Get started" button flips the form view to 'wizard'. Returning visitors
- * (completed) never see this; they land straight in the 'edit' view. */
+/** First-run landing (v1.9.1, three-path chooser since v2.2): a calm splash
+ * shown before the wizard for fresh visitors. The user picks one of three
+ * journeys — generate a portfolio, analyze their cards, or improve them — and
+ * hands off to the same guided setup; only the final run action differs.
+ * Returning visitors (completed) never see this; they land in 'edit'. */
+
+import type { Mode } from '../hooks/useFormState'
 
 const svg = {
   viewBox: '0 0 24 24',
@@ -45,7 +48,25 @@ const POINTS = [
   },
 ]
 
-export function StartPage({ onStart }: { onStart: () => void }) {
+const OPTIONS: { mode: Mode; title: string; subtitle: string }[] = [
+  {
+    mode: 'generate',
+    title: 'Find the best card portfolio for me',
+    subtitle: 'Generate from scratch.',
+  },
+  {
+    mode: 'analyze',
+    title: 'Analyze my card portfolio',
+    subtitle: 'See how good your cards are and how to best split spending across them.',
+  },
+  {
+    mode: 'improve',
+    title: 'Improve my existing card portfolio',
+    subtitle: 'Keep your cards and find the best one to add.',
+  },
+]
+
+export function StartPage({ onStart }: { onStart: (mode: Mode) => void }) {
   return (
     <div className="start">
       <div className="start-hero">
@@ -63,9 +84,19 @@ export function StartPage({ onStart }: { onStart: () => void }) {
           shows every major card combination, ranked — and all of its work.
         </p>
         <div className="start-cta">
-          <button type="button" className="primary" onClick={onStart}>
-            Get started
-          </button>
+          <div className="start-options">
+            {OPTIONS.map((o) => (
+              <button
+                key={o.mode}
+                type="button"
+                className="start-option"
+                onClick={() => onStart(o.mode)}
+              >
+                <span className="start-option-title">{o.title}</span>
+                <span className="start-option-sub">{o.subtitle}</span>
+              </button>
+            ))}
+          </div>
           <span className="start-cta-note">Takes about two minutes.</span>
         </div>
       </div>

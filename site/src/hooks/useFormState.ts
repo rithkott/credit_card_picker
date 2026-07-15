@@ -13,7 +13,10 @@ import type { Config } from '../types'
 import { clearForm, loadForm, saveForm, type PersistedForm } from '../lib/persistence'
 
 export type FormView = 'start' | 'wizard' | 'edit'
-type Mode = 'auto' | 'manual'
+/** The three journey paths picked on the start screen (v2.2): generate a
+ * portfolio from scratch, analyze the cards you hold, or find the best card
+ * to add to them. All three share the same input flow. */
+export type Mode = 'generate' | 'analyze' | 'improve'
 
 /** Matches the current inline defaults in Home (pre-v1.9.0). Fresh visitors
  * additionally get optimize_for/accepts_brand_lockin re-seeded from the server
@@ -50,7 +53,7 @@ export interface FormState {
    * config-defaults effect that would otherwise clobber restored values. */
   restored: boolean
   /** Wipe storage and reset every field to defaults merged with the server's
-   * user_defaults, and drop back to the wizard. */
+   * user_defaults, and drop back to the start screen. */
   reset: (defaults?: Config['user_defaults']) => void
 }
 
@@ -63,7 +66,7 @@ export function useFormState(): FormState {
   const [spend, setSpend] = useState<SpendState>(() => loaded?.spend ?? defaultSpend())
   const [user, setUser] = useState<UserState>(() => loaded?.user ?? defaultUser())
   const [unit, setUnit] = useState<Unit>(() => loaded?.unit ?? 'monthly')
-  const [mode, setMode] = useState<Mode>(() => loaded?.mode ?? 'auto')
+  const [mode, setMode] = useState<Mode>(() => loaded?.mode ?? 'generate')
   const [selected, setSelected] = useState<Set<string>>(() => loaded?.selected ?? new Set())
   const [completed, setCompleted] = useState<boolean>(() => loaded?.completed ?? false)
   // Fresh visitor: land on the start splash (v1.9.1). Returning-but-unfinished
@@ -95,10 +98,11 @@ export function useFormState(): FormState {
         : {}),
     })
     setUnit('monthly')
-    setMode('auto')
+    setMode('generate')
     setSelected(new Set())
     setCompleted(false)
-    setView('wizard')
+    // Back to the start screen so the user re-picks their path.
+    setView('start')
   }
 
   return {

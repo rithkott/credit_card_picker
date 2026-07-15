@@ -17,7 +17,7 @@ const VERSION = 1
 
 export interface PersistedForm {
   unit: Unit
-  mode: 'auto' | 'manual'
+  mode: 'generate' | 'analyze' | 'improve'
   spend: SpendState
   user: UserState
   selected: Set<string>
@@ -62,6 +62,16 @@ function coerceSpend(v: unknown): SpendState {
   }
 }
 
+/** v2.2 renamed the modes without a version bump — blobs written before the
+ * three-path journey carry 'auto'/'manual' and must migrate, not discard
+ * (users keep their entered values across the deploy). 'manual' users had
+ * hand-picked cards, so they land in 'analyze' with their picks intact. */
+function coerceMode(v: unknown): PersistedForm['mode'] {
+  if (v === 'analyze' || v === 'improve' || v === 'generate') return v
+  if (v === 'manual') return 'analyze'
+  return 'generate'
+}
+
 function coerceStringSet(v: unknown): Set<string> {
   if (!Array.isArray(v)) return new Set()
   return new Set(v.filter((x): x is string => typeof x === 'string'))
@@ -101,7 +111,7 @@ export function loadForm(): PersistedForm | null {
   if (!isObject(parsed) || parsed.v !== VERSION) return null
   return {
     unit: parsed.unit === 'annual' ? 'annual' : 'monthly',
-    mode: parsed.mode === 'manual' ? 'manual' : 'auto',
+    mode: coerceMode(parsed.mode),
     spend: coerceSpend(parsed.spend),
     user: coerceUser(parsed.user),
     selected: coerceStringSet(parsed.selected),

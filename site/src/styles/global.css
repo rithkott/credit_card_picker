@@ -1042,6 +1042,19 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 .card-tile.selectable h3 { padding-right: 4px; }
+.badge-suggested {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font: 700 10px var(--mono);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  color: #fff;
+  background: var(--accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
 .badge-discontinued {
   display: inline-block;
   margin-left: 8px;
@@ -1166,7 +1179,7 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 }
 
 /* Auto / Manual mode toggle — two raised option cards, inset when active. */
-.mode-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+.mode-toggle { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 18px; }
 .mode-toggle button {
   display: flex;
   flex-direction: column;
@@ -1665,9 +1678,33 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
   max-width: 540px;
   text-wrap: pretty;
 }
-.start-cta { margin-top: 34px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-.start-cta button.primary { padding: 16px 42px; font-size: 15px; }
+.start-cta { margin-top: 34px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
 .start-cta-note { font: 11px var(--mono); color: var(--faint); text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* Three-path chooser (v2.2): raised selectable tiles, same language as
+   .start-point but interactive — hover lift, accent title. */
+.start-options {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  width: 100%; max-width: 880px;
+}
+.start-option {
+  background: var(--surface);
+  border: none;
+  border-radius: 18px;
+  padding: 22px 20px;
+  box-shadow: var(--raised);
+  display: flex; flex-direction: column; gap: 8px;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+.start-option:hover { transform: translateY(-2px); }
+.start-option:active { transform: translateY(1px); }
+.start-option:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.start-option-title {
+  font: 700 15px/1.35 var(--font); letter-spacing: -0.01em; color: var(--ink);
+}
+.start-option-sub { font: 400 12.5px/1.55 var(--mono); color: var(--muted); }
 
 .start-points {
   list-style: none; margin: 0; padding: 0;
@@ -1695,5 +1732,5 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
 
 @media (max-width: 720px) {
   .start-hero h1 { font-size: 40px; }
-  .start-points { grid-template-columns: 1fr; }
+  .start-points, .start-options { grid-template-columns: 1fr; }
 }
