@@ -265,9 +265,24 @@ def parse_profile(raw, dataset: dict) -> dict:
     validate_cards.py's registry checks. Raises InputError on any violation."""
     if not isinstance(raw, dict):
         raise InputError("profile must be a YAML mapping")
-    unknown = sorted(set(raw) - {"spend", "merchant_spend", "user"})
+    unknown = sorted(set(raw) - {"spend", "merchant_spend", "user", "exclude_cards"})
     if unknown:
         raise InputError(f"profile: unknown top-level key(s): {unknown}")
+
+    # User-vetoed cards (v2.5.0): ids the optimizer must never pick. Applied by
+    # filter_cards, so Generate never recommends them and Improve never suggests
+    # them; evaluate() still scores a hand-picked set as-is (selection wins).
+    exclude_cards = raw.get("exclude_cards") or []
+    if (not isinstance(exclude_cards, list)
+            or any(not isinstance(c, str) for c in exclude_cards)
+            or len(set(exclude_cards)) != len(exclude_cards)):
+        raise InputError(
+            f"profile: exclude_cards must be a list of unique card-id strings, "
+            f"got {exclude_cards!r}")
+    known_ids = {c["id"] for c in dataset["cards"]}
+    bad = sorted(set(exclude_cards) - known_ids)
+    if bad:
+        raise InputError(f"profile: exclude_cards: unknown card id(s): {bad}")
 
     spend = raw.get("spend")
     if not isinstance(spend, dict) or not spend:
@@ -326,7 +341,8 @@ def parse_profile(raw, dataset: dict) -> dict:
 
     return {"spend": dict(sorted(spend.items())),
             "merchant_spend": dict(sorted(merchant_spend.items())),
-            "user": user}
+            "user": user,
+            "exclude_cards": sorted(exclude_cards)}
 
 
 def validate_user(user: dict, usage_keys: set) -> None:
@@ -1284,7 +1300,8 @@ def expand_choice_variants(cards: list, profile: dict) -> list:
 # ---------------------------------------------------------------------------
 
 def filter_cards(cards: list, profile: dict, programs: dict) -> tuple:
-    """Approval-tier filter, brand-lock-in filter, and reward-preference filter.
+    """User-veto (exclude_cards), approval-tier, brand-lock-in, and
+    reward-preference filters.
 
     Brand lock-in (plan 07 addendum): currencies with no cashback path (the
     loyalty_keys programs — airline/hotel/merchant-restricted) tie their whole
@@ -1300,11 +1317,18 @@ def filter_cards(cards: list, profile: dict, programs: dict) -> tuple:
     prefs = set(profile["user"]["reward_preferences"])
     kind_filter = expand_reward_prefs(prefs)  # None when total_value; else redeems tokens
     accepts_lockin = profile["user"]["accepts_brand_lockin"]
+    # User veto (v2.5.0): checked first so the report names the user's own
+    # choice, not an incidental tier/preference reason.
+    vetoed = set(profile.get("exclude_cards") or [])
     eligible, excluded = [], []
     for card in sorted(cards, key=lambda c: c["id"]):
         program = card["currency"]["program"]
         redeems = set(programs[program].get("redeems_for", []))
-        if card.get("availability", "active") == "discontinued":
+        if card["id"] in vetoed:
+            excluded.append({"id": card["id"],
+                             "reason": "excluded by you — un-exclude it in the "
+                                       "card list to consider it again"})
+        elif card.get("availability", "active") == "discontinued":
             excluded.append({"id": card["id"],
                              "reason": "discontinued — no longer open to new applicants; "
                                        "select it in Custom mode to score a card you already hold"})

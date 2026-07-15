@@ -32,7 +32,11 @@ function nonzeroDollars(cents: Record<string, number | null>): Record<string, nu
   return out
 }
 
-export function buildProfile(spend: SpendState, user: UserState): Profile {
+export function buildProfile(
+  spend: SpendState,
+  user: UserState,
+  excluded: Set<string> = new Set(),
+): Profile {
   const profile: Profile = {
     spend: nonzeroDollars(foldCents(spend.categoryCents, spend.categoryExtraCents)),
     user: {
@@ -49,5 +53,6 @@ export function buildProfile(spend: SpendState, user: UserState): Profile {
   }
   const merchantSpend = nonzeroDollars(foldCents(spend.merchantCents, spend.merchantExtraCents))
   if (Object.keys(merchantSpend).length > 0) profile.merchant_spend = merchantSpend
+  if (excluded.size > 0) profile.exclude_cards = [...excluded].sort()
   return profile
 }

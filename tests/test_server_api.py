@@ -310,6 +310,38 @@ class TestServerAPI(unittest.TestCase):
                          "user": {"credit_tier": "good"}, "top": 0},
                         "top must be an integer")
 
+    # -- exclude_cards (v2.5.0): user veto rides the profile ------------------
+
+    def test_optimize_honors_exclude_cards(self):
+        body = {"spend": {"other": 5000},
+                "user": {"credit_tier": "good", "max_cards": 1},
+                "as_of": AS_OF}
+        base = self.client.post("/api/optimize", json=body).json()
+        veto = base["portfolios"][0]["cards"][0].split("[")[0]
+        r = self.client.post("/api/optimize", json={**body, "exclude_cards": [veto]})
+        self.assertEqual(r.status_code, 200)
+        for p in r.json()["portfolios"]:
+            self.assertNotIn(veto, [c.split("[")[0] for c in p["cards"]])
+        reasons = {e["id"]: e["reason"] for e in r.json()["excluded"]}
+        self.assertIn("excluded by you", reasons[veto])
+
+    def test_suggest_addition_honors_exclude_cards(self):
+        body = {"spend": {"other": 5000},
+                "user": {"credit_tier": "good", "max_cards": 1},
+                "as_of": AS_OF, "cards": ["active-cash"]}
+        first = self.client.post("/api/suggest-addition", json=body).json()
+        pick = first["added_card"]
+        r = self.client.post("/api/suggest-addition",
+                             json={**body, "exclude_cards": [pick]})
+        self.assertEqual(r.status_code, 200)
+        self.assertNotEqual(r.json()["added_card"], pick)
+
+    def test_exclude_cards_unknown_id_422(self):
+        self.assert_422({"spend": {"other": 100},
+                         "user": {"credit_tier": "good"},
+                         "exclude_cards": ["not-a-card"]},
+                        "unknown card id")
+
     # -- evaluate (manual mode, v1.7): golden equivalence + errors ------------
 
     def test_evaluate_matches_engine_byte_for_byte(self):

@@ -1791,3 +1791,86 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
 @media (max-width: 720px) {
   .points-bare, .start-options { grid-template-columns: 1fr; }
 }
+
+/* ── Exclude-card controls (v2.5.0) ───────────────────────────────────────
+   Selection tiles get a corner ✕ that vetoes the card; results math tiles get
+   a ⋯ menu with the same veto. Vetoed ids ride the profile's exclude_cards,
+   so generate/improve never pick them. */
+.tile-wrap { position: relative; min-width: 0; }
+.tile-wrap > .card-tile.selectable { height: 100%; }
+.tile-wrap .card-tile.selectable h3 { padding-right: 26px; }
+.tile-wrap .tile-x {
+  position: absolute; top: 14px; right: 13px;
+  width: 22px; height: 22px;
+  border: 0; border-radius: 50%;
+  display: grid; place-items: center;
+  font: 700 11px var(--font);
+  color: var(--faint);
+  background: var(--surface);
+  box-shadow: var(--inset-xs);
+  cursor: pointer; padding: 0;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease, background 0.18s ease;
+}
+.tile-wrap:hover .tile-x,
+.tile-wrap .tile-x:focus-visible,
+.tile-wrap.excluded .tile-x { opacity: 1; }
+.tile-wrap .tile-x:hover { color: var(--neg); }
+.tile-wrap.excluded .tile-x {
+  color: #fff;
+  background: var(--neg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+.badge-excluded {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font: 700 10px var(--mono);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  color: var(--neg);
+  box-shadow: var(--inset-xs);
+}
+.excluded-chip {
+  display: inline-flex; align-items: center; gap: 10px;
+  font: 12px var(--mono); color: var(--faint);
+}
+
+/* Results math tile ⋯ menu */
+.card-tile { position: relative; }
+.tile-menu { position: absolute; top: 10px; right: 10px; z-index: 5; }
+.tile-kebab {
+  width: 24px; height: 24px;
+  border: 0; border-radius: 8px;
+  display: grid; place-items: center;
+  font: 700 15px/1 var(--font);
+  color: var(--faint);
+  background: transparent;
+  cursor: pointer; padding: 0 0 6px;
+}
+.tile-kebab:hover, .tile-kebab[aria-expanded='true'] {
+  color: var(--muted);
+  box-shadow: var(--inset-xs);
+}
+.tile-menu-pop {
+  position: absolute; top: 28px; right: 0; z-index: 30;
+  min-width: 220px;
+  padding: 8px;
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--raised);
+}
+.tile-menu-pop button {
+  display: block; width: 100%;
+  border: 0; border-radius: 8px;
+  padding: 7px 9px;
+  text-align: left;
+  font: 600 12.5px var(--font);
+  color: var(--ink);
+  background: transparent;
+  cursor: pointer;
+}
+.tile-menu-pop button:hover { color: var(--neg); box-shadow: var(--inset-xs); }
+.tile-menu-note { padding: 4px 9px 2px; font: 11px var(--mono); color: var(--faint); }

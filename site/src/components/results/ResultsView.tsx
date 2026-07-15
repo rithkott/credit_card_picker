@@ -9,6 +9,13 @@ import { CardDetail } from './CardDetail'
 import { ExcludedPruned } from './ExcludedPruned'
 import { PolicyConstants } from './PolicyConstants'
 
+/** per_card keys are engine variant ids — a choose-your-own card renders as
+ * "base-id[option]". Exclusion works on the physical card, so strip the
+ * variant suffix before touching the excluded set. */
+function baseId(id: string): string {
+  return id.replace(/\[[^\]]*\]$/, '')
+}
+
 interface ShownEntry {
   entry: BestBySize
   gain: number | null
@@ -20,11 +27,15 @@ interface ShownEntry {
  * Everything shown comes verbatim from the engine's best_by_size. Each size
  * is optimized independently — the best k-card set need not contain the best
  * (k-1)-card set — so every row lists its complete portfolio. */
-export function ResultsView({ bundle, addedCard }: {
+export function ResultsView({ bundle, addedCard, excluded, onToggleExclude }: {
   bundle: OptimizeBundle
   /** Improve path (suggest-addition): the card the server chose to add — its
    * tile gets a "Suggested addition" badge. */
   addedCard?: string
+  /** Cards the user vetoed (v2.5.0) — feeds each math tile's ⋯ menu; the veto
+   * applies on the NEXT run, this bundle keeps rendering unchanged. */
+  excluded?: Set<string>
+  onToggleExclude?: (id: string) => void
 }) {
   const metric = bundle.optimize_for === 'ongoing' ? 'ongoing_net' : 'year1_net'
   const shown: ShownEntry[] = []
@@ -256,6 +267,8 @@ export function ResultsView({ bundle, addedCard }: {
                 cppTable={bundle.cpp_table}
                 worstCase={worst}
                 suggested={id === addedCard}
+                isExcluded={excluded?.has(baseId(id)) ?? false}
+                onToggleExclude={onToggleExclude ? () => onToggleExclude(baseId(id)) : undefined}
               />
             ))}
           </div>

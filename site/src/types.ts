@@ -97,6 +97,9 @@ export interface Profile {
   spend: Record<string, number>
   merchant_spend?: Record<string, number>
   user: ProfileUser
+  /** Card ids the user vetoed — the optimizer never picks or suggests them
+   * (generate/improve); hand-picked analyze sets still score as-is. */
+  exclude_cards?: string[]
 }
 
 export interface Assignment {

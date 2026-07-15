@@ -46,6 +46,8 @@ export interface FormState {
   setMode: React.Dispatch<React.SetStateAction<Mode>>
   selected: Set<string>
   setSelected: React.Dispatch<React.SetStateAction<Set<string>>>
+  excluded: Set<string>
+  setExcluded: React.Dispatch<React.SetStateAction<Set<string>>>
   view: FormView
   setView: React.Dispatch<React.SetStateAction<FormView>>
   completed: boolean
@@ -69,6 +71,7 @@ export function useFormState(): FormState {
   const [unit, setUnit] = useState<Unit>(() => loaded?.unit ?? 'monthly')
   const [mode, setMode] = useState<Mode>(() => loaded?.mode ?? 'generate')
   const [selected, setSelected] = useState<Set<string>>(() => loaded?.selected ?? new Set())
+  const [excluded, setExcluded] = useState<Set<string>>(() => loaded?.excluded ?? new Set())
   const [completed, setCompleted] = useState<boolean>(() => loaded?.completed ?? false)
   // EVERY visit opens on the start chooser (v2.3.3) — fresh and returning
   // alike. Restored values survive underneath; pressing a path key routes a
@@ -85,8 +88,8 @@ export function useFormState(): FormState {
       firstPass.current = false
       return
     }
-    saveForm({ unit, mode, spend, user, selected, completed })
-  }, [unit, mode, spend, user, selected, completed])
+    saveForm({ unit, mode, spend, user, selected, excluded, completed })
+  }, [unit, mode, spend, user, selected, excluded, completed])
 
   const reset = (defaults?: Config['user_defaults']) => {
     clearForm()
@@ -100,6 +103,7 @@ export function useFormState(): FormState {
     setUnit('monthly')
     setMode('generate')
     setSelected(new Set())
+    setExcluded(new Set())
     setCompleted(false)
     // Back to the start screen so the user re-picks their path.
     setView('start')
@@ -111,6 +115,7 @@ export function useFormState(): FormState {
     unit, setUnit,
     mode, setMode,
     selected, setSelected,
+    excluded, setExcluded,
     view, setView,
     completed, setCompleted,
     restored,

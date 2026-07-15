@@ -31,7 +31,10 @@ export function Home({ cfg, onRetryConfig }: {
   onRetryConfig: () => void
 }) {
   const fs = useFormState()
-  const { spend, setSpend, user, setUser, unit, setUnit, mode, setMode, selected, setSelected } = fs
+  const {
+    spend, setSpend, user, setUser, unit, setUnit, mode, setMode,
+    selected, setSelected, excluded, setExcluded,
+  } = fs
   const [run, setRun] = useState<RunPhase>({ phase: 'idle' })
   const [elapsed, setElapsed] = useState(0)
   // First-run wizard step index. In-session only — a mid-wizard refresh restores
@@ -123,8 +126,8 @@ export function Home({ cfg, onRetryConfig }: {
       })
   }
 
-  const onRun = () => startRun(optimize(buildProfile(spend, user)))
-  const onRunManual = () => startRun(evaluateManual(buildProfile(spend, user), [...selected]))
+  const onRun = () => startRun(optimize(buildProfile(spend, user, excluded)))
+  const onRunManual = () => startRun(evaluateManual(buildProfile(spend, user, excluded), [...selected]))
 
   // Switch journey paths, keeping every entered value (spend, user, selected).
   // Results from another path are cleared so stale bundles never render under
@@ -141,7 +144,7 @@ export function Home({ cfg, onRetryConfig }: {
   const onRunImprove = () => {
     setElapsed(0)
     setRun({ phase: 'running', startedAt: Date.now() })
-    suggestAddition(buildProfile(spend, user), [...selected])
+    suggestAddition(buildProfile(spend, user, excluded), [...selected])
       .then((bundle) => {
         setSelected((prev) => new Set(prev).add(bundle.added_card))
         setRun({ phase: 'done', bundle })
@@ -160,6 +163,25 @@ export function Home({ cfg, onRetryConfig }: {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
       else next.add(id)
+      return next
+    })
+
+  // Exclude a card from consideration (v2.5.0): the optimizer never picks or
+  // suggests an excluded card. Excluding also drops it from the held selection
+  // — a card can't be both held and vetoed.
+  const toggleExclude = (id: string) =>
+    setExcluded((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else {
+        next.add(id)
+        setSelected((sel) => {
+          if (!sel.has(id)) return sel
+          const s = new Set(sel)
+          s.delete(id)
+          return s
+        })
+      }
       return next
     })
 
@@ -248,6 +270,14 @@ export function Home({ cfg, onRetryConfig }: {
             )}
             {run.phase === 'error' && !run.unreachable && (
               <span className="error">{run.detail}</span>
+            )}
+            {excluded.size > 0 && (
+              <span className="excluded-chip">
+                {excluded.size} card{excluded.size > 1 ? 's' : ''} excluded from consideration
+                <button type="button" className="ghost" onClick={() => setExcluded(new Set())}>
+                  clear
+                </button>
+              </span>
             )}
           </div>
         )
@@ -365,13 +395,20 @@ export function Home({ cfg, onRetryConfig }: {
                 {modeToggle}
                 {runbar}
                 {mode !== 'generate' && (
-                  <ManualGrid selected={selected} onToggle={toggleSelect} />
+                  <ManualGrid
+                    selected={selected}
+                    excluded={excluded}
+                    onToggle={toggleSelect}
+                    onToggleExclude={toggleExclude}
+                  />
                 )}
                 {run.phase === 'done' && (
                   <div ref={resultsRef}>
                     <ResultsView
                       bundle={run.bundle}
                       addedCard={'added_card' in run.bundle ? run.bundle.added_card : undefined}
+                      excluded={excluded}
+                      onToggleExclude={toggleExclude}
                     />
                   </div>
                 )}

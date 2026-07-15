@@ -21,6 +21,9 @@ export interface PersistedForm {
   spend: SpendState
   user: UserState
   selected: Set<string>
+  /** Cards the user excluded from consideration (v2.5.0) — sent as the
+   * profile's exclude_cards so generate/improve never pick them. */
+  excluded: Set<string>
   completed: boolean
 }
 
@@ -115,6 +118,7 @@ export function loadForm(): PersistedForm | null {
     spend: coerceSpend(parsed.spend),
     user: coerceUser(parsed.user),
     selected: coerceStringSet(parsed.selected),
+    excluded: coerceStringSet(parsed.excluded),
     completed: parsed.completed === true,
   }
 }
@@ -127,6 +131,7 @@ export function saveForm(state: PersistedForm): void {
     spend: state.spend,
     user: { ...state.user, confirmed_usage: [...state.user.confirmed_usage] },
     selected: [...state.selected],
+    excluded: [...state.excluded],
     completed: state.completed,
   }
   try {
