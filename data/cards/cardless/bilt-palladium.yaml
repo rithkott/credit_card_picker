@@ -30,10 +30,16 @@ category_rewards:
       from how much everyday spend it routes onto this card (earn_ratio steering pass).
 # All non-housing spend earns the flat 2x base_rate, so no other category entries are needed.
 
-merchant_rewards: []
-# Partner earning (Lyft, Bilt Dining, Bilt Travel Portal, Bilt Fitness, Metropolis parking,
-# Walgreens, Bilt Home Delivery) stacks with base rate; rates "vary by partner/merchant, set in
-# the Bilt app" — no numeric rate stated, unmodeled. See notes.
+merchant_rewards:
+  - merchant: lyft
+    rate: 4                   # user-reported; NEEDS human verification against Bilt app partner rates
+    notes: >-
+      User-reported 4x on Lyft rideshare, not stated in the offer file terms sheet (which only says
+      partner rates "vary by partner/merchant, set in the Bilt app"). Offer file states partner
+      earning "stacks with base rate" — modeled here as the merchant rate itself (4x), not on top of
+      base; confirm stacking behavior against the Bilt app before treating as high confidence.
+# Other partner earning (Bilt Dining, Bilt Travel Portal, Bilt Fitness, Metropolis parking,
+# Walgreens, Bilt Home Delivery) still unmodeled — no numeric rate stated. See notes.
 
 credits:
   - name: Annual Bilt Cash Credit
