@@ -40,7 +40,7 @@ approval:
     and hold (see required_membership).
 
 required_membership:
-  name: Sam's Club membership
+  name: Sam's Club
   annual_cost_usd: 50         # Cheapest "Club" tier (~$50/yr) — NOT stated in the offer file; estimated, NEEDS human verification. The 3% Sam's Club-purchases rate additionally requires the higher-cost "Plus" tier.
   note: >-
     A paid Sam's Club membership is a prerequisite to apply for and hold the card; if the membership lapses
