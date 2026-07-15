@@ -730,6 +730,14 @@ def score_credits(cards: list, profile: dict, programs: dict,
       - uncategorized + usage_keys (confirmed): face × capture — a merchant
         coupon, not near-cash. Full face value is reserved for automatic
         credits (no keys, no category; anniversary points/cash).
+
+    Every result carries two figures: `value` — the capture-haircut/spend-capped
+    amount that feeds ranking and the internal net (score_portfolio) — and
+    `face_value`, the full annual face the card advertises. The display layer
+    (assemble_portfolio) surfaces `face_value` so the user sees the headline
+    number, while the optimizer keeps selecting portfolios on the realistic
+    `value`. Genuinely-$0 credits (expired / no-spend / unlock-unreachable /
+    single-fee loser) set face_value 0.0 too, so they still show $0.
     """
     tracker = {cat: float(v) for cat, v in profile["spend"].items()}
     confirmed = set(profile["user"]["confirmed_usage"])
@@ -746,7 +754,7 @@ def score_credits(cards: list, profile: dict, programs: dict,
         for credit in card["credits"]:
             if "expires" in credit and date.fromisoformat(credit["expires"]) < as_of:
                 results.append({"card_id": card["id"], "name": credit["name"],
-                                "value": 0.0,
+                                "value": 0.0, "face_value": 0.0,
                                 "note": f"$0 — promo expired {credit['expires']}"})
                 continue
             keys = credit.get("usage_keys")
@@ -767,7 +775,7 @@ def score_credits(cards: list, profile: dict, programs: dict,
                 else:
                     potential = credit["amount_usd"] * periods
                 results.append({"card_id": card["id"], "name": credit["name"],
-                                "value": 0.0,
+                                "value": 0.0, "face_value": 0.0,
                                 "potential_value": round(potential, 2),
                                 "note": f"$0 — requires confirmed use of one of: "
                                         f"{', '.join(keys)} (user.confirmed_usage)"})
@@ -793,7 +801,7 @@ def score_credits(cards: list, profile: dict, programs: dict,
                 else:
                     potential = credit["amount_usd"] * periods
                 results.append({"card_id": card["id"], "name": credit["name"],
-                                "value": 0.0,
+                                "value": 0.0, "face_value": 0.0,
                                 "potential_value": round(potential, 2),
                                 "note": f"$0 — needs ${unlock:,.0f}/{credit['period']} on "
                                         f"this card (only ${card_spend:,.0f} routed here)"})
@@ -807,7 +815,7 @@ def score_credits(cards: list, profile: dict, programs: dict,
                         + (f" × capture {capture}" if in_kind else "")
                         + unlock_note + usage_note)
                 results.append({"card_id": card["id"], "name": credit["name"],
-                                "value": value, "note": note})
+                                "value": value, "face_value": face, "note": note})
                 continue
 
             face = credit["amount_usd"] * periods
@@ -815,23 +823,23 @@ def score_credits(cards: list, profile: dict, programs: dict,
             if cat is None:
                 if in_kind:
                     results.append({"card_id": card["id"], "name": credit["name"],
-                                    "value": face * capture,
+                                    "value": face * capture, "face_value": face,
                                     "note": f"in-kind est. ${face:,.2f}/yr × capture {capture}{unlock_note}{usage_note}"})
                 elif keys:
                     # A confirmed merchant coupon (Oura, StubHub, Walmart+) —
                     # spendable only at that merchant, so never full face.
                     results.append({"card_id": card["id"], "name": credit["name"],
-                                    "value": face * capture,
+                                    "value": face * capture, "face_value": face,
                                     "note": f"face ${face:,.2f}/yr × capture {capture}{unlock_note}{usage_note}"})
                 else:
                     results.append({"card_id": card["id"], "name": credit["name"],
-                                    "value": face,
+                                    "value": face, "face_value": face,
                                     "note": f"automatic — full face value{unlock_note}"})
                 continue
             available = tracker.get(cat, 0.0)
             if available <= EPS:
                 results.append({"card_id": card["id"], "name": credit["name"],
-                                "value": 0.0,
+                                "value": 0.0, "face_value": 0.0,
                                 "note": f"$0 — no remaining spend in '{cat}'"})
                 continue
             haircut = face * capture
@@ -842,7 +850,7 @@ def score_credits(cards: list, profile: dict, programs: dict,
             if haircut > available:
                 note += f" (capped by remaining '{cat}' spend)"
             results.append({"card_id": card["id"], "name": credit["name"],
-                            "value": value, "note": note})
+                            "value": value, "face_value": face, "note": note})
     # Once-per-portfolio fee credits (single_fee usage keys, e.g. Global Entry /
     # TSA PreCheck): the credit reimburses one external fee, so a portfolio can
     # claim it once. Every credit yields exactly one result in this same
@@ -868,6 +876,7 @@ def score_credits(cards: list, profile: dict, programs: dict,
                 if r is winner:
                     continue
                 r["value"] = 0.0
+                r["face_value"] = 0.0
                 r["note"] = (f"$0 — fee reimbursable once per person; counted "
                              f"on {names.get(winner['card_id'], winner['card_id'])}")
     return results
@@ -1505,8 +1514,14 @@ def assemble_portfolio(entry: dict, by_id: dict, profile: dict, programs: dict,
                  **({"eligible_fraction": a["eligible_fraction"]}
                     if a.get("eligible_fraction") is not None else {})}
                 for a in scored["assignments"] if a["card_id"] == cid],
+            # Displayed credit value is the FULL annual face (face_value), not the
+            # capture-haircut value that drives ranking: the user sees the headline
+            # number the card advertises, while the optimizer still selected this
+            # portfolio on the realistic haircut value (score_portfolio). The note
+            # spells out the capture applied internally. Genuinely-$0 credits carry
+            # face_value 0.0, so the displayed total and net stay honest for them.
             "credits": [
-                {"name": c["name"], "value": _round2(c["value"]), "note": c["note"],
+                {"name": c["name"], "value": _round2(c["face_value"]), "note": c["note"],
                  **({"potential_value": _round2(c["potential_value"])}
                     if "potential_value" in c else {})}
                 for c in scored["credits"] if c["card_id"] == cid],

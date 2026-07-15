@@ -115,6 +115,12 @@ export interface Assignment {
 
 export interface CreditLine {
   name: string
+  /** The credit's FULL annual face value — the headline number the card
+   * advertises. The optimizer ranks portfolios on a capture-haircut value
+   * internally (see score_credits), but every displayed credit line, subtotal,
+   * and net uses full face; the note spells out the capture applied. Genuinely
+   * unusable credits (expired, no matching spend, unmet unlock, single-fee
+   * duplicate) are 0 here. */
   value: number
   note: string
   /** Full annual face value of a usage-gated perk the user hasn't confirmed —
