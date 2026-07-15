@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { OptimizeBundle, PerCard } from '../../types'
 import { formatNumber, formatUsd } from '../../lib/money'
 import { assignmentDrop, floorCppOf } from '../../lib/worstCase'
@@ -58,14 +59,20 @@ function userFacing(warnings: string[]): string[] {
  * `.tile-grid`, that makes each band (earn table, credits, annual fee, adds,
  * bonus, max value…) line up horizontally across every card in the row —
  * shorter sections get whitespace so the next band still aligns. */
-export function CardDetail({ id, card, cppTable, worstCase, suggested }: {
+export function CardDetail({
+  id, card, cppTable, worstCase, suggested, isExcluded, onToggleExclude,
+}: {
   id: string
   card: PerCard
   cppTable: OptimizeBundle['cpp_table']
   worstCase: boolean
   /** Improve path: this card is the server's suggested addition. */
   suggested?: boolean
+  /** v2.5.0: this card is in the user's excluded set (veto applies next run). */
+  isExcluded?: boolean
+  onToggleExclude?: () => void
 }) {
+  const [menuOpen, setMenuOpen] = useState(false)
   const isPoints = card.currency.kind === 'points'
   // Worst-case (cash-out): re-price this card's points at the program floor.
   // floorCpp drives the earn-table caption and the per-row value/total drop;
@@ -135,11 +142,50 @@ export function CardDetail({ id, card, cppTable, worstCase, suggested }: {
 
   return (
     <div className="card-tile">
+      {onToggleExclude && (
+        <div
+          className="tile-menu"
+          onBlur={(e) => {
+            if (!e.currentTarget.contains(e.relatedTarget as Node)) setMenuOpen(false)
+          }}
+        >
+          <button
+            type="button"
+            className="tile-kebab"
+            aria-label={`Options for ${card.name}`}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((o) => !o)}
+          >
+            <span aria-hidden="true">⋯</span>
+          </button>
+          {menuOpen && (
+            <div className="tile-menu-pop" role="menu">
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  onToggleExclude()
+                  setMenuOpen(false)
+                }}
+              >
+                {isExcluded ? 'Consider this card again' : 'Don\u2019t consider this card'}
+              </button>
+              <div className="tile-menu-note">
+                {isExcluded
+                  ? 'Currently excluded — takes effect on your next run.'
+                  : 'Excludes it from future runs.'}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
       {/* 1 · header */}
       <div className="tile-slot slot-header">
         <h3>
           {card.name}
           {suggested && <span className="badge-suggested">Suggested addition</span>}
+          {isExcluded && <span className="badge-excluded">Excluded next run</span>}
         </h3>
         <div className="role">
           {card.choice_category

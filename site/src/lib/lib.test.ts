@@ -137,6 +137,11 @@ describe('profile emission (plan 03 §2 rules)', () => {
     const p = buildProfile(spendOf({ other: 100 }), user)
     expect(p.user.reward_preferences).toEqual(['points'])
   })
+  it('exclude_cards emits the vetoed ids sorted, and is omitted when empty', () => {
+    const p = buildProfile(spendOf({ other: 100 }), baseUser(), new Set(['venture-x', 'active-cash']))
+    expect(p.exclude_cards).toEqual(['active-cash', 'venture-x'])
+    expect(buildProfile(spendOf({ other: 100 }), baseUser()).exclude_cards).toBeUndefined()
+  })
 })
 
 describe('"+"-added sub-amounts fold into the topic total', () => {

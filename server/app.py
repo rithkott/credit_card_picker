@@ -250,7 +250,7 @@ def optimize(body: dict = Body(...)) -> dict:
     else:
         as_of = date.today()  # per request, so a long-lived server never serves stale expiry math
 
-    raw = {k: body[k] for k in ("spend", "merchant_spend", "user") if k in body}
+    raw = {k: body[k] for k in ("spend", "merchant_spend", "user", "exclude_cards") if k in body}
     try:
         profile = opt.parse_profile(raw, STATE["dataset"])
         bundle = opt.run(STATE["dataset"], profile, as_of, top)
@@ -280,7 +280,7 @@ def evaluate(body: dict = Body(...)) -> dict:
     else:
         as_of = date.today()  # per request, so a long-lived server never serves stale expiry math
 
-    raw = {k: body[k] for k in ("spend", "merchant_spend", "user") if k in body}
+    raw = {k: body[k] for k in ("spend", "merchant_spend", "user", "exclude_cards") if k in body}
     try:
         profile = opt.parse_profile(raw, STATE["dataset"])
         bundle = opt.evaluate(STATE["dataset"], profile, as_of, cards)
@@ -311,7 +311,7 @@ def suggest_addition(body: dict = Body(...)) -> dict:
     else:
         as_of = date.today()  # per request, so a long-lived server never serves stale expiry math
 
-    raw = {k: body[k] for k in ("spend", "merchant_spend", "user") if k in body}
+    raw = {k: body[k] for k in ("spend", "merchant_spend", "user", "exclude_cards") if k in body}
     try:
         profile = opt.parse_profile(raw, STATE["dataset"])
         bundle = opt.augment(STATE["dataset"], profile, as_of, cards)

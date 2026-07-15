@@ -1892,5 +1892,70 @@ class TestAuditFixesV220(unittest.TestCase):
             make_profile({"other": 5000}, single_fee_keys=["global_entry_tsa"])
 
 
+class TestExcludeCards(unittest.TestCase):
+    """User-vetoed cards (v2.5.0): profile.exclude_cards ids are never picked
+    by run() nor suggested by augment(); evaluate() still scores them if
+    hand-picked (selection wins)."""
+
+    def _profile(self, exclude, **user):
+        raw = {"spend": P30K, "user": {"credit_tier": "excellent", **user},
+               "exclude_cards": exclude}
+        return opt.parse_profile(raw, DATASET)
+
+    def test_parse_profile_canonicalizes(self):
+        prof = self._profile(["venture-x", "active-cash"])
+        self.assertEqual(prof["exclude_cards"], ["active-cash", "venture-x"])
+        # Absent key -> empty list, so downstream code never branches on None.
+        self.assertEqual(make_profile(P30K)["exclude_cards"], [])
+
+    def test_unknown_id_rejected(self):
+        with self.assertRaises(opt.InputError) as ctx:
+            self._profile(["not-a-card"])
+        self.assertIn("unknown card id", str(ctx.exception))
+
+    def test_duplicates_and_non_strings_rejected(self):
+        for bad in (["active-cash", "active-cash"], [42], "active-cash"):
+            with self.assertRaises(opt.InputError) as ctx:
+                self._profile(bad)
+            self.assertIn("exclude_cards", str(ctx.exception))
+
+    def test_filter_cards_vetoes_with_reason(self):
+        eligible, excluded = opt.filter_cards(
+            DATASET["cards"], self._profile(["active-cash"]), DATASET["programs"])
+        self.assertEqual([e["id"] for e in excluded], ["active-cash"])
+        self.assertIn("excluded by you", excluded[0]["reason"])
+        self.assertNotIn("active-cash", [c["id"] for c in eligible])
+
+    def test_veto_reason_wins_over_other_filters(self):
+        # venture-x would be tier-filtered for a 'good' user anyway; the report
+        # must still name the user's own veto, not the incidental tier reason.
+        _, excluded = opt.filter_cards(
+            DATASET["cards"], self._profile(["venture-x"], credit_tier="good"),
+            DATASET["programs"])
+        by_id = {e["id"]: e["reason"] for e in excluded}
+        self.assertIn("excluded by you", by_id["venture-x"])
+
+    def test_run_never_recommends_vetoed_card(self):
+        base = opt.run(DATASET, make_profile(P30K), AS_OF, top=1)
+        best = base["portfolios"][0]["cards"]
+        veto = best[0].split("[")[0]
+        bundle = opt.run(DATASET, self._profile([veto]), AS_OF, top=5)
+        for p in bundle["portfolios"] + bundle["best_by_size"]:
+            self.assertNotIn(veto, [c.split("[")[0] for c in p["cards"]])
+        self.assertIn(veto, [e["id"] for e in bundle["excluded"]])
+
+    def test_augment_never_suggests_vetoed_card(self):
+        held = ["active-cash"]
+        first = opt.augment(DATASET, make_profile(P30K), AS_OF, held)
+        pick = first["added_card"]
+        second = opt.augment(DATASET, self._profile([pick]), AS_OF, held)
+        self.assertNotEqual(second["added_card"], pick)
+
+    def test_evaluate_scores_vetoed_card_when_hand_picked(self):
+        bundle = opt.evaluate(DATASET, self._profile(["active-cash"]), AS_OF,
+                              ["active-cash"])
+        self.assertEqual(bundle["best_by_size"][0]["cards"], ["active-cash"])
+
+
 if __name__ == "__main__":
     unittest.main()

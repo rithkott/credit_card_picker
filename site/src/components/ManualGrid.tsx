@@ -16,9 +16,13 @@ type Phase =
  * A search field (v2.1) filters the list in place by card or company name; the
  * whole list lives in a bounded, internally-scrolling well so it never runs off
  * the page. */
-export function ManualGrid({ selected, onToggle }: {
+export function ManualGrid({ selected, excluded, onToggle, onToggleExclude }: {
   selected: Set<string>
+  /** Cards vetoed from consideration (v2.5.0) — shown greyed with the ✕ lit;
+   * the ✕ in each tile's corner toggles membership. */
+  excluded: Set<string>
   onToggle: (id: string) => void
+  onToggleExclude: (id: string) => void
 }) {
   const [state, setState] = useState<Phase>({ phase: 'loading' })
   const [query, setQuery] = useState('')
@@ -87,30 +91,50 @@ export function ManualGrid({ selected, onToggle }: {
           <div className="tile-grid">
             {cards.map((c) => {
               const isSel = selected.has(c.id)
+              const isExcl = excluded.has(c.id)
               return (
-                <button
-                  type="button"
-                  key={c.id}
-                  className={`card-tile selectable${isSel ? ' selected' : ''}`}
-                  aria-pressed={isSel}
-                  onClick={() => onToggle(c.id)}
-                >
-                  <span className="check" aria-hidden="true">{isSel ? '✓' : ''}</span>
-                  <h3>
-                    {c.name}
-                    {c.availability === 'discontinued' && (
-                      <span className="badge-discontinued" title="No longer open to new applicants — pick it here only if you already hold it.">Discontinued</span>
-                    )}
-                  </h3>
-                  <div className="role">
-                    {c.annual_fee_usd > 0
-                      ? <><span className="fee-amount">${formatNumber(c.annual_fee_usd)}</span> annual fee</>
-                      : c.required_membership
-                        ? <><span className="fee-amount">${formatNumber(c.required_membership.annual_cost_usd)}</span>/yr {c.required_membership.name} membership{c.required_membership.assumed_held ? ' (assumed held)' : ''}</>
-                        : 'No annual fee'}
-                    {' · '}{c.currency.program_label}
-                  </div>
-                </button>
+                // Wrapper div: the exclude ✕ can't nest inside the tile
+                // <button>, so it sits as an absolutely-positioned sibling.
+                <div key={c.id} className={`tile-wrap${isExcl ? ' excluded' : ''}`}>
+                  <button
+                    type="button"
+                    className={`card-tile selectable${isSel ? ' selected' : ''}`}
+                    aria-pressed={isSel}
+                    disabled={isExcl}
+                    onClick={() => onToggle(c.id)}
+                  >
+                    <span className="check" aria-hidden="true">{isSel ? '✓' : ''}</span>
+                    <h3>
+                      {c.name}
+                      {c.availability === 'discontinued' && (
+                        <span className="badge-discontinued" title="No longer open to new applicants — pick it here only if you already hold it.">Discontinued</span>
+                      )}
+                      {isExcl && <span className="badge-excluded">Excluded</span>}
+                    </h3>
+                    <div className="role">
+                      {c.annual_fee_usd > 0
+                        ? <><span className="fee-amount">${formatNumber(c.annual_fee_usd)}</span> annual fee</>
+                        : c.required_membership
+                          ? <><span className="fee-amount">${formatNumber(c.required_membership.annual_cost_usd)}</span>/yr {c.required_membership.name} membership{c.required_membership.assumed_held ? ' (assumed held)' : ''}</>
+                          : 'No annual fee'}
+                      {' · '}{c.currency.program_label}
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    className="tile-x"
+                    aria-pressed={isExcl}
+                    aria-label={isExcl
+                      ? `Consider ${c.name} again`
+                      : `Exclude ${c.name} from consideration`}
+                    title={isExcl
+                      ? 'Excluded — click to consider this card again'
+                      : "Don't consider this card"}
+                    onClick={() => onToggleExclude(c.id)}
+                  >
+                    ✕
+                  </button>
+                </div>
               )
             })}
           </div>
