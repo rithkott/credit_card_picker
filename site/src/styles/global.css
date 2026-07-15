@@ -1323,6 +1323,15 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   margin-bottom: 6px;
 }
 .tile-credits .line > span:last-child { color: var(--pos); }
+.credit-disclaimer {
+  display: block;
+  margin-top: 2px;
+  font: 500 10px var(--mono);
+  color: var(--faint);
+  letter-spacing: 0;
+  line-height: 1.35;
+  max-width: 92%;
+}
 .tile-perks { margin-top: 12px; }
 .tile-perks .sublabel .note {
   text-transform: none; letter-spacing: 0; font-weight: 500;
