@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getCards } from '../api'
-import { issuerLabel } from '../lib/issuers'
+import { issuerLabel, issuerMatchesAlias } from '../lib/issuers'
 import { formatNumber } from '../lib/money'
 import type { CardSummary } from '../types'
 
@@ -13,7 +13,8 @@ type Phase =
  * tile, grouped by issuer like the Data sources tab. Controlled — selection
  * state lives in Home so the "Score selected" action can read it. Plain tiles,
  * no card art: name, annual fee, and rewards currency. No selection cap (v1.10).
- * A search field (v2.1) filters the list in place by card or company name; the
+ * A search field (v2.1) filters the list in place by card or company name
+ * (common issuer nicknames like "amex" or "bofa" match too); the
  * whole list lives in a bounded, internally-scrolling well so it never runs off
  * the page. */
 export function ManualGrid({ selected, excluded, onToggle, onToggleExclude }: {
@@ -40,6 +41,7 @@ export function ManualGrid({ selected, excluded, onToggle, onToggleExclude }: {
       !q
       || c.name.toLowerCase().includes(q)
       || issuerLabel(c.issuer).toLowerCase().includes(q)
+      || issuerMatchesAlias(c.issuer, q)
       || c.currency.program_label.toLowerCase().includes(q)
     const groups = new Map<string, CardSummary[]>()
     for (const c of state.cards) {
