@@ -881,8 +881,11 @@ def score_credits(cards: list, profile: dict, programs: dict,
             note = f"{kind_label} ${face:,.2f}/yr × capture {capture}{unlock_note}{usage_note}"
             if haircut > available:
                 note += f" (capped by remaining '{cat}' spend)"
-            results.append({"card_id": card["id"], "name": credit["name"],
-                            "value": value, "face_value": face, "note": note})
+            result = {"card_id": card["id"], "name": credit["name"],
+                      "value": value, "face_value": face, "note": note}
+            if credit.get("notes"):
+                result["disclaimer"] = credit["notes"]
+            results.append(result)
     # Once-per-portfolio fee credits (single_fee usage keys, e.g. Global Entry /
     # TSA PreCheck): the credit reimburses one external fee, so a portfolio can
     # claim it once. Every credit yields exactly one result in this same
@@ -1563,7 +1566,8 @@ def assemble_portfolio(entry: dict, by_id: dict, profile: dict, programs: dict,
             "credits": [
                 {"name": c["name"], "value": _round2(c["face_value"]), "note": c["note"],
                  **({"potential_value": _round2(c["potential_value"])}
-                    if "potential_value" in c else {})}
+                    if "potential_value" in c else {}),
+                 **({"disclaimer": c["disclaimer"]} if "disclaimer" in c else {})}
                 for c in scored["credits"] if c["card_id"] == cid],
             "bonus": {"value": _round2(scored["bonuses"][cid]["value"]),
                       "note": scored["bonuses"][cid]["note"],

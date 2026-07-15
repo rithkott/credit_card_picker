@@ -248,6 +248,7 @@ export function CardDetail({
             <div className="line" key={`c-${c.name}-${i}`}>
               <span>
                 {c.name} <span className="note">you use it</span>
+                {c.disclaimer && <span className="credit-disclaimer">{c.disclaimer}</span>}
               </span>
               <i className="lead" aria-hidden="true" />
               <span>+ {formatUsd(c.value)}</span>

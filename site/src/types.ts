@@ -130,6 +130,11 @@ export interface CreditLine {
    * present only on those $0 credits. Display-only ("perks you'd get anyway");
    * never enters any total, since `value` stays 0. */
   potential_value?: number
+  /** Short human note about a real-world restriction on a COUNTED credit — e.g.
+   * a dining credit usable only at a few named partners. Display-only; shown as
+   * a small caption under the credit line so the counted value carries its
+   * caveat. Present only when the source card credit sets `notes`. */
+  disclaimer?: string
 }
 
 export interface PerCard {
