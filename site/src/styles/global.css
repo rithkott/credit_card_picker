@@ -970,6 +970,19 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   row-gap: 0;
   align-items: stretch;
 }
+/* Results tiles: max 3 per row, chunked into one subgrid per row by
+   ResultsView. Every row sizes its tracks to `--cols` (the full-row column
+   count, min(total,3)) so tiles are the SAME width across rows; a short
+   trailing row repeats only `--tiles` of those tracks and centres them.
+   Fixed tracks (not auto-fit) stop 4–5 cards from cramming into one
+   overflowing row. Base .tile-grid keeps auto-fit for the manual catalog. */
+.tile-grid.results-tiles {
+  --gap: 12px;
+  grid-template-columns:
+    repeat(var(--tiles, 3), calc((100% - (var(--cols, 3) - 1) * var(--gap)) / var(--cols, 3)));
+  column-gap: var(--gap);
+  justify-content: center;
+}
 .card-tile {
   display: flex; flex-direction: column;
   background: var(--surface);
@@ -987,6 +1000,15 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   row-gap: 0;
 }
 .tile-slot { min-width: 0; }
+/* Narrow screens: one tile per row. Drop the subgrid band-pinning too —
+   `grid-row: 1 / -1` in a single column would stack every tile onto the same
+   12 rows and overlap them. Bands don't need to align when there's one column. */
+@media (max-width: 640px) {
+  .tile-grid.results-tiles { grid-template-columns: 1fr; grid-template-rows: none; }
+  .tile-grid.results-tiles > .card-tile {
+    display: flex; grid-row: auto; grid-template-rows: none;
+  }
+}
 /* Cost lines sit tight as a group; the first one carries the group divider. */
 .tile-grid > .card-tile .slot-cost { margin-top: 4px; }
 .tile-grid > .card-tile .slot-cost-first {
