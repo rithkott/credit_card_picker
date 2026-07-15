@@ -188,7 +188,10 @@ When *reviewing* someone else's card: open the source URLs and spot-check the th
 ## Extending the registries
 
 - **New category** (`data/meta/categories.yaml`): add only when an issuer's bonus category genuinely doesn't map to an existing key. Remember every category (except pseudo-categories) becomes a line in the user's spend-entry form — keep the list short enough that filling it out stays pleasant. Never remove or rename a key without updating every card that uses it (the validator will catch stragglers).
-- **New merchant** (`data/meta/merchants.yaml`): add only when a card in `data/cards/` actually references it, and set its `category` mapping so merchant spend routes out of the right bucket.
+- **New merchant** (`data/meta/merchants.yaml`): add only when a card in `data/cards/` actually references it, and set its `category` mapping so merchant spend routes out of the right bucket. Two optional acceptance flags (v2.2.0):
+  - `exclude_from_category_bonus: true` — the merchant is carved out of issuers' category bonus definitions (warehouse clubs like Costco are excluded from "supermarkets" on nearly every card). Its spend earns only through an explicit `merchant_rewards` line or the base rate; category and rotating bonus lines skip it.
+  - `accepted_networks: [visa]` — the merchant only accepts certain card networks in-store (Costco is Visa-only since 2016). Values must come from the card schema's `network` enum. Cards on other networks can't earn on the spend at all; if no card in a portfolio qualifies, the spend is reported as unassignable with the reason.
+- **Usage-question items** (`data/meta/usage-questions.yaml`): an item may carry `single_fee: true` when its credit reimburses one external fee (Global Entry / TSA PreCheck application). The optimizer then counts that credit at most once per portfolio — the highest-valued instance wins, the rest are zeroed with a note naming the winning card.
 - **New points program** (`data/meta/point-valuations.yaml`): set `floor_cpp` to the guaranteed cash-out rate and `optimistic_cpp` to a defensible transfer-partner value, with a comment citing your reasoning. Valuations are judgment calls — the comment is the audit trail.
 
 ## Common validator errors

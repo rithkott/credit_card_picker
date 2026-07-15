@@ -101,7 +101,7 @@ export function DataSources() {
                           {c.annual_fee_usd > 0
                             ? `$${c.annual_fee_usd}`
                             : c.required_membership
-                              ? <>${c.required_membership.annual_cost_usd}<span className="dim"> {c.required_membership.name}</span></>
+                              ? <>${c.required_membership.annual_cost_usd}<span className="dim"> {c.required_membership.name}{c.required_membership.assumed_held ? ' (assumed held)' : ''}</span></>
                               : '$0'}
                         </td>
                         <td>{c.currency.program_label}</td>

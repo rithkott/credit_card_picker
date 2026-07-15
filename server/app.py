@@ -145,12 +145,16 @@ def cards() -> dict:
         # A card_exclusive required membership (e.g. Robinhood Gold) is a
         # mandatory carrying cost the optimizer scores like an annual fee, so
         # surface it here — a $0 card annual fee alone reads as "free" when it
-        # is not. Non-exclusive memberships have standalone value and aren't a
-        # pure card cost, so they're omitted.
+        # is not. Non-exclusive memberships (Costco, Sam's Club, Prime) have
+        # standalone value: the optimizer assumes they're already held and
+        # never deducts them, but they're disclosed with assumed_held: true so
+        # the UI can say so (v2.2.0).
         rm = card.get("required_membership") or {}
         required_membership = (
-            {"name": rm["name"], "annual_cost_usd": float(rm.get("annual_cost_usd") or 0)}
-            if rm.get("card_exclusive") else None
+            {"name": rm["name"],
+             "annual_cost_usd": float(rm.get("annual_cost_usd") or 0),
+             "assumed_held": not rm.get("card_exclusive")}
+            if rm else None
         )
         out.append({
             "id": card["id"],

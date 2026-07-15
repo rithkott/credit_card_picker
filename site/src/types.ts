@@ -51,9 +51,15 @@ export interface CardSummary {
   network: string | null
   availability: 'active' | 'discontinued'
   annual_fee_usd: number
-  /** A mandatory card-exclusive membership (e.g. Robinhood Gold, $50/yr) the
-   * optimizer scores like an annual fee; null when the card has none. */
-  required_membership: { name: string; annual_cost_usd: number } | null
+  /** A required membership. assumed_held: false = card-exclusive (Robinhood
+   * Gold), scored like an annual fee; assumed_held: true = standalone-value
+   * membership (Costco, Sam's Club, Prime) the optimizer assumes the user
+   * already holds — disclosed, never deducted. Null when the card has none. */
+  required_membership: {
+    name: string
+    annual_cost_usd: number
+    assumed_held: boolean
+  } | null
   currency: { type: string; program: string; program_label: string }
   base_rate: number | null
   verification: {
@@ -133,6 +139,11 @@ export interface PerCard {
     first_year_waived: boolean
     membership_fee_usd?: number
     membership_name?: string
+    /** Non-card-exclusive required membership (Costco, Sam's Club, Prime):
+     * assumed already held, so its cost is disclosed but NOT deducted from
+     * any net. Both fields present together. */
+    assumed_membership_usd?: number
+    assumed_membership_name?: string
   }
   warnings: string[]
   /** Always-on redemption caveat for transfer-gateway cards (Chase Freedom
@@ -154,6 +165,9 @@ export interface Portfolio {
   year1_net: number
   earnings: number
   unassigned_spend: Record<string, number>
+  /** Bucket → reason it's unassignable, present only when the engine knows a
+   * specific cause (e.g. a network gate: "Costco accepts only visa…"). */
+  unassigned_notes?: Record<string, string>
   per_card: Record<string, PerCard>
 }
 

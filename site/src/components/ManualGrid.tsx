@@ -106,7 +106,7 @@ export function ManualGrid({ selected, onToggle }: {
                     {c.annual_fee_usd > 0
                       ? <><span className="fee-amount">${formatNumber(c.annual_fee_usd)}</span> annual fee</>
                       : c.required_membership
-                        ? <><span className="fee-amount">${formatNumber(c.required_membership.annual_cost_usd)}</span>/yr {c.required_membership.name}</>
+                        ? <><span className="fee-amount">${formatNumber(c.required_membership.annual_cost_usd)}</span>/yr {c.required_membership.name}{c.required_membership.assumed_held ? ' (assumed held)' : ''}</>
                         : 'No annual fee'}
                     {' · '}{c.currency.program_label}
                   </div>

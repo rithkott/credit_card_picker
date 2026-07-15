@@ -232,11 +232,12 @@ class TestCreditsAndBonus(unittest.TestCase):
         self.assertAlmostEqual(by_name["Resy dining credit"], 54.0)
         self.assertAlmostEqual(by_name["Dunkin' credit"], 0.0)
 
-    def test_portal_credits_dont_stack_in_net(self):
+    def test_portal_credits_stack_in_net(self):
         # Two cards, each an automatic full-face portal credit ($300 and $200).
-        # A user books through one portal, so the portfolio net counts only the
-        # larger ($300); the $200 overlap is deducted. Per-card credit values
-        # stay full (display is unaffected).
+        # v2.2.0 policy: each issuer portal's credit is spendable independently,
+        # so the net counts them all — displayed lines and net always agree.
+        # (Stacking stays bounded by the per-category tracker + haircuts, see
+        # test_stacked_credits_capped_by_real_spend.)
         a = synth_card(id="port-a", credits=[
             {"name": "Portal A credit", "period": "annual", "amount_usd": 300,
              "automatic": True, "portal_only": True,
@@ -248,11 +249,11 @@ class TestCreditsAndBonus(unittest.TestCase):
         prof = make_profile({"other": 10000})  # base_rate 1% → $100 earnings
         r = score([a, b], prof)
         by_name = {c["name"]: c["value"] for c in r["credits"]}
-        self.assertAlmostEqual(by_name["Portal A credit"], 300.0)  # full display
-        self.assertAlmostEqual(by_name["Portal B credit"], 200.0)  # full display
-        # net counts only the larger portal credit: 100 earnings + 300
-        self.assertAlmostEqual(r["ongoing_net"], 400.0)
-        self.assertAlmostEqual(r["year1_net"], 400.0)
+        self.assertAlmostEqual(by_name["Portal A credit"], 300.0)
+        self.assertAlmostEqual(by_name["Portal B credit"], 200.0)
+        # net counts both portal credits: 100 earnings + 300 + 200
+        self.assertAlmostEqual(r["ongoing_net"], 600.0)
+        self.assertAlmostEqual(r["year1_net"], 600.0)
 
     def test_single_portal_credit_fully_counted(self):
         # One portal credit has no overlap → counted in full.
@@ -1683,6 +1684,163 @@ class TestAugment(unittest.TestCase):
         for held in (["venture-x"], ["active-cash"]):
             added = opt.augment(DATASET, prof, AS_OF, held)["added_card"]
             self.assertNotIn(added, excluded_ids)
+
+
+class TestAuditFixesV220(unittest.TestCase):
+    """v2.2.0 audit fixes: single-fee credit dedup, warehouse-club routing,
+    network gating, assumed-membership disclosure, display reconciliation."""
+
+    GE = {"name": "Global Entry / TSA PreCheck credit", "amount_usd": 120,
+          "period": "every_4_years", "usage_keys": ["global_entry_tsa"],
+          "realistic_capture_rate_note": "x"}
+
+    def test_single_fee_credit_counted_once(self):
+        # Two cards both carry the GE/TSA credit and the user confirmed the
+        # key. The fee is reimbursable once per person: the higher-valued
+        # instance counts ($120/4yr × 0.95 = $28.50), the other is zeroed with
+        # a note naming the winning card.
+        a = synth_card(id="a-card", name="Card A", credits=[dict(self.GE)])
+        b = synth_card(id="b-card", name="Card B",
+                       credits=[dict(self.GE, amount_usd=100)])
+        prof = make_profile({"other": 10000},
+                            confirmed_usage=["global_entry_tsa"])
+        r = score([a, b], prof)
+        by_card = {c["card_id"]: c for c in r["credits"]}
+        self.assertAlmostEqual(by_card["a-card"]["value"], 28.5)
+        self.assertEqual(by_card["b-card"]["value"], 0.0)
+        self.assertIn("fee reimbursable once per person", by_card["b-card"]["note"])
+        self.assertIn("Card A", by_card["b-card"]["note"])
+        # Net counts the credit once: 100 earnings + 28.50.
+        self.assertAlmostEqual(r["ongoing_net"], 128.5)
+
+    def test_single_fee_tiebreak_is_card_id_asc(self):
+        # Equal values: the winner is the lowest card id — deterministic.
+        a = synth_card(id="a-card", name="Card A", credits=[dict(self.GE)])
+        b = synth_card(id="b-card", name="Card B", credits=[dict(self.GE)])
+        prof = make_profile({"other": 10000},
+                            confirmed_usage=["global_entry_tsa"])
+        r = score([b, a], prof)  # input order must not matter
+        by_card = {c["card_id"]: c for c in r["credits"]}
+        self.assertAlmostEqual(by_card["a-card"]["value"], 28.5)
+        self.assertEqual(by_card["b-card"]["value"], 0.0)
+
+    def test_single_fee_unconfirmed_stays_gated(self):
+        # Without confirmation both credits are already $0 via the usage gate —
+        # the dedup must not resurrect or double-zero anything.
+        a = synth_card(id="a-card", credits=[dict(self.GE)])
+        b = synth_card(id="b-card", credits=[dict(self.GE)])
+        r = score([a, b], make_profile({"other": 10000}))
+        for c in r["credits"]:
+            self.assertEqual(c["value"], 0.0)
+            self.assertIn("requires confirmed use", c["note"])
+
+    def test_costco_excluded_from_grocery_bonus(self):
+        # Visa card with a 6% grocery category reward: the Costco carve-out is
+        # flagged exclude_from_category_bonus, so it earns only the base rate.
+        # groceries residual 6000 @6% = 360; costco 4000 @1% base = 40.
+        card = synth_card(category_rewards=[{"category": "groceries", "rate": 6}])
+        prof = make_profile({"groceries": 10000, "other": 1000},
+                            merchant_spend={"costco": 4000})
+        r = score([card], prof)
+        self.assertAlmostEqual(r["earnings"], 360 + 40 + 10)
+        costco = [a for a in r["assignments"] if a["bucket"] == "costco"]
+        self.assertEqual(len(costco), 1)
+        self.assertEqual(costco[0]["rate"], 1)
+        self.assertIn("warehouse club", costco[0]["note"])
+
+    def test_costco_network_gate_blocks_non_visa(self):
+        # An Amex-network card can't take Costco spend on ANY line — the
+        # bucket lands in unassigned.
+        card = synth_card(network="amex", base_rate=2,
+                          category_rewards=[{"category": "groceries", "rate": 6}])
+        prof = make_profile({"groceries": 10000, "other": 1000},
+                            merchant_spend={"costco": 4000})
+        r = score([card], prof)
+        self.assertEqual(list(r["unassigned"]), ["costco"])
+        self.assertAlmostEqual(r["unassigned"]["costco"], 4000.0)
+        self.assertAlmostEqual(r["earnings"], 6000 * 0.06 + 1000 * 0.02)
+
+    def test_costco_explicit_merchant_reward_still_wins(self):
+        # An explicit merchant_rewards line (Costco Anywhere pattern) beats the
+        # base rate even though the category bonus is excluded.
+        card = synth_card(merchant_rewards=[{"merchant": "costco", "rate": 2}])
+        prof = make_profile({"groceries": 10000},
+                            merchant_spend={"costco": 4000})
+        r = score([card], prof)
+        costco = [a for a in r["assignments"] if a["bucket"] == "costco"]
+        self.assertEqual(costco[0]["rate"], 2)
+        self.assertAlmostEqual(r["earnings"], 4000 * 0.02 + 6000 * 0.01)
+
+    def test_costco_unassigned_note_in_bundle(self):
+        # All-non-Visa portfolio: the bundle names the network gate as the
+        # reason the spend is unassignable, and render_text prints it.
+        dataset = {"categories": DATASET["categories"],
+                   "merchants": DATASET["merchants"],
+                   "programs": DATASET["programs"],
+                   "cards": [synth_card(id="amex-only", name="AmexOnly",
+                                        network="amex")]}
+        prof = make_profile({"groceries": 10000},
+                            merchant_spend={"costco": 4000})
+        bundle = opt.run(dataset, prof, AS_OF, 1)
+        p = bundle["portfolios"][0]
+        self.assertAlmostEqual(p["unassigned_spend"]["costco"], 4000.0)
+        self.assertIn("visa", p["unassigned_notes"]["costco"])
+        self.assertIn("no card in this portfolio", p["unassigned_notes"]["costco"])
+        self.assertIn("accepts only visa", opt.render_text(bundle))
+
+    def test_assumed_membership_disclosed_not_deducted(self):
+        # Non-exclusive membership (Prime pattern): surfaced in fees with an
+        # "assumed held" semantic, and the net is NOT reduced by it.
+        rm = {"name": "Prime", "annual_cost_usd": 139, "note": "x"}
+        dataset = {"categories": DATASET["categories"],
+                   "merchants": DATASET["merchants"],
+                   "programs": DATASET["programs"],
+                   "cards": [synth_card(id="prime-card", name="PrimeCard",
+                                        base_rate=3, required_membership=rm)]}
+        bundle = opt.run(dataset, make_profile({"other": 10000}), AS_OF, 1)
+        p = bundle["portfolios"][0]
+        fees = p["per_card"]["prime-card"]["fees"]
+        self.assertEqual(fees["assumed_membership_usd"], 139.0)
+        self.assertEqual(fees["assumed_membership_name"], "Prime")
+        self.assertNotIn("membership_fee_usd", fees)
+        self.assertAlmostEqual(p["ongoing_net"], 300.0)  # not 300 - 139
+        self.assertIn("assumes Prime membership", opt.render_text(bundle))
+        self.assertIn("not deducted", opt.render_text(bundle))
+
+    def test_displayed_lines_reconcile_with_displayed_nets(self):
+        # Thirds-producing profile (rotating dilution): the sum of the ROUNDED
+        # displayed lines must equal the displayed nets exactly — no 1¢ drift.
+        dataset = {"categories": DATASET["categories"],
+                   "merchants": DATASET["merchants"],
+                   "programs": DATASET["programs"],
+                   "cards": [seed_card("freedom-flex")]}
+        prof = make_profile({"dining": 4000, "groceries": 6000, "gas": 2000,
+                             "other": 8000})
+        bundle = opt.run(dataset, prof, AS_OF, 1)
+        p = bundle["portfolios"][0]
+        earn = round(sum(a["usd_value"] for d in p["per_card"].values()
+                         for a in d["assignments"])
+                     - sum(d.get("reward_cap_clamp", 0.0)
+                           for d in p["per_card"].values()), 2)
+        creds = sum(c["value"] for d in p["per_card"].values()
+                    for c in d["credits"])
+        bonus = sum(d["bonus"]["value"] for d in p["per_card"].values())
+        fees = sum(d["fees"]["annual_fee_usd"]
+                   + d["fees"].get("membership_fee_usd", 0.0)
+                   for d in p["per_card"].values())
+        year1_fees = sum((0 if d["fees"]["first_year_waived"]
+                          else d["fees"]["annual_fee_usd"])
+                         + d["fees"].get("membership_fee_usd", 0.0)
+                         for d in p["per_card"].values())
+        self.assertEqual(p["earnings"], earn)
+        self.assertEqual(p["ongoing_net"], round(earn + creds - fees, 2))
+        self.assertEqual(p["year1_net"], round(earn + creds + bonus - year1_fees, 2))
+
+    def test_single_fee_keys_derived_not_input(self):
+        prof = make_profile({"other": 5000})
+        self.assertEqual(prof["user"]["single_fee_keys"], ["global_entry_tsa"])
+        with self.assertRaises(opt.InputError):
+            make_profile({"other": 5000}, single_fee_keys=["global_entry_tsa"])
 
 
 if __name__ == "__main__":
