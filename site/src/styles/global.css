@@ -825,7 +825,7 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 /* ── Ladder → 3-up portfolio strip ────────────────────────────────────── */
 .ladder {
   margin-top: 14px;
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;
 }
 .ladder-row {
   position: relative;
