@@ -262,6 +262,15 @@ export function Home({ cfg, onRetryConfig }: {
             >
               {run.phase === 'running' ? 'Scoring…' : runLabel}
             </button>
+            {needsCards && run.phase !== 'running' && selected.size > 0 && (
+              <button
+                type="button"
+                className="ghost"
+                onClick={() => setSelected(new Set())}
+              >
+                Deselect all
+              </button>
+            )}
             {run.phase === 'running' && (
               <span className="status">{runningStatus}</span>
             )}
