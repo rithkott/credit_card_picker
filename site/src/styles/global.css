@@ -1020,7 +1020,7 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 .tile-grid > .card-tile .slot-note { margin-top: 12px; }
 .card-tile h3 { margin: 0; font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.2; }
 .card-tile .role { font: 11px var(--mono); color: var(--faint); margin-top: 4px; }
-.card-tile .role .fee-amount { color: var(--neg); font-weight: 700; }
+.card-tile .role .fee-amount { color: var(--accent); font-weight: 700; }
 .card-tile .gateway-caveat {
   font-size: 12px; font-weight: 600; color: var(--warn);
   margin-top: 6px; line-height: 1.35;
