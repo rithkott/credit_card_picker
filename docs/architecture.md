@@ -2,7 +2,7 @@
 
 Current state of what's actually built: dataset layer + validation pipeline + optimization engine + the product web UI (React SPA, FastAPI wrapper with server-side statement parsing, and the Vercel deployment serving both — live at https://creditcardpicker.vercel.app).
 
-> **Maintenance rule:** this diagram must be updated in the same change as any edit to `data/schema/card.schema.json`, the `data/meta/` registries, `scripts/validate_cards.py`, `scripts/optimize.py`, `.github/workflows/validate-data.yml`, or the repo's data layout. See `CLAUDE.md`.
+> **Maintenance rule:** this diagram must be updated in the same change as any edit to `data/schema/card.schema.json`, the `data/meta/` registries, `scripts/validate_cards.py`, `scripts/optimize.py`, `.github/workflows/validate-data.yml`, `.github/workflows/release.yml`, or the repo's data layout. See `CLAUDE.md`.
 
 ```mermaid
 flowchart TB
@@ -43,6 +43,7 @@ subgraph PIPE["✅ Validation pipeline — errors block, warnings nag"]
     VALIDATE["<b>scripts/validate_cards.py</b><br/><i>schema conformance · id=filename · issuer=directory ·<br/>duplicate ids · registry membership · cash⇒program:cash ·<br/>every valuation program has a valid redeems_for list ·<br/>no future verification dates · choice block ⇔ 'choice' category,<br/>≤1 per card, options are real (non-pseudo) categories ·<br/>credits can't use pseudo-categories · amount_points only on<br/>points cards · shared_cap_id groups have ≥2 members agreeing<br/>on period + max_spend_usd · bonus tier spend requirements<br/>exceed the base and strictly ascend · conditional_rate /<br/>base_rate_conditional strictly exceed their baseline rate ·<br/>rotating rewards carry a quarterly cap (uncapped rotating<br/>hard-errors the optimizer) · every merchants.yaml entry routes<br/>to a real (non-pseudo) category · every valuation program has<br/>numeric floor_cpp/optimistic_cpp · plan 07 gating: every credit<br/>carries usage_keys / category / automatic (automatic exclusive<br/>of the other two) · usage_keys / loyalty_keys resolve to<br/>usage-questions items (which resolve to statement-descriptors) ·<br/>assumed_reward_kind on a usage-question group must be<br/>flights|hotels ·<br/>card portal resolves to a statement-descriptors key (portal use<br/>is assumed by the optimizer — portals are not questionnaire items) ·<br/>no-cashback programs require loyalty_keys, cashback programs<br/>may not carry them · portal_only reward lines require a card<br/>portal key · unlocks_transfers only on transfer_gateway_required<br/>programs · statement-descriptors.yaml (plan 14):<br/>aggregator_prefix, when present, must be boolean true ·<br/>v2.2.0 registry flags: usage-questions item single_fee must be<br/>boolean · merchants.yaml exclude_from_category_bonus must be<br/>boolean · merchants.yaml accepted_networks must be a non-empty<br/>unique subset of the card schema's network enum</i>"]
     WARNINGS["<b>Warnings (exit 0)</b><br/><i>stale: last_verified_date &gt; 6 months ·<br/>confidence: low · signup bonus past expires ·<br/>promotional credit past expires ·<br/>UNSOURCED: populated block no source supports ·<br/>card file missing from docs/card-backlog.md ·<br/>monthly/quarterly statement credit that is category-only<br/>(short-cycle coupons are almost always merchant-specific) ·<br/>card portal with no portal_only lines · usage-questions item<br/>nothing references —<br/>data-freshness nags that shouldn't block unrelated PRs</i>"]
     CI["<b>.github/workflows/validate-data.yml</b><br/><i>runs on PRs/pushes touching data, AND weekly on cron —<br/>so staleness and expired promos surface<br/>even when nobody is editing</i>"]
+    RELEASE["<b>.github/workflows/release.yml</b><br/><i>every push to main ⇒ exactly one semver tag + one GitHub<br/>Release, created by CI — sessions never pick version numbers,<br/>because parallel Claude Code sessions collided picking them<br/>(v2.3.1 exists on two merge commits). Next version computed from<br/>the REMOTE tag list; bump size from a [minor]/[major] marker in<br/>the merge subject (default patch); the tag push itself is the<br/>lock — remote rejects a duplicate tag ref, loser re-reads and<br/>retries n+1 — so racing merges get distinct tags on their own<br/>commits. Release title from the merge subject, notes from the<br/>merge body. No Vercel gating: deploy verification stays a<br/>session-side read-only check ([skip release] escape hatch)</i>"]
 end
 
 subgraph OPT["🧮 Optimization engine — deterministic portfolio recommendation (docs/plans/02-optimizer.md)"]
@@ -83,6 +84,7 @@ SUB -->|"expiry check"| WARNINGS
 VALIDATE --> WARNINGS
 CI -->|"runs (PR / push / weekly cron)"| VALIDATE
 CI -->|"runs unittest suite"| TESTS
+RELEASE -->|"tags + publishes GitHub Release for every main push (= every prod deploy)"| VERCEL
 TESTS -->|"golden-tests"| OPTIMIZE
 
 PROFILE -->|"category/merchant keys validated against"| META

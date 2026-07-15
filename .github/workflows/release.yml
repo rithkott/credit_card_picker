@@ -1,0 +1,77 @@
+name: Release
+
+# Every push to main gets exactly one semver tag + one GitHub Release.
+# Sessions never pick version numbers — this job computes the next version
+# from the remote tag list and uses the tag push itself as the lock:
+# if two merges race, the remote rejects the duplicate tag ref and the
+# loser retries with the next number.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: ${{ !contains(github.event.head_commit.message, '[skip release]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Compute version, tag atomically, create release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          MSG="$(git log -1 --pretty=%s "$GITHUB_SHA")"
+          BODY="$(git log -1 --pretty=%b "$GITHUB_SHA")"
+
+          # Bump size from subject marker; default patch
+          BUMP=patch
+          case "$MSG" in
+            *"[major]"*) BUMP=major;;
+            *"[minor]"*) BUMP=minor;;
+          esac
+
+          # Release title summary: strip "Merge <branch>: " prefix and bump markers
+          SUMMARY="$(printf '%s' "$MSG" | sed -E 's/^Merge [^:]+: //; s/ *\[(minor|major)\]//')"
+
+          for attempt in 1 2 3 4 5; do
+            # Authoritative remote tag state (survives races with parallel runs)
+            LATEST="$(git ls-remote --tags origin 'refs/tags/v*' \
+              | awk -F/ '{print $3}' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
+              | sort -V | tail -1)"
+            LATEST="${LATEST:-v0.0.0}"
+            IFS=. read -r MA MI PA <<< "${LATEST#v}"
+            case "$BUMP" in
+              major) TAG="v$((MA+1)).0.0";;
+              minor) TAG="v$MA.$((MI+1)).0";;
+              patch) TAG="v$MA.$MI.$((PA+1))";;
+            esac
+            git tag "$TAG" "$GITHUB_SHA"
+            if git push origin "refs/tags/$TAG"; then
+              echo "TAG=$TAG" >> "$GITHUB_ENV"
+              echo "PREV=$LATEST" >> "$GITHUB_ENV"
+              break
+            fi
+            echo "Tag $TAG rejected (race lost); retrying with next number"
+            git tag -d "$TAG"
+            if [ "$attempt" = 5 ]; then
+              echo "Gave up after 5 attempts" >&2
+              exit 1
+            fi
+            sleep $((RANDOM % 5 + 1))
+          done
+
+          NOTES="${BODY:-$SUMMARY}"
+          NOTES="$NOTES
+
+          **Compare:** https://github.com/rithkott/credit_card_picker/compare/$PREV...$TAG"
+          gh release create "$TAG" --target "$GITHUB_SHA" \
+            --title "$TAG — $SUMMARY" --notes "$NOTES"
