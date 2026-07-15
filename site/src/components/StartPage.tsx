@@ -1,54 +1,28 @@
-/** Landing page (v1.9.1; three-path chooser v2.2; machine selector v2.3.1;
- * always-first since v2.3.3): EVERY visit opens here — returning visitors too,
- * with their saved values intact behind the chooser. Order: hero headline,
- * then the path selector — a machined faceplate (corner screws, engraved
- * legend) whose three latching push-buttons idle with a staggered accent
- * breathe so they read as the thing to press — then the trust points.
- * Pressing a key latches it (sinks + LED lights) and hands off: completed
- * visitors to their edit view, everyone else into the wizard. */
+/** Landing page (v1.9.1; three-path chooser v2.2; free keycaps v2.4):
+ * EVERY visit opens here — returning visitors too, with their saved values
+ * intact behind the chooser. Order: hero headline, then the path selector —
+ * three XL keycaps sitting directly on the page (no faceplate, no idle
+ * animation) with a recessed orange bottom edge so they read as hardware
+ * keys; hovering floats a key up, pressing latches it (sinks + LED lights)
+ * and hands off: completed visitors to their edit view, everyone else into
+ * the wizard. Trust points are bare text columns below — the keys are the
+ * only raised tiles on the page. */
 
 import { useState } from 'react'
 import type { Mode } from '../hooks/useFormState'
 
-const svg = {
-  viewBox: '0 0 24 24',
-  fill: 'none',
-  stroke: 'currentColor',
-  strokeWidth: 1.75,
-  strokeLinecap: 'round' as const,
-  strokeLinejoin: 'round' as const,
-}
-
 const POINTS = [
   {
-    icon: (
-      <svg {...svg}>
-        <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
-        <path d="M2.5 9.5h19" />
-        <path d="M6 14.5h4" />
-      </svg>
-    ),
     title: 'Enter what you spend',
-    body: 'Your real monthly categories — groceries, travel, dining. No account, no sign-up.',
+    body: 'Real monthly categories. No account, no sign-up.',
   },
   {
-    icon: (
-      <svg {...svg}>
-        <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
-      </svg>
-    ),
     title: 'Every combination scored',
-    body: 'We check each major card combo — counting fees, caps, and only the credits you’d really use.',
+    body: 'Fees, caps, and only credits you’d really use.',
   },
   {
-    icon: (
-      <svg {...svg}>
-        <path d="M12 2.5 4 6v5c0 4.5 3.2 8.4 8 9.5 4.8-1.1 8-5 8-9.5V6z" />
-        <path d="M9 12l2 2 4-4.5" />
-      </svg>
-    ),
     title: 'No affiliate bias',
-    body: 'Same inputs, same answer, every time. This tool earns nothing when you apply for a card.',
+    body: 'Earns nothing when you apply for a card.',
   },
 ]
 
@@ -99,18 +73,10 @@ export function StartPage({ onStart }: { onStart: (mode: Mode) => void }) {
           <br />
           <span className="shimmer-text">actually worth it for you.</span>
         </h1>
-        <p className="sub">
-          A deterministic optimizer built on a hand-curated dataset. Tell it what you spend and it
-          shows every major card combination, ranked — and all of its work.
-        </p>
       </div>
 
-      <div className="start-bank" role="group" aria-label="Choose your path">
-        <span className="screw tl" aria-hidden="true" />
-        <span className="screw tr" aria-hidden="true" />
-        <span className="screw bl" aria-hidden="true" />
-        <span className="screw br" aria-hidden="true" />
-        <div className="start-bank-legend">
+      <div className="free-bank" role="group" aria-label="Choose your path">
+        <div className="start-bank-legend free-legend">
           <span className="start-bank-title">What do you want to do?</span>
           <span className="start-bank-note">Pick one — you can switch later.</span>
         </div>
@@ -131,12 +97,13 @@ export function StartPage({ onStart }: { onStart: (mode: Mode) => void }) {
         </div>
       </div>
 
-      <ul className="start-points">
+      <ul className="points-bare">
         {POINTS.map((p) => (
-          <li key={p.title} className="start-point">
-            <span className="start-point-icon" aria-hidden="true">{p.icon}</span>
-            <span className="start-point-title">{p.title}</span>
-            <span className="start-point-body">{p.body}</span>
+          <li key={p.title}>
+            <span className="txt">
+              <strong>{p.title}</strong>
+              {p.body}
+            </span>
           </li>
         ))}
       </ul>
