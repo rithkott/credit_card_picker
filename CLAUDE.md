@@ -6,22 +6,28 @@ Deterministic credit-card portfolio optimizer built on a hand-curated YAML datas
 
 All work follows this process — no direct commits to `main`.
 
+Multiple Claude Code sessions work this repo in parallel. The process below is concurrency-safe: versions/tags/releases are handled by CI, never by sessions.
+
 **Branching**
-- Every change is developed on a git worktree (`git worktree add .claude/worktrees/<branch> -b <branch> main`), branched from up-to-date `main`.
+- Every change is developed on a git worktree branched from **remote** main: `git fetch origin main && git worktree add .claude/worktrees/<branch> -b <branch> origin/main`.
 - `main` is the only long-lived branch. It is the branch Vercel deploys to production (https://creditcardpicker.vercel.app). Never push work-in-progress directly to `main`.
 - No dedicated dev/preview branch: Vercel's git integration builds a preview deployment for every pushed non-`main` branch — that preview URL is the staging environment.
 
 **Preview → production**
 1. Develop and commit on the worktree branch; push it to `origin`.
 2. Vercel auto-builds a preview deployment for the branch. Test the change on that preview URL (not just locally).
-3. Only after the user's **explicit approval** of the tested preview: merge the branch to `main` and push. The `main` push is the production deploy — verify it goes READY and the live site reflects the change.
-4. Remove the worktree and delete the merged branch.
+3. **Pre-merge sync (required):** `git fetch origin main`; if `origin/main` moved past your branch point, rebase the branch onto `origin/main`, re-push, and re-verify the preview if the rebase touched overlapping areas. Never merge a branch that isn't rebased onto current `origin/main`.
+4. Merge after self-verifying the preview (QA pass), no waiting for user approval: `git checkout main && git pull --ff-only origin main && git merge --no-ff <branch> -m "Merge <branch>: <summary>[ [minor]]" -m "<release-note bullets>" && git push origin main`. If the push is rejected (another session merged first), pull `--ff-only` again, confirm the merge is still clean, and re-push.
+5. **Post-merge verification (read-only):**
+   - Production deploy: Vercel deployment goes READY and the live site reflects the change. If the git trigger doesn't fire (known flaky), fall back to `vercel deploy --prod`.
+   - Release: `gh run list --workflow=release.yml --limit 1` is green and `gh release list --limit 1` shows the new tag. **Sessions never create tags or releases themselves** — CI does it; a red Release run is what you fix (re-run it), not a reason to tag by hand.
+6. Clean up: `scripts/finish-branch.sh <branch>` (removes the worktree, deletes local + remote branch; refuses if the branch isn't fully merged into `origin/main`).
 
-**Versioning** (semver, tracked as git tags `vX.Y.Z` on `main`)
-- Small edits (bug fixes, copy, styling, minor tweaks): bump the **patch** number (v1.1.3 → v1.1.4).
-- Large overhauls (new subsystems, reworked optimizer/UI, breaking data-model changes): bump the **minor** number (v1.1.3 → v1.2.0).
-- Tag the merge commit on `main` after the production deploy is verified, and push the tag.
-- **Every production deploy also gets a GitHub Release** on that tag, in the same session — `gh release create vX.Y.Z --title "vX.Y.Z — <short summary>" --notes "<what changed>"`. A pushed tag without a Release is an unfinished deploy. Check `git tag -l` before picking the version (parallel sessions can consume the next number).
+**Versioning** (semver git tags `vX.Y.Z`, automated by `.github/workflows/release.yml`)
+- Every push to `main` gets exactly one tag + one GitHub Release, created by CI. The version is computed from the remote tag list at run time; a tag-push race with a parallel merge is resolved automatically (loser retries with the next number). Sessions never pick version numbers.
+- Bump size is signaled in the merge-commit **subject**: append ` [minor]` for large overhauls (new subsystems, reworked optimizer/UI, breaking data-model changes) or ` [major]`; default is patch. Do **not** put a version number in the commit message.
+- The merge-commit **body** becomes the release notes verbatim — write user-facing bullets there.
+- `[skip release]` in the merge subject skips tagging (true emergencies only).
 
 ## Architecture diagram maintenance (required)
 
@@ -31,7 +37,7 @@ All work follows this process — no direct commits to `main`.
 - `data/meta/` registries (new registry files, or structural changes to existing ones)
 - `scripts/validate_cards.py` (new checks, or changes to what's an error vs a warning)
 - `scripts/optimize.py` (policy constants, value model, filters, or output-contract changes — golden tests in `tests/test_optimizer.py` must be updated in the same change)
-- `.github/workflows/validate-data.yml` (triggers, cadence)
+- `.github/workflows/validate-data.yml` and `.github/workflows/release.yml` (triggers, cadence, release logic)
 - the repo's data layout (`data/`, `scripts/` structure)
 
 The diagram documents **only what is built** — never add planned/future components to it. When new architecture ships (optimizer, UI, build pipeline), extend the diagram then.
