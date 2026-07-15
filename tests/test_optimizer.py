@@ -270,6 +270,8 @@ class TestCreditsAndBonus(unittest.TestCase):
         r = score(["gold"], prof)
         self.assertEqual(r["bonuses"]["gold"]["value"], 0.0)
         self.assertIn("unreachable", r["bonuses"]["gold"]["note"])
+        self.assertIn("$6,000 in 6 mo (≈$12,000/yr pace)",
+                      r["bonuses"]["gold"]["note"])
 
     def test_bonus_expiry(self):
         bonus = {"value": {"usd": 100}, "spend_requirement_usd": 0,
@@ -464,6 +466,8 @@ class TestPerCardSpendGate(unittest.TestCase):
         r = score([winner, loser], make_profile({"other": 80000}))
         self.assertEqual(r["bonuses"]["loser"]["value"], 0.0)
         self.assertIn("routed onto this card", r["bonuses"]["loser"]["note"])
+        self.assertIn("$4,000 in 3 mo (≈$16,000/yr pace)",
+                      r["bonuses"]["loser"]["note"])
 
 
 class TestConfirmedUsage(unittest.TestCase):
@@ -886,7 +890,10 @@ class TestBonusVariants(unittest.TestCase):
         # 12000/yr × 3/12 = 3000 window spend → base + first tier only.
         r = score([synth_card(signup_bonus=bonus)], make_profile({"other": 12000}))
         self.assertAlmostEqual(r["bonuses"]["synth"]["value"], 300.0)
-        self.assertIn("1 tier(s) unreachable", r["bonuses"]["synth"]["note"])
+        note = r["bonuses"]["synth"]["note"]
+        self.assertIn("+tier at $2,000 in 3 mo (≈$8,000/yr pace)", note)
+        self.assertIn("tier at $10,000 in 3 mo unreachable", note)
+        self.assertIn("needs ≈$40,000/yr", note)
 
     def test_first_year_match_equals_card_earnings(self):
         card = synth_card(base_rate=1.5, signup_bonus={"first_year_match": True})

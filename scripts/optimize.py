@@ -900,10 +900,14 @@ def score_bonus(card: dict, profile: dict, programs: dict, as_of: date,
     # Spend-requirement feasibility measures the spend actually routed onto this
     # card (card_spend from the finalized assignments) — a bonus counts only if
     # this card wins enough spend to hit the requirement in the window.
-    window_spend = card_spend * bonus["window_months"] / 12.0
+    wm = bonus["window_months"]
+    window_spend = card_spend * wm / 12.0
     if window_spend < bonus["spend_requirement_usd"] - EPS:
-        return {"value": 0.0, "note": "$0 — spend requirement unreachable "
-                                       "by the spend routed onto this card",
+        req = bonus["spend_requirement_usd"]
+        return {"value": 0.0,
+                "note": (f"$0 — spend requirement ${req:,.0f} in {wm:g} mo "
+                         f"(≈${req * 12.0 / wm:,.0f}/yr pace) unreachable by the "
+                         f"${card_spend:,.0f}/yr routed onto this card"),
                 "floor_value": 0.0}
     cpp, _ = effective_cpp(card, programs,
                            set(profile["user"]["confirmed_usage"]), unlocked,
@@ -934,9 +938,16 @@ def score_bonus(card: dict, profile: dict, programs: dict, as_of: date,
         worth, floor_worth, desc = usd_of(tier["value"])
         total += worth
         floor_total += floor_worth
-        note += f"; +tier at ${tier['spend_requirement_usd']:,.0f} spend ({desc})"
-    if len(reached) < len(tiers):
-        note += f"; {len(tiers) - len(reached)} tier(s) unreachable at your volume"
+        t_req = tier["spend_requirement_usd"]
+        note += (f"; +tier at ${t_req:,.0f} in {wm:g} mo "
+                 f"(≈${t_req * 12.0 / wm:,.0f}/yr pace) ({desc})")
+    for tier in tiers:
+        if tier in reached:
+            continue
+        t_req = tier["spend_requirement_usd"]
+        note += (f"; tier at ${t_req:,.0f} in {wm:g} mo unreachable "
+                 f"(needs ≈${t_req * 12.0 / wm:,.0f}/yr on this card; "
+                 f"${card_spend:,.0f}/yr routed)")
     return {"value": total, "note": note, "floor_value": floor_total}
 
 
