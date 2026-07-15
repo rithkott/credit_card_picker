@@ -176,51 +176,64 @@ class TestSingleCardGolden(unittest.TestCase):
         self.assertIn("use assumed", notes)
 
     def test_freedom_flex_rotating_activated(self):
-        # Coverage model: a rotating category is featured ~1/6 of the year
-        # (N = len(ROTATING_ELIGIBLE)), so the 5x line may take only 1/6 of
-        # each eligible bucket, within the $1,500*4 = $6,000/yr cap room:
-        # gas 2000/6 + groceries 6000/6 + dining 4000/6 = $2,000 @5% = $100.
-        # Dining 3x on the remaining 4000*5/6 = 10000/3 → $100; rotating
-        # fallback 1x on groceries 5000 + gas 5000/3 → $200/3; base other
-        # 8000@1% = $80. earnings = 1040/3 ≈ 346.67. Bonus $200 → year1
-        # 1640/3 ≈ 546.67.
+        # Neutered rotating (plan 19): a rotating reward competes for the WHOLE
+        # category at a blended annual rate — never a featured-quarter split.
+        #   blended = (1/6)*5 + (5/6)*1 = 10/6 ≈ 1.667x
+        # dining has an explicit 3x reward that beats the blend, so dining goes
+        # wholly to the 3x line (4000@3% = 120). groceries and gas have no
+        # explicit reward, so the blended line wins the whole bucket
+        # (6000@1.667% = 100, 2000@1.667% = 33.33). other 8000@1% base = 80.
+        # earnings = 120 + 100 + 100/3 + 80 = 333.33; +$200 bonus → year1 533.33.
         prof = make_profile({"dining": 4000, "groceries": 6000, "gas": 2000, "other": 8000})
         r = score(["freedom-flex"], prof)
-        rotating = {a["bucket"]: a["usd_assigned"] for a in r["assignments"]
-                    if a["kind"] == "rotating"}
-        self.assertEqual(set(rotating), {"dining", "gas", "groceries"})
-        # Each rotating line carries the ~1/6 dilution so the UI can reconstruct
-        # the full eligible spend (usd_assigned / eligible_fraction).
-        for a in r["assignments"]:
-            if a["kind"] == "rotating":
-                self.assertAlmostEqual(a["eligible_fraction"], 1 / 6)
-        self.assertAlmostEqual(rotating["gas"], 2000 / 6)
-        self.assertAlmostEqual(rotating["groceries"], 1000.0)
-        self.assertAlmostEqual(rotating["dining"], 4000 / 6)
-        self.assertAlmostEqual(r["earnings"], 1040 / 3)
-        self.assertAlmostEqual(r["ongoing_net"], 1040 / 3)
-        self.assertAlmostEqual(r["year1_net"], 1040 / 3 + 200)
+        # No `rotating` kind and no dilution fraction — nothing is split.
+        self.assertFalse([a for a in r["assignments"] if a["kind"] == "rotating"])
+        self.assertTrue(all(a.get("eligible_fraction") is None for a in r["assignments"]))
+        # Every category lands wholly on one line (single-card portfolio).
+        assigned = {a["bucket"]: a["usd_assigned"] for a in r["assignments"]}
+        self.assertEqual(assigned, {"dining": 4000.0, "groceries": 6000.0,
+                                    "gas": 2000.0, "other": 8000.0})
+        blended = next(a for a in r["assignments"] if a["bucket"] == "groceries")
+        self.assertAlmostEqual(blended["rate"], 10 / 6)
+        self.assertAlmostEqual(r["earnings"], 333.333333, places=5)
+        self.assertAlmostEqual(r["ongoing_net"], 333.333333, places=5)
+        self.assertAlmostEqual(r["year1_net"], 533.333333, places=5)
 
     def test_freedom_flex_rotating_not_activated(self):
-        # Rotating line drops to fallback 1x. The 1x spend now splits between
-        # the diluted rotating line (1/6 of each bucket) and the above-cap
-        # fallback line at the same rate, so the total is unchanged:
-        # groceries+gas 8000@1% + dining 4000@3% + other 8000@1% = 280.
+        # Not activated → bonus_rate drops to the fallback rate, so the blend is
+        # a flat 1x on the rotating-eligible buckets: groceries+gas 8000@1% +
+        # dining 4000@3% + other 8000@1% = 280. (Unchanged from the old model.)
         prof = make_profile({"dining": 4000, "groceries": 6000, "gas": 2000, "other": 8000},
                             activates_rotating=False)
         r = score(["freedom-flex"], prof)
         self.assertAlmostEqual(r["ongoing_net"], 280.0)
 
-    def test_freedom_flex_rotating_cap_binds(self):
-        # When 1/6 of a bucket exceeds the annualized cap, the $6,000/yr room
-        # wins: groceries 60000/6 = 10000 → clamped to 6000 @5% = $300; the
-        # above-cap fallback earns 1% on the other 54000 = $540 → 840 total.
+    def test_freedom_flex_rotating_cap_dropped(self):
+        # The quarterly spend cap is intentionally not modeled on the blended
+        # line (a room limit would reintroduce a category split — plan 19). So
+        # the whole category earns the blend: 60000 @ 10/6% = $1,000. This
+        # slightly overvalues vs the old cap-bound $840, but only binds at
+        # unrealistic single-category spend; rotating is a deprecated archetype.
         prof = make_profile({"groceries": 60000})
         r = score(["freedom-flex"], prof)
-        rotating = [a for a in r["assignments"] if a["kind"] == "rotating"]
-        self.assertEqual([(a["bucket"], a["usd_assigned"]) for a in rotating],
-                         [("groceries", 6000.0)])
-        self.assertAlmostEqual(r["earnings"], 840.0)
+        assigned = [(a["bucket"], a["usd_assigned"]) for a in r["assignments"]]
+        self.assertEqual(assigned, [("groceries", 60000.0)])
+        self.assertAlmostEqual(r["earnings"], 1000.0)
+
+    def test_rotating_never_splits_a_category(self):
+        # The steering guarantee: a rotating card never causes a category to be
+        # suggested on two cards. groceries has a 6% reward on blue-cash-preferred
+        # that beats freedom-flex's 1.667% blend, so the whole groceries bucket
+        # goes to blue-cash-preferred — not split across both cards.
+        prof = make_profile({"groceries": 6000, "dining": 4000, "other": 8000})
+        r = score(["freedom-flex", "blue-cash-preferred"], prof)
+        cards_per_bucket = {}
+        for a in r["assignments"]:
+            cards_per_bucket.setdefault(a["bucket"], set()).add(a["card_id"])
+        for bucket, cards in cards_per_bucket.items():
+            self.assertEqual(len(cards), 1,
+                             f"category {bucket} split across {cards}")
+        self.assertEqual(cards_per_bucket["groceries"], {"blue-cash-preferred"})
 
     def test_venture_x_portal_assumed(self):
         # Portal use is assumed; avg cpp 1.1: hotels 2000@10*0.75=7.5x*.011=165,

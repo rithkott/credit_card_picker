@@ -72,11 +72,18 @@ CAP_PERIODS_PER_YEAR = {"monthly": 12, "quarterly": 4, "annual": 1}
 PORTAL_RATE_MULT = 0.75
 
 # Categories that historically appear in rotating quarters (Freedom Flex,
-# Discover it). The rotating wildcard line may draw only from these. A given
-# category is featured roughly 1/N of the year (one category per quarter,
-# uniform over the pool), so the rotating line may take at most 1/N of each
-# eligible bucket's spend — the coverage model that replaced the old
-# ROTATING_OVERLAP room discount.
+# Discover it). A given category is featured roughly 1/N of the year (one
+# category per quarter, uniform over the pool). Rotating is a *neutered* /
+# deprecated archetype (plan 19): rather than split a category across cards
+# (the featured 1/N on the rotating card, the rest elsewhere), a rotating
+# reward competes for the WHOLE category at a blended annual rate —
+#   blended = (1/N) * bonus_rate + (1 - 1/N) * fallback_rate
+# — so the entire category is assigned to a single card. The steering rule is
+# that a category is never suggested on two cards (a user won't split it
+# perfectly IRL); the only allowed split is a hard earning cap. The quarterly
+# spend cap is intentionally dropped here (see build_lines): honoring it would
+# reintroduce a room limit and hence a split. It only binds at absurd
+# single-category spend, so the blend is exact for realistic profiles.
 ROTATING_ELIGIBLE = ["dining", "drugstores", "gas", "groceries",
                      "online_shopping", "streaming"]
 
@@ -549,21 +556,30 @@ def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
                                 "optimizer models rotating as a capped wildcard line")
             rotation = cr.get("rotation") or {}
             activated = (not rotation.get("requires_activation", False)) or user["activates_rotating"]
-            rate = cr["rate"] if activated else cap["fallback_rate"]
-            room = cap["max_spend_usd"] * CAP_PERIODS_PER_YEAR["quarterly"]
-            fraction = 1.0 / len(ROTATING_ELIGIBLE)
+            bonus_rate = cr["rate"] if activated else cap["fallback_rate"]
+            fallback_rate = cap["fallback_rate"]
+            n = len(ROTATING_ELIGIBLE)
+            fraction = 1.0 / n
+            # Neutered/deprecated rotating (plan 19): one blended WHOLE-category
+            # line, never a featured-quarter split. The category is featured
+            # ~1/N of the year at the bonus rate and earns the fallback rate the
+            # rest of the year, so the realistic annual blend is:
+            #   blended = (1/N) * bonus_rate + (1 - 1/N) * fallback_rate
+            # Emitted as an uncapped `category` line so greedy assignment routes
+            # the entire category onto the single best card — no spill to a
+            # second card. The quarterly cap is intentionally not modeled (a room
+            # limit would reintroduce a split); it only binds at unrealistic
+            # single-category spend.
+            blended = fraction * bonus_rate + (1 - fraction) * fallback_rate
             eligible = [b for b, bk in buckets.items()
                         if bk["category"] in ROTATING_ELIGIBLE
                         and not bk.get("exclude_from_category_bonus")]
-            note = (f"rotating bonus adjustment: weighted ×1/{len(ROTATING_ELIGIBLE)} "
-                    f"(featured ~1 quarter of {len(ROTATING_ELIGIBLE)} eligible "
-                    f"categories); up to ${room:,.0f}/yr")
-            if rotation.get("requires_activation"):
-                note += " ×activation" if activated else " (not activated → fallback rate)"
-            add("rotating", cat, rate, eligible, room, note, fraction=fraction)
-            add("fallback", cat, cap["fallback_rate"], eligible, None,
-                "the rest of this spend (outside the featured quarter, or above "
-                "the annual cap) earns the base rate")
+            note = (f"rotating (blended): featured ~1/{n} of the year at "
+                    f"{bonus_rate:g}x, otherwise {fallback_rate:g}x → "
+                    f"{blended:.2f}x whole-category")
+            if rotation.get("requires_activation") and not activated:
+                note += " (not activated → fallback rate)"
+            add("category", cat, blended, eligible, None, note)
             continue
 
         er = cr.get("earn_ratio")
