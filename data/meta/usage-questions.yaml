@@ -123,7 +123,10 @@ groups:
     label: Airport security programs
     prompt: "Do you have (or want) any of these airport security programs?"
     items:
-      global_entry_tsa: {label: "Global Entry / TSA PreCheck"}
+      # single_fee: this credit reimburses ONE external application fee, so a
+      # portfolio can claim it once — score_credits keeps the highest-valued
+      # instance and zeroes the rest.
+      global_entry_tsa: {label: "Global Entry / TSA PreCheck", single_fee: true}
       clear: {label: "CLEAR"}
 
   brand_programs:

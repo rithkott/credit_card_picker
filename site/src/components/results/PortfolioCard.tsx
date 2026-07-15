@@ -117,8 +117,13 @@ export function PortfolioCard({ portfolio, bundle, isBest, worstCase }: {
           </div>
           {unassigned.length > 0 && (
             <div className="warn-note">
-              ⚠ unassignable spend earning $0 (closed-loop-only portfolio):{' '}
-              {unassigned.map(([bucket, v]) => `${bucket} ${formatUsd(v)}`).join(', ')}
+              ⚠ unassignable spend earning $0:{' '}
+              {unassigned
+                .map(([bucket, v]) => {
+                  const why = portfolio.unassigned_notes?.[bucket]
+                  return `${bucket} ${formatUsd(v)}${why ? ` (${why})` : ''}`
+                })
+                .join(', ')}
             </div>
           )}
       </div>

@@ -115,13 +115,17 @@ class TestServerAPI(unittest.TestCase):
             self.assertEqual(row["issuer"], src["issuer"])
             self.assertEqual(row["annual_fee_usd"], src["fees"]["annual_fee_usd"])
             self.assertEqual(row["availability"], src.get("availability", "active"))
-            # A card_exclusive required membership is surfaced as a carrying
-            # cost; non-exclusive (or absent) memberships resolve to null.
+            # Every required membership is surfaced (v2.2.0): card-exclusive
+            # ones are a carrying cost (assumed_held: false); non-exclusive
+            # ones (Costco, Sam's Club, Prime) are disclosed with
+            # assumed_held: true — the optimizer assumes they're already held
+            # and never deducts them. Absent membership resolves to null.
             rm = src.get("required_membership") or {}
-            if rm.get("card_exclusive"):
+            if rm:
                 self.assertEqual(row["required_membership"], {
                     "name": rm["name"],
                     "annual_cost_usd": float(rm.get("annual_cost_usd") or 0),
+                    "assumed_held": not rm.get("card_exclusive"),
                 })
             else:
                 self.assertIsNone(row["required_membership"])

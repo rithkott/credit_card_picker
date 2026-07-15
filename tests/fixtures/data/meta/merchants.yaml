@@ -18,7 +18,9 @@ merchants:
     category: groceries
   costco:
     label: Costco
-    category: groceries
+    category: groceries            # input carve-out semantics (parse_profile)
+    exclude_from_category_bonus: true   # warehouse club — no supermarket bonus
+    accepted_networks: [visa]           # in-warehouse Visa-only since 2016
   uber:
     label: Uber (rides)
     category: transit

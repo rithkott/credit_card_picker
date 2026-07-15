@@ -12,7 +12,14 @@ merchants:
     category: groceries
   costco:
     label: Costco
-    category: groceries
+    category: groceries            # input carve-out semantics (parse_profile)
+    # Warehouse clubs are excluded from issuers' supermarket bonus category:
+    # category reward lines never pick this bucket up (base rate / explicit
+    # merchant_rewards only — see build_lines).
+    exclude_from_category_bonus: true
+    # Costco warehouses take only Visa credit cards (since 2016): cards on any
+    # other network can't earn on this spend at all (see build_lines).
+    accepted_networks: [visa]
   uber:
     label: Uber (rides)
     category: transit

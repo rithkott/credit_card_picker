@@ -216,6 +216,11 @@ def load_dataset() -> dict:
         raise DataError(f"cannot load data/meta/ registries: {e}")
     usage_keys = {key for group in usage_questions.values()
                   for key in (group.get("items") or {})}
+    # Items flagged single_fee reimburse one external fee (Global Entry / TSA
+    # PreCheck): a portfolio claims the credit at most once (see score_credits).
+    single_fee_keys = {key for group in usage_questions.values()
+                       for key, item in (group.get("items") or {}).items()
+                       if (item or {}).get("single_fee")}
     overlap = set(categories) & set(merchants)
     if overlap:
         raise DataError(f"registry keys shared by categories and merchants: {sorted(overlap)}")
@@ -229,7 +234,8 @@ def load_dataset() -> dict:
     cards.sort(key=lambda c: c["id"])
     return {"categories": categories, "merchants": merchants,
             "programs": programs, "cards": cards,
-            "usage_questions": usage_questions, "usage_keys": usage_keys}
+            "usage_questions": usage_questions, "usage_keys": usage_keys,
+            "single_fee_keys": single_fee_keys}
 
 
 def load_profile(path: Path, dataset: dict) -> dict:
@@ -307,6 +313,9 @@ def parse_profile(raw, dataset: dict) -> dict:
     user = {**USER_DEFAULTS, **user_raw}
     validate_user(user, dataset["usage_keys"])
     user["assumed_usage"] = assumed_usage(user, dataset["usage_questions"])
+    # Derived, never a profile input: registry keys whose credits a portfolio
+    # may claim only once (see load_dataset / score_credits).
+    user["single_fee_keys"] = sorted(dataset.get("single_fee_keys") or [])
 
     return {"spend": dict(sorted(spend.items())),
             "merchant_spend": dict(sorted(merchant_spend.items())),
@@ -381,7 +390,13 @@ def build_buckets(profile: dict, merchants: dict, categories: dict) -> dict:
     for m, amount in profile["merchant_spend"].items():
         cat = merchants[m]["category"]
         buckets[m] = {"key": m, "kind": "merchant", "category": cat,
-                      "amount": float(amount), "explicit_only": explicit_only(cat)}
+                      "amount": float(amount), "explicit_only": explicit_only(cat),
+                      # Warehouse-club carve-outs (Costco): excluded from
+                      # issuers' category bonus rates, and payable only on the
+                      # registry's accepted card networks (see build_lines).
+                      "exclude_from_category_bonus":
+                          bool(merchants[m].get("exclude_from_category_bonus")),
+                      "accepted_networks": merchants[m].get("accepted_networks")}
         carved[cat] = carved.get(cat, 0.0) + float(amount)
     for cat, amount in profile["spend"].items():
         buckets[cat] = {"key": cat, "kind": "category", "category": cat,
@@ -484,6 +499,12 @@ def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
     def add(kind, key, rate, eligible, room, note="", room_key=None,
             fraction=None):
         eligible = [b for b in eligible if b in buckets]
+        # Network gate: a bucket that only accepts certain card networks
+        # (merchants.yaml accepted_networks, e.g. Costco = Visa-only) is
+        # ineligible on every line of a card on any other network.
+        eligible = [b for b in eligible
+                    if not buckets[b].get("accepted_networks")
+                    or card["network"] in buckets[b]["accepted_networks"]]
         if closed:
             eligible = [b for b in eligible
                         if buckets[b]["kind"] == "merchant" and b in closed]
@@ -531,7 +552,9 @@ def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
             rate = cr["rate"] if activated else cap["fallback_rate"]
             room = cap["max_spend_usd"] * CAP_PERIODS_PER_YEAR["quarterly"]
             fraction = 1.0 / len(ROTATING_ELIGIBLE)
-            eligible = [b for b, bk in buckets.items() if bk["category"] in ROTATING_ELIGIBLE]
+            eligible = [b for b, bk in buckets.items()
+                        if bk["category"] in ROTATING_ELIGIBLE
+                        and not bk.get("exclude_from_category_bonus")]
             note = (f"rotating bonus adjustment: weighted ×1/{len(ROTATING_ELIGIBLE)} "
                     f"(featured ~1 quarter of {len(ROTATING_ELIGIBLE)} eligible "
                     f"categories); up to ${room:,.0f}/yr")
@@ -565,9 +588,14 @@ def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
             notes.append(f"portal ×{PORTAL_RATE_MULT} ({card['portal']}, use assumed)")
         note = "; ".join(notes)
         eligible = [cat] if cat in buckets else []
+        # Merchant carve-outs ride their category's bonus line — except buckets
+        # flagged exclude_from_category_bonus (warehouse clubs): issuers exclude
+        # them from the category, so they earn only via an explicit
+        # merchant_rewards line or the base rate.
         eligible += [b for b, bk in buckets.items()
                      if bk["kind"] == "merchant" and bk["category"] == cat
-                     and b not in merchant_line_keys]
+                     and b not in merchant_line_keys
+                     and not bk.get("exclude_from_category_bonus")]
         cap = cr.get("cap")
         if cap:
             room, room_key, cap_note = cap_room(cap)
@@ -583,8 +611,19 @@ def build_lines(card: dict, profile: dict, programs: dict, buckets: dict,
     # explicit_only buckets (housing) never fall through to the base rate: the
     # spend isn't card-payable without a fee, so only an explicit category
     # reward (already claimed above, e.g. Bilt housing) may earn on it.
+    # Buckets flagged exclude_from_category_bonus that no explicit merchant
+    # line claimed get their own noted base line, so the display says why the
+    # category bonus rate didn't apply.
+    fallthrough = [b for b in buckets
+                   if b not in claimed and not buckets[b]["explicit_only"]]
+    for b in [b for b in fallthrough
+              if buckets[b].get("exclude_from_category_bonus")]:
+        add("base", b, card["base_rate"], [b], None,
+            f"{b}: warehouse club — issuers' {buckets[b]['category']} bonus "
+            f"rates don't apply (base rate)")
     add("base", "base", card["base_rate"],
-        [b for b in buckets if b not in claimed and not buckets[b]["explicit_only"]],
+        [b for b in fallthrough
+         if not buckets[b].get("exclude_from_category_bonus")],
         None)
     return lines
 
@@ -804,14 +843,33 @@ def score_credits(cards: list, profile: dict, programs: dict,
                 note += f" (capped by remaining '{cat}' spend)"
             results.append({"card_id": card["id"], "name": credit["name"],
                             "value": value, "note": note})
-    # Tag each result with its credit's portal_only flag. Every credit yields
-    # exactly one result in this same deterministic (card-id, file) order, so a
-    # parallel walk aligns without threading the flag through 8 append sites.
-    flags = [bool(cr.get("portal_only"))
-             for card in sorted(cards, key=lambda c: c["id"])
-             for cr in card["credits"]]
-    for r, f in zip(results, flags):
-        r["portal_only"] = f
+    # Once-per-portfolio fee credits (single_fee usage keys, e.g. Global Entry /
+    # TSA PreCheck): the credit reimburses one external fee, so a portfolio can
+    # claim it once. Every credit yields exactly one result in this same
+    # deterministic (card-id, file) order, so a parallel walk recovers each
+    # result's usage_keys without threading them through 8 append sites. For
+    # each single-fee key, keep the highest-valued positive instance (tie-break:
+    # card id asc — results are already in card-id order) and zero the rest,
+    # rewriting their note; zeroing the scored results keeps display and net in
+    # agreement by construction.
+    single_fee = set(profile["user"].get("single_fee_keys") or [])
+    if single_fee:
+        keysets = [set(cr.get("usage_keys") or [])
+                   for card in sorted(cards, key=lambda c: c["id"])
+                   for cr in card["credits"]]
+        names = {c["id"]: c["name"] for c in cards}
+        for key in sorted(single_fee):
+            claimants = [r for r, ks in zip(results, keysets)
+                         if key in ks and r["value"] > EPS]
+            if len(claimants) < 2:
+                continue
+            winner = max(claimants, key=lambda r: r["value"])
+            for r in claimants:
+                if r is winner:
+                    continue
+                r["value"] = 0.0
+                r["note"] = (f"$0 — fee reimbursable once per person; counted "
+                             f"on {names.get(winner['card_id'], winner['card_id'])}")
     return results
 
 
@@ -1086,15 +1144,11 @@ def score_portfolio(cards: list, profile: dict, programs: dict,
         if not buckets[a["bucket"]]["explicit_only"]:
             per_card_spend[a["card_id"]] += a["usd_assigned"]
     credits = score_credits(cards, profile, programs, as_of, per_card_spend)
-    # Portal credits (Amex FHR, Chase Travel/The Edit, Cap One Travel, etc.) are
-    # not stackable across cards — a user books through one portal — so the
-    # portfolio counts only the single highest-value portal credit and deducts
-    # the rest from net value. Per-card `credits` display is left untouched, so a
-    # recommended card still shows all its benefits.
-    portal_vals = sorted((c["value"] for c in credits
-                          if c.get("portal_only") and c["value"] > 0), reverse=True)
-    portal_overlap = sum(portal_vals[1:])
-    credits_total = sum(c["value"] for c in credits) - portal_overlap
+    # Portal credits stack (v2.2.0 policy): each issuer portal's credit is
+    # spendable independently, so the net counts them all. They stay bounded by
+    # the shared per-category spend tracker and capture haircuts inside
+    # score_credits, so stacked credits can never exceed the user's real spend.
+    credits_total = sum(c["value"] for c in credits)
     per_card_earnings = {card["id"]: 0.0 for card in cards}
     for a in assignments:
         per_card_earnings[a["card_id"]] += a["usd_value"]
@@ -1480,16 +1534,54 @@ def assemble_portfolio(entry: dict, by_id: dict, profile: dict, programs: dict,
         if membership_fee(card):
             per_card[cid]["fees"]["membership_fee_usd"] = _round2(membership_fee(card))
             per_card[cid]["fees"]["membership_name"] = card["required_membership"]["name"]
+        else:
+            # Non-card-exclusive required membership (Costco, Sam's Club,
+            # Prime): assumed already held, so its cost is disclosed but never
+            # deducted from any net (see membership_fee).
+            rm = card.get("required_membership") or {}
+            if rm and rm.get("annual_cost_usd"):
+                per_card[cid]["fees"]["assumed_membership_name"] = rm["name"]
+                per_card[cid]["fees"]["assumed_membership_usd"] = _round2(
+                    float(rm["annual_cost_usd"]))
         if cid in scored["reward_cap_clamps"]:
             per_card[cid]["reward_cap_clamp"] = _round2(scored["reward_cap_clamps"][cid])
         if "choice_category" in card:
             per_card[cid]["choice_category"] = card["choice_category"]
+    # Displayed totals are derived from the ROUNDED display lines, so the sum
+    # of what the user sees always reconciles exactly with the reported nets
+    # (ranking upstream keeps the unrounded internals). Clamps and fees are
+    # subtracted at their rounded/display values too.
+    earnings_disp = _round2(
+        sum(a["usd_value"] for c in per_card.values() for a in c["assignments"])
+        - sum(c.get("reward_cap_clamp", 0.0) for c in per_card.values()))
+    credits_disp = sum(cr["value"] for c in per_card.values() for cr in c["credits"])
+    bonus_disp = sum(c["bonus"]["value"] for c in per_card.values())
+    membership_disp = sum(c["fees"].get("membership_fee_usd", 0.0)
+                          for c in per_card.values())
+    ongoing_fee_disp = sum(c["fees"]["annual_fee_usd"]
+                           for c in per_card.values()) + membership_disp
+    year1_fee_disp = sum(0 if c["fees"]["first_year_waived"]
+                         else c["fees"]["annual_fee_usd"]
+                         for c in per_card.values()) + membership_disp
+
+    # Unassignable-spend notes: name the reason when a network gate is why no
+    # card in this portfolio can take a bucket (e.g. Costco is Visa-only).
+    unassigned_notes = {}
+    for b in scored["unassigned"]:
+        nets = buckets.get(b, {}).get("accepted_networks")
+        if nets and not any(c["network"] in nets for c in cards):
+            label = buckets[b].get("key", b)
+            unassigned_notes[b] = (
+                f"{label} accepts only {'/'.join(nets)} — no card in this "
+                f"portfolio is on that network")
     return {
         "cards": entry["cards"],
-        "ongoing_net": _round2(scored["ongoing_net"]),
-        "year1_net": _round2(scored["year1_net"]),
-        "earnings": _round2(scored["earnings"]),
+        "ongoing_net": _round2(earnings_disp + credits_disp - ongoing_fee_disp),
+        "year1_net": _round2(earnings_disp + credits_disp + bonus_disp
+                             - year1_fee_disp),
+        "earnings": earnings_disp,
         "unassigned_spend": {b: _round2(v) for b, v in scored["unassigned"].items()},
+        **({"unassigned_notes": unassigned_notes} if unassigned_notes else {}),
         "per_card": per_card,
     }
 
@@ -1779,11 +1871,17 @@ def render_text(bundle: dict) -> str:
             if "membership_fee_usd" in fee:
                 out.append(f"      required membership ({fee['membership_name']}): "
                            f"-${fee['membership_fee_usd']:,.2f}/yr")
+            if "assumed_membership_usd" in fee:
+                out.append(f"      assumes {fee['assumed_membership_name']} membership "
+                           f"(${fee['assumed_membership_usd']:,.2f}/yr) — assumed "
+                           f"already held, not deducted")
             for w in d["warnings"]:
                 out.append(f"      ⚠ {w}")
         for b, v in p["unassigned_spend"].items():
+            why = p.get("unassigned_notes", {}).get(
+                b, "no card in this portfolio can earn on it")
             out.append(f"    ⚠ ${v:,.2f} of '{b}' spend is unassignable "
-                       "(no card in this portfolio can earn on it) and earns $0")
+                       f"({why}) and earns $0")
         out.append("")
     return "\n".join(out)
 

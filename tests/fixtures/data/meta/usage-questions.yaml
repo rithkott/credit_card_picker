@@ -29,3 +29,10 @@ groups:
       disney_plus: {label: "Disney+"}
       hulu: {label: "Hulu"}
       espn: {label: "ESPN+"}
+  airport_security:
+    label: Airport security programs
+    prompt: "Do you have (or want) any of these airport security programs?"
+    items:
+      # single_fee: reimburses ONE external application fee — a portfolio can
+      # claim the credit once (score_credits keeps the highest instance).
+      global_entry_tsa: {label: "Global Entry / TSA PreCheck", single_fee: true}

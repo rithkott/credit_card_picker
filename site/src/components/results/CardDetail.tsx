@@ -205,13 +205,25 @@ export function CardDetail({ id, card, cppTable, worstCase }: {
         </div>
       ) : <div className="tile-slot" />}
 
-      {/* 4 · required membership (optional) */}
+      {/* 4 · required membership (optional): card-exclusive is a deducted
+          cost; assumed-held (Costco/Sam's/Prime) is disclosure only */}
       {hasMembership ? (
         <div className="tile-slot tile-lines slot-cost slot-cost-first">
           <div className="line fee">
             <span>{card.fees.membership_name ?? 'Required'} membership</span>
             <i className="lead" aria-hidden="true" />
             <span>− {formatUsd(card.fees.membership_fee_usd as number)}</span>
+          </div>
+        </div>
+      ) : card.fees.assumed_membership_usd !== undefined ? (
+        <div className="tile-slot tile-lines">
+          <div className="line">
+            <span>
+              Assumes {card.fees.assumed_membership_name} membership{' '}
+              <span className="note">
+                ({formatUsd(card.fees.assumed_membership_usd)}/yr — assumed already held, not deducted)
+              </span>
+            </span>
           </div>
         </div>
       ) : <div className="tile-slot" />}
@@ -321,6 +333,9 @@ export function CardDetail({ id, card, cppTable, worstCase }: {
             {card.fees.first_year_waived && ' (first year waived)'}
             {card.fees.membership_fee_usd !== undefined && (
               <> · required membership ({card.fees.membership_name}): −{formatUsd(card.fees.membership_fee_usd)}/yr</>
+            )}
+            {card.fees.assumed_membership_usd !== undefined && (
+              <> · assumes {card.fees.assumed_membership_name} membership ({formatUsd(card.fees.assumed_membership_usd)}/yr — assumed already held, not deducted)</>
             )}
           </div>
           {shownWarnings.map((w) => (

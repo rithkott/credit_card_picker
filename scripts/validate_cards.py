@@ -115,6 +115,14 @@ def main() -> int:
                 errors.append(
                     f"data/meta/usage-questions.yaml: item '{key}' (group '{gname}') "
                     f"is missing a label")
+            # single_fee marks a credit that reimburses one external fee
+            # (Global Entry / TSA PreCheck): the optimizer counts it at most
+            # once per portfolio. Optional; must be boolean when present.
+            sf = (items[key] or {}).get("single_fee")
+            if sf is not None and not isinstance(sf, bool):
+                errors.append(
+                    f"data/meta/usage-questions.yaml: item '{key}' (group '{gname}'): "
+                    f"single_fee must be true or false, got {sf!r}")
 
     # Every program must classify what its currency redeems for — the optimizer's
     # reward-preference filter (user.reward_preferences) depends on it — and carry
@@ -156,12 +164,33 @@ def main() -> int:
 
     # Every merchant must route to a real category — the optimizer moves
     # merchant-level spend out of that category bucket and crashes on a bad key.
+    # Optional acceptance flags (v2.2.0): exclude_from_category_bonus keeps a
+    # warehouse-club carve-out off issuers' category bonus lines;
+    # accepted_networks restricts which card networks can earn on the merchant
+    # at all (values must come from the card schema's network enum).
+    networks_enum = set(
+        schema["properties"]["network"]["enum"])
     for name in sorted(merchants):
-        cat = (merchants_registry[name] or {}).get("category")
+        entry = merchants_registry[name] or {}
+        cat = entry.get("category")
         if cat not in categories or cat in pseudo_categories:
             errors.append(
                 f"data/meta/merchants.yaml: merchant '{name}': category must be a real "
                 f"(non-pseudo) category from categories.yaml, got {cat!r}")
+        ecb = entry.get("exclude_from_category_bonus")
+        if ecb is not None and not isinstance(ecb, bool):
+            errors.append(
+                f"data/meta/merchants.yaml: merchant '{name}': "
+                f"exclude_from_category_bonus must be true or false, got {ecb!r}")
+        an = entry.get("accepted_networks")
+        if an is not None and (
+                not isinstance(an, list) or not an
+                or any(n not in networks_enum for n in an)
+                or len(set(an)) != len(an)):
+            errors.append(
+                f"data/meta/merchants.yaml: merchant '{name}': accepted_networks "
+                f"must be a non-empty list of unique values from "
+                f"{sorted(networks_enum)}, got {an!r}")
 
     # statement-descriptors.yaml drives the benefit-usage detector (plan 14):
     # aggregator_prefix, when present, must be boolean true — the detector
