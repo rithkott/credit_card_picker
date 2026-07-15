@@ -40,7 +40,6 @@ export function MerchantCarveouts({
               id={`mer-${m.key}`}
               cents={cents}
               extras={extras}
-              unit={unit}
               onChange={(c) => onMerchantChange(m.key, c)}
               onExtrasChange={(e) => onMerchantExtrasChange(m.key, e)}
             />

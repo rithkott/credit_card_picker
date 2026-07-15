@@ -2,8 +2,8 @@ import { useState } from 'react'
 import type { ConfigCategory, ConfigMerchant } from '../types'
 import type { SpendState } from '../lib/validation'
 import {
-  displayFromAnnualCents, editDisplayFromAnnualCents, otherUnitAnnotation,
-  parseToAnnualCents, sumAmount, type Unit,
+  displayCents, editDisplayCents, otherUnitAnnotation,
+  parseCents, sumAmount, type Unit,
 } from '../lib/money'
 import { MerchantCarveouts } from './MerchantCarveouts'
 
@@ -14,13 +14,13 @@ function shortLabel(label: string): string {
   return label.replace(/\s*\(.*\)$/, '').replace(/\.com$/, '')
 }
 
-/** $-prefixed amount field. Canonical state stays integer annual cents. Idle,
- * the field shows the grouped display ("8,000"); while focused it holds the
- * raw text being typed, so grouping never reformats mid-edit. */
-export function MoneyInput({ id, cents, unit, onChange }: {
+/** $-prefixed amount field. Canonical state is integer cents in the current
+ * display unit (never rescaled by the toggle). Idle, the field shows the
+ * grouped display ("8,000"); while focused it holds the raw text being typed,
+ * so grouping never reformats mid-edit. */
+export function MoneyInput({ id, cents, onChange }: {
   id: string
   cents: number | null
-  unit: Unit
   onChange: (cents: number | null) => void
 }) {
   const [draft, setDraft] = useState<string | null>(null)
@@ -32,12 +32,12 @@ export function MoneyInput({ id, cents, unit, onChange }: {
         id={id}
         type="text"
         inputMode="decimal"
-        value={draft ?? displayFromAnnualCents(cents, unit)}
-        onFocus={() => setDraft(editDisplayFromAnnualCents(cents, unit))}
+        value={draft ?? displayCents(cents)}
+        onFocus={() => setDraft(editDisplayCents(cents))}
         onBlur={() => setDraft(null)}
         onChange={(e) => {
           setDraft(e.target.value)
-          onChange(parseToAnnualCents(e.target.value, unit))
+          onChange(parseCents(e.target.value))
         }}
         placeholder="0"
       />
@@ -50,11 +50,10 @@ export function MoneyInput({ id, cents, unit, onChange }: {
  * topic total everywhere downstream; here they just render as stacked wells
  * with a running "= $X total" line. The main field's value stays the raw main
  * amount — folding happens in the parent's annot and in validation/profile. */
-export function MoneyInputGroup({ id, cents, extras, unit, onChange, onExtrasChange }: {
+export function MoneyInputGroup({ id, cents, extras, onChange, onExtrasChange }: {
   id: string
   cents: number | null
   extras: (number | null)[]
-  unit: Unit
   onChange: (cents: number | null) => void
   onExtrasChange: (extras: (number | null)[]) => void
 }) {
@@ -62,7 +61,7 @@ export function MoneyInputGroup({ id, cents, extras, unit, onChange, onExtrasCha
   return (
     <div className="money-group">
       <div className="money-row">
-        <MoneyInput id={id} cents={cents} unit={unit} onChange={onChange} />
+        <MoneyInput id={id} cents={cents} onChange={onChange} />
         <button
           type="button"
           className="add-sub"
@@ -78,7 +77,6 @@ export function MoneyInputGroup({ id, cents, extras, unit, onChange, onExtrasCha
           <MoneyInput
             id={`${id}-x${i}`}
             cents={c}
-            unit={unit}
             onChange={(v) => onExtrasChange(extras.map((e, idx) => (idx === i ? v : e)))}
           />
           <button
@@ -93,7 +91,7 @@ export function MoneyInputGroup({ id, cents, extras, unit, onChange, onExtrasCha
         </div>
       ))}
       {extras.length > 0 && (
-        <div className="group-total">= ${displayFromAnnualCents(total, unit)} total</div>
+        <div className="group-total">= ${displayCents(total)} total</div>
       )}
     </div>
   )
@@ -126,7 +124,6 @@ export function CategoryRow({
         id={`cat-${category.key}`}
         cents={cents}
         extras={extras}
-        unit={unit}
         onChange={(c) => onCategoryChange(category.key, c)}
         onExtrasChange={(e) => onCategoryExtrasChange(category.key, e)}
       />
