@@ -88,7 +88,7 @@ export function StatementImport({ config, onApply }: {
       <p className="why">
         Drop in bank statements — we&apos;ll spot services you already pay for that{' '}
         <strong>unlock card credits</strong> below.{' '}
-        <strong className="why-emph">Files are parsed in memory and never stored</strong>
+        <strong className="why-emph">Files are parsed in memory and never stored</strong>{' '}
         — only matched services come back.
       </p>
 
