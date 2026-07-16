@@ -18,19 +18,20 @@ type Phase =
  * (common issuer nicknames like "amex" or "bofa" match too); the
  * whole list lives in a bounded, internally-scrolling well so it never runs off
  * the page. */
-export function ManualGrid({ selected, excluded, onToggle, onToggleExclude, ownerOf }: {
+export function ManualGrid({ selected, excluded, onToggle, onToggleExclude, ownersOf }: {
   selected: Set<string>
   /** Cards vetoed from consideration (v2.5.0) — shown greyed with the ✕ lit;
    * the ✕ in each tile's corner toggles membership. */
   excluded: Set<string>
   onToggle: (id: string) => void
   onToggleExclude: (id: string) => void
-  /** Compare mode (plan 20 workbench): card id → owning portfolio index
-   * (first owner; −1 = unowned). When present, tiles swap the ✓ box for an
-   * ownership ring + corner P-tag in the owner's identity color, and issuer
-   * groups flatten to sticky letterheads (the compare well provides the
-   * container). Manual mode (prop absent) is untouched. */
-  ownerOf?: (id: string) => number
+  /** Compare mode (plan 20 workbench): card id → every owning portfolio index
+   * ([] = unowned). When present, tiles swap the ✓ box for an ownership ring
+   * + one corner P-tag per owner in that portfolio's identity color (a card
+   * in several portfolios shows all of them; extra owners add concentric
+   * rings), and issuer groups flatten to sticky letterheads (the compare well
+   * provides the container). Manual mode (prop absent) is untouched. */
+  ownersOf?: (id: string) => number[]
 }) {
   const [state, setState] = useState<Phase>({ phase: 'loading' })
   const [query, setQuery] = useState('')
@@ -98,10 +99,10 @@ export function ManualGrid({ selected, excluded, onToggle, onToggleExclude, owne
         // Compare mode drops the raised .block per issuer — the darker well is
         // the container, and the letterhead h2 (with inline count) sticks to
         // the top of the scroll.
-        <section className={ownerOf ? 'issuer-group' : 'block issuer-group'} key={issuer}>
+        <section className={ownersOf ? 'issuer-group' : 'block issuer-group'} key={issuer}>
           <h2>
             {issuerLabel(issuer)}
-            {ownerOf && (
+            {ownersOf && (
               <span className="count">{cards.length} card{cards.length === 1 ? '' : 's'}</span>
             )}
           </h2>
@@ -109,26 +110,53 @@ export function ManualGrid({ selected, excluded, onToggle, onToggleExclude, owne
             {cards.map((c) => {
               const isSel = selected.has(c.id)
               const isExcl = excluded.has(c.id)
-              const owner = ownerOf ? ownerOf(c.id) : -1
+              const owners = ownersOf ? ownersOf(c.id) : []
+              const owned = owners.length > 0
               return (
                 // Wrapper div: the exclude ✕ can't nest inside the tile
                 // <button>, so it sits as an absolutely-positioned sibling.
-                <div key={c.id} className={`tile-wrap${isExcl ? ' excluded' : ''}${owner >= 0 ? ' owned' : ''}`}>
+                <div
+                  key={c.id}
+                  className={`tile-wrap${isExcl ? ' excluded' : ''}${owned ? ' owned' : ''}`}
+                  style={owned
+                    ? { '--tags-w': `${owners.length * 28 + (owners.length - 1) * 4}px` } as CSSProperties
+                    : undefined}
+                >
                   <button
                     type="button"
-                    className={`card-tile selectable${ownerOf
-                      ? (owner >= 0 ? ' owned' : '')
+                    className={`card-tile selectable${ownersOf
+                      ? (owned ? ' owned' : '')
                       : (isSel ? ' selected' : '')}`}
-                    style={owner >= 0
-                      ? { '--owner-color': PORT_COLORS[owner] } as CSSProperties
+                    style={owned
+                      ? {
+                        '--owner-color': PORT_COLORS[owners[0]],
+                        // Owners beyond the first ring inward, concentrically:
+                        // outline covers 0–2.5px, each inset shadow band adds
+                        // its portfolio's color underneath the previous one.
+                        boxShadow: owners.length > 1
+                          ? owners.slice(1)
+                            .map((o, k) => `inset 0 0 0 ${(k + 2) * 2.5}px ${PORT_COLORS[o]}`)
+                            .join(', ')
+                          : undefined,
+                      } as CSSProperties
                       : undefined}
                     aria-pressed={isSel}
                     disabled={isExcl}
                     onClick={() => onToggle(c.id)}
                   >
-                    {!ownerOf && <span className="check" aria-hidden="true">{isSel ? '✓' : ''}</span>}
-                    {owner >= 0 && (
-                      <span className="tile-owner-tag" aria-hidden="true">P{owner + 1}</span>
+                    {!ownersOf && <span className="check" aria-hidden="true">{isSel ? '✓' : ''}</span>}
+                    {owned && (
+                      <span className="tile-owner-tags" aria-hidden="true">
+                        {owners.map((o) => (
+                          <span
+                            key={o}
+                            className="tile-owner-tag"
+                            style={{ '--owner-color': PORT_COLORS[o] } as CSSProperties}
+                          >
+                            P{o + 1}
+                          </span>
+                        ))}
+                      </span>
                     )}
                     <h3>
                       {c.name}

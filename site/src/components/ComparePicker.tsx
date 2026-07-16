@@ -125,7 +125,8 @@ export function ComparePicker({ portfolios, excluded, onToggleCard, onAdd, onRem
         </div>
         <ManualGrid
           selected={new Set(portfolios[activeIdx])}
-          ownerOf={(id) => portfolios.findIndex((p) => p.includes(id))}
+          ownersOf={(id) =>
+            portfolios.flatMap((p, i) => (p.includes(id) ? [i] : []))}
           excluded={excluded}
           onToggle={(id) => onToggleCard(activeIdx, id)}
           onToggleExclude={onToggleExclude}
