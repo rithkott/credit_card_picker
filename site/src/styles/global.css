@@ -891,7 +891,9 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   font: 11px var(--mono); color: var(--faint); margin-top: -2px;
 }
 @media (max-width: 640px) {
-  .ladder { grid-template-columns: 1fr; }
+  /* minmax(0,…), not bare 1fr: a bare fr track floors at min-content, and the
+     nowrap portfolio names would push it (and the page) past the viewport. */
+  .ladder { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* ── Receipt panel ────────────────────────────────────────────────────── */
