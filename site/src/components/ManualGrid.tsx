@@ -129,15 +129,12 @@ export function ManualGrid({ selected, excluded, onToggle, onToggleExclude, owne
                       : (isSel ? ' selected' : '')}`}
                     style={owned
                       ? {
+                        // Owners beyond the first ring inward, concentrically,
+                        // via the ::after/::before inset borders (owners 2–3;
+                        // a 4th owner still gets its P-tag).
                         '--owner-color': PORT_COLORS[owners[0]],
-                        // Owners beyond the first ring inward, concentrically:
-                        // outline covers 0–2.5px, each inset shadow band adds
-                        // its portfolio's color underneath the previous one.
-                        boxShadow: owners.length > 1
-                          ? owners.slice(1)
-                            .map((o, k) => `inset 0 0 0 ${(k + 2) * 2.5}px ${PORT_COLORS[o]}`)
-                            .join(', ')
-                          : undefined,
+                        '--owner-color-2': owners.length > 1 ? PORT_COLORS[owners[1]] : undefined,
+                        '--owner-color-3': owners.length > 2 ? PORT_COLORS[owners[2]] : undefined,
                       } as CSSProperties
                       : undefined}
                     aria-pressed={isSel}
