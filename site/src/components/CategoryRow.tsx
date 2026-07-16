@@ -112,7 +112,7 @@ export function CategoryRow({
   category, merchants, spend, unit,
   onCategoryChange, onCategoryExtrasChange, onMerchantChange, onMerchantExtrasChange,
 }: Props) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(true)
   const cents = spend.categoryCents[category.key] ?? null
   const extras = spend.categoryExtraCents[category.key] ?? []
   const folded = sumAmount(cents, extras)
