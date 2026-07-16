@@ -29,6 +29,21 @@ credits:
     notes: >-
       No issuer dollar value stated; $100/year is a curator estimate (2 vouchers x ~$50). A
       reviewer may adjust or convert to a benefit_flag.
+  - name: Annual Companion Ticket
+    kind: in_kind
+    amount_usd: 200             # curator estimate of net value, NOT an issuer-stated figure — see notes
+    period: annual
+    usage_keys: [lufthansa]
+    realistic_capture_rate_note: >-
+      One companion ticket after each account anniversary, redeemable on Lufthansa Group /
+      Star Alliance tickets; the companion still pays taxes and fees, and Lufthansa
+      long-haul carrier surcharges are large, which erodes most of the face value.
+      Captured only by cardholders who fly Lufthansa Group with a second traveler.
+    notes: >-
+      in_kind value is a curator estimate: savings equal the companion base fare minus
+      taxes/fees/surcharges; $200 is a conservative net figure for a typical economy
+      itinerary after Lufthansa's high surcharges, NEEDS human verification. Mirrors
+      the atmos-ascent/atmos-summit companion-certificate modeling convention.
 
 signup_bonus:
   value:

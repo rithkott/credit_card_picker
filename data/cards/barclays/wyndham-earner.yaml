@@ -83,6 +83,18 @@ credits:
       cardholders who complete 5+ Wyndham stays; in-kind haircut applies.
     notes: >-
       $210 = 30,000 points x 0.7cpp (wyndham_rewards floor) — a curator estimate.
+  - name: Wyndham Rewards Insider subscription
+    kind: in_kind
+    amount_usd: 75              # curator estimate of the paid subscription's retail price — see notes
+    period: annual
+    usage_keys: [wyndham]
+    realistic_capture_rate_note: >-
+      Complimentary Wyndham Rewards Insider subscription while the account is open and
+      in good standing. Its perks (award-redemption discounts, bonus-point offers) only
+      pay off for people who actually stay and redeem with Wyndham; worthless otherwise.
+    notes: >-
+      in_kind value is a curator estimate of the Insider subscription's ~$75/yr retail
+      price; the offer file states no dollar figure — NEEDS human verification.
 
 signup_bonus:
   value:

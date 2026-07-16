@@ -32,6 +32,22 @@ credits:
       Requires activating complimentary DashPass (12 months free 2/1/2025-12/31/2027,
       then auto-renews) and placing one qualifying DoorDash non-restaurant order each
       quarter (no rollover). Captured only by active DoorDash users; worthless otherwise.
+  - name: Companion Ticket ($30k spend)
+    kind: in_kind
+    amount_usd: 300             # curator estimate of net value, NOT an issuer-stated figure — see notes
+    period: annual
+    usage_keys: [aer_lingus]
+    unlock_spend_usd: 30000     # "spend $30,000 in purchases in a calendar year"
+    realistic_capture_rate_note: >-
+      One economy companion ticket voucher (taxes/fees waived on the companion) after
+      $30,000 calendar-year spend; valid 12 months, book 30+ days ahead, Aer
+      Lingus-marketed/operated US-Ireland flights only. Captured only by very heavy
+      spenders who fly Aer Lingus transatlantic with a second traveler.
+    notes: >-
+      in_kind value is a curator estimate: a US-Ireland economy fare typically runs
+      $400-$700 and the companion's taxes/fees are waived, but routing/booking
+      restrictions cut realistic value — $300 is a conservative net figure, NEEDS
+      human verification. Mirrors the atmos-ascent/atmos-summit companion modeling.
 
 signup_bonus:
   value:
@@ -73,12 +89,10 @@ sources:
 notes: >-
   Drafted offline from data/offer_files/chase/aer-lingus.txt. annual_fee_usd ($95) and
   foreign_transaction_pct (0) are NOT stated in the offer file — estimates/inferences,
-  NEEDS human verification. Companion Ticket (one economy companion voucher after
-  $30,000 calendar-year spend, US-Ireland Aer Lingus flights only) is recorded as a
-  benefit_flag, not dollar-valued: it is a spend-gated in-kind certificate whose value
-  depends entirely on booking a transatlantic Aer Lingus route, so any dollar figure
-  would be invented. Priority boarding is a benefit_flag. Avios auto-transfer to Aer
-  Lingus AerClub each billing cycle.
+  NEEDS human verification. Companion Ticket is now modeled as a spend-gated in_kind
+  credit (curator-estimated $300 net — see the credit's notes) in addition to the
+  companion_certificate benefit_flag. Priority boarding is a benefit_flag. Avios
+  auto-transfer to Aer Lingus AerClub each billing cycle.
 
 verification:
   last_verified_date: "2026-07-04"

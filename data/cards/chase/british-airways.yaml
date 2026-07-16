@@ -32,6 +32,23 @@ credits:
       Requires activating complimentary DashPass (12 months free 2/1/2025-12/31/2027,
       then auto-renews) and placing one qualifying DoorDash non-restaurant order each
       quarter (no rollover). Captured only by active DoorDash users; worthless otherwise.
+  - name: Travel Together Ticket ($30k spend)
+    kind: in_kind
+    amount_usd: 250             # curator estimate of net value, NOT an issuer-stated figure — see notes
+    period: annual
+    usage_keys: [british_airways]
+    unlock_spend_usd: 30000     # "spend $30,000 in a calendar year"
+    realistic_capture_rate_note: >-
+      Voucher for a free companion seat (or 50% Avios discount solo) on BA/Iberia/Aer
+      Lingus Reward Flights after $30,000 calendar-year spend; companion still pays
+      taxes/fees, and BA's long-haul carrier surcharges are notoriously high. One per
+      calendar year, valid 2 years. Captured only by very heavy spenders who redeem
+      Avios for BA-metal reward flights with a second traveler.
+    notes: >-
+      in_kind value is a curator estimate: the voucher saves the companion's Avios
+      cost (tens of thousands of Avios) but cash taxes/surcharges of $200-$700+ still
+      apply — $250 is a conservative net figure, NEEDS human verification. Mirrors
+      the atmos/aer-lingus companion-certificate modeling convention.
 
 signup_bonus:
   value:
@@ -72,9 +89,10 @@ sources:
 notes: >-
   Drafted offline from data/offer_files/chase/british-airways.txt. annual_fee_usd ($95)
   and foreign_transaction_pct (0) are NOT stated in the offer file — estimates/inferences,
-  NEEDS human verification. OMITTED as structured value (noted, not dollar-valued):
-  Travel Together Ticket (companion seat voucher after $30,000 calendar-year spend) is a
-  benefit_flag; the Reward Flight Statement Credit (up to $200/booking, max $600/year) is
+  NEEDS human verification. Travel Together Ticket is now modeled as a spend-gated
+  in_kind credit (curator-estimated $250 net — see the credit's notes) in addition to
+  the companion_certificate benefit_flag. OMITTED as structured value (noted, not
+  dollar-valued): the Reward Flight Statement Credit (up to $200/booking, max $600/year) is
   redemption-side — it only pays when redeeming Avios for a BA reward flight, so it is not
   modeled as an earn/credit; the 10% BA flight discount code and "Paying with Avios"
   taxes/fees reduction are noted here only. Avios auto-transfer to British Airways Club

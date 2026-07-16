@@ -72,6 +72,28 @@ credits:
       year from issuance, one redemption per year). Value varies hugely by property; a
       standard Hilton night is estimated at ~$200 (roughly a 40-50k-point redemption at
       Hilton's ~0.4-0.6cpp), and the model applies a further in-kind capture haircut.
+  - name: Free Night Reward ($30k spend)
+    kind: in_kind
+    amount_usd: 200          # same curator-estimated standard-night value as the Annual Free Night Reward above
+    period: annual
+    usage_keys: [hilton]
+    category: travel_hotels
+    unlock_spend_usd: 30000  # "an additional free night after $30,000 calendar-year spend"
+    realistic_capture_rate_note: >-
+      Additional standard-room free night earned only after $30,000 calendar-year
+      spend; same redemption terms as the Annual Free Night Reward. Captured only by
+      very heavy spenders who also stay at Hilton.
+  - name: Free Night Reward ($60k spend)
+    kind: in_kind
+    amount_usd: 200          # same curator-estimated standard-night value as the Annual Free Night Reward above
+    period: annual
+    usage_keys: [hilton]
+    category: travel_hotels
+    unlock_spend_usd: 60000  # "a second after $60,000 (up to 2 extra nights/year)"
+    realistic_capture_rate_note: >-
+      Second additional standard-room free night earned only after $60,000
+      calendar-year spend; same redemption terms as the Annual Free Night Reward.
+      Captured only by extreme spenders who also stay at Hilton.
   - name: American Express Venue Collection Concessions Credit
     amount_usd: 25
     period: annual
@@ -126,8 +148,6 @@ notes: >-
   unconfirmed pending human verification. OMITTED: the "14x at Hilton portfolio
   properties" earn — no `hilton` merchant key in data/meta/merchants.yaml; mapping it
   to travel_hotels would overstate it for non-Hilton stays (registry gap flagged).
-  Extra spend-gated free nights (after $30k and $60k calendar-year spend) are not
-  modeled — noted for the reviewer.
 
 verification:
   last_verified_date: "2026-07-04"
