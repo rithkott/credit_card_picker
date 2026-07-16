@@ -274,8 +274,8 @@ export function Home({ cfg, onRetryConfig }: {
           <span className="shimmer-text">worth it for you?</span>
         </h1>
         <p className="sub">
-          Enter what you actually spend. This tool checks every major card combination —
-          counting fees, caps, and only the credits you'd really use — and shows all of its work.
+          Enter what you spend. We check <strong>every major card combination</strong> —
+          fees, caps, real credits — and <strong>show all the work</strong>.
         </p>
       </div>
 

@@ -197,6 +197,13 @@ section.block > .why {
   font-size: 1.12em;
   color: var(--accent);
 }
+/* Plain <strong> in subtitle copy — dark-ink emphasis, one step below why-emph. */
+.why strong:not(.why-emph),
+.lockin-q strong,
+.hero .sub strong {
+  font-weight: 700;
+  color: var(--ink);
+}
 /* A mono eyebrow tag, when a block wants an "01 · SECTION" kicker. */
 section.block > .eyebrow-tag,
 .eyebrow-tag {

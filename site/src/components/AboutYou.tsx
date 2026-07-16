@@ -68,8 +68,8 @@ export function AboutYou({ config: _config, user, onChange }: Props) {
         </div>
       </div>
       <p className="lockin-q">
-        Some cards earn points locked to one airline or hotel chain — often worth more, but
-        only there. Include them?
+        Some cards earn points locked to <strong>one airline or hotel</strong> — worth
+        more, but only there. Include them?
       </p>
       <div className="chips md lockin-chips" role="radiogroup" aria-label="Brand restriction">
         <label className="chip">

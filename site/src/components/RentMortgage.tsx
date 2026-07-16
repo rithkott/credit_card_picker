@@ -28,9 +28,9 @@ export function RentMortgage({ cents, extras, onChange, onExtrasChange }: {
         <div>
           <h2>Rent or mortgage</h2>
           <p className="why">
-            Most cards earn nothing on housing — it can't be charged without a
-            fee. A few (like Bilt) pay you fee-free, so if you rent or carry a
-            mortgage, that changes which single card is worth the most.
+            Most cards earn <strong>nothing</strong> on housing. A few (like Bilt)
+            pay you <strong className="why-emph">fee-free</strong> — that can change
+            which card wins.
           </p>
         </div>
       </div>

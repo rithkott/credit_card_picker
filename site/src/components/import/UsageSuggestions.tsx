@@ -15,8 +15,8 @@ export function UsageSuggestions({ suggestions, checks, onCheck }: {
     <div className="usage-suggest">
       <h3>Services we spotted</h3>
       <p className="why">
-        These unlock card credits and point value in the questionnaire below —
-        uncheck anything you don't actually use.
+        These <strong>unlock card credits</strong> below —{' '}
+        <strong className="why-emph">uncheck anything you don't use</strong>.
       </p>
       <div className="chips">
         {suggestions.map((s) => (

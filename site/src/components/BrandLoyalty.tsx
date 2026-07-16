@@ -21,10 +21,9 @@ export function BrandLoyalty({ config, confirmed, onToggle }: {
       <SectionIcon name="travel" />
       <h2>Any loyalty to airlines or hotels?</h2>
       <p className="why">
-        Since you'd book whichever airline or hotel gives the best value, their perks
-        already count when flights or hotels are among your priorities above. Loyalty to
-        a specific brand does more: its points are valued at their higher loyalty rate,
-        and its credits count at full capture.{' '}
+        Flight and hotel perks <strong>already count</strong> from your priorities
+        above. Naming a brand does more: its points and credits count at{' '}
+        <strong>full value</strong>.{' '}
         <strong className="why-emph">Skip this if you just chase the best deal.</strong>
       </p>
       <div className="ug-grid">
