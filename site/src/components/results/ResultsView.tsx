@@ -188,8 +188,6 @@ export function ResultsView({ bundle, addedCard, excluded, onToggleExclude }: {
         {shown.map((s, i) => {
           const isBest = s === best
           const isSelected = s === selected
-          const label = s.entry.cards
-            .map((id) => s.entry.per_card[id]?.name ?? id).join(' + ')
           const net = netOf(s.entry)
           const gain = i > 0 ? net - netOf(shown[i - 1].entry) : null
           const width = Math.max(0, Math.min(1, net / bestNet)) * 100
@@ -205,7 +203,13 @@ export function ResultsView({ bundle, addedCard, excluded, onToggleExclude }: {
               {isSelected && <span className="ring" />}
               <span className="content">
                 <span className="size">{s.entry.size} card{s.entry.size > 1 ? 's' : ''}</span>
-                <span className="name">{label}</span>
+                <span className="name">
+                  {s.entry.cards.map((id) => (
+                    <span key={id} className="name-line">
+                      {s.entry.per_card[id]?.name ?? id}
+                    </span>
+                  ))}
+                </span>
                 {gain !== null && (
                   <span className="gain">+${formatNumber(Math.round(gain))}/yr</span>
                 )}
