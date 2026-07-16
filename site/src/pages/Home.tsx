@@ -363,32 +363,39 @@ export function Home({ cfg, onRetryConfig }: {
           </div>
         )
 
+        // Journey switcher restyled as the front page's hardware keycaps
+        // (raised key, recessed accent bottom edge, status LED); the active
+        // key sits latched. Rails fence it off from the About-you form above
+        // and the run/results area below.
         const modeToggle = (
-          <div className="mode-toggle" role="tablist" aria-label="Journey">
-            {([
-              ['generate', 'Find the best card portfolio for me', 'Generate from scratch.'],
-              ['analyze', 'Analyze my card portfolio',
-                'See how good your cards are and how to best split spending across them.'],
-              ['improve', 'Improve my existing card portfolio',
-                'Keep your cards and find the best one to add.'],
-              ['compare', 'Compare card portfolios',
-                'Hand-pick a few sets and see them scored side by side.'],
-            ] as [Mode, string, string][]).map(([m, title, subtitle]) => (
-              <button
-                key={m}
-                type="button"
-                role="tab"
-                aria-selected={mode === m}
-                className={mode === m ? 'active' : ''}
-                onClick={() => switchMode(m)}
-              >
-                {title}
-                <ul className="mode-bullets">
-                  <li>{subtitle}</li>
-                </ul>
-              </button>
-            ))}
-          </div>
+          <>
+            <hr className="section-rail" aria-hidden="true" />
+            <div className="mode-toggle" role="tablist" aria-label="Journey">
+              {([
+                ['generate', 'Find the best card portfolio for me', 'Generate from scratch.'],
+                ['analyze', 'Analyze my card portfolio',
+                  'See how good your cards are and how to best split spending across them.'],
+                ['improve', 'Improve my existing card portfolio',
+                  'Keep your cards and find the best one to add.'],
+                ['compare', 'Compare card portfolios',
+                  'Hand-pick a few sets and see them scored side by side.'],
+              ] as [Mode, string, string][]).map(([m, title, subtitle]) => (
+                <button
+                  key={m}
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === m}
+                  className={`mode-key${mode === m ? ' active' : ''}`}
+                  onClick={() => switchMode(m)}
+                >
+                  <span className="mode-key-led" aria-hidden="true" />
+                  <span className="mode-key-title">{title}</span>
+                  <span className="mode-key-sub">{subtitle}</span>
+                </button>
+              ))}
+            </div>
+            <hr className="section-rail" aria-hidden="true" />
+          </>
         )
 
         const steps: WizardStep[] = [
