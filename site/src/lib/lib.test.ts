@@ -202,7 +202,7 @@ describe('persistence: v2.2 mode migration (auto/manual → generate/analyze)', 
     removeItem: (k: string) => { store.delete(k) },
   }
   const blobWithMode = (mode: unknown) => JSON.stringify({
-    v: 1, unit: 'monthly', mode,
+    v: 2, unit: 'monthly', mode,
     spend: { categoryCents: { groceries: 50000 }, merchantCents: {}, categoryExtraCents: {}, merchantExtraCents: {} },
     user: {
       credit_tier: 'good', optimize_for: 'ongoing', accepts_brand_lockin: false,
@@ -234,5 +234,73 @@ describe('persistence: v2.2 mode migration (auto/manual → generate/analyze)', 
   it('passes new values through and defaults junk to generate', async () => {
     expect((await loadWithMode('improve'))?.mode).toBe('improve')
     expect((await loadWithMode('bogus'))?.mode).toBe('generate')
+  })
+})
+
+describe('persistence: v1 → v2 spend migration (annual cents → entered-unit cents)', () => {
+  // v1 stored ANNUAL cents for everything; v2 stores the raw typed number in
+  // its entered unit. Un-migrated, a monthly-toggle grid inflates ×12 and
+  // housing (always monthly) inflates ×12 even under an annual toggle — the
+  // Bilt double-annualization bug (rent ×144 → ratio floor tier).
+  const store = new Map<string, string>()
+  const fakeStorage = {
+    getItem: (k: string) => store.get(k) ?? null,
+    setItem: (k: string, v: string) => { store.set(k, v) },
+    removeItem: (k: string) => { store.delete(k) },
+  }
+  const v1Blob = (unit: 'monthly' | 'annual') => JSON.stringify({
+    v: 1, unit, mode: 'generate',
+    spend: {
+      // annual cents: $29,580/yr rent ($2,465/mo), $12,000/yr groceries
+      categoryCents: { housing: 2958000, groceries: 1200000, dining: null },
+      merchantCents: { costco: 600000 },
+      categoryExtraCents: { housing: [120000, null] },
+      merchantExtraCents: {},
+    },
+    user: {
+      credit_tier: 'good', optimize_for: 'ongoing', accepts_brand_lockin: false,
+      rewardKinds: { cashback: true }, confirmed_usage: [],
+    },
+    selected: [], excluded: [], completed: true,
+  })
+  const loadV1 = async (unit: 'monthly' | 'annual') => {
+    vi.stubGlobal('localStorage', fakeStorage)
+    store.set('ccp:form:v1', v1Blob(unit))
+    try {
+      const { loadForm } = await import('./persistence')
+      return loadForm()
+    } finally {
+      vi.unstubAllGlobals()
+      store.clear()
+    }
+  }
+
+  it('annual toggle: grid unchanged, housing ÷12 back to monthly', async () => {
+    const form = await loadV1('annual')
+    expect(form?.spend.categoryCents).toEqual({ housing: 246500, groceries: 1200000, dining: null })
+    expect(form?.spend.merchantCents).toEqual({ costco: 600000 })
+    expect(form?.spend.categoryExtraCents).toEqual({ housing: [10000, null] })
+  })
+  it('monthly toggle: everything ÷12 (grid, merchants, extras, housing)', async () => {
+    const form = await loadV1('monthly')
+    expect(form?.spend.categoryCents).toEqual({ housing: 246500, groceries: 100000, dining: null })
+    expect(form?.spend.merchantCents).toEqual({ costco: 50000 })
+    expect(form?.spend.categoryExtraCents).toEqual({ housing: [10000, null] })
+  })
+  it('v2 blobs load untouched; unknown versions discard', async () => {
+    vi.stubGlobal('localStorage', fakeStorage)
+    try {
+      const v2 = JSON.parse(v1Blob('monthly'))
+      v2.v = 2
+      store.set('ccp:form:v1', JSON.stringify(v2))
+      const { loadForm } = await import('./persistence')
+      expect(loadForm()?.spend.categoryCents).toEqual({ housing: 2958000, groceries: 1200000, dining: null })
+      v2.v = 3
+      store.set('ccp:form:v1', JSON.stringify(v2))
+      expect(loadForm()).toBeNull()
+    } finally {
+      vi.unstubAllGlobals()
+      store.clear()
+    }
   })
 })

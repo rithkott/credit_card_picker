@@ -12,8 +12,13 @@ import type { Unit } from './money'
 import type { SpendState } from './validation'
 import type { UserState } from './profile'
 
+/** Housing is pinned to monthly entry (RentMortgage.tsx has no unit toggle). */
+const HOUSING_KEY = 'housing'
+
 const KEY = 'ccp:form:v1'
-const VERSION = 1
+/** v2: stored cents are in the unit the user entered them (money.ts). v1 blobs
+ * stored ANNUAL cents for everything; loadForm migrates them (see migrateV1). */
+const VERSION = 2
 
 export interface PersistedForm {
   unit: Unit
@@ -111,15 +116,42 @@ export function loadForm(): PersistedForm | null {
   } catch {
     return null
   }
-  if (!isObject(parsed) || parsed.v !== VERSION) return null
+  if (!isObject(parsed) || (parsed.v !== VERSION && parsed.v !== 1)) return null
+  const unit: Unit = parsed.unit === 'annual' ? 'annual' : 'monthly'
+  let spend = coerceSpend(parsed.spend)
+  if (parsed.v === 1) spend = migrateV1Spend(spend, unit)
   return {
-    unit: parsed.unit === 'annual' ? 'annual' : 'monthly',
+    unit,
     mode: coerceMode(parsed.mode),
-    spend: coerceSpend(parsed.spend),
+    spend,
     user: coerceUser(parsed.user),
     selected: coerceStringSet(parsed.selected),
     excluded: coerceStringSet(parsed.excluded),
     completed: parsed.completed === true,
+  }
+}
+
+/** v1 blobs stored ANNUAL cents regardless of the toggle; v2 stores the raw
+ * number the user typed, in its entered unit (housing is always monthly —
+ * lib/profile.ts re-annualizes at the boundary). Without this, a v1 housing
+ * amount is annualized twice (×144 total: a $2,465/mo rent becomes $354,960/yr
+ * and Bilt's Everyday Spend Ratio collapses to the 0× floor tier), and with a
+ * monthly toggle every grid amount is inflated ×12. Convert annual cents back
+ * to the entered unit: ÷12 for monthly-unit keys, housing always. */
+function migrateV1Spend(spend: SpendState, unit: Unit): SpendState {
+  const gridDiv = (key: string) => (unit === 'monthly' || key === HOUSING_KEY ? 12 : 1)
+  const merchantDiv = () => (unit === 'monthly' ? 12 : 1)
+  const cents = (v: Record<string, number | null>, div: (k: string) => number) =>
+    Object.fromEntries(Object.entries(v).map(([k, c]) =>
+      [k, c === null ? null : Math.round(c / div(k))]))
+  const extras = (v: Record<string, (number | null)[]>, div: (k: string) => number) =>
+    Object.fromEntries(Object.entries(v).map(([k, arr]) =>
+      [k, arr.map((c) => (c === null ? null : Math.round(c / div(k))))]))
+  return {
+    categoryCents: cents(spend.categoryCents, gridDiv),
+    merchantCents: cents(spend.merchantCents, merchantDiv),
+    categoryExtraCents: extras(spend.categoryExtraCents, gridDiv),
+    merchantExtraCents: extras(spend.merchantExtraCents, merchantDiv),
   }
 }
 
