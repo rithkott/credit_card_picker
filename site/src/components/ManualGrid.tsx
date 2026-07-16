@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { getCardsCached } from '../api'
 import { issuerLabel, issuerMatchesAlias } from '../lib/issuers'
 import { formatNumber } from '../lib/money'
+import { PORT_COLORS } from '../lib/portfolios'
 import type { CardSummary } from '../types'
 
 type Phase =
@@ -17,13 +18,19 @@ type Phase =
  * (common issuer nicknames like "amex" or "bofa" match too); the
  * whole list lives in a bounded, internally-scrolling well so it never runs off
  * the page. */
-export function ManualGrid({ selected, excluded, onToggle, onToggleExclude }: {
+export function ManualGrid({ selected, excluded, onToggle, onToggleExclude, ownerOf }: {
   selected: Set<string>
   /** Cards vetoed from consideration (v2.5.0) — shown greyed with the ✕ lit;
    * the ✕ in each tile's corner toggles membership. */
   excluded: Set<string>
   onToggle: (id: string) => void
   onToggleExclude: (id: string) => void
+  /** Compare mode (plan 20 workbench): card id → owning portfolio index
+   * (first owner; −1 = unowned). When present, tiles swap the ✓ box for an
+   * ownership ring + corner P-tag in the owner's identity color, and issuer
+   * groups flatten to sticky letterheads (the compare well provides the
+   * container). Manual mode (prop absent) is untouched. */
+  ownerOf?: (id: string) => number
 }) {
   const [state, setState] = useState<Phase>({ phase: 'loading' })
   const [query, setQuery] = useState('')
@@ -88,24 +95,41 @@ export function ManualGrid({ selected, excluded, onToggle, onToggleExclude }: {
         {byIssuer.length === 0 ? (
           <p className="manual-empty">No cards match “{query}”.</p>
         ) : byIssuer.map(([issuer, cards]) => (
-        <section className="block issuer-group" key={issuer}>
-          <h2>{issuerLabel(issuer)}</h2>
+        // Compare mode drops the raised .block per issuer — the darker well is
+        // the container, and the letterhead h2 (with inline count) sticks to
+        // the top of the scroll.
+        <section className={ownerOf ? 'issuer-group' : 'block issuer-group'} key={issuer}>
+          <h2>
+            {issuerLabel(issuer)}
+            {ownerOf && (
+              <span className="count">{cards.length} card{cards.length === 1 ? '' : 's'}</span>
+            )}
+          </h2>
           <div className="tile-grid">
             {cards.map((c) => {
               const isSel = selected.has(c.id)
               const isExcl = excluded.has(c.id)
+              const owner = ownerOf ? ownerOf(c.id) : -1
               return (
                 // Wrapper div: the exclude ✕ can't nest inside the tile
                 // <button>, so it sits as an absolutely-positioned sibling.
-                <div key={c.id} className={`tile-wrap${isExcl ? ' excluded' : ''}`}>
+                <div key={c.id} className={`tile-wrap${isExcl ? ' excluded' : ''}${owner >= 0 ? ' owned' : ''}`}>
                   <button
                     type="button"
-                    className={`card-tile selectable${isSel ? ' selected' : ''}`}
+                    className={`card-tile selectable${ownerOf
+                      ? (owner >= 0 ? ' owned' : '')
+                      : (isSel ? ' selected' : '')}`}
+                    style={owner >= 0
+                      ? { '--owner-color': PORT_COLORS[owner] } as CSSProperties
+                      : undefined}
                     aria-pressed={isSel}
                     disabled={isExcl}
                     onClick={() => onToggle(c.id)}
                   >
-                    <span className="check" aria-hidden="true">{isSel ? '✓' : ''}</span>
+                    {!ownerOf && <span className="check" aria-hidden="true">{isSel ? '✓' : ''}</span>}
+                    {owner >= 0 && (
+                      <span className="tile-owner-tag" aria-hidden="true">P{owner + 1}</span>
+                    )}
                     <h3>
                       {c.name}
                       {c.availability === 'discontinued' && (

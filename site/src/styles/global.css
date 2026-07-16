@@ -52,6 +52,16 @@
   --hairline: var(--divider-soft);
   --hairline-strong: var(--divider);
 
+  /* ── Compare workbench (plan 20 redesign) ─────────────────────────────── */
+  /* One identity color per portfolio, carried tray → rows → catalog tags. */
+  --p1: var(--accent);
+  --p2: #0f766e;               /* teal, harmonious with --pos */
+  --p3: var(--warn);
+  --p4: #365e9d;               /* slate blue */
+  --well: #cfcbc0;             /* recessed catalog well, darker than --surface */
+  --sh-well-dark: #a8a498;     /* shadow pair tuned for tiles ON the well */
+  --sh-well-light: #ece8dd;
+
   /* ── Shape + type ─────────────────────────────────────────────────────── */
   --r-panel: 22px;
   --r-tile: 16px;
@@ -1900,37 +1910,61 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
 .tile-menu-pop button:hover { color: var(--neg); box-shadow: var(--inset-xs); }
 .tile-menu-note { padding: 4px 9px 2px; font: 11px var(--mono); color: var(--faint); }
 
-/* ── Compare portfolios (plan 20) ─────────────────────────────────────────
-   Picker: an inset tab track routes catalog picks into the active portfolio;
-   chip rows keep every portfolio visible while one is edited. Results: each
-   portfolio's receipt stacks vertically, winner ringed in accent, per-card
-   math tiles behind a disclosure. */
-.compare-picker { margin-top: 16px; }
-.compare-tabs {
-  display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
-  padding: 8px;
-  border-radius: 14px;
-  box-shadow: var(--inset-sm);
+/* ── Compare portfolios (plan 20) — workbench split picker (handoff 1b) ───
+   Left column: portfolio trays (the old tab strip + chip rows merged) — the
+   active tray raised with its identity-color ring and an EDITING flag,
+   inactive trays inset. Right column: the shared catalog recessed into a
+   darker well (raised = yours, sunken = the shop), with a destination pill
+   naming where picks land. One color per portfolio carries tray → rows →
+   catalog rings/tags. Results: each portfolio's receipt stacks vertically,
+   winner ringed in accent, per-card math tiles behind a disclosure. */
+.compare-picker {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: 330px minmax(0, 1fr);
+  gap: 34px;
+  align-items: start;
 }
-.compare-tab { position: relative; display: flex; }
-.compare-tab > button[role='tab'] {
-  border: 0; border-radius: 10px;
-  padding: 8px 30px 8px 12px;
-  background: transparent;
-  font: 700 12.5px var(--font); color: var(--muted);
-  display: flex; align-items: baseline; gap: 8px;
-  cursor: pointer;
+@media (max-width: 900px) { .compare-picker { grid-template-columns: minmax(0, 1fr); } }
+
+.compare-side { display: flex; flex-direction: column; gap: 14px; }
+.tray-list { display: flex; flex-direction: column; gap: 14px; }
+.compare-side-label, .catalog-label {
+  font: 700 11px var(--mono); letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--muted);
 }
-.compare-tab:not(.active) > button[role='tab']:hover { color: var(--ink); }
-.compare-tab.active > button[role='tab'] {
+
+/* Portfolio trays (tabs + chips merged) */
+.tray {
+  position: relative;
+  border-radius: var(--r-tile);
+  padding: 14px 16px 15px;
   background: var(--surface);
-  box-shadow: var(--raised-sm);
-  color: var(--accent);
+  box-shadow: var(--inset-sm);
+  cursor: pointer;
+  text-align: left;
+  border: 0; width: 100%;
+  transition: box-shadow 0.15s var(--ease);
 }
-.compare-tab-count { font: 500 10.5px var(--mono); color: var(--faint); }
-.compare-tab-x {
-  position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
-  width: 18px; height: 18px;
+.tray.active {
+  box-shadow: var(--raised);
+  outline: 2px solid var(--tray-color, var(--accent));
+  outline-offset: -2px;
+}
+.tray:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tray-head { display: flex; align-items: center; gap: 8px; }
+.tray-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--tray-color, var(--accent));
+}
+.tray-name {
+  font: 700 11.5px var(--mono); letter-spacing: 0.13em;
+  text-transform: uppercase; color: var(--muted);
+}
+.tray.active .tray-name { color: var(--tray-color, var(--accent)); }
+.tray-count { margin-left: auto; font: 11px var(--mono); color: var(--faint); }
+.tray-x {
+  width: 18px; height: 18px; flex: none;
   border: 0; border-radius: 50%;
   /* Reset the base button chrome: without these, the global 10px/20px padding
      inflates the ✕ to a 40px raised pill that covers the card-count text. */
@@ -1940,45 +1974,118 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
   cursor: pointer;
   display: grid; place-items: center;
 }
-.compare-tab-x:hover { color: var(--neg); box-shadow: var(--inset-xs); }
-.compare-add {
-  border: 1.5px dashed var(--sh-dark); border-radius: 10px;
-  padding: 7px 12px;
-  background: transparent;
-  font: 700 12px var(--mono); color: var(--muted);
-  cursor: pointer;
+.tray-x:hover { color: var(--neg); box-shadow: var(--inset-xs); }
+.tray-flag {
+  position: absolute; top: -9px; right: 14px;
+  background: var(--tray-color, var(--accent)); color: var(--sh-light);
+  font: 700 9.5px var(--mono); letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 999px;
 }
-.compare-add:hover { color: var(--accent); border-color: var(--accent); }
-.compare-chips-rows { display: grid; gap: 6px; margin: 12px 2px 14px; }
-.compare-chips {
-  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
-  font: 12px var(--mono);
+.tray-rows { display: flex; flex-direction: column; gap: 6px; margin-top: 11px; }
+.tray-rows .empty { font-size: 12px; font-style: italic; color: var(--faint); }
+.tray-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 11px; border-radius: 9px;
+  background: var(--inset-well); box-shadow: var(--inset-xs);
+  font: 600 12.5px var(--font); color: var(--ink);
 }
-.compare-chips-label {
-  border: 0; background: transparent; padding: 0;
-  font: 700 10.5px var(--mono); letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--faint);
-  cursor: pointer;
-  min-width: 86px; text-align: left;
-}
-.compare-chips.active .compare-chips-label { color: var(--accent); }
-.compare-chips .empty { color: var(--faint); font-size: 11.5px; }
-.compare-chip {
-  display: inline-flex; align-items: center; gap: 6px;
-  border-radius: 999px;
-  padding: 4px 8px 4px 11px;
-  background: var(--surface);
-  box-shadow: var(--raised-sm);
-  font: 600 11.5px var(--font); color: var(--ink);
-}
-.compare-chip button {
+.tray-row span { flex: 1; min-width: 0; }
+.tray-row .tray-dot { width: 6px; height: 6px; flex: none; }
+.tray-row button {
   border: 0; background: transparent; padding: 0; box-shadow: none;
-  width: 15px; height: 15px; border-radius: 50%;
-  font: 700 9px var(--mono); color: var(--faint);
+  flex: none; width: 15px; height: 15px; border-radius: 50%;
+  font: 700 10px var(--mono); color: var(--faint); line-height: 1;
   cursor: pointer;
   display: grid; place-items: center;
 }
-.compare-chip button:hover { color: var(--neg); box-shadow: var(--inset-xs); }
+.tray-row button:hover { color: var(--neg); }
+.compare-add {
+  border: 2px dashed var(--sh-dark); border-radius: 14px;
+  padding: 12px;
+  background: transparent; box-shadow: none;
+  font: 600 12.5px var(--mono); color: var(--muted);
+  cursor: pointer;
+}
+.compare-add:hover { color: var(--accent); border-color: var(--accent); }
+
+/* Catalog column: header with destination pill, then search, then the well. */
+.compare-catalog { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.catalog-head { display: flex; align-items: center; gap: 10px; color: var(--muted); }
+.catalog-head .rule { flex: 1; border-top: 1px solid var(--divider-strong); }
+.catalog-head .lands {
+  font: 11px var(--mono); color: var(--faint);
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.dest-pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--tray-color, var(--accent)); color: var(--sh-light);
+  font: 700 11px var(--mono); letter-spacing: 0.11em; text-transform: uppercase;
+  padding: 6px 13px; border-radius: 999px;
+  white-space: nowrap;
+}
+/* Narrow screens: the pill alone says where picks land — drop the hint. */
+@media (max-width: 520px) {
+  .catalog-head .lands, .catalog-head .lands-arrow { display: none; }
+}
+
+/* The compare catalog reuses ManualGrid, recessed a tone darker than the page
+   surface. The shadow-pair vars are re-tuned locally so the tiles — and the
+   scroll-edge sink animation, whose keyframes resolve var(--raised)/var(--sh-*)
+   against the animated element — read correctly ON the well. Everything is
+   scoped under .compare-catalog so manual mode is untouched. */
+.compare-catalog .manual-search { margin-top: 0; }
+.compare-catalog .manual-search input { padding-right: 150px; }
+.compare-catalog .manual-search .search-count {
+  position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+  margin: 0; pointer-events: none;
+}
+.compare-catalog .manual-search .search-clear { right: 12px; }
+.compare-catalog .manual-search .search-clear + .search-count { right: 46px; }
+.compare-catalog .manual-grid {
+  --sh-dark: var(--sh-well-dark);
+  --sh-light: var(--sh-well-light);
+  --raised: 5px 5px 12px var(--sh-well-dark), -5px -5px 12px var(--sh-well-light);
+  --inset-sm: inset 3px 3px 7px var(--sh-well-dark), inset -3px -3px 7px var(--sh-well-light);
+  margin-top: 0;
+  background: var(--well);
+  border-radius: var(--r-panel);
+  box-shadow: inset 4px 4px 10px var(--sh-well-dark), inset -4px -4px 10px var(--sh-well-light);
+  padding: 4px 20px 20px;
+}
+.compare-catalog .manual-grid::-webkit-scrollbar-thumb { border-color: var(--well); }
+/* Issuer letterheads: flat + sticky inside the scroll well (compare mode
+   renders no raised .block per issuer — the well is the container). */
+.compare-catalog .manual-grid .issuer-group { margin: 0; }
+.compare-catalog .manual-grid .issuer-group h2 {
+  position: sticky; top: 0; z-index: 3;
+  background: var(--well);
+  margin: 0 -20px; padding: 15px 24px 9px;
+  display: flex; align-items: center; gap: 12px;
+  letter-spacing: 0.2em;
+}
+.compare-catalog .manual-grid .issuer-group h2::after {
+  content: ''; flex: 1; order: 1; border-top: 1px dotted var(--rule);
+}
+.compare-catalog .issuer-group h2 .count {
+  order: 2; font: 10.5px var(--mono); color: var(--faint); letter-spacing: normal;
+}
+.compare-catalog .manual-grid .tile-grid { padding: 6px 2px 12px; }
+/* Compare tiles: no ✓ box, so normal padding; ownership ring + corner tag in
+   the owner portfolio's color replace the single-accent selected state. */
+.compare-catalog .card-tile.selectable { padding-left: 18px; }
+.card-tile.selectable.owned {
+  outline: 2.5px solid var(--owner-color, var(--accent)); outline-offset: -2.5px;
+}
+.card-tile.selectable.owned h3 { color: var(--owner-color, var(--accent)); }
+.tile-owner-tag {
+  position: absolute; top: 9px; right: 9px; pointer-events: none;
+  background: var(--owner-color, var(--accent)); color: var(--sh-light);
+  font: 700 10px var(--mono); letter-spacing: 0.04em;
+  padding: 3px 7px; border-radius: 999px;
+}
+/* The exclude ✕ shares the corner with the owner tag — slide it left. */
+.tile-wrap.owned .tile-x { top: 8px; right: 44px; }
+.tile-wrap.owned .card-tile.selectable h3 { padding-right: 48px; }
 
 /* Results stack */
 .compare-results .compare-result { margin-top: 16px; }
