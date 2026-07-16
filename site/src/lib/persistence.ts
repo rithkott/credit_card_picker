@@ -22,13 +22,15 @@ const VERSION = 2
 
 export interface PersistedForm {
   unit: Unit
-  mode: 'generate' | 'analyze' | 'improve'
+  mode: 'generate' | 'analyze' | 'improve' | 'compare'
   spend: SpendState
   user: UserState
   selected: Set<string>
   /** Cards the user excluded from consideration (v2.5.0) — sent as the
    * profile's exclude_cards so generate/improve never pick them. */
   excluded: Set<string>
+  /** Compare path (plan 20): 2–4 hand-built card sets, in pick order. */
+  comparePortfolios: string[][]
   completed: boolean
 }
 
@@ -75,7 +77,7 @@ function coerceSpend(v: unknown): SpendState {
  * (users keep their entered values across the deploy). 'manual' users had
  * hand-picked cards, so they land in 'analyze' with their picks intact. */
 function coerceMode(v: unknown): PersistedForm['mode'] {
-  if (v === 'analyze' || v === 'improve' || v === 'generate') return v
+  if (v === 'analyze' || v === 'improve' || v === 'generate' || v === 'compare') return v
   if (v === 'manual') return 'analyze'
   return 'generate'
 }
@@ -83,6 +85,19 @@ function coerceMode(v: unknown): PersistedForm['mode'] {
 function coerceStringSet(v: unknown): Set<string> {
   if (!Array.isArray(v)) return new Set()
   return new Set(v.filter((x): x is string => typeof x === 'string'))
+}
+
+/** Compare path's 2–4 card sets. Pre-plan-20 blobs simply lack the key and
+ * coerce to the default two empty portfolios — no version bump / reset (same
+ * precedent as coerceExtras). Each entry keeps string ids only, deduped in
+ * pick order; the list is clamped to 4 and padded to the 2-portfolio floor. */
+function coercePortfolios(v: unknown): string[][] {
+  const entries = Array.isArray(v)
+    ? v.filter((p): p is unknown[] => Array.isArray(p)).slice(0, 4).map((p) =>
+        [...new Set(p.filter((x): x is string => typeof x === 'string'))])
+    : []
+  while (entries.length < 2) entries.push([])
+  return entries
 }
 
 function coerceUser(v: unknown): UserState {
@@ -127,6 +142,7 @@ export function loadForm(): PersistedForm | null {
     user: coerceUser(parsed.user),
     selected: coerceStringSet(parsed.selected),
     excluded: coerceStringSet(parsed.excluded),
+    comparePortfolios: coercePortfolios(parsed.comparePortfolios),
     completed: parsed.completed === true,
   }
 }
@@ -164,6 +180,7 @@ export function saveForm(state: PersistedForm): void {
     user: { ...state.user, confirmed_usage: [...state.user.confirmed_usage] },
     selected: [...state.selected],
     excluded: [...state.excluded],
+    comparePortfolios: state.comparePortfolios,
     completed: state.completed,
   }
   try {

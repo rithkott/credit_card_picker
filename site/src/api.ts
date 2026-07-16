@@ -53,6 +53,19 @@ export function getCards(): Promise<CardsResponse> {
   return request('/api/cards')
 }
 
+/** The card list is immutable for a deployment, and the compare picker needs
+ * it in two components at once (catalog + name chips) — share one in-flight
+ * promise instead of two fetches. A failed fetch clears the cache so a retry
+ * (e.g. remounting the picker) can succeed. */
+let cardsPromise: Promise<CardsResponse> | undefined
+export function getCardsCached(): Promise<CardsResponse> {
+  cardsPromise ??= getCards().catch((err: unknown) => {
+    cardsPromise = undefined
+    throw err
+  })
+  return cardsPromise
+}
+
 export function getAssumptions(): Promise<AssumptionsResponse> {
   return request('/api/assumptions')
 }

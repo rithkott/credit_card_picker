@@ -5,6 +5,7 @@ import { buildProfile } from '../lib/profile'
 import { validate } from '../lib/validation'
 import { useFormState, type Mode } from '../hooks/useFormState'
 import { ManualGrid } from '../components/ManualGrid'
+import { ComparePicker } from '../components/ComparePicker'
 import { AboutYou } from '../components/AboutYou'
 import { BrandLoyalty } from '../components/BrandLoyalty'
 import { ChecksPanel } from '../components/ChecksPanel'
@@ -18,12 +19,17 @@ import { StartPage } from '../components/StartPage'
 import { UsageQuestionnaire } from '../components/UsageQuestionnaire'
 import { WizardShell, type WizardStep } from '../components/wizard/WizardShell'
 import { ResultsView } from '../components/results/ResultsView'
+import { CompareResults, type CompareEntry, type CompareOutcome } from '../components/results/CompareResults'
 import type { ConfigPhase } from '../App'
 
 type RunPhase =
   | { phase: 'idle' }
   | { phase: 'running'; startedAt: number }
   | { phase: 'done'; bundle: OptimizeBundle | SuggestAdditionBundle }
+  // Compare path (plan 20): one evaluate bundle (or error) per hand-built
+  // portfolio — a separate variant so the single-bundle 'done' narrowing
+  // (ResultsView, 'added_card' in bundle) stays untouched.
+  | { phase: 'done-compare'; entries: CompareEntry[] }
   | { phase: 'error'; detail: string; unreachable: boolean }
 
 export function Home({ cfg, onRetryConfig }: {
@@ -34,6 +40,7 @@ export function Home({ cfg, onRetryConfig }: {
   const {
     spend, setSpend, user, setUser, unit, setUnit, mode, setMode,
     selected, setSelected, excluded, setExcluded,
+    comparePortfolios, setComparePortfolios,
   } = fs
   const [run, setRun] = useState<RunPhase>({ phase: 'idle' })
   const [elapsed, setElapsed] = useState(0)
@@ -47,7 +54,7 @@ export function Home({ cfg, onRetryConfig }: {
   // on 'done'. Keyed on run.phase so it fires once per transition; the effect
   // runs after the commit that mounts ResultsView, so the ref is populated.
   useEffect(() => {
-    if (run.phase === 'done') {
+    if (run.phase === 'done' || run.phase === 'done-compare') {
       resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }, [run.phase])
@@ -129,6 +136,38 @@ export function Home({ cfg, onRetryConfig }: {
   const onRun = () => startRun(optimize(buildProfile(spend, user, unit, excluded)))
   const onRunManual = () => startRun(evaluateManual(buildProfile(spend, user, unit, excluded), [...selected]))
 
+  // Compare path (plan 20): score every hand-built portfolio in parallel —
+  // one /api/evaluate per set, same profile. Each request catches its own
+  // error so one bad portfolio renders inline while the rest still show;
+  // only the everything-unreachable case falls back to the server banner.
+  // Labels + card lists are snapshotted here so picker edits after the run
+  // can't desync the rendered results.
+  const onRunCompare = () => {
+    setElapsed(0)
+    setRun({ phase: 'running', startedAt: Date.now() })
+    const profile = buildProfile(spend, user, unit, excluded)
+    void Promise.all(comparePortfolios.map((cards, i) =>
+      evaluateManual(profile, cards)
+        .then((bundle): CompareEntry => ({
+          label: `Portfolio ${i + 1}`, cards, outcome: { ok: true, bundle },
+        }))
+        .catch((err: unknown): CompareEntry => ({
+          label: `Portfolio ${i + 1}`,
+          cards,
+          outcome: err instanceof ApiError
+            ? { ok: false, detail: err.message, unreachable: false }
+            : { ok: false, detail: String(err), unreachable: true },
+        })),
+    )).then((entries) => {
+      const outcomes: CompareOutcome[] = entries.map((e) => e.outcome)
+      if (outcomes.every((o) => !o.ok && o.unreachable)) {
+        setRun({ phase: 'error', detail: 'Server unreachable', unreachable: true })
+      } else {
+        setRun({ phase: 'done-compare', entries })
+      }
+    })
+  }
+
   // Switch journey paths, keeping every entered value (spend, user, selected).
   // Results from another path are cleared so stale bundles never render under
   // the new mode's framing.
@@ -166,9 +205,20 @@ export function Home({ cfg, onRetryConfig }: {
       return next
     })
 
+  // Compare path (plan 20): route a catalog pick into one of the 2–4 sets.
+  const toggleCompareCard = (pIdx: number, id: string) =>
+    setComparePortfolios((prev) => prev.map((cards, i) => {
+      if (i !== pIdx) return cards
+      return cards.includes(id) ? cards.filter((c) => c !== id) : [...cards, id]
+    }))
+  const addComparePortfolio = () =>
+    setComparePortfolios((prev) => (prev.length < 4 ? [...prev, []] : prev))
+  const removeComparePortfolio = (pIdx: number) =>
+    setComparePortfolios((prev) => (prev.length > 2 ? prev.filter((_, i) => i !== pIdx) : prev))
+
   // Exclude a card from consideration (v2.5.0): the optimizer never picks or
   // suggests an excluded card. Excluding also drops it from the held selection
-  // — a card can't be both held and vetoed.
+  // and from every compare portfolio — a card can't be both held and vetoed.
   const toggleExclude = (id: string) =>
     setExcluded((prev) => {
       const next = new Set(prev)
@@ -181,6 +231,10 @@ export function Home({ cfg, onRetryConfig }: {
           s.delete(id)
           return s
         })
+        setComparePortfolios((ports) =>
+          ports.some((cards) => cards.includes(id))
+            ? ports.map((cards) => cards.filter((c) => c !== id))
+            : ports)
       }
       return next
     })
@@ -238,26 +292,41 @@ export function Home({ cfg, onRetryConfig }: {
         const config = cfg.config
 
         // Per-path run wiring: label, action, and status line. analyze/improve
-        // need at least one held card (the server 422s on an empty set).
-        const needsCards = mode !== 'generate'
+        // need at least one held card, compare needs every portfolio non-empty
+        // (the server 422s on an empty set).
+        const needsCards = mode === 'analyze' || mode === 'improve'
+        const isCompare = mode === 'compare'
+        const compareReady = comparePortfolios.every((p) => p.length > 0)
         const runLabel = mode === 'generate'
           ? 'Run the numbers'
           : mode === 'analyze'
             ? `Score my cards (${selected.size})`
-            : `Find my next card (${selected.size})`
-        const runAction = mode === 'generate' ? onRun : mode === 'analyze' ? onRunManual : onRunImprove
+            : mode === 'improve'
+              ? `Find my next card (${selected.size})`
+              : `Compare portfolios (${comparePortfolios.length})`
+        const runAction = mode === 'generate'
+          ? onRun
+          : mode === 'analyze'
+            ? onRunManual
+            : mode === 'improve' ? onRunImprove : onRunCompare
         const runningStatus = mode === 'generate'
           ? `scoring every 1–3 card portfolio — ${elapsed}s`
           : mode === 'analyze'
             ? `scoring your ${selected.size} card${selected.size > 1 ? 's' : ''} — ${elapsed}s`
-            : `finding the best card to add to your ${selected.size} — ${elapsed}s`
+            : mode === 'improve'
+              ? `finding the best card to add to your ${selected.size} — ${elapsed}s`
+              : `scoring ${comparePortfolios.length} portfolios — ${elapsed}s`
+        const runDisabled = errors.length > 0
+          || (needsCards && selected.size === 0)
+          || (isCompare && !compareReady)
+          || run.phase === 'running'
 
         const runbar = (
-          <div className={`runbar${needsCards ? ' runbar--floating' : ''}`}>
+          <div className={`runbar${needsCards || isCompare ? ' runbar--floating' : ''}`}>
             <button
               type="button"
               className="primary"
-              disabled={errors.length > 0 || (needsCards && selected.size === 0) || run.phase === 'running'}
+              disabled={runDisabled}
               onClick={runAction}
             >
               {run.phase === 'running' ? 'Scoring…' : runLabel}
@@ -276,6 +345,9 @@ export function Home({ cfg, onRetryConfig }: {
             )}
             {needsCards && run.phase !== 'running' && selected.size === 0 && (
               <span className="status">Pick the cards you have below.</span>
+            )}
+            {isCompare && run.phase !== 'running' && !compareReady && (
+              <span className="status">Every portfolio needs at least one card.</span>
             )}
             {run.phase === 'error' && !run.unreachable && (
               <span className="error">{run.detail}</span>
@@ -299,6 +371,8 @@ export function Home({ cfg, onRetryConfig }: {
                 'See how good your cards are and how to best split spending across them.'],
               ['improve', 'Improve my existing card portfolio',
                 'Keep your cards and find the best one to add.'],
+              ['compare', 'Compare card portfolios',
+                'Hand-pick a few sets and see them scored side by side.'],
             ] as [Mode, string, string][]).map(([m, title, subtitle]) => (
               <button
                 key={m}
@@ -403,11 +477,21 @@ export function Home({ cfg, onRetryConfig }: {
                 <ChecksPanel errors={errors} />
                 {modeToggle}
                 {runbar}
-                {mode !== 'generate' && (
+                {needsCards && (
                   <ManualGrid
                     selected={selected}
                     excluded={excluded}
                     onToggle={toggleSelect}
+                    onToggleExclude={toggleExclude}
+                  />
+                )}
+                {isCompare && (
+                  <ComparePicker
+                    portfolios={comparePortfolios}
+                    excluded={excluded}
+                    onToggleCard={toggleCompareCard}
+                    onAdd={addComparePortfolio}
+                    onRemove={removeComparePortfolio}
                     onToggleExclude={toggleExclude}
                   />
                 )}
@@ -416,6 +500,15 @@ export function Home({ cfg, onRetryConfig }: {
                     <ResultsView
                       bundle={run.bundle}
                       addedCard={'added_card' in run.bundle ? run.bundle.added_card : undefined}
+                      excluded={excluded}
+                      onToggleExclude={toggleExclude}
+                    />
+                  </div>
+                )}
+                {run.phase === 'done-compare' && (
+                  <div ref={resultsRef}>
+                    <CompareResults
+                      entries={run.entries}
                       excluded={excluded}
                       onToggleExclude={toggleExclude}
                     />
@@ -431,7 +524,8 @@ export function Home({ cfg, onRetryConfig }: {
             <WizardShell
               steps={steps}
               index={step}
-              canFinish={errors.length === 0 && (mode === 'generate' || selected.size > 0)}
+              canFinish={errors.length === 0
+                && (mode === 'generate' || (isCompare ? compareReady : selected.size > 0))}
               finishLabel={run.phase === 'running' ? 'Scoring…' : runLabel}
               onBack={() => setStep((s) => Math.max(0, s - 1))}
               onNext={() => setStep((s) => Math.min(steps.length - 1, s + 1))}
@@ -449,7 +543,7 @@ export function Home({ cfg, onRetryConfig }: {
         }
 
         return (
-          <div className={mode !== 'generate' ? 'edit-view has-floating-runbar' : 'edit-view'}>
+          <div className={needsCards || isCompare ? 'edit-view has-floating-runbar' : 'edit-view'}>
             <div className="edit-toolbar">
               <button type="button" className="ghost start-over" onClick={() => setConfirmReset(true)}>
                 Start from scratch

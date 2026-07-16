@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { getCards } from '../api'
+import { getCardsCached } from '../api'
 import { issuerLabel, issuerMatchesAlias } from '../lib/issuers'
 import { formatNumber } from '../lib/money'
 import type { CardSummary } from '../types'
@@ -29,7 +29,7 @@ export function ManualGrid({ selected, excluded, onToggle, onToggleExclude }: {
   const [query, setQuery] = useState('')
 
   useEffect(() => {
-    getCards()
+    getCardsCached()
       .then(({ cards }) => setState({ phase: 'ready', cards }))
       .catch(() => setState({ phase: 'error' }))
   }, [])

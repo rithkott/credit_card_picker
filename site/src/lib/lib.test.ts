@@ -233,6 +233,7 @@ describe('persistence: v2.2 mode migration (auto/manual → generate/analyze)', 
   })
   it('passes new values through and defaults junk to generate', async () => {
     expect((await loadWithMode('improve'))?.mode).toBe('improve')
+    expect((await loadWithMode('compare'))?.mode).toBe('compare')
     expect((await loadWithMode('bogus'))?.mode).toBe('generate')
   })
 })
@@ -298,6 +299,71 @@ describe('persistence: v1 → v2 spend migration (annual cents → entered-unit 
       v2.v = 3
       store.set('ccp:form:v1', JSON.stringify(v2))
       expect(loadForm()).toBeNull()
+    } finally {
+      vi.unstubAllGlobals()
+      store.clear()
+    }
+  })
+})
+
+describe('persistence: compare portfolios (plan 20)', () => {
+  const store = new Map<string, string>()
+  const fakeStorage = {
+    getItem: (k: string) => store.get(k) ?? null,
+    setItem: (k: string, v: string) => { store.set(k, v) },
+    removeItem: (k: string) => { store.delete(k) },
+  }
+  const blob = (extra: Record<string, unknown>) => JSON.stringify({
+    v: 2, unit: 'monthly', mode: 'compare',
+    spend: { categoryCents: {}, merchantCents: {}, categoryExtraCents: {}, merchantExtraCents: {} },
+    user: {
+      credit_tier: 'good', optimize_for: 'ongoing', accepts_brand_lockin: false,
+      rewardKinds: { cashback: true }, confirmed_usage: [],
+    },
+    selected: [], excluded: [], completed: true,
+    ...extra,
+  })
+  const loadBlob = async (extra: Record<string, unknown>) => {
+    vi.stubGlobal('localStorage', fakeStorage)
+    store.set('ccp:form:v1', blob(extra))
+    try {
+      const { loadForm } = await import('./persistence')
+      return loadForm()
+    } finally {
+      vi.unstubAllGlobals()
+      store.clear()
+    }
+  }
+
+  it('pre-plan-20 blob (key absent) still loads, defaulting to two empty portfolios', async () => {
+    const form = await loadBlob({})
+    expect(form).not.toBeNull()
+    expect(form?.comparePortfolios).toEqual([[], []])
+  })
+  it('round-trips 2–4 portfolios in pick order', async () => {
+    const portfolios = [['amex-gold', 'chase-freedom-flex'], ['csp'], ['bilt']]
+    expect((await loadBlob({ comparePortfolios: portfolios }))?.comparePortfolios)
+      .toEqual(portfolios)
+  })
+  it('coerces malformed shapes: non-array, junk members, dupes, over-cap', async () => {
+    expect((await loadBlob({ comparePortfolios: 'junk' }))?.comparePortfolios).toEqual([[], []])
+    expect((await loadBlob({ comparePortfolios: [['a', 5, 'a', null, 'b'], 'junk'] }))?.comparePortfolios)
+      .toEqual([['a', 'b'], []])
+    expect((await loadBlob({ comparePortfolios: [['a'], ['b'], ['c'], ['d'], ['e']] }))?.comparePortfolios)
+      .toEqual([['a'], ['b'], ['c'], ['d']])
+    expect((await loadBlob({ comparePortfolios: [['solo']] }))?.comparePortfolios)
+      .toEqual([['solo'], []])
+  })
+  it('saveForm writes portfolios back verbatim', async () => {
+    vi.stubGlobal('localStorage', fakeStorage)
+    try {
+      const { loadForm, saveForm } = await import('./persistence')
+      store.set('ccp:form:v1', blob({ comparePortfolios: [['x'], ['y', 'z']] }))
+      const form = loadForm()
+      expect(form).not.toBeNull()
+      saveForm(form!)
+      const written = JSON.parse(store.get('ccp:form:v1')!) as { comparePortfolios: string[][] }
+      expect(written.comparePortfolios).toEqual([['x'], ['y', 'z']])
     } finally {
       vi.unstubAllGlobals()
       store.clear()

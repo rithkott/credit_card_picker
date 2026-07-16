@@ -14,10 +14,11 @@ import type { Config } from '../types'
 import { clearForm, loadForm, saveForm, type PersistedForm } from '../lib/persistence'
 
 export type FormView = 'start' | 'wizard' | 'edit'
-/** The three journey paths picked on the start screen (v2.2): generate a
- * portfolio from scratch, analyze the cards you hold, or find the best card
- * to add to them. All three share the same input flow. */
-export type Mode = 'generate' | 'analyze' | 'improve'
+/** The journey paths picked on the start screen (v2.2; compare added by
+ * plan 20): generate a portfolio from scratch, analyze the cards you hold,
+ * find the best card to add to them, or compare hand-built portfolios.
+ * All four share the same input flow. */
+export type Mode = 'generate' | 'analyze' | 'improve' | 'compare'
 
 /** Matches the current inline defaults in Home (pre-v1.9.0). Fresh visitors
  * additionally get optimize_for/accepts_brand_lockin re-seeded from the server
@@ -48,6 +49,10 @@ export interface FormState {
   setSelected: React.Dispatch<React.SetStateAction<Set<string>>>
   excluded: Set<string>
   setExcluded: React.Dispatch<React.SetStateAction<Set<string>>>
+  /** Compare path (plan 20): 2–4 hand-built card sets, in pick order. Names
+   * ("Portfolio 1..4") derive from index and are never stored. */
+  comparePortfolios: string[][]
+  setComparePortfolios: React.Dispatch<React.SetStateAction<string[][]>>
   view: FormView
   setView: React.Dispatch<React.SetStateAction<FormView>>
   completed: boolean
@@ -72,6 +77,8 @@ export function useFormState(): FormState {
   const [mode, setMode] = useState<Mode>(() => loaded?.mode ?? 'generate')
   const [selected, setSelected] = useState<Set<string>>(() => loaded?.selected ?? new Set())
   const [excluded, setExcluded] = useState<Set<string>>(() => loaded?.excluded ?? new Set())
+  const [comparePortfolios, setComparePortfolios] = useState<string[][]>(
+    () => loaded?.comparePortfolios ?? [[], []])
   const [completed, setCompleted] = useState<boolean>(() => loaded?.completed ?? false)
   // EVERY visit opens on the start chooser (v2.3.3) — fresh and returning
   // alike. Restored values survive underneath; pressing a path key routes a
@@ -88,8 +95,8 @@ export function useFormState(): FormState {
       firstPass.current = false
       return
     }
-    saveForm({ unit, mode, spend, user, selected, excluded, completed })
-  }, [unit, mode, spend, user, selected, excluded, completed])
+    saveForm({ unit, mode, spend, user, selected, excluded, comparePortfolios, completed })
+  }, [unit, mode, spend, user, selected, excluded, comparePortfolios, completed])
 
   const reset = (defaults?: Config['user_defaults']) => {
     clearForm()
@@ -104,6 +111,7 @@ export function useFormState(): FormState {
     setMode('generate')
     setSelected(new Set())
     setExcluded(new Set())
+    setComparePortfolios([[], []])
     setCompleted(false)
     // Back to the start screen so the user re-picks their path.
     setView('start')
@@ -116,6 +124,7 @@ export function useFormState(): FormState {
     mode, setMode,
     selected, setSelected,
     excluded, setExcluded,
+    comparePortfolios, setComparePortfolios,
     view, setView,
     completed, setCompleted,
     restored,
