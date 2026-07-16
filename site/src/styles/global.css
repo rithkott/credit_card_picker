@@ -2082,7 +2082,10 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
 .compare-catalog .manual-grid .issuer-group { margin: 0; }
 .compare-catalog .manual-grid .issuer-group h2 {
   position: sticky; top: 0; z-index: 3;
-  background: var(--well);
+  /* Soft-edged band: an opaque strip would clip neighboring tile shadows in a
+     hard line — fade both ends so the letterhead melts into the well. */
+  background: linear-gradient(to bottom,
+    transparent, var(--well) 12px, var(--well) calc(100% - 8px), transparent);
   margin: 0 -20px; padding: 15px 24px 9px;
   display: flex; align-items: center; gap: 12px;
   letter-spacing: 0.2em;
