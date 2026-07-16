@@ -12,12 +12,9 @@ import type { Unit } from './money'
 import type { SpendState } from './validation'
 import type { UserState } from './profile'
 
-/** Housing is pinned to monthly entry (RentMortgage.tsx has no unit toggle). */
-const HOUSING_KEY = 'housing'
-
 const KEY = 'ccp:form:v1'
 /** v2: stored cents are in the unit the user entered them (money.ts). v1 blobs
- * stored ANNUAL cents for everything; loadForm migrates them (see migrateV1). */
+ * are read as entered-unit too — see the note above loadForm. */
 const VERSION = 2
 
 export interface PersistedForm {
@@ -117,6 +114,20 @@ function coerceUser(v: unknown): UserState {
   }
 }
 
+/** v1 blobs are read AS-IS (entered-unit cents), same as v2.
+ *
+ * History: v1 originally stored annual cents, and the unit-semantics change
+ * (e133101) switched canonical storage to as-entered cents WITHOUT bumping the
+ * version — so "v: 1" tags two incompatible populations. A first migration
+ * attempt assumed v1 = annual and divided housing (and, under a monthly
+ * toggle, every amount) by 12, which silently corrupted the entered-unit
+ * v1 blobs live users actually hold: a $2,465/mo rent reloaded as $205/mo,
+ * and the wrong value became permanent v2 state on their next edit. The
+ * annual-cents v1 population only ever existed for the ~1 day between the
+ * wizard-persistence launch and e133101; misreading one shows obviously
+ * inflated (×12) numbers the user can see and retype, whereas the division
+ * was subtle and destructive. So: no rescale, ever — v1 loads verbatim and
+ * becomes v2 on the next save. */
 export function loadForm(): PersistedForm | null {
   let raw: string | null
   try {
@@ -133,41 +144,15 @@ export function loadForm(): PersistedForm | null {
   }
   if (!isObject(parsed) || (parsed.v !== VERSION && parsed.v !== 1)) return null
   const unit: Unit = parsed.unit === 'annual' ? 'annual' : 'monthly'
-  let spend = coerceSpend(parsed.spend)
-  if (parsed.v === 1) spend = migrateV1Spend(spend, unit)
   return {
     unit,
+    spend: coerceSpend(parsed.spend),
     mode: coerceMode(parsed.mode),
-    spend,
     user: coerceUser(parsed.user),
     selected: coerceStringSet(parsed.selected),
     excluded: coerceStringSet(parsed.excluded),
     comparePortfolios: coercePortfolios(parsed.comparePortfolios),
     completed: parsed.completed === true,
-  }
-}
-
-/** v1 blobs stored ANNUAL cents regardless of the toggle; v2 stores the raw
- * number the user typed, in its entered unit (housing is always monthly —
- * lib/profile.ts re-annualizes at the boundary). Without this, a v1 housing
- * amount is annualized twice (×144 total: a $2,465/mo rent becomes $354,960/yr
- * and Bilt's Everyday Spend Ratio collapses to the 0× floor tier), and with a
- * monthly toggle every grid amount is inflated ×12. Convert annual cents back
- * to the entered unit: ÷12 for monthly-unit keys, housing always. */
-function migrateV1Spend(spend: SpendState, unit: Unit): SpendState {
-  const gridDiv = (key: string) => (unit === 'monthly' || key === HOUSING_KEY ? 12 : 1)
-  const merchantDiv = () => (unit === 'monthly' ? 12 : 1)
-  const cents = (v: Record<string, number | null>, div: (k: string) => number) =>
-    Object.fromEntries(Object.entries(v).map(([k, c]) =>
-      [k, c === null ? null : Math.round(c / div(k))]))
-  const extras = (v: Record<string, (number | null)[]>, div: (k: string) => number) =>
-    Object.fromEntries(Object.entries(v).map(([k, arr]) =>
-      [k, arr.map((c) => (c === null ? null : Math.round(c / div(k))))]))
-  return {
-    categoryCents: cents(spend.categoryCents, gridDiv),
-    merchantCents: cents(spend.merchantCents, merchantDiv),
-    categoryExtraCents: extras(spend.categoryExtraCents, gridDiv),
-    merchantExtraCents: extras(spend.merchantExtraCents, merchantDiv),
   }
 }
 
