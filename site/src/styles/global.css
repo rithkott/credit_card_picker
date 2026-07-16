@@ -2092,22 +2092,45 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
   order: 2; font: 10.5px var(--mono); color: var(--faint); letter-spacing: normal;
 }
 .compare-catalog .manual-grid .tile-grid { padding: 6px 2px 12px; }
-/* Compare tiles: no ✓ box, so normal padding; ownership ring + corner tag in
-   the owner portfolio's color replace the single-accent selected state. */
+/* Compare tiles: no ✓ box, so normal padding; ownership ring + corner tags in
+   each owner portfolio's color replace the single-accent selected state. A
+   card in several portfolios wears one P-tag per owner (row of pills) and
+   owners 2–3 ring inward concentrically as ::after/::before inset borders
+   (inline box-shadow loses to the tile's neomorphic shadow transition);
+   --owner-color / the outline carry the first owner. --tags-w (inline, from
+   the owner count) keeps the exclude ✕ and title clear of the tag row. */
 .compare-catalog .card-tile.selectable { padding-left: 18px; }
 .card-tile.selectable.owned {
   outline: 2.5px solid var(--owner-color, var(--accent)); outline-offset: -2.5px;
 }
+.card-tile.selectable.owned::after,
+.card-tile.selectable.owned::before {
+  content: ''; position: absolute; pointer-events: none;
+  border: 2.5px solid var(--ring, transparent);
+}
+.card-tile.selectable.owned::after {
+  --ring: var(--owner-color-2, transparent);
+  inset: 2.5px; border-radius: calc(var(--r-tile) - 2.5px);
+}
+.card-tile.selectable.owned::before {
+  --ring: var(--owner-color-3, transparent);
+  inset: 5px; border-radius: calc(var(--r-tile) - 5px);
+}
 .card-tile.selectable.owned h3 { color: var(--owner-color, var(--accent)); }
-.tile-owner-tag {
+.tile-owner-tags {
   position: absolute; top: 9px; right: 9px; pointer-events: none;
+  display: flex; gap: 4px;
+}
+.tile-owner-tag {
   background: var(--owner-color, var(--accent)); color: var(--sh-light);
   font: 700 10px var(--mono); letter-spacing: 0.04em;
   padding: 3px 7px; border-radius: 999px;
 }
-/* The exclude ✕ shares the corner with the owner tag — slide it left. */
-.tile-wrap.owned .tile-x { top: 8px; right: 44px; }
-.tile-wrap.owned .card-tile.selectable h3 { padding-right: 48px; }
+/* The exclude ✕ shares the corner with the owner tags — slide it left. */
+.tile-wrap.owned .tile-x { top: 8px; right: calc(16px + var(--tags-w, 28px)); }
+.tile-wrap.owned .card-tile.selectable h3 {
+  padding-right: calc(20px + var(--tags-w, 28px) + 28px);
+}
 
 /* Results stack */
 .compare-results .compare-result { margin-top: 16px; }
