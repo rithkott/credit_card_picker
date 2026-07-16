@@ -1590,9 +1590,8 @@ footer.site nav a:hover { color: var(--ink); }
   display: grid; place-items: center;
   font: 700 13px var(--font); line-height: 1;
   color: var(--faint);
+  box-shadow: var(--inset-sm);
 }
-/* Only the selected tile shows a check badge; unselected shows nothing. */
-.reward-tile.active .reward-tile-check { box-shadow: none; }
 .reward-tile.active .reward-tile-check {
   color: var(--accent);
   background: #fff;
