@@ -2023,6 +2023,10 @@ button.btn-danger:hover { color: #fff; background: #a8241a; }
   padding: 6px 13px; border-radius: 999px;
   white-space: nowrap;
 }
+/* Narrow screens: the pill alone says where picks land — drop the hint. */
+@media (max-width: 520px) {
+  .catalog-head .lands, .catalog-head .lands-arrow { display: none; }
+}
 
 /* The compare catalog reuses ManualGrid, recessed a tone darker than the page
    surface. The shadow-pair vars are re-tuned locally so the tiles — and the

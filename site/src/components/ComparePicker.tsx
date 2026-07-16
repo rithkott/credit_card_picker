@@ -115,7 +115,7 @@ export function ComparePicker({ portfolios, excluded, onToggleCard, onAdd, onRem
           <span className="catalog-label">Card catalog</span>
           <span className="rule" />
           <span className="lands">Picks land in</span>
-          <span aria-hidden="true">→</span>
+          <span className="lands-arrow" aria-hidden="true">→</span>
           <span
             className="dest-pill"
             style={{ '--tray-color': PORT_COLORS[activeIdx] } as CSSProperties}
