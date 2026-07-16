@@ -891,7 +891,9 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
   font: 11px var(--mono); color: var(--faint); margin-top: -2px;
 }
 @media (max-width: 640px) {
-  .ladder { grid-template-columns: 1fr; }
+  /* minmax(0,…), not bare 1fr: a bare fr track floors at min-content, and the
+     nowrap portfolio names would push it (and the page) past the viewport. */
+  .ladder { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* ── Receipt panel ────────────────────────────────────────────────────── */
@@ -1303,6 +1305,11 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 }
 .earn-table td.val { color: var(--ink); font-weight: 700; }
 .earn-table td .note { display: block; color: var(--faint); font-size: 10.5px; }
+/* Keep the table inside the tile: the nowrap numeric columns set a hard
+   min-content floor, so let the label column break words first and scroll
+   as the last resort instead of painting past the card edge. */
+.slot-earn { overflow-x: auto; }
+.earn-table td:first-child { overflow-wrap: anywhere; }
 
 /* Dotted leader between a row's label and its amount. */
 .tile-lines .line .lead,
