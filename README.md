@@ -4,7 +4,7 @@
 
 Most card recommendation sites rank whatever pays them the highest commission, this tool tells you exactly which card is the best for you
 
-**Try it now: [creditcardpicker.vercel.app](https://creditcardpicker.vercel.app)** — no install, no clone, no account. Or run everything locally (see [Getting started](#getting-started)).
+**Try it now: [cardsharp.dev](https://cardsharp.dev)** — no install, no clone, no account. Or run everything locally (see [Getting started](#getting-started)).
 
 ## What it does
 
@@ -109,7 +109,7 @@ Fix every `ERROR`; staleness / low-confidence `WARN`ings are informational. See 
 
 ## Deployment
 
-Live at **https://creditcardpicker.vercel.app**. The site deploys to Vercel as a static Vite build plus one Python serverless function running the exact same `server/app.py` (via the `api/index.py` shim — the API has one definition everywhere). `vercel.json` carries the whole config: build commands, SPA rewrites, and the function's `excludeFiles`; root `requirements.txt` lists the function's dependencies.
+Live at **https://cardsharp.dev**. The site deploys to Vercel as a static Vite build plus one Python serverless function running the exact same `server/app.py` (via the `api/index.py` shim — the API has one definition everywhere). `vercel.json` carries the whole config: build commands, SPA rewrites, and the function's `excludeFiles`; root `requirements.txt` lists the function's dependencies.
 
 Deploys happen automatically via Vercel's git integration on push. For manual deploys:
 

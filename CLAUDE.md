@@ -10,7 +10,7 @@ Multiple Claude Code sessions work this repo in parallel. The process below is c
 
 **Branching**
 - Every change is developed on a git worktree branched from **remote** main: `git fetch origin main && git worktree add .claude/worktrees/<branch> -b <branch> origin/main`.
-- `main` is the only long-lived branch. It is the branch Vercel deploys to production (https://creditcardpicker.vercel.app). Never push work-in-progress directly to `main`.
+- `main` is the only long-lived branch. It is the branch Vercel deploys to production (https://cardsharp.dev). Never push work-in-progress directly to `main`.
 - No dedicated dev/preview branch: Vercel's git integration builds a preview deployment for every pushed non-`main` branch — that preview URL is the staging environment.
 
 **Preview → production**
