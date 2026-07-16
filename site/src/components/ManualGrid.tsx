@@ -101,7 +101,9 @@ export function ManualGrid({ selected, excluded, onToggle, onToggleExclude, owne
         <section className={ownerOf ? 'issuer-group' : 'block issuer-group'} key={issuer}>
           <h2>
             {issuerLabel(issuer)}
-            {ownerOf && <span className="count">{cards.length} cards</span>}
+            {ownerOf && (
+              <span className="count">{cards.length} card{cards.length === 1 ? '' : 's'}</span>
+            )}
           </h2>
           <div className="tile-grid">
             {cards.map((c) => {
