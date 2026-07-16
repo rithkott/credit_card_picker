@@ -86,11 +86,10 @@ export function StatementImport({ config, onApply }: {
         </span>
       </div>
       <p className="why">
-        Drop in statements from your bank and we&apos;ll spot the services you already pay
-        for — Delta, Uber, streaming — that unlock card credits in the questionnaire below.
-        Each file is parsed by our server in memory and immediately discarded; only the
-        matched services come back, never your full transaction list. Your spending amounts
-        are entered by hand in the form below.
+        Drop in bank statements — we&apos;ll spot services you already pay for that{' '}
+        <strong>unlock card credits</strong> below.{' '}
+        <strong className="why-emph">Files are parsed in memory and never stored</strong>{' '}
+        — only matched services come back.
       </p>
 
       {state.phase !== 'applied' && (
@@ -135,8 +134,8 @@ export function StatementImport({ config, onApply }: {
             />
           ) : (
             <p className="why">
-              No benefit-relevant services spotted in these statements — nothing to
-              confirm. Fill in the questionnaire below by hand.
+              <strong>No benefit-relevant services found.</strong> Fill in the
+              questionnaire below by hand.
             </p>
           )}
           <div className="runbar inline">

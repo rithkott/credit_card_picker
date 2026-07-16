@@ -50,9 +50,8 @@ export function UsageQuestionnaire({ config, confirmed, onToggle }: {
       <SectionIcon name="usage" />
       <h2>Things you already use (or would)</h2>
       <p className="why">
-        Card credits for these services only count if you'd actually use them.
-        Anything unchecked is valued at $0 — so the results never assume habits you
-        don't have.
+        Card credits only count if you'd <strong>actually use them</strong>. Anything
+        unchecked is worth <strong className="why-emph">$0</strong>.
       </p>
       <div className="ug-grid">
         {config.usage_questions

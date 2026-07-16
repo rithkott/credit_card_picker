@@ -44,10 +44,10 @@ export function RewardPreferences({ config, kinds, onChange }: {
       <SectionIcon name="rewards" />
       <h2>What rewards do you want to prioritize?</h2>
       <p className="why">
-        Check all that apply — checking both means every kind of value counts. Checking
-        points also tells us you take travel value, so airline and hotel perks count
-        without you naming a brand. Points are usually worth more than cash back when
-        redeemed directly for flights and hotel stays.
+        Check all that apply. Picking <strong>points</strong> also counts airline and
+        hotel perks — no brand needed.{' '}
+        <strong className="why-emph">Points usually beat cash back</strong> on flights
+        and hotels.
       </p>
       <div
         className="reward-tiles"
