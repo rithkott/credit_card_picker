@@ -1,0 +1,100 @@
+# $0-fee capped-5% business workhorse: office supplies + telecom on one $25k
+# pool, gas + dining on a second $25k pool. UR-denominated cash back —
+# transferable only via a gateway (Ink Preferred in portfolio, or a personal
+# Sapphire per the profile).
+id: ink-business-cash
+name: Chase Ink Business Cash
+issuer: chase
+network: visa
+currency:
+  type: points               # UR points redeemable 1cpp cash; partners via gateway
+  program: chase_ur
+base_rate: 1
+
+category_rewards:
+  - category: office_supplies
+    rate: 5                  # "5% Cash Back on Business Essentials on $25K max combined spend" (chase.com compare page, verified 2026-07-16)
+    cap:
+      period: annual
+      max_spend_usd: 25000
+      fallback_rate: 1
+      shared_cap_id: essentials_25k
+  - category: telecom
+    rate: 5                  # internet/cable/phone services share the office-supply $25k pool
+    cap:
+      period: annual
+      max_spend_usd: 25000
+      fallback_rate: 1
+      shared_cap_id: essentials_25k
+  - category: fuel_fleet
+    rate: 2                  # "2% cash back at gas stations and restaurants on the first $25,000 combined" (separate pool)
+    cap:
+      period: annual
+      max_spend_usd: 25000
+      fallback_rate: 1
+      shared_cap_id: gas_dining_25k
+  - category: dining
+    rate: 2
+    cap:
+      period: annual
+      max_spend_usd: 25000
+      fallback_rate: 1
+      shared_cap_id: gas_dining_25k
+
+merchant_rewards: []
+credits: []
+
+signup_bonus:
+  value:
+    usd: 750                 # "$750 bonus cash back after $6,000 in first 3 months" — figure NOT re-verified this session, NEEDS human verification
+  spend_requirement_usd: 6000
+  window_months: 3
+  notes: >-
+    Offer figure drafted from the Chase business compare page as of 2026-07;
+    exact current amount/requirement NEEDS human verification.
+
+pricing:
+  model: annual_fee
+  annual_fee_usd: 0
+  foreign_transaction_pct: 3  # standard on no-fee Inks — NOT stated on compare page, NEEDS human verification
+
+business_approval:
+  personal_guarantee: true
+  min_personal_fico_tier: good
+  entity_types: [sole_prop, llc, corp]
+  notes: >-
+    SSN application with personal guarantee; sole proprietors qualify without an
+    EIN. Chase 5/24 applies to the APPLICATION (must be under 5/24) but the card
+    does not add to the count once opened (issuer-rules: chase). Tier estimate
+    NEEDS human verification.
+
+employee_cards:
+  fee_usd: 0                 # "Employee Cards at no additional cost" (chase.com compare page, verified 2026-07-16)
+  controls: [spending_limits]
+  note: Individual per-employee spending limits set by the primary account holder.
+
+payment_type: revolving
+
+benefit_flags: []
+
+sources:
+  - url: https://creditcards.chase.com/business-credit-cards
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, pricing, business_approval, employee_cards, payment_type]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: >-
+      Compare page quotes "5% Cash Back on Business Essentials on $25K max
+      combined spend" and free employee cards (cap structure verified 3-0 in the
+      plan 21 research pass). SUB amount, FTF, and approval tier are drafts —
+      NEEDS human verification against the full product page.
+
+notes: >-
+  Plan 22A seed card. Two independent $25k combined pools (business essentials;
+  gas + dining) exercise shared_cap_id. Cash-back-tier UR: points are 1cpp until
+  pooled with a UR gateway — Ink Business Preferred in the portfolio, or a
+  personal Sapphire recorded in the profile (personal.premium_cards_held).
+
+verification:
+  last_verified_date: "2026-07-16"
+  verified_by: "claude-fable-5 (AI draft; cap structure research-verified) — NEEDS human verification"
+  confidence: low

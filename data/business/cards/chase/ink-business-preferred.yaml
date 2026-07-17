@@ -1,0 +1,90 @@
+# $95 business points card: 3x on travel + the ad/shipping/telecom business
+# trio, one combined $150k annual pool. THE business-side UR transfer gateway.
+id: ink-business-preferred
+name: Chase Ink Business Preferred
+issuer: chase
+network: visa
+currency:
+  type: points
+  program: chase_ur
+base_rate: 1
+unlocks_transfers: true      # premium UR card: unlocks transfer partners for every UR card in the portfolio
+
+category_rewards:
+  - category: travel_flights
+    rate: 3                  # "3X on Travel and Business categories on $150K combined spend" (chase.com compare page, verified 2026-07-16)
+    cap: &pool150k
+      period: annual
+      max_spend_usd: 150000
+      fallback_rate: 1
+      shared_cap_id: preferred_150k
+  - category: travel_hotels
+    rate: 3
+    cap: *pool150k
+  - category: travel_other
+    rate: 3
+    cap: *pool150k
+  - category: advertising
+    rate: 3                  # social-media & search-engine advertising
+    cap: *pool150k
+  - category: shipping
+    rate: 3
+    cap: *pool150k
+  - category: telecom
+    rate: 3                  # internet, cable, phone services
+    cap: *pool150k
+
+merchant_rewards: []
+credits: []
+
+signup_bonus:
+  value:
+    points: 90000            # "90k points after $8,000 in 3 months" — figure NOT re-verified this session, NEEDS human verification
+  spend_requirement_usd: 8000
+  window_months: 3
+  notes: >-
+    Offer figure drafted from memory of the standard 2026 offer; exact current
+    amount/requirement NEEDS human verification.
+
+pricing:
+  model: annual_fee
+  annual_fee_usd: 95         # chase.com compare page, verified 2026-07-16
+  foreign_transaction_pct: 0
+
+business_approval:
+  personal_guarantee: true
+  min_personal_fico_tier: very_good
+  entity_types: [sole_prop, llc, corp]
+  notes: >-
+    SSN application with personal guarantee. Chase 5/24 applies to the
+    application; the card does not add to the count once opened. Tier estimate
+    NEEDS human verification.
+
+employee_cards:
+  fee_usd: 0
+  controls: [spending_limits]
+
+payment_type: revolving
+
+benefit_flags: [cell_phone_protection]
+
+sources:
+  - url: https://creditcards.chase.com/business-credit-cards
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, pricing, business_approval, employee_cards, payment_type, benefit_flags]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: >-
+      Compare page quotes "3X on Travel and Business categories on $150K
+      combined spend" and the $95 fee (verified 3-0 in the plan 21 research
+      pass). SUB figure, FTF, and approval tier are drafts — NEEDS human
+      verification against the full product page.
+
+notes: >-
+  Plan 22A seed card. Single six-category $150k combined pool exercises a wide
+  shared_cap_id group; unlocks_transfers makes this the business-side gateway
+  that upgrades Ink Cash/Unlimited points to transfer-partner value.
+
+verification:
+  last_verified_date: "2026-07-16"
+  verified_by: "claude-fable-5 (AI draft; cap structure research-verified) — NEEDS human verification"
+  confidence: low

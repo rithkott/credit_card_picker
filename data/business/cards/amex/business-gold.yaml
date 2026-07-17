@@ -1,0 +1,99 @@
+# $375 adaptive-category points card: 4x on the business's TOP TWO eligible
+# categories each cycle, $150k/yr combined cap. The adaptive_top_n seed.
+id: business-gold
+name: American Express Business Gold Card
+issuer: amex
+network: amex
+currency:
+  type: points
+  program: amex_mr
+base_rate: 1
+
+category_rewards: []         # all elevated earning is the adaptive top-2 block
+merchant_rewards: []
+
+adaptive_top_n:
+  n: 2
+  rate: 4                    # "4X on the top two eligible categories where your business spends the most each billing cycle" (NerdWallet review, verified 2026-07-17)
+  eligible_categories:       # Amex's six-category menu mapped to the business enum
+    - advertising            # online/TV/radio advertising at US media providers
+    - software_saas          # US electronic goods retailers, software & cloud system providers
+    - fuel_fleet             # US gas stations
+    - dining                 # US restaurants incl. takeout/delivery
+    - transit                # rideshare, trains, taxis, parking, tolls
+    - telecom                # monthly wireless phone service from US providers
+  cap:
+    period: annual
+    max_spend_usd: 150000    # "first $150,000 in combined purchases from these categories each calendar year (then 1X)" (NerdWallet review, verified 2026-07-17)
+    fallback_rate: 1
+  note: >-
+    Amex selects the top two categories automatically each billing cycle; the
+    optimizer models it deterministically as the profile's two highest-spend
+    eligible categories.
+
+credits: []                  # the flexible business credit (FedEx/Grubhub/office supply) was not re-verified this session — add during 22B with a source
+
+signup_bonus:
+  value:
+    points: 100000           # "100k points after $15,000 in 3 months" — figure NOT re-verified this session, NEEDS human verification
+  spend_requirement_usd: 15000
+  window_months: 3
+  notes: >-
+    Offer figure drafted from memory of the standard 2026 offer; NEEDS human
+    verification. Amex once-per-lifetime bonus rule applies (issuer-rules: amex).
+
+pricing:
+  model: annual_fee
+  annual_fee_usd: 375        # NerdWallet review, verified 2026-07-17
+  foreign_transaction_pct: 0
+
+business_approval:
+  personal_guarantee: true
+  min_personal_fico_tier: very_good
+  entity_types: [sole_prop, llc, corp]
+  notes: >-
+    SSN application with personal guarantee. Counts toward the Amex five-card
+    policy only as a charge-lineage product (exempt — see payment_type). Tier
+    estimate NEEDS human verification.
+
+employee_cards:
+  fee_usd: 95                # $95 per employee Business Gold — plan 21 research figure, NEEDS human verification
+  free_expense_card_variant: true
+  max_cards: 99
+  controls: [spending_limits, mcc_restrictions, realtime_alerts, card_freeze]
+  note: >-
+    No-annual-fee Employee Business Expense Cards are also available; the paid
+    employee Gold carries the card's own benefits. V1 scores fee_usd per seat.
+
+payment_type: charge         # charge lineage: pay in full (Pay Over Time optional); exempt from the Amex 5-credit-card limit
+
+benefit_flags: []
+
+sources:
+  - url: https://www.nerdwallet.com/reviews/credit-cards/american-express-business-gold
+    supports: [identity, currency, base_rate, adaptive_top_n, signup_bonus, pricing, business_approval, payment_type]
+    accessed: "2026-07-17"
+    added_by: claude-fable-5
+    note: >-
+      $375 fee, 4X top-two structure, six eligible categories, and the $150k
+      calendar-year cap confirmed against this review 2026-07-17. SUB figure,
+      employee-card fee, and approval tier are drafts — NEEDS human
+      verification against americanexpress.com terms.
+  - url: https://www.americanexpress.com/en-us/business/blueprint/help-center/business-card/employee-cards/
+    supports: [employee_cards]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: >-
+      99-card limit and employee-spend pooling to the primary account (research
+      pass, 3-0 verified for pooling). Per-card $95 fee NEEDS human verification.
+
+notes: >-
+  Plan 22A seed card: exercises adaptive_top_n (unique mechanic — no consumer
+  equivalent) and a paid employee-card fee. Amex wireless/electronics category
+  mappings are curator judgment calls: 'electronic goods retailers, software &
+  cloud' → software_saas; 'wireless phone service' → telecom.
+
+verification:
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 (AI draft; fee/4X/cap verified vs NerdWallet) — NEEDS human verification"
+  confidence: low

@@ -1,0 +1,54 @@
+# Issuer application-rule registry (plan 22) — the backbone of the FULL
+# personal/business interaction model. Cards inherit their issuer's rules via
+# the card's `issuer` slug (every business-card issuer directory must have an
+# entry here — validator-enforced).
+#
+# Fields (all optional per issuer; absent = rule doesn't apply):
+#   gate_524: true            — applicant must be UNDER 5/24 (fewer than five
+#                               personal-card openings in 24 months) for likely
+#                               approval. The optimizer excludes this issuer's
+#                               cards when profile personal.five24_count >= 5.
+#   adds_to_524: true         — this issuer's BUSINESS cards report to the
+#                               owner's personal credit, so opening one adds to
+#                               the 5/24 count (Capital One most, Discover, TD).
+#                               false/absent = does not add (Chase, Amex, Citi).
+#   adds_to_524_exceptions: [] — card ids exempt from adds_to_524 (Capital One
+#                               Venture X Business, Spark Cash Plus).
+#   credit_card_limit: 5      — max cards held as primary with this issuer,
+#                               shared across personal + business (Amex). The
+#                               optimizer constrains: recommended REVOLVING
+#                               cards from this issuer + profile
+#                               personal.amex_credit_cards <= limit.
+#   charge_exempt: true       — payment_type: charge cards don't count toward
+#                               credit_card_limit (Amex charge lineage).
+#   once_per_lifetime_bonus: true — welcome bonus once per product per person;
+#                               surfaced as an application note, not modeled.
+#   velocity_note: "..."      — application-pacing rule, surfaced verbatim in
+#                               results application_notes (informational only —
+#                               sequencing is presentation, never a portfolio
+#                               constraint, plan 22).
+#
+# Sources: plan 21 research (TPG 5/24 guide, Upgraded Points bank rules,
+# One Mile at a Time Amex limits) — rule details NEED human verification like
+# any card data; they are curator-recorded conventions, not issuer-published.
+
+issuers:
+  chase:
+    gate_524: true
+    velocity_note: "Chase reportedly approves at most ~2 new accounts per 30 days; space applications 3-4 months apart."
+  amex:
+    credit_card_limit: 5
+    charge_exempt: true
+    once_per_lifetime_bonus: true
+  capital-one:
+    adds_to_524: true
+    adds_to_524_exceptions: [venture-x-business, spark-cash-plus]
+    velocity_note: "Capital One approves at most 1 new card per 6 months, counted across personal + business."
+  citi:
+    velocity_note: "Citi allows 1 business-card application per 95 days."
+  us-bank: {}
+  bank-of-america: {}
+  wells-fargo: {}
+  ramp: {}
+  brex: {}
+  bill: {}

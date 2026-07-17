@@ -1,0 +1,47 @@
+# Business point-valuation table (plan 22). Same contract and semantics as the
+# consumer data/meta/point-valuations.yaml: floor_cpp (guaranteed cash-out or
+# most conservative realistic redemption), optimistic_cpp (transfer-partner /
+# portal upside), engaged-average pricing, redeems_for classification,
+# transfer_gateway_required and loyalty_keys gates.
+#
+# COPY, NOT SHARED (plan 22): programs that also exist in the consumer table
+# (chase_ur, amex_mr, capital_one_miles) are copied with IDENTICAL values —
+# UR is UR regardless of which card earned it. scripts/validate_business_cards.py
+# WARNS when a program key present in both files disagrees on floor_cpp /
+# optimistic_cpp, so drift is caught without coupling the datasets.
+#
+# The FULL personal/business interaction model matters here: chase_ur keeps
+# transfer_gateway_required — cash-back-tier Inks (Ink Cash / Ink Unlimited)
+# reach transfer partners only via a gateway card, which can be a BUSINESS
+# gateway in the portfolio (Ink Business Preferred, unlocks_transfers: true)
+# or a PERSONAL Sapphire the user already holds (profile
+# personal.premium_cards_held — resolved by the optimizer, plan 22).
+#
+# Programs are added here only when a curated card needs them (22B adds
+# co-brand and fintech programs alongside their cards).
+
+programs:
+  cash:
+    label: Cash back
+    redeems_for: [cashback]
+    floor_cpp: 1.0
+    optimistic_cpp: 1.0
+
+  chase_ur:
+    label: Chase Ultimate Rewards
+    redeems_for: [cashback, flights, hotels]
+    transfer_gateway_required: true  # Ink Cash/Unlimited points reach partners only when
+                                     # pooled with a gateway (Ink Business Preferred, or a
+                                     # personal Sapphire held per the profile)
+    floor_cpp: 1.0          # cash out / statement credit — same as consumer table
+    optimistic_cpp: 2.0     # transfer partners — same as consumer table
+  amex_mr:
+    label: American Express Membership Rewards
+    redeems_for: [cashback, flights, hotels]
+    floor_cpp: 0.6          # statement-credit rate is poor — same as consumer table
+    optimistic_cpp: 1.9     # airline transfer partners — same as consumer table
+  capital_one_miles:
+    label: Capital One Miles
+    redeems_for: [cashback, flights, hotels]
+    floor_cpp: 0.5          # cash-out 0.5; 1.0 as travel eraser — same as consumer table
+    optimistic_cpp: 1.7     # transfer partners — same as consumer table

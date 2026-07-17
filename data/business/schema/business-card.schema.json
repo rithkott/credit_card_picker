@@ -1,0 +1,389 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "business-card.schema.json",
+  "title": "Business Credit Card",
+  "description": "One hand-curated BUSINESS credit card (plan 22). Rates are in earn-units per dollar, valued via data/business/meta/point-valuations.yaml. Forked from the consumer card schema: the FICO approval block is replaced by business_approval (entity/guarantee/cash/revenue underwriting), fees by pricing (annual-fee vs per-seat SaaS models), and business-specific mechanics are added (employee_cards, adaptive_top_n, min_transaction_usd, payment_type, pooling, integrations). Registry membership is enforced by scripts/validate_business_cards.py, not by this schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "issuer", "network", "currency", "base_rate", "category_rewards", "merchant_rewards", "credits", "signup_bonus", "pricing", "business_approval", "employee_cards", "payment_type", "benefit_flags", "sources", "verification"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Stable slug, must match the filename (without .yaml)"
+    },
+    "name": { "type": "string", "minLength": 1 },
+    "issuer": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Issuer slug, must match the parent directory name and exist in data/business/meta/issuer-rules.yaml"
+    },
+    "network": { "enum": ["visa", "mastercard", "amex", "discover"] },
+    "availability": {
+      "enum": ["active", "discontinued"],
+      "default": "active",
+      "description": "Same semantics as the consumer schema: discontinued cards are excluded from Auto recommendations but stay scorable in manual mode"
+    },
+    "currency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "program"],
+      "properties": {
+        "type": { "enum": ["cash", "points"] },
+        "program": {
+          "type": "string",
+          "description": "Key into data/business/meta/point-valuations.yaml (use 'cash' for cash-back cards)"
+        }
+      }
+    },
+    "base_rate": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Catch-all earn rate applied to spend not matched by any category/merchant reward or adaptive_top_n line"
+    },
+    "portal": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9]+(_[a-z0-9]+)*$",
+      "description": "Issuer travel-portal slug (amex_travel, chase_travel, capital_one_travel) named in portal-rate notes. Required by the validator when any category reward or credit is portal_only. Free-form slug — the business dataset has no statement-descriptors registry (no statement parsing, plan 22)"
+    },
+    "unlocks_transfers": {
+      "type": "boolean",
+      "description": "true = holding this card unlocks its program's transfer partners for every same-program card in the scored portfolio (Ink Business Preferred for UR). Only on programs marked transfer_gateway_required in point-valuations.yaml (validator-enforced). The FULL personal/business interaction model (plan 22) also lets a PERSONAL gateway card from the profile (personal.premium_cards_held) unlock these programs — that mapping lives in the optimizer, not card data"
+    },
+    "max_annual_rewards_usd": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Card-wide cap on total reward value earnable per year, in USD. Omit when uncapped"
+    },
+    "category_rewards": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/categoryReward" }
+    },
+    "merchant_rewards": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/merchantReward" }
+    },
+    "adaptive_top_n": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["n", "rate", "eligible_categories", "cap", "note"],
+      "description": "Amex Business Gold mechanic: the card's top n eligible categories by the cardholder's own spend earn `rate`, everything else falls to base_rate. Deterministic given a spend profile — the optimizer picks the user's n highest-spend eligible categories and materializes them as capped category lines. At most one per card; a card with adaptive_top_n may not also list any of its eligible_categories in category_rewards (validator-enforced)",
+      "properties": {
+        "n": { "type": "integer", "minimum": 1, "description": "How many top categories earn the elevated rate (Amex Business Gold: 2)" },
+        "rate": { "type": "number", "exclusiveMinimum": 0 },
+        "eligible_categories": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string", "description": "Key from data/business/meta/categories.yaml" },
+          "description": "The fixed menu the top-n selection draws from; must have more entries than n"
+        },
+        "cap": { "$ref": "#/$defs/cap" },
+        "note": { "type": "string", "minLength": 1, "description": "Issuer's own wording of the selection mechanic (per-cycle vs calendar-year selection, etc.)" }
+      }
+    },
+    "large_purchase_rate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rate", "min_transaction_usd", "note"],
+      "description": "Category-AGNOSTIC elevated rate on individual purchases of at least min_transaction_usd, in any category (Amex Business Platinum 2x on $5k+ purchases; Ink Premier 2.5% on $5k+). Distinct from a category line's min_transaction_usd, which stays within its category. The optimizer earns this rate on each bucket's spend × the profile's large_txn_share when it beats the bucket's best category line; cap may share a pool with category lines via shared_cap_id (Amex $2M pool spans both). Rate must exceed base_rate (validator-enforced)",
+      "properties": {
+        "rate": { "type": "number", "exclusiveMinimum": 0 },
+        "min_transaction_usd": { "type": "number", "exclusiveMinimum": 0 },
+        "cap": { "$ref": "#/$defs/cap" },
+        "note": { "type": "string", "minLength": 1 }
+      }
+    },
+    "credits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "period", "realistic_capture_rate_note"],
+        "oneOf": [
+          { "required": ["amount_usd"], "not": { "required": ["amount_points"] } },
+          { "required": ["amount_points"], "not": { "required": ["amount_usd"] } }
+        ],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "kind": {
+            "enum": ["statement_credit", "in_kind"],
+            "default": "statement_credit",
+            "description": "Same semantics as the consumer schema: in_kind = curator-estimated non-cash benefit, always haircut"
+          },
+          "amount_usd": { "type": "number", "exclusiveMinimum": 0 },
+          "amount_points": { "type": "number", "exclusiveMinimum": 0, "description": "Points granted per period instead of USD. Points cards only" },
+          "period": { "enum": ["monthly", "quarterly", "semiannual", "annual", "every_4_years", "every_5_years"] },
+          "category": { "type": "string", "description": "Optional business category this credit offsets (key from categories.yaml)" },
+          "usage_keys": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" },
+            "description": "Usage-question item keys (data/business/meta/usage-questions.yaml), anyOf semantics — the credit is $0 unless the user confirmed at least one (Dell credit is worthless to a company that doesn't buy Dell)"
+          },
+          "automatic": {
+            "type": "boolean",
+            "description": "true = pays with no merchant-specific action (anniversary-style). Mutually exclusive with usage_keys and category; every credit must carry at least one of the three (validator-enforced, same as consumer)"
+          },
+          "unlock_spend_usd": { "type": "number", "exclusiveMinimum": 0 },
+          "requires_enrollment": { "type": "boolean" },
+          "portal_only": { "type": "boolean", "default": false, "description": "Redeemable only through the issuer's travel portal — requires the card-level portal key" },
+          "expires": { "type": "string", "format": "date", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+          "realistic_capture_rate_note": { "type": "string", "minLength": 1 },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "signup_bonus": {
+      "description": "null when the card has no current public signup bonus. Business SUBs are large; spend feasibility is checked against company spend routed to the card, honoring employee_cards.spend_counts_toward_bonus",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value", "spend_requirement_usd", "window_months"],
+          "properties": {
+            "value": { "$ref": "#/$defs/bonusValue" },
+            "spend_requirement_usd": { "type": "number", "minimum": 0 },
+            "window_months": { "type": "number", "exclusiveMinimum": 0 },
+            "tiers": {
+              "type": "array",
+              "minItems": 1,
+              "description": "Additional tranches at higher CUMULATIVE spend in the same window; requirements must exceed the base and strictly ascend (validator-enforced)",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["value", "spend_requirement_usd"],
+                "properties": {
+                  "value": { "$ref": "#/$defs/bonusValue" },
+                  "spend_requirement_usd": { "type": "number", "exclusiveMinimum": 0 }
+                }
+              }
+            },
+            "limited_time": { "type": "boolean" },
+            "expires": { "type": "string", "format": "date", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+            "notes": { "type": "string" }
+          }
+        }
+      ]
+    },
+    "pricing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model", "foreign_transaction_pct"],
+      "description": "Cost model. annual_fee = traditional per-card annual fee. per_seat = fintech SaaS pricing (Ramp/Brex/Divvy): the CARD costs nothing at the free tier — the optimizer scores $0 with the paid tier disclosed via per_seat_monthly_usd + platform_fee_note (paid tiers buy software, not card economics; plan 21 §6)",
+      "properties": {
+        "model": { "enum": ["annual_fee", "per_seat"] },
+        "annual_fee_usd": { "type": "number", "minimum": 0, "description": "Required when model is annual_fee (validator-enforced)" },
+        "first_year_waived": { "type": "boolean", "default": false },
+        "fee_refund_spend_usd": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Annual card spend at which the issuer refunds the annual fee (Spark Cash Plus: $150 back at $150k). The optimizer refunds the fee when spend routed to the card reaches this"
+        },
+        "per_seat_monthly_usd": { "type": "number", "minimum": 0, "description": "Paid-tier price per user per month (disclosure only when a $0 free tier exists)" },
+        "free_tier": { "type": "boolean", "description": "per_seat cards: true when a $0 tier exists covering card issuance + basic controls (Ramp, Brex Essentials). Scored at $0; required for per_seat in V1 (the optimizer has no paid-tier scoring yet — validator-enforced)" },
+        "platform_fee_note": { "type": "string", "description": "What the paid tier adds and any platform fee (Ramp Plus $15/user/mo + platform fee)" },
+        "foreign_transaction_pct": { "type": "number", "minimum": 0 }
+      }
+    },
+    "business_approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["personal_guarantee", "entity_types"],
+      "description": "Replaces the consumer FICO approval block (plan 21 §4). Business eligibility = entity type + guarantee model + business-financial thresholds. Issuers don't publish cutoffs — curator estimates, reasoning in notes.",
+      "properties": {
+        "personal_guarantee": {
+          "type": "boolean",
+          "description": "true = owner personally guarantees the debt (SSN application, personal credit pulled) — tier 1/2 issuer cards. false = EIN-anchored corporate liability (Ramp/Brex/Divvy)"
+        },
+        "min_personal_fico_tier": {
+          "enum": ["good", "very_good", "excellent"],
+          "description": "Owner's personal credit needed for likely approval. Only meaningful (and only allowed) when personal_guarantee is true (validator-enforced)"
+        },
+        "entity_types": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "enum": ["sole_prop", "llc", "corp"] },
+          "description": "Entity types the issuer accepts. Sole props qualify for most tier-1 cards with SSN only; fintech corporate cards typically require llc/corp + EIN"
+        },
+        "requires_ein": { "type": "boolean", "default": false },
+        "min_cash_balance_usd": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Minimum linked business-bank balance for approval (Ramp $25k, Divvy $20k, Brex ~$50k funded-startup path)"
+        },
+        "min_annual_revenue_usd": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Minimum annual revenue path, when the issuer publishes one (Brex $500k). When both cash and revenue paths exist, satisfying EITHER qualifies (validator allows both present)"
+        },
+        "funding_qualifies": {
+          "type": "boolean",
+          "description": "true when institutional equity funding satisfies underwriting in place of cash/revenue thresholds (Brex)"
+        },
+        "notes": { "type": "string", "description": "Issuer-specific approval rules worth knowing (5/24 applies to applications, once-per-lifetime bonus, US-incorporation requirements)" }
+      }
+    },
+    "employee_cards": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fee_usd"],
+      "description": "Employee-card economics (plan 21 §3). Employee spend pools to the central account at normal rates, so it is just company spend; what varies per card is the per-seat fee and controls. The optimizer charges employee_card_seats × fee_usd as an ongoing cost (0 when free).",
+      "properties": {
+        "fee_usd": { "type": "number", "minimum": 0, "description": "Annual fee per employee card ($0 Chase/Capital One, $95 Amex Business Gold, $400 Employee Business Platinum)" },
+        "free_expense_card_variant": {
+          "type": "boolean",
+          "description": "true when a $0 employee-card variant exists alongside a paid one (Amex Employee Business Expense Cards). V1 optimizer still charges fee_usd — the free variant is a disclosure, since its benefits differ; note the tradeoff in notes"
+        },
+        "max_cards": { "type": "integer", "exclusiveMinimum": 0, "description": "Issuer cap on employee cards per account (Amex 99). Omit when unpublished" },
+        "spend_counts_toward_bonus": {
+          "type": "boolean",
+          "default": true,
+          "description": "false when employee-card spend is excluded from signup-bonus spend requirements (US Bank Triple Cash). V1: recorded and surfaced as a note; feasibility still uses total spend (no owner/employee split in the profile)"
+        },
+        "controls": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["spending_limits", "mcc_restrictions", "realtime_alerts", "preswipe_policy", "card_freeze"] },
+          "description": "Spend-control features, unscored — surfaced as UI badges. preswipe_policy = policy enforced before the transaction completes (Ramp/Brex)"
+        },
+        "note": { "type": "string" }
+      }
+    },
+    "payment_type": {
+      "enum": ["revolving", "charge"],
+      "description": "revolving = balance can be carried at interest (most tier-1 issuer cards). charge = pay in full each cycle (Amex charge lineage, Spark Cash Plus, all fintech corporate cards). Charge cards are exempt from the Amex 5-credit-card limit (issuer-rules.yaml charge_exempt)"
+    },
+    "pooling": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["program_combinable", "note"],
+      "description": "Only for cards that BREAK their program's normal pooling (Ink Business Premier: UR-denominated but cannot combine with other Chase cards or transfer to partners). Omit for normal cards — omission means the program's standard pooling applies.",
+      "properties": {
+        "program_combinable": { "const": false },
+        "note": { "type": "string", "minLength": 1 }
+      }
+    },
+    "integrations": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "enum": ["quickbooks", "netsuite", "xero", "sage_intacct", "expensify", "partner_integrations"] },
+      "description": "Native accounting/ERP integrations (plan 21 §6) — unscored in V1, surfaced as badges and filterable in the UI. partner_integrations = connects only via third-party connectors (Amex)"
+    },
+    "virtual_cards": {
+      "type": "boolean",
+      "description": "true = issuer supports virtual card numbers on this product (fintech tier: unlimited). Unscored, UI badge"
+    },
+    "float_days": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["grace_days", "note"],
+      "description": "Working-capital float (plan 21 §6): days between purchase and payment due beyond the cycle close. Reported per portfolio (average weighted by assigned spend), never scored in V1.",
+      "properties": {
+        "grace_days": { "type": "integer", "minimum": 0, "description": "Grace period after statement close (typically 21-25 for revolving, issuer-defined for charge)" },
+        "note": { "type": "string", "minLength": 1 }
+      }
+    },
+    "benefit_flags": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z0-9]+(_[a-z0-9]+)*$" },
+      "description": "Binary attributes (lounge_access, cell_phone_protection, primary_rental_insurance) — not scored in V1"
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Same provenance contract as the consumer schema: exact links pasted at the moment a fact enters the file, each declaring which blocks it supports.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["url", "supports", "accessed", "added_by"],
+        "properties": {
+          "url": { "type": "string", "pattern": "^https://" },
+          "supports": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "enum": ["identity", "currency", "base_rate", "category_rewards", "merchant_rewards", "adaptive_top_n", "large_purchase_rate", "credits", "signup_bonus", "pricing", "business_approval", "employee_cards", "payment_type", "pooling", "integrations", "float_days", "benefit_flags"]
+            }
+          },
+          "accessed": { "type": "string", "format": "date", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+          "added_by": { "type": "string", "minLength": 1 },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["last_verified_date", "verified_by", "confidence"],
+      "properties": {
+        "last_verified_date": { "type": "string", "format": "date", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "verified_by": { "type": "string", "minLength": 1 },
+        "confidence": {
+          "enum": ["high", "medium", "low"],
+          "description": "high = checked against issuer terms; medium = reputable secondary source; low = drafted, needs human verification"
+        }
+      }
+    },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "cap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["period", "max_spend_usd", "fallback_rate"],
+      "properties": {
+        "period": { "enum": ["monthly", "quarterly", "annual"] },
+        "max_spend_usd": { "type": "number", "exclusiveMinimum": 0 },
+        "fallback_rate": { "type": "number", "minimum": 0, "description": "Earn rate on spend above the cap" },
+        "shared_cap_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(_[a-z0-9]+)*$",
+          "description": "Combined-pool marker, same as the consumer schema — business caps are USUALLY combined across categories (Ink Cash: 5% office supply + telecom on ONE $25k pool; Ink Preferred: 3x across four categories on ONE $150k pool). Every entry with the same id states the identical full pool (period + max_spend_usd); the optimizer drains one pool across them"
+        }
+      }
+    },
+    "bonusValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "At least one of points / usd; both for mixed bonuses",
+      "minProperties": 1,
+      "properties": {
+        "points": { "type": "number", "exclusiveMinimum": 0 },
+        "usd": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "categoryReward": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["category", "rate"],
+      "properties": {
+        "category": { "type": "string", "description": "Key from data/business/meta/categories.yaml" },
+        "rate": { "type": "number", "minimum": 0 },
+        "cap": { "$ref": "#/$defs/cap" },
+        "min_transaction_usd": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "The rate applies only to INDIVIDUAL purchases of at least this size (Amex Business Platinum 2x on $5k+ purchases; Ink Premier 2.5% on $5k+). The optimizer earns this rate on eligible-bucket spend × the profile's large_txn_share; the remainder falls through to the next line"
+        },
+        "portal_only": { "type": "boolean", "description": "true if the rate only applies when booked through the issuer's portal (requires the card-level portal key)" },
+        "requires_enrollment": { "type": "boolean", "default": false },
+        "notes": { "type": "string" }
+      }
+    },
+    "merchantReward": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["merchant", "rate"],
+      "properties": {
+        "merchant": { "type": "string", "description": "Key from data/business/meta/merchants.yaml" },
+        "rate": { "type": "number", "minimum": 0 },
+        "cap": { "$ref": "#/$defs/cap" },
+        "min_transaction_usd": { "type": "number", "exclusiveMinimum": 0 },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

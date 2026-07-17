@@ -1,0 +1,37 @@
+# Business usage questionnaire (plan 22). Same purpose as the consumer
+# usage-questions.yaml: brand/service-locked credits are $0 unless the company
+# confirms it actually uses the underlying service (profile
+# user.confirmed_usage). Item keys are globally unique across groups and are
+# the vocabulary for business credits[].usage_keys and program loyalty_keys.
+#
+# Differences from the consumer registry (validator differences too):
+#   - NO statement-descriptors backing: the business product has no statement
+#     parsing (plan 22 — spend is entered manually, GL-style), so item keys are
+#     free-standing slugs.
+#   - assumed_reward_kind keeps consumer semantics for airline/hotel groups:
+#     when the matching reward kind is in reward_preferences, items are assumed
+#     usable for credit gating at the conservative capture rate (a company that
+#     wants flight value books whichever airline is best).
+#
+# Keep the question set minimal: every item must be referenced by >=1 card's
+# usage_keys or a program's loyalty_keys (validator-warned otherwise). Groups
+# grow with the corpus (22B adds hotel chains alongside hotel co-brands).
+
+groups:
+  airlines:
+    label: Airlines
+    prompt: "Does your company fly (or plan to fly) with any of these airlines regularly?"
+    assumed_reward_kind: flights
+    items:
+      delta: {label: "Delta"}
+      united: {label: "United"}
+      american_airlines: {label: "American Airlines"}
+      southwest: {label: "Southwest"}
+      alaska_airlines: {label: "Alaska / Hawaiian"}
+
+  vendors:
+    label: Vendors & services
+    prompt: "Which of these does your company actually buy from? (credits tied to a vendor are worthless if you don't use it)"
+    items:
+      dell: {label: "Dell (hardware / peripherals)"}
+      wireless_provider: {label: "US wireless service (any provider, paid by the business)"}
