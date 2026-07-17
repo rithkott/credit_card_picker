@@ -11,7 +11,7 @@ base_rate: 1
 
 category_rewards:
   - category: travel_flights
-    rate: 2                  # 2x on American Airlines purchases — AA only, mapping caveat; NEEDS human verification
+    rate: 2                  # "2 AAdvantage miles ... on eligible American Airlines purchases" — citi.com product page, verified 2026-07-17
     notes: American Airlines purchases specifically — other airfare earns base.
   - category: fuel_fleet
     rate: 2                  # "2x on gas stations" — citi.com, verified 2026-07-17
@@ -26,10 +26,12 @@ credits: []
 
 signup_bonus:
   value:
-    points: 65000            # drafted from memory — NEEDS human verification
+    points: 65000            # "Earn 65,000 AAdvantage bonus miles ... after $4,000 in purchases within the first 4 months" — citi.com product page, verified 2026-07-17
   spend_requirement_usd: 4000
   window_months: 4
-  notes: Offer figure NEEDS human verification.
+  notes: >-
+    Verified vs citi.com product page 2026-07-17. 48-month new-account bonus
+    exclusion applies (issuer-rules: citi).
 
 pricing:
   model: annual_fee
@@ -55,15 +57,19 @@ payment_type: revolving
 benefit_flags: [free_checked_bag]
 
 sources:
-  - url: https://www.citi.com/credit-cards/citibusiness-aadvantage-platinum-select-credit-card
-    supports: [identity, currency, base_rate, category_rewards, signup_bonus, pricing, business_approval, employee_cards, payment_type, benefit_flags]
-    accessed: "2026-07-16"
+  - url: https://www.citi.com/credit-cards/citi-aadvantage-business-credit-card
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, pricing, employee_cards, payment_type, benefit_flags]
+    accessed: "2026-07-17"
     added_by: claude-fable-5
-    note: Figures drafted from memory — NEEDS human verification.
+    note: >-
+      Official product page read in-browser 2026-07-17: 65k/$4k/4mo SUB (48mo
+      exclusion), $99 fee waived first year, 2x AA / car rental+gas /
+      telecom+cable, free first checked bag on domestic AA. Approval tier
+      still inferred.
 
 notes: 22B batch 5. AA-locked currency (0.8/1.5cpp).
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — rates/SUB/fee/bag verified in-browser vs citi.com product page 2026-07-17; approval tier still inferred"
+  confidence: medium
