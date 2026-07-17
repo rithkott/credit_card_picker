@@ -29,6 +29,14 @@ groups:
       southwest: {label: "Southwest"}
       alaska_airlines: {label: "Alaska / Hawaiian"}
 
+  hotels:
+    label: Hotel chains
+    prompt: "Does your company book (or plan to book) stays with any of these hotel chains?"
+    assumed_reward_kind: hotels
+    items:
+      hyatt: {label: "Hyatt (Grand/Park Hyatt, Andaz, Thompson, ...)"}
+      ihg: {label: "IHG (InterContinental, Holiday Inn, Kimpton, ...)"}
+
   vendors:
     label: Vendors & services
     prompt: "Which of these does your company actually buy from? (credits tied to a vendor are worthless if you don't use it)"

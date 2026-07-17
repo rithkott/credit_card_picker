@@ -1,0 +1,92 @@
+# $795 premium business travel card on UR: 8x Chase Travel portal, 4x direct
+# flights/hotels, $300 travel credit, free employee cards. Premium UR gateway.
+id: sapphire-reserve-for-business
+name: Chase Sapphire Reserve for Business
+issuer: chase
+network: visa
+portal: chase_travel
+currency:
+  type: points
+  program: chase_ur
+base_rate: 1
+unlocks_transfers: true
+
+category_rewards:
+  - category: travel_flights
+    rate: 8                  # 8x on Chase Travel portal bookings — drafted from memory, NEEDS human verification
+    portal_only: true
+    notes: Chase Travel portal bookings.
+  - category: travel_hotels
+    rate: 8
+    portal_only: true
+    notes: Chase Travel portal bookings.
+  - category: travel_other
+    rate: 8
+    portal_only: true
+    notes: Chase Travel portal bookings.
+  - category: travel_flights
+    rate: 4                  # 4x on direct flight bookings — drafted from memory, NEEDS human verification
+    notes: Booked directly with airlines.
+  - category: travel_hotels
+    rate: 4
+    notes: Booked directly with hotels.
+
+merchant_rewards: []
+
+credits:
+  - name: Annual travel credit
+    amount_usd: 300
+    period: annual
+    category: travel_other
+    realistic_capture_rate_note: >-
+      Applies automatically to travel purchases across categories — any business
+      with travel spend captures it fully. Recorded against travel_other; it
+      offsets any travel category.
+
+signup_bonus:
+  value:
+    points: 120000           # drafted from memory — NEEDS human verification
+  spend_requirement_usd: 12000
+  window_months: 3
+  notes: Offer figure NEEDS human verification.
+
+pricing:
+  model: annual_fee
+  annual_fee_usd: 795        # chase.com compare page quote "$795; Employee Cards at no additional cost" (verified 3-0 in plan 21 research pass)
+  foreign_transaction_pct: 0
+
+business_approval:
+  personal_guarantee: true
+  min_personal_fico_tier: excellent
+  entity_types: [sole_prop, llc, corp]
+  notes: >-
+    Premium underwriting; SSN + personal guarantee; 5/24 applies to the
+    application. Tier inferred — NEEDS human verification.
+
+employee_cards:
+  fee_usd: 0                 # "Employee Cards at no additional cost" (verified 3-0)
+  controls: [spending_limits]
+
+payment_type: revolving
+
+benefit_flags: [lounge_access]
+
+sources:
+  - url: https://creditcards.chase.com/business-credit-cards
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, pricing, business_approval, employee_cards, payment_type, benefit_flags]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: >-
+      $795 fee + free employee cards quoted from the compare page (verified 3-0
+      in the plan 21 research pass). Earn structure, travel credit, and SUB are
+      drafted from memory — NEEDS human verification.
+
+notes: >-
+  22B batch 2. Premium UR gateway on the business side alongside Ink Preferred.
+  Two lines per travel category (8x portal_only vs 4x direct) — the optimizer
+  picks the better effective line per bucket.
+
+verification:
+  last_verified_date: "2026-07-16"
+  verified_by: "claude-fable-5 (AI draft; fee/employee-cards research-verified) — NEEDS human verification"
+  confidence: low

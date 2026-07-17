@@ -1,0 +1,82 @@
+# $99 IHG co-brand business card: 10x card-attributable at IHG, 5x on select
+# business categories, anniversary free night (in_kind).
+id: ihg-premier-business
+name: IHG One Rewards Premier Business Credit Card
+issuer: chase
+network: mastercard          # IHG Premier cards are Mastercard — inference, NEEDS human verification
+currency:
+  type: points
+  program: ihg_one_rewards
+base_rate: 3                 # 3x on everything else — drafted from memory, NEEDS human verification
+
+category_rewards:
+  - category: travel_hotels
+    rate: 10                 # CARD-attributable earn at IHG properties; IHG markets "up to 26x" bundling member + status earn — only the card portion is recorded per the bundled-earn protocol rule. NEEDS human verification of the exact split.
+    notes: >-
+      IHG properties only — other hotel spend earns base. Marketing "up to 26x"
+      includes loyalty-program earn; 10x is the card-attributable estimate,
+      NEEDS human verification.
+  - category: fuel_fleet
+    rate: 5                  # 5x gas — drafted from memory, NEEDS human verification
+  - category: dining
+    rate: 5
+  - category: office_supplies
+    rate: 5
+
+merchant_rewards: []
+
+credits:
+  - name: Anniversary free night (up to 40k points)
+    kind: in_kind
+    amount_usd: 150          # curator estimate: a 40k-point IHG night ≈ $150-200 at 0.4-0.5cpp; conservative end recorded
+    period: annual
+    usage_keys: [ihg]
+    realistic_capture_rate_note: >-
+      Free night capped at 40,000 points/night — usable only by companies
+      staying at IHG; estimate reasoning in the amount comment.
+
+signup_bonus:
+  value:
+    points: 140000           # drafted from memory — NEEDS human verification
+  spend_requirement_usd: 4000
+  window_months: 3
+  notes: Offer figure NEEDS human verification.
+
+pricing:
+  model: annual_fee
+  annual_fee_usd: 99
+  foreign_transaction_pct: 0
+
+business_approval:
+  personal_guarantee: true
+  min_personal_fico_tier: very_good
+  entity_types: [sole_prop, llc, corp]
+  notes: 5/24 applies to the application. Tier inferred — NEEDS human verification.
+
+employee_cards:
+  fee_usd: 0
+  controls: [spending_limits]
+
+payment_type: revolving
+
+benefit_flags: []
+
+sources:
+  - url: https://creditcards.chase.com/business-credit-cards
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, pricing, business_approval, employee_cards, payment_type]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: >-
+      Card listed on the compare page (lineup claim verified 3-0); figures
+      drafted from memory — NEEDS human verification, especially the
+      card-vs-member earn split at IHG.
+
+notes: >-
+  22B batch 2. IHG-locked currency (low cpp: 0.4 floor / 0.7 optimistic) — the
+  high multipliers are mostly offset by point value; the free-night credit
+  carries much of the card's worth.
+
+verification:
+  last_verified_date: "2026-07-16"
+  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
+  confidence: low
