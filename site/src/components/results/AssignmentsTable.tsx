@@ -1,6 +1,6 @@
 import type { Assignment, PerCard } from '../../types'
 import { formatNumber, formatUsd } from '../../lib/money'
-import { assignmentDrop } from '../../lib/worstCase'
+import { assignmentDrop, assignmentPoints } from '../../lib/worstCase'
 
 export function AssignmentsTable({ assignments, currencyKind, worstCaseFloorCpp = null }: {
   assignments: Assignment[]
@@ -41,7 +41,7 @@ export function AssignmentsTable({ assignments, currencyKind, worstCaseFloorCpp 
               {frac && <span className="frac"> × {frac}</span>}
             </td>
             <td>{formatUsd(spend)}</td>
-            {points && <td>{formatNumber(Math.round(a.usd_assigned * a.rate))}</td>}
+            {points && <td>{formatNumber(Math.round(assignmentPoints(a)))}</td>}
             <td>{formatUsd(valueOf(a))}</td>
           </tr>
         )})}

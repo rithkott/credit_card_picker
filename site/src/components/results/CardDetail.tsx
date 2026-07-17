@@ -1,7 +1,7 @@
 import { Fragment, useState } from 'react'
 import type { OptimizeBundle, PerCard } from '../../types'
 import { formatNumber, formatUsd } from '../../lib/money'
-import { assignmentDrop, floorCppOf } from '../../lib/worstCase'
+import { assignmentDrop, assignmentPoints, floorCppOf } from '../../lib/worstCase'
 import { AssignmentsTable } from './AssignmentsTable'
 import { CreditsList } from './CreditsList'
 
@@ -229,7 +229,7 @@ export function CardDetail({
                       </td>
                       <td className="num">{formatUsd(fullSpend(a)).replace('.00', '')}</td>
                       {isPoints && (
-                        <td className="num">{formatNumber(Math.round(a.usd_assigned * a.rate))}</td>
+                        <td className="num">{formatNumber(Math.round(assignmentPoints(a)))}</td>
                       )}
                       <td className="num val">{formatUsd(rowValue(a))}</td>
                     </tr>

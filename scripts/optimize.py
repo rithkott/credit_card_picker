@@ -1152,21 +1152,22 @@ def steer_earn_ratio(cards: list, lines: list, assignments: list,
                                     "cpp": bl["cpp"], "kind": bl["kind"],
                                     "usd_value": add_val,
                                     "note": bl["note"] or "steered onto this card to lift housing rate"})
-        # Re-price the housing line at the resolved multiplier. When the points
-        # floor binds, express it as an effective points-per-$ so the displayed
-        # rate × spend × cpp still reconciles to the value.
+        # Re-price the housing line at the resolved multiplier. The rate stays
+        # the real tier bucket (0/0.5/0.75/1/1.25) — never a synthetic blend.
+        # When the points floor binds (rate 0×), the value comes from the flat
+        # per-cycle floor, spelled out in the note; displays must derive points
+        # from usd_value/cpp rather than rate × spend.
         ratio_pct = 100.0 * E_star / housing
         floored = mult * housing < floor_year - EPS
         total_pts = house_val * 100.0 / cpp if cpp else 0.0
-        eff_rate = round(total_pts / housing, 4) if housing else 0.0
         note = (f"everyday ${E_star:,.0f} ÷ rent ${housing:,.0f} = {ratio_pct:.0f}% "
                 f"→ {mult}× housing points")
         if floored:
-            note += (f"; below 25% — {er['floor_points_per_cycle']:.0f} pts/cycle "
-                     f"floor applies (~{eff_rate}×)")
+            note += (f"; below 25% — flat {er['floor_points_per_cycle']:.0f} pts/cycle "
+                     f"floor pays {total_pts:,.0f} pts/yr")
         for a in house_as:
             share = a["usd_assigned"] / housing
-            a["rate"] = eff_rate
+            a["rate"] = mult
             a["usd_value"] = house_val * share
             a["note"] = note
         # Drop any everyday assignments emptied by the move.
