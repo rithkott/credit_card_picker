@@ -61,6 +61,8 @@ import optimize as opt  # noqa: E402
 import statements as stmts  # noqa: E402  (server/statements/, plan 12)
 from statements.detect_usage import Matcher, detect_usage  # noqa: E402  (plan 14)
 
+import business_api  # noqa: E402  (plan 22D: /api/business/* router)
+
 # Origins allowed to call the API: the GitHub Pages site (this repo's project
 # page) and the Vite dev server. Update if the repo is renamed or forked.
 ALLOWED_ORIGINS = [
@@ -87,11 +89,19 @@ async def lifespan(app: FastAPI):
     # Compiled once: the usage detector for POST /api/statements/parse.
     STATE["matcher"] = Matcher(STATE["descriptors"],
                                STATE["dataset"]["usage_questions"])
+    # Business plane (plan 22D): its own dataset, loaded once like ours.
+    business_api.load()
     yield
+    business_api.unload()
     STATE.clear()
 
 
 app = FastAPI(title="credit_card_picker API", lifespan=lifespan)
+# /api/business/* (plan 22D): mounted BEFORE the SPA catch-all; shares the
+# debug-dump policy (local-only, disabled on Vercel).
+business_api.configure(dump_debug_run=lambda body, status, payload:
+                       dump_debug_run(body, status, payload))
+app.include_router(business_api.router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
