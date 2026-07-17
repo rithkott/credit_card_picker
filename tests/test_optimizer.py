@@ -1363,7 +1363,10 @@ class TestEarnRatioHousing(unittest.TestCase):
         r = score([bilt_like()], prof)
         h = self.housing_line(r)
         self.assertAlmostEqual(h["usd_value"], 37.50)
-        self.assertIn("floor", h["note"])
+        # Rate stays the true 0x tier bucket — never a synthetic points-per-$
+        # blend; the flat floor is spelled out in the note instead.
+        self.assertEqual(h["rate"], 0)
+        self.assertIn("floor pays 3,000 pts/yr", h["note"])
         # other 1000*1.25% = 12.50 ; + 37.50 housing = 50.00
         self.assertAlmostEqual(r["earnings"], 50.0)
 
@@ -1396,6 +1399,7 @@ class TestEarnRatioHousing(unittest.TestCase):
         r = score([bilt_like(), flat2], prof)
         h = self.housing_line(r)
         self.assertAlmostEqual(h["usd_value"], 37.50)  # floor
+        self.assertEqual(h["rate"], 0)  # true tier bucket, not a blend
         flat_other = next(a for a in r["assignments"]
                           if a["card_id"] == "flat2" and a["bucket"] == "other")
         self.assertAlmostEqual(flat_other["usd_assigned"], 1000.0)  # not steered

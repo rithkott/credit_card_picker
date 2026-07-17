@@ -22,12 +22,19 @@ export function floorCppOf(card: PerCard, cppTable: CppTable): number | null {
   return cppTable[card.currency.program]?.floor_cpp ?? null
 }
 
+/** Points actually earned on an assignment, derived from its value: rate ×
+ * spend breaks on flat-floor lines (Bilt's 250 pts/cycle floor keeps rate at
+ * the real 0× tier while the value comes from the floor points). */
+export function assignmentPoints(a: { usd_value: number; cpp: number }): number {
+  return a.cpp > 0 ? (a.usd_value * 100) / a.cpp : 0
+}
+
 /** Per-assignment value drop when switching to worst-case. Points lines only;
  * clamped >= 0 (a floor above the effective cpp never inflates the value). */
 export function assignmentDrop(a: Assignment, floorCpp: number): number {
   const perPointDrop = (a.cpp - floorCpp) / 100
   if (perPointDrop <= 0) return 0
-  return a.usd_assigned * a.rate * perPointDrop
+  return assignmentPoints(a) * perPointDrop
 }
 
 /** Sum of the worst-case drop across a card's spend-earned points. */

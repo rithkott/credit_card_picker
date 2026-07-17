@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import type { OptimizeBundle, PerCard } from '../../types'
 import { formatNumber, formatUsd } from '../../lib/money'
-import { assignmentDrop, floorCppOf } from '../../lib/worstCase'
+import { assignmentDrop, assignmentPoints, floorCppOf } from '../../lib/worstCase'
 import { AssignmentsTable } from './AssignmentsTable'
 import { CreditsList } from './CreditsList'
 
@@ -221,18 +221,26 @@ export function CardDetail({
               {shownAssignments.map((a, i) => {
                 const frac = fractionLabel(a)
                 return (
-                  <tr key={`a-${a.bucket}-${i}`}>
-                    <td>
-                      {isPoints ? `${a.rate}x` : `${a.rate}%`}
-                      {frac && <span className="frac"> × {frac}</span>} {pretty(a.bucket)}
-                      {a.note && <span className="note">{a.note}</span>}
-                    </td>
-                    <td className="num">{formatUsd(fullSpend(a)).replace('.00', '')}</td>
-                    {isPoints && (
-                      <td className="num">{formatNumber(Math.round(a.usd_assigned * a.rate))}</td>
+                  <Fragment key={`a-${a.bucket}-${i}`}>
+                    <tr className={a.note ? 'has-note' : undefined}>
+                      <td>
+                        {isPoints ? `${a.rate}x` : `${a.rate}%`}
+                        {frac && <span className="frac"> × {frac}</span>} {pretty(a.bucket)}
+                      </td>
+                      <td className="num">{formatUsd(fullSpend(a)).replace('.00', '')}</td>
+                      {isPoints && (
+                        <td className="num">{formatNumber(Math.round(assignmentPoints(a)))}</td>
+                      )}
+                      <td className="num val">{formatUsd(rowValue(a))}</td>
+                    </tr>
+                    {a.note && (
+                      <tr className="note-row">
+                        <td colSpan={isPoints ? 4 : 3}>
+                          <span className="note">{a.note}</span>
+                        </td>
+                      </tr>
                     )}
-                    <td className="num val">{formatUsd(rowValue(a))}</td>
-                  </tr>
+                  </Fragment>
                 )
               })}
             </tbody>
