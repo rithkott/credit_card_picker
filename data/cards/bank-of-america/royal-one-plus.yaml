@@ -26,11 +26,13 @@ credits:
   - name: Anniversary Reward
     amount_usd: 200          # "$200 anniversary reward after qualifying annual spend"
     period: annual
-    automatic: true    # pays out with no merchant-specific action
+    usage_keys: [royal_caribbean]   # redeemable only as cruise onboard credit / discount — worthless to non-cruisers
     realistic_capture_rate_note: >-
       A $200 reward on the account anniversary contingent on an unspecified "qualifying annual
       spend" threshold (amount not stated in the offer file, so no unlock_spend_usd is set).
-      Captured only by cardholders who meet that threshold; the value is cruise-redemption flavored.
+      Captured only by cardholders who meet that threshold AND cruise with Royal Caribbean Group —
+      the reward redeems only as cruise onboard credit / cruise discount, matching the sibling
+      royal-one anniversary reward's usage gating.
     notes: >-
       Offer file states "$200 anniversary reward after qualifying annual spend" without naming the
       spend requirement. Redemption is cruise-related (onboard credit / cruise discount), not cash.

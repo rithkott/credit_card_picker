@@ -135,10 +135,13 @@ groups:
     items:
       resy: {label: "Resy (restaurant reservations)"}
       dunkin: {label: "Dunkin'"}
+      buffalo_wild_wings: {label: "Buffalo Wild Wings"}
+      five_guys: {label: "Five Guys"}
+      cheesecake_factory: {label: "The Cheesecake Factory"}
+      wonder: {label: "Wonder (food halls)"}
       home_chef: {label: "Home Chef (meal kits)"}
       walmart_plus: {label: "Walmart+ membership"}
       costco: {label: "Costco"}
       sams_club: {label: "Sam's Club"}
-      att: {label: "AT&T"}
       verizon: {label: "Verizon"}
       gm: {label: "General Motors (vehicle, OnStar, GM Financial)"}

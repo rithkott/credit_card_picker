@@ -60,15 +60,16 @@ credits:
   - name: Dining Credit
     amount_usd: 10           # "up to $10/month statement credit"
     period: monthly
+    usage_keys: [grubhub, buffalo_wild_wings, five_guys, cheesecake_factory, wonder]
     category: dining
     requires_enrollment: true
     notes: Usable only at select partners (Grubhub/Seamless, Buffalo Wild Wings, Five Guys, The Cheesecake Factory, Wonder).
     realistic_capture_rate_note: >-
       $10/month at Grubhub/Seamless, Buffalo Wild Wings, Five Guys, The Cheesecake
       Factory, and Wonder only; enrollment required; monthly forfeit. Goldbelly and
-      Wine.com removed as partners 7/1/2026. Modeled as a counted dining credit
-      (category-gated, no confirmed-usage requirement) at the standard monthly
-      capture haircut, since most cardholders capture at least one partner.
+      Wine.com removed as partners 7/1/2026. Merchant-locked, so gated on confirmed
+      usage of at least one partner (anyOf) rather than plain dining-category spend,
+      which would overvalue it for people who never visit these five chains.
   - name: Uber Cash
     amount_usd: 10           # "$10/month in Uber Cash (US only)"
     period: monthly

@@ -40,6 +40,21 @@ credits:
       (bookings + room-charged incidentals via Hilton-direct channel only, not OTAs).
       Easy for regular Hilton-direct guests; useless for OTA bookers or non-Hilton
       stays.
+  - name: Free Night Reward ($15k spend)
+    kind: in_kind
+    amount_usd: 200          # estimated value of one standard Hilton night — same ~0.4-0.6cpp basis as hilton-aspire's Annual Free Night Reward
+    period: annual
+    usage_keys: [hilton]
+    category: travel_hotels
+    unlock_spend_usd: 15000  # "Free Night Reward after $15,000 in eligible spend in a calendar year"
+    realistic_capture_rate_note: >-
+      One standard-room free night (double occupancy, most Hilton properties, expires
+      1 year from issuance) earned only after $15,000 calendar-year spend. Captured by
+      heavy spenders who also stay at Hilton; the model applies the in-kind capture
+      haircut on top of the spend gate.
+    notes: >-
+      in_kind value is a curator estimate (~$200, matching the identical cert on
+      hilton-aspire), not an issuer-stated figure.
   - name: American Express Venue Collection Concessions Credit
     amount_usd: 25
     period: annual
@@ -92,8 +107,6 @@ notes: >-
   unconfirmed pending human verification. OMITTED: the "12x at Hilton portfolio
   properties" earn — no `hilton` merchant key in data/meta/merchants.yaml; mapping it
   to travel_hotels would overstate it for non-Hilton stays (registry gap flagged).
-  Free Night Reward after $15,000 calendar-year spend is an in-kind benefit not
-  modeled here (spend-gated, brand-locked) — noted for the reviewer.
 
 verification:
   last_verified_date: "2026-07-04"

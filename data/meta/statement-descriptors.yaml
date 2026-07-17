@@ -605,14 +605,6 @@ descriptors:
       - "VZWRLSS"
       - "VERIZON WRLS"
       - "VERIZON FIOS"
-  att:
-    label: AT&T (incl. Internet Air)
-    benefit_context: "2x on AT&T products/services (Citi AT&T Points Plus)"
-    statement_patterns:
-      - "ATT*BILL"
-      - "AT&T"
-      - "ATT PAYMENT"
-      - "ATT UVERSE"
   gm:
     label: General Motors (dealership parts/service, OnStar, GM Financial, ACDelco, GM Energy)
     benefit_context: "up to 10x on eligible GM purchases (Barclays My GM Rewards)"

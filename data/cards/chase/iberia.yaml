@@ -32,6 +32,22 @@ credits:
       Requires activating complimentary DashPass (12 months free 2/1/2025-12/31/2027,
       then auto-renews) and placing one qualifying DoorDash non-restaurant order each
       quarter (no rollover). Captured only by active DoorDash users; worthless otherwise.
+  - name: $1,000 Airfare Discount Voucher ($30k spend)
+    kind: in_kind
+    amount_usd: 400             # curator estimate of net value, NOT an issuer-stated figure — see notes
+    period: annual
+    usage_keys: [iberia]
+    unlock_spend_usd: 30000     # "spend $30,000 in purchases in a calendar year"
+    realistic_capture_rate_note: >-
+      Voucher for $1,000 off two tickets on the same Iberia-operated flights/class
+      (taxes/fees still apply) after $30,000 calendar-year spend; one per calendar
+      year, valid 12 months. Captured only by very heavy spenders who buy two Iberia
+      tickets on one itinerary within the window.
+    notes: >-
+      in_kind value is a curator estimate: the $1,000 face value requires a qualifying
+      two-ticket Iberia purchase, and fares below the voucher amount forfeit the
+      difference — $400 is a conservative net figure, NEEDS human verification.
+      Mirrors the atmos/aer-lingus companion-certificate modeling convention.
 
 signup_bonus:
   value:
@@ -72,11 +88,9 @@ sources:
 notes: >-
   Drafted offline from data/offer_files/chase/iberia.txt. annual_fee_usd ($95) and
   foreign_transaction_pct (0) are NOT stated in the offer file — estimates/inferences,
-  NEEDS human verification. OMITTED as structured value (noted, not dollar-valued): the
-  $1,000 Airfare Discount Voucher (good for $1,000 off two tickets, earned after $30,000
-  calendar-year spend, Iberia-operated flights only) is recorded as a benefit_flag — it
-  is a spend-gated in-kind certificate whose realized value depends on booking an
-  Iberia route, so any dollar figure would be invented; the 10% Iberia flight discount
+  NEEDS human verification. The $1,000 Airfare Discount Voucher is now modeled as a
+  spend-gated in_kind credit (curator-estimated $400 net — see the credit's notes) in
+  addition to the companion_certificate benefit_flag; the 10% Iberia flight discount
   code is noted here only. Avios auto-transfer to Iberia Plus each billing cycle.
 
 verification:
