@@ -46,6 +46,34 @@ programs:
     floor_cpp: 0.5          # cash-out 0.5; 1.0 as travel eraser — same as consumer table
     optimistic_cpp: 1.7     # transfer partners — same as consumer table
 
+  # ---- Airline / hotel co-brand currencies (22B batch 2) ----------------------
+  # Values copied verbatim from the consumer table (drift validator-warned).
+  # All are lock-in currencies: no cashback path, loyalty_keys gate optimistic cpp.
+  united_mileageplus:
+    label: United MileagePlus
+    redeems_for: [flights]
+    loyalty_keys: [united]
+    floor_cpp: 0.8
+    optimistic_cpp: 1.3
+  southwest_rapid_rewards:
+    label: Southwest Rapid Rewards
+    redeems_for: [flights]
+    loyalty_keys: [southwest]
+    floor_cpp: 1.3
+    optimistic_cpp: 1.4
+  world_of_hyatt:
+    label: World of Hyatt
+    redeems_for: [hotels]
+    loyalty_keys: [hyatt]
+    floor_cpp: 1.2
+    optimistic_cpp: 2.0
+  ihg_one_rewards:
+    label: IHG One Rewards
+    redeems_for: [hotels]
+    loyalty_keys: [ihg]
+    floor_cpp: 0.4
+    optimistic_cpp: 0.7
+
   # ---- Fintech corporate currencies (22B) -------------------------------------
   brex_points:
     label: Brex Rewards points

@@ -30,11 +30,17 @@ file converted) → `verified` (human-checked against issuer terms).
 | brex-card | brex | drafted |
 | bill-divvy-card | bill | drafted |
 
-## 22B queue — Chase
+## Drafted (22B batch 2 — Chase co-brands + CSR for Business)
 
-sapphire-reserve-for-business, united-business, united-club-business,
-southwest-performance-business, southwest-premier-business,
-world-of-hyatt-business, ihg-premier-business
+| id | issuer | status |
+|---|---|---|
+| sapphire-reserve-for-business | chase | drafted |
+| united-business | chase | drafted |
+| united-club-business | chase | drafted |
+| southwest-premier-business | chase | drafted |
+| southwest-performance-business | chase | drafted |
+| world-of-hyatt-business | chase | drafted |
+| ihg-premier-business | chase | drafted |
 
 ## 22B queue — Amex
 
