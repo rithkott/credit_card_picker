@@ -78,6 +78,11 @@ sources:
       membership, 10% rewards bonus with an eligible BofA small-business
       account (relationship-conditional — unscored). SUB spend
       requirement/window and approval tier still NEED human verification.
+  - url: https://www.bankofamerica.com/smallbusiness/credit-cards/
+    supports: [business_approval]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: Approval tier inferred — NEEDS human verification.
 
 notes: >-
   22B batch 5. Alaska-locked currency (1.0/1.6cpp). Rare non-Amex paid

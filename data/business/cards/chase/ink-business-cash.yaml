@@ -90,6 +90,11 @@ sources:
       Time-boxed extras (5% Lyft through 9/30/27, 3-month Instacart+ with
       $20/mo credit, ends 12/31/27) not modeled. FTF and approval tier not on
       page — still inferred.
+  - url: https://creditcards.chase.com/business-credit-cards
+    supports: [business_approval]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: Approval tier inferred — NEEDS human verification.
 
 notes: >-
   Plan 22A seed card. Two independent $25k combined pools (business essentials;

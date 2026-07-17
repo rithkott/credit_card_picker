@@ -68,6 +68,11 @@ sources:
       travel incl. Costco Travel, 2% Costco/costco.com, 1% base, $0 fee with
       active membership (required to apply), no SUB. Approval tier still
       inferred.
+  - url: https://www.citi.com/credit-cards/citi-costco-anywhere-visa-business-credit-card
+    supports: [business_approval]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: Approval tier inferred — NEEDS human verification.
 
 notes: >-
   22B batch 5. Rewards pay as an ANNUAL certificate redeemable at Costco

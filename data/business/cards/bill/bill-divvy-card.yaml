@@ -8,17 +8,17 @@ network: visa                # inference — NEEDS human verification
 currency:
   type: points
   program: divvy_points
-base_rate: 1.5               # 1.5x on all other purchases AT THE WEEKLY payment setting — plan 21 research quote; lower on semimonthly/monthly settlement (see notes). NEEDS human verification.
+base_rate: 1.5               # "1.5x on everything else" at the WEEKLY payment setting — bill.com/product/rewards, verified 2026-07-17; lower on semimonthly/monthly settlement (tier table behind page tabs, see notes).
 
 category_rewards:
   - category: dining
-    rate: 7                  # "Up to 7x points on restaurants" at weekly payment — plan 21 research verbatim quote
-    notes: Rate applies at the weekly-payment setting; semimonthly/monthly settings earn less — NEEDS human verification of the full tier table.
+    rate: 7                  # "Weekly: 7x on restaurants, 5x on hotels, 2x on recurring software subscriptions, 1.5x on everything else" — bill.com/product/rewards, verified 2026-07-17
+    notes: Rate applies at the weekly-payment setting; semimonthly/monthly settings earn less — full tier table NEEDS human verification.
   - category: travel_hotels
-    rate: 5                  # 5x hotels at weekly payment
+    rate: 5
     notes: Weekly-payment setting; lower tiers on slower settlement.
   - category: software_saas
-    rate: 2                  # 2x recurring software at weekly payment
+    rate: 2
     notes: Recurring software subscriptions; weekly-payment setting.
 
 merchant_rewards: []
@@ -58,14 +58,23 @@ virtual_cards: true
 benefit_flags: []
 
 sources:
+  - url: https://www.bill.com/product/rewards
+    supports: [identity, currency, base_rate, category_rewards, payment_type]
+    accessed: "2026-07-17"
+    added_by: claude-fable-5
+    note: >-
+      Official rewards page read in-browser 2026-07-17: weekly-setting tier
+      confirmed verbatim (7x restaurants / 5x hotels / 2x recurring software
+      / 1.5x everything else; "pay off your balance more frequently and earn
+      up to 7x"). Semimonthly/monthly tier values sit behind page tabs — NEED
+      human verification.
   - url: https://www.bill.com/blog/employee-credit-cards
-    supports: [identity, currency, base_rate, category_rewards, pricing, employee_cards, payment_type, integrations]
+    supports: [pricing, employee_cards, integrations]
     accessed: "2026-07-16"
     added_by: claude-fable-5
     note: >-
-      Tier structure (7x/5x/2x/1.5x, no annual or per-employee-card fees)
-      quoted in the plan 21 research pass — payment-frequency conditionality
-      and integration list NEED human verification.
+      No annual or per-employee-card fees quoted in the plan 21 research
+      pass — integration list NEEDS human verification.
   - url: https://www.nav.com/business-credit-card/best/ein/
     supports: [business_approval]
     accessed: "2026-07-16"
@@ -83,6 +92,6 @@ notes: >-
   must confirm the semimonthly/monthly tier table.
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from plan 21 research quotes) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — weekly-setting tier table verified in-browser vs bill.com/product/rewards 2026-07-17; network, FTF, semimonthly/monthly tiers, $20k threshold still NEEDS human verification"
+  confidence: medium

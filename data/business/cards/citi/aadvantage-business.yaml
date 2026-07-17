@@ -66,6 +66,11 @@ sources:
       exclusion), $99 fee waived first year, 2x AA / car rental+gas /
       telecom+cable, free first checked bag on domestic AA. Approval tier
       still inferred.
+  - url: https://www.citi.com/credit-cards/citibusiness-aadvantage-platinum-select-credit-card
+    supports: [business_approval]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: Approval tier inferred — NEEDS human verification.
 
 notes: 22B batch 5. AA-locked currency (0.8/1.5cpp).
 

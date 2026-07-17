@@ -8,7 +8,7 @@ network: mastercard
 currency:
   type: points
   program: brex_points
-base_rate: 1                 # 1x base; elevated multipliers (up to 7-8x rideshare, 4x travel, 3x restaurants, 2x software) require daily-payment settlement and Brex-exclusivity — conditional structure not schema-modeled, recorded here and in notes. NEEDS human verification.
+base_rate: 1                 # 1x base; "earn up to 7x back" (brex.com product page headline, verified 2026-07-17) — elevated multipliers require daily-payment settlement and Brex-exclusivity, conditional structure not schema-modeled (see notes).
 
 category_rewards: []
 merchant_rewards: []
@@ -51,6 +51,14 @@ virtual_cards: true
 benefit_flags: []
 
 sources:
+  - url: https://www.brex.com/product/credit-card
+    supports: [identity, currency, base_rate, employee_cards, payment_type]
+    accessed: "2026-07-17"
+    added_by: claude-fable-5
+    note: >-
+      Official product page read in-browser 2026-07-17: World Elite
+      Mastercard, physical + virtual cards, "up to 7x back" conditional
+      rewards headline, limits underwritten on revenue/dollars raised.
   - url: https://www.brex.com/pricing
     supports: [identity, pricing]
     accessed: "2026-07-17"
@@ -74,5 +82,5 @@ notes: >-
 
 verification:
   last_verified_date: "2026-07-17"
-  verified_by: "claude-fable-5 (AI draft; pricing verified vs brex.com) — NEEDS human verification"
-  confidence: low
+  verified_by: "claude-fable-5 — network/cards/pricing/conditional-rewards headline verified in-browser vs brex.com 2026-07-17; underwriting thresholds ($50k cash / $500k revenue) still NEEDS human verification"
+  confidence: medium
