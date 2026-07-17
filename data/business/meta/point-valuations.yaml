@@ -74,6 +74,25 @@ programs:
     floor_cpp: 0.4
     optimistic_cpp: 0.7
 
+  delta_skymiles:
+    label: Delta SkyMiles
+    redeems_for: [flights]
+    loyalty_keys: [delta]
+    floor_cpp: 1.0
+    optimistic_cpp: 1.3
+  hilton_honors:
+    label: Hilton Honors
+    redeems_for: [hotels]
+    loyalty_keys: [hilton]
+    floor_cpp: 0.4
+    optimistic_cpp: 0.6
+  marriott_bonvoy:
+    label: Marriott Bonvoy
+    redeems_for: [hotels]
+    loyalty_keys: [marriott]
+    floor_cpp: 0.6
+    optimistic_cpp: 0.9
+
   # ---- Fintech corporate currencies (22B) -------------------------------------
   brex_points:
     label: Brex Rewards points

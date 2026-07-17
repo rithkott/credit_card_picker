@@ -1,0 +1,85 @@
+# Amazon co-brand business card: 5% at Amazon/AWS (with Prime, up to $120k/yr)
+# OR 90-day terms on Amazon purchases — supplier-spend specialist.
+id: amazon-business-prime
+name: Amazon Business Prime American Express Card
+issuer: amex
+network: amex
+currency:
+  type: cash                 # rewards post as Amazon rewards balance ≈ cash — NEEDS human verification
+  program: cash
+base_rate: 1
+
+category_rewards:
+  - category: dining
+    rate: 2                  # 2% at US restaurants — drafted from memory, NEEDS human verification
+  - category: fuel_fleet
+    rate: 2                  # 2% at US gas stations
+  - category: telecom
+    rate: 2                  # 2% on US wireless
+
+merchant_rewards:
+  - merchant: amazon_business
+    rate: 5                  # 5% back at Amazon Business, AWS, Amazon.com, Whole Foods WITH an eligible Prime membership, on the first $120,000/yr — drafted from memory, NEEDS human verification
+    cap:
+      period: annual
+      max_spend_usd: 120000
+      fallback_rate: 1
+    notes: >-
+      Requires an eligible Prime/Business Prime membership (the business
+      schema has no required_membership block — prerequisite recorded here
+      and in card notes, unscored). Cardholders may instead choose 90-day
+      terms on Amazon purchases in place of the 5% — either/or, the reward
+      path is modeled.
+
+credits: []
+signup_bonus:
+  value:
+    usd: 125                 # Amazon gift card on approval — drafted from memory, NEEDS human verification
+  spend_requirement_usd: 0
+  window_months: 1
+  notes: Typically an instant gift-card grant on approval — NEEDS human verification.
+
+pricing:
+  model: annual_fee
+  annual_fee_usd: 0          # no card fee with Prime (membership itself is a prerequisite, unscored)
+  foreign_transaction_pct: 0
+
+business_approval:
+  personal_guarantee: true
+  min_personal_fico_tier: good
+  entity_types: [sole_prop, llc, corp]
+  notes: Revolving co-brand — counts toward the Amex 5-card limit. Tier inferred — NEEDS human verification.
+
+employee_cards:
+  fee_usd: 0
+  max_cards: 99
+  controls: [spending_limits, realtime_alerts]
+
+payment_type: revolving
+
+float_days:
+  grace_days: 90
+  note: >-
+    Optional 90-day terms on Amazon purchases IN PLACE of the 5% back —
+    either/or per purchase; reported, not scored.
+
+benefit_flags: []
+
+sources:
+  - url: https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/
+    supports: [identity, currency, base_rate, category_rewards, merchant_rewards, signup_bonus, pricing, business_approval, employee_cards, payment_type, float_days]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: Figures drafted from memory — NEEDS human verification.
+
+notes: >-
+  22B batch 4. First merchant_rewards card in the business corpus (merchant
+  amazon_business, mapped to wholesale — imperfect fit for AWS/cloud spend,
+  noted). Prime prerequisite is unscored (no required_membership block in the
+  business schema) — flag for the human pass whether that block should be
+  ported over.
+
+verification:
+  last_verified_date: "2026-07-16"
+  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
+  confidence: low

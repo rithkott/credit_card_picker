@@ -1,0 +1,60 @@
+# $250 cash-flow charge card: 1.5% early-pay discount OR 60-day interest-free
+# float — the purest working-capital card in the corpus.
+id: plum-card
+name: The Plum Card from American Express
+issuer: amex
+network: amex
+currency:
+  type: cash
+  program: cash
+base_rate: 1.5               # 1.5% EARLY-PAY DISCOUNT (within 10 days), not conventional cash back — modeled as cash back because it nets the same when paying early; a company using the 60-day float instead earns 0 (see notes). NEEDS human verification.
+
+category_rewards: []
+merchant_rewards: []
+credits: []
+signup_bonus: null
+
+pricing:
+  model: annual_fee
+  annual_fee_usd: 250        # drafted from memory — NEEDS human verification
+  first_year_waived: true
+  foreign_transaction_pct: 0
+
+business_approval:
+  personal_guarantee: true
+  min_personal_fico_tier: very_good
+  entity_types: [sole_prop, llc, corp]
+  notes: Charge lineage — Amex-limit exempt. Tier inferred — NEEDS human verification.
+
+employee_cards:
+  fee_usd: 0
+  max_cards: 99
+  controls: [spending_limits, realtime_alerts]
+
+payment_type: charge
+
+float_days:
+  grace_days: 60             # take up to 60 days to pay with no interest (in lieu of the discount)
+  note: >-
+    Either/or economics: 1.5% discount when paid within 10 days, OR up to 60
+    days to pay interest-free. The base_rate models the discount path; the
+    float path is reported here (float_days is reported, never scored).
+
+benefit_flags: []
+
+sources:
+  - url: https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/
+    supports: [identity, currency, base_rate, pricing, business_approval, employee_cards, payment_type, float_days]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: Figures drafted from memory — NEEDS human verification.
+
+notes: >-
+  22B batch 4. Seeds float_days. The discount-vs-float either/or cannot be
+  jointly modeled — discount path chosen as the reward model, float disclosed;
+  human pass should confirm current terms.
+
+verification:
+  last_verified_date: "2026-07-16"
+  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
+  confidence: low

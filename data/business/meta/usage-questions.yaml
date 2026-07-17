@@ -36,6 +36,8 @@ groups:
     items:
       hyatt: {label: "Hyatt (Grand/Park Hyatt, Andaz, Thompson, ...)"}
       ihg: {label: "IHG (InterContinental, Holiday Inn, Kimpton, ...)"}
+      hilton: {label: "Hilton (Waldorf, Conrad, Hampton, DoubleTree, ...)"}
+      marriott: {label: "Marriott (Ritz-Carlton, Westin, Sheraton, Courtyard, ...)"}
 
   vendors:
     label: Vendors & services
