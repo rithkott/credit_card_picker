@@ -10,7 +10,7 @@ currency:
 base_rate: 2                 # 2X Membership Rewards on all purchases up to the cap
 base_rate_cap:
   period: annual
-  max_spend_usd: 50000       # "first $50,000 in eligible spending each calendar year" — plan 21 research quote (Amex $50k cap claim), NEEDS human verification for this specific card vs Blue Business Cash
+  max_spend_usd: 50000       # "2X applies to the first $50,000 in purchases per year, 1 point per dollar thereafter" — NerdWallet best-business-cards, verified 2026-07-17
   fallback_rate: 1
 
 category_rewards: []
@@ -19,10 +19,10 @@ credits: []
 
 signup_bonus:
   value:
-    points: 15000            # drafted from memory of the standard offer — NEEDS human verification
+    points: 15000            # "15,000 MR points after $3,000 in first 3 months" — NerdWallet best-business-cards, verified 2026-07-17
   spend_requirement_usd: 3000
   window_months: 3
-  notes: Offer figure NEEDS human verification; Amex once-per-lifetime rule applies.
+  notes: Verified vs NerdWallet 2026-07-17; Amex once-per-lifetime rule applies.
 
 pricing:
   model: annual_fee
@@ -63,6 +63,6 @@ notes: >-
   natively — no gateway flag needed on amex_mr).
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from plan 21 research quotes) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — rate/cap/fee/SUB verified vs NerdWallet 2026-07-17 (secondary); FTF + tier still inferred"
+  confidence: medium

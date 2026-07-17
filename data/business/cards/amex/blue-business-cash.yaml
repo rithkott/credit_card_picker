@@ -19,10 +19,10 @@ credits: []
 
 signup_bonus:
   value:
-    usd: 250                 # drafted from memory of the standard offer — NEEDS human verification
+    usd: 250                 # "$250 statement credit after $3,000 in purchases in first 3 months" — NerdWallet best-business-cards, verified 2026-07-17
   spend_requirement_usd: 3000
   window_months: 3
-  notes: Offer figure NEEDS human verification; Amex once-per-lifetime rule applies.
+  notes: Verified vs NerdWallet 2026-07-17; Amex once-per-lifetime rule applies.
 
 pricing:
   model: annual_fee
@@ -63,6 +63,6 @@ notes: >-
   optimizer exists to surface.
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from plan 21 research quotes) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — rate/cap/fee/SUB verified vs NerdWallet 2026-07-17 (secondary); FTF + tier still inferred"
+  confidence: medium

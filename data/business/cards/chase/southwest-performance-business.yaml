@@ -31,14 +31,14 @@ credits:
 
 signup_bonus:
   value:
-    points: 80000            # drafted from memory — NEEDS human verification
+    points: 80000            # "80,000 points after $5,000 in first 3 months" — chase.com compare page, verified 2026-07-17
   spend_requirement_usd: 5000
   window_months: 3
-  notes: Offer figure NEEDS human verification.
+  notes: Verified against chase.com 2026-07-17.
 
 pricing:
   model: annual_fee
-  annual_fee_usd: 199
+  annual_fee_usd: 299        # chase.com compare page, verified 2026-07-17
   foreign_transaction_pct: 0
 
 business_approval:

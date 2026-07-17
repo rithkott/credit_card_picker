@@ -3,21 +3,30 @@ id: business-altitude-power
 name: U.S. Bank Business Altitude Power
 issuer: us-bank
 network: visa
+portal: usbank_travel_center
 currency:
   type: cash
   program: cash
-base_rate: 2                 # 2x/2% on all eligible purchases — drafted from memory, NEEDS human verification
+base_rate: 2                 # "2X points on all purchases. No caps or limits" — usbank.com, verified 2026-07-17. (A 2.5X boost on up to $5k/quarter of mobile-wallet/virtual-card purchases exists — payment-method-conditional, recorded here only, unscored.)
 
-category_rewards: []
+category_rewards:
+  - category: travel_hotels
+    rate: 6                  # "6X points on prepaid hotel and car rentals booked directly in the Travel Center" — usbank.com, verified 2026-07-17
+    portal_only: true
+    notes: U.S. Bank Travel Center prepaid bookings.
+  - category: travel_other
+    rate: 6
+    portal_only: true
+    notes: U.S. Bank Travel Center prepaid car rentals.
 merchant_rewards: []
 credits: []
 
 signup_bonus:
   value:
-    usd: 750                 # drafted from memory — NEEDS human verification
-  spend_requirement_usd: 7500
+    usd: 750                 # "75,000 bonus points" (1cpp) after "$10,000 on the Account Owner's card in the first 120 days" — usbank.com, verified 2026-07-17
+  spend_requirement_usd: 10000
   window_months: 4
-  notes: Offer figure NEEDS human verification.
+  notes: 75,000 points at 1cpp; employee spend excluded (owner's card only).
 
 pricing:
   model: annual_fee
@@ -41,7 +50,7 @@ benefit_flags: []
 
 sources:
   - url: https://www.usbank.com/business-banking/business-credit-cards.html
-    supports: [identity, currency, base_rate, signup_bonus, pricing, business_approval, employee_cards, payment_type]
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, pricing, business_approval, employee_cards, payment_type]
     accessed: "2026-07-16"
     added_by: claude-fable-5
     note: Figures drafted from memory — NEEDS human verification.
@@ -49,6 +58,6 @@ sources:
 notes: 22B batch 3.
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — 2X base, portal 6X, SUB, $0 employee cards verified vs usbank.com 2026-07-17; fee amount redacted on page, still inferred"
+  confidence: medium

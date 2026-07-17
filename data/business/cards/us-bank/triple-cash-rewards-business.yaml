@@ -29,7 +29,7 @@ merchant_rewards: []
 
 credits:
   - name: Annual software services credit
-    amount_usd: 100          # $100 statement credit for recurring software subscription expenses — drafted from memory, NEEDS human verification
+    amount_usd: 100          # "$100 credit for monthly software service purchases" — usbank.com, verified 2026-07-17
     period: annual
     category: software_saas
     realistic_capture_rate_note: >-
@@ -38,9 +38,9 @@ credits:
 
 signup_bonus:
   value:
-    usd: 500                 # drafted from memory of the standard offer — NEEDS human verification
-  spend_requirement_usd: 4500
-  window_months: 5
+    usd: 750                 # "Earn $750 in cash back" after "$6,000 on the Account Owner's card in the first 180 days" — usbank.com, verified 2026-07-17
+  spend_requirement_usd: 6000
+  window_months: 6
   notes: >-
     Offer figure NEEDS human verification. Employee-card spend does NOT count
     toward the bonus requirement (employee_cards.spend_counts_toward_bonus).
@@ -82,6 +82,6 @@ notes: >-
   spend_counts_toward_bonus: false.
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from plan 21 research quotes) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — 3% category set (incl. $200 gas ceiling), owner-only SUB spend, software credit, SUB verified vs usbank.com 2026-07-17; fee/FTF/tier still inferred"
+  confidence: medium

@@ -26,12 +26,17 @@ credits: []
 
 signup_bonus:
   value:
-    usd: 1200                # "$1,200 once you spend $30,000 in the first 3 months" — figure NOT re-verified this session, NEEDS human verification
+    usd: 2000                # "$2K when you spend $30K in the first 3 months" — capitalone.com, verified 2026-07-17
   spend_requirement_usd: 30000
   window_months: 3
+  tiers:
+    - value:
+        usd: 2000            # "+$2K for every $500K spent in the first year" — modeled as ONE tier at $500k cumulative; the per-$500k repetition beyond that is not modeled
+      spend_requirement_usd: 500000
   notes: >-
-    Offer figure drafted from memory of the standard 2026 offer; NEEDS human
-    verification.
+    Verified against capitalone.com 2026-07-17. The issuer repeats the $2k
+    tranche for EVERY $500k in year one — only the first tranche is modeled
+    (schema tiers are finite); note for the human pass.
 
 pricing:
   model: annual_fee
@@ -73,6 +78,6 @@ notes: >-
   cap-overflow catcher in most business portfolios.
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — rate/fee refund/portal 5%/SUB verified vs capitalone.com 2026-07-17; approval tier still inferred"
+  confidence: medium

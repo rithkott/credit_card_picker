@@ -2,11 +2,11 @@
 id: signify-business-cash
 name: Wells Fargo Signify Business Cash
 issuer: wells-fargo
-network: mastercard          # inference — NEEDS human verification
+network: mastercard          # "World Elite Mastercard" — wellsfargo.com product page, verified 2026-07-17
 currency:
   type: cash
   program: cash
-base_rate: 2                 # unlimited 2% cash rewards on purchases — drafted from plan 21 research pass (flat-rate positioning quoted), rate NEEDS human verification
+base_rate: 2                 # "Unlimited 2% cash rewards on purchases ... without caps or spending categories" — wellsfargo.com product page, verified 2026-07-17
 
 category_rewards: []
 merchant_rewards: []
@@ -14,10 +14,10 @@ credits: []
 
 signup_bonus:
   value:
-    usd: 500                 # drafted from memory of the standard offer — NEEDS human verification
+    usd: 500                 # "$500 cash rewards when you spend $5,000 in the first 3 months" — wellsfargo.com product page, verified 2026-07-17
   spend_requirement_usd: 5000
   window_months: 3
-  notes: Offer figure NEEDS human verification.
+  notes: Verified against wellsfargo.com 2026-07-17.
 
 pricing:
   model: annual_fee
@@ -31,7 +31,7 @@ business_approval:
   notes: Tier estimate inferred — NEEDS human verification.
 
 employee_cards:
-  fee_usd: 0                 # free employee cards — plan 21 research pass
+  fee_usd: 0                 # "add employee cards ... at no additional cost" — wellsfargo.com product page, verified 2026-07-17
   controls: [spending_limits]
 
 payment_type: revolving
@@ -54,6 +54,6 @@ notes: >-
   charge).
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — rate/fee/SUB/network/employee-cards verified vs wellsfargo.com product page 2026-07-17; FTF + approval tier still inferred"
+  confidence: medium

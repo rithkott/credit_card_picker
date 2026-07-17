@@ -30,14 +30,16 @@ credits:
 
 signup_bonus:
   value:
-    points: 100000           # drafted from memory — NEEDS human verification
+    points: 110000           # "up to 110,000 bonus miles + 2,000 PQP after qualifying activities" — chase.com compare page 2026-07-17; conditional structure not modeled
   spend_requirement_usd: 10000
   window_months: 3
-  notes: Offer figure NEEDS human verification.
+  notes: >-
+    Headline maximum recorded from chase.com 2026-07-17; qualifying-activity
+    structure and spend requirement NEED human verification.
 
 pricing:
   model: annual_fee
-  annual_fee_usd: 695        # drafted from memory — NEEDS human verification
+  annual_fee_usd: 695        # chase.com compare page, verified 2026-07-17
   foreign_transaction_pct: 0
 
 business_approval:

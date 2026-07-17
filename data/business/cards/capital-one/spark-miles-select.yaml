@@ -3,6 +3,7 @@ id: spark-miles-select
 name: Capital One Spark Miles Select
 issuer: capital-one
 network: visa
+availability: discontinued  # absent from capitalone.com small-business lineup 2026-07-17 — superseded by the Venture Business line; NEEDS human confirmation it is closed to new applicants
 currency:
   type: points
   program: capital_one_miles

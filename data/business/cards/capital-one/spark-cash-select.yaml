@@ -3,21 +3,30 @@ id: spark-cash-select
 name: Capital One Spark Cash Select
 issuer: capital-one
 network: visa
+portal: capital_one_travel
 currency:
   type: cash
   program: cash
-base_rate: 1.5               # unlimited 1.5% cash back — drafted from memory, NEEDS human verification
+base_rate: 1.5               # "Spark 1.5% Cash Select" — capitalone.com, verified 2026-07-17
 
-category_rewards: []
+category_rewards:
+  - category: travel_hotels
+    rate: 5                  # 5% on hotels via Capital One Business Travel — capitalone.com, verified 2026-07-17
+    portal_only: true
+    notes: Capital One Business Travel bookings.
+  - category: travel_other
+    rate: 5
+    portal_only: true
+    notes: Rental cars via Capital One Business Travel.
 merchant_rewards: []
 credits: []
 
 signup_bonus:
   value:
-    usd: 500                 # drafted from memory — NEEDS human verification
-  spend_requirement_usd: 4500
+    usd: 750                 # "$750 when you spend $6,000 in the first 3 months" — capitalone.com, verified 2026-07-17
+  spend_requirement_usd: 6000
   window_months: 3
-  notes: Offer figure NEEDS human verification.
+  notes: Verified against capitalone.com 2026-07-17.
 
 pricing:
   model: annual_fee
@@ -43,7 +52,7 @@ benefit_flags: []
 
 sources:
   - url: https://www.capitalone.com/small-business/credit-cards/
-    supports: [identity, currency, base_rate, signup_bonus, pricing, business_approval, employee_cards, payment_type]
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, pricing, business_approval, employee_cards, payment_type]
     accessed: "2026-07-16"
     added_by: claude-fable-5
     note: >-
@@ -53,6 +62,6 @@ sources:
 notes: 22B batch 3. Counts toward 5/24 — a real cost for owners protecting Chase eligibility.
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — rate/fee/SUB/portal verified vs capitalone.com 2026-07-17; approval tier still inferred"
+  confidence: medium
