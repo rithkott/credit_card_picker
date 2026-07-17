@@ -1,7 +1,7 @@
-# Alaska Airlines co-brand business card (BofA-issued): 3x Alaska, companion
-# fare, Alaska-locked currency.
+# Alaska Airlines co-brand business card (BofA-issued): 3x Alaska/Hawaiian,
+# companion fare, Alaska-locked currency. Rebranded "Atmos Rewards" 2026.
 id: alaska-airlines-business
-name: Alaska Airlines Visa Business Card
+name: Atmos Rewards Visa Signature Business Card (Alaska Airlines)
 issuer: bank-of-america
 network: visa
 currency:
@@ -11,36 +11,44 @@ base_rate: 1
 
 category_rewards:
   - category: travel_flights
-    rate: 3                  # 3x on Alaska Airlines purchases — Alaska only, mapping caveat; NEEDS human verification
-    notes: Alaska Airlines purchases specifically — other airfare earns base.
+    rate: 3                  # "3 points for every $1 spent on eligible Alaska Airlines and Hawaiian Airlines purchases" — bankofamerica.com product page, verified 2026-07-17
+    notes: Alaska/Hawaiian purchases specifically — other airfare earns base.
   - category: fuel_fleet
-    rate: 2                  # 2x gas/EV — drafted from memory, NEEDS human verification
+    rate: 2                  # "2 points ... on eligible gas, EV charging station, shipping and local transit purchases, including rideshare" — bankofamerica.com product page, verified 2026-07-17
+  - category: shipping
+    rate: 2
   - category: transit
-    rate: 2                  # 2x rideshare/local transit — drafted from memory, NEEDS human verification
+    rate: 2
 
 merchant_rewards: []
 
 credits:
-  - name: Companion Fare (annual, from $122)
+  - name: Companion Fare (annual, $99 + taxes from $23)
     kind: in_kind
-    amount_usd: 250          # curator estimate: companion pays taxes/fees from $122; realistic net value on a mid-fare round trip
+    amount_usd: 250          # curator estimate: typical fare minus the ~$122 all-in charge
     period: annual
     usage_keys: [alaska_airlines]
+    unlock_spend_usd: 6000   # "$99 Companion Fare ... every year that you spend at least $6,000 on purchases" — bankofamerica.com product page, verified 2026-07-17
     realistic_capture_rate_note: >-
-      Annual Companion Fare after qualifying spend — worth face only to
-      Alaska-flying companies; estimate = typical fare minus the ~$122 charge.
+      Anniversary Companion Fare gated on $6,000 annual card spend — worth
+      face only to Alaska/Hawaiian-flying companies; estimate = typical fare
+      minus the ~$122 charge.
 
 signup_bonus:
   value:
-    points: 50000            # drafted from memory — NEEDS human verification
+    points: 70000            # "Limited-time online offer: 70,000 bonus points + $99 Companion Fare" — bankofamerica.com product page, verified 2026-07-17; spend requirement behind the info tooltip, NEEDS human verification
   spend_requirement_usd: 3000
   window_months: 3
-  notes: Offer figure NEEDS human verification.
+  limited_time: true
+  notes: >-
+    Limited-time 70k + first-year Companion Fare verified 2026-07-17; the
+    spend requirement/window sit behind a tooltip (recorded at the prior
+    $3k/90-day draft) — NEEDS human verification.
 
 pricing:
   model: annual_fee
-  annual_fee_usd: 70         # per-card business fee structure ($70 company + per-card) — drafted from memory, NEEDS human verification
-  foreign_transaction_pct: 0
+  annual_fee_usd: 70         # "$70 annual fee per company & $25 per card" — bankofamerica.com product page, verified 2026-07-17
+  foreign_transaction_pct: 0  # "No international transaction fees" — bankofamerica.com product page, verified 2026-07-17
 
 business_approval:
   personal_guarantee: true
@@ -49,7 +57,7 @@ business_approval:
   notes: Tier inferred — NEEDS human verification.
 
 employee_cards:
-  fee_usd: 25                # BofA charges per-employee-card fees on this product (~$25/card) — drafted from memory, NEEDS human verification
+  fee_usd: 25                # "$70 per company & $25 per card" — bankofamerica.com product page, verified 2026-07-17
   controls: [spending_limits]
 
 payment_type: revolving
@@ -57,17 +65,26 @@ payment_type: revolving
 benefit_flags: [free_checked_bag]
 
 sources:
-  - url: https://www.bankofamerica.com/smallbusiness/credit-cards/
-    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, pricing, business_approval, employee_cards, payment_type, benefit_flags]
-    accessed: "2026-07-16"
+  - url: https://business.bankofamerica.com/en/credit-cards/atmos-rewards
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, pricing, employee_cards, payment_type, benefit_flags]
+    accessed: "2026-07-17"
     added_by: claude-fable-5
-    note: Figures drafted from memory — NEEDS human verification, especially the company-vs-per-card fee split.
+    note: >-
+      Official product page read in-browser 2026-07-17 (card rebranded Atmos
+      Rewards Visa Signature Business): 3x Alaska+Hawaiian / 2x gas+EV+
+      shipping+local transit, $99 Companion Fare gated on $6k annual spend,
+      limited-time 70k SUB, $70 company + $25/card fees, no FTF, free checked
+      bag + preferred boarding, 20% back inflight, $100 off Lounge+
+      membership, 10% rewards bonus with an eligible BofA small-business
+      account (relationship-conditional — unscored). SUB spend
+      requirement/window and approval tier still NEED human verification.
 
 notes: >-
   22B batch 5. Alaska-locked currency (1.0/1.6cpp). Rare non-Amex paid
-  employee-card fee — fee structure NEEDS careful human verification.
+  employee-card fee ($70 company + $25/card, page-confirmed). Rebranded
+  Atmos Rewards 2026 (Alaska/Hawaiian merger program).
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — rates/companion-fare/fees verified in-browser vs bankofamerica.com product page 2026-07-17; SUB spend req + approval tier still NEEDS human verification"
+  confidence: medium
