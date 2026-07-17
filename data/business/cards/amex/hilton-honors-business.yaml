@@ -7,31 +7,44 @@ network: amex
 currency:
   type: points
   program: hilton_honors
-base_rate: 5                 # 5x on all other purchases up to the cap — drafted from memory of the 2023 refresh, NEEDS human verification
+base_rate: 5                 # "5X on other eligible purchases on the first $100K in eligible purchases per calendar year, 3X points thereafter" — amex product page, verified 2026-07-17
 base_rate_cap:
   period: annual
-  max_spend_usd: 100000      # first $100k in purchases per calendar year, then 3x — NEEDS human verification
+  max_spend_usd: 100000
   fallback_rate: 3
 
 category_rewards:
   - category: travel_hotels
-    rate: 12                 # 12x at Hilton portfolio properties — Hilton only, mapping caveat; NEEDS human verification
+    rate: 12                 # "12X ... for eligible purchases made directly with hotels and resorts within the Hilton portfolio" — amex product page, verified 2026-07-17
     notes: Hilton portfolio properties specifically — other hotel spend earns the base line.
 
 merchant_rewards: []
 
-credits: []                  # quarterly Hilton credits exist on some offers — add with a source at the human pass
+credits:
+  - name: Hilton credit
+    amount_usd: 60           # "up to $60 in statement credits each quarter for purchases made directly with a property in the Hilton portfolio" — amex product page, verified 2026-07-17
+    period: quarterly
+    usage_keys: [hilton]
+    realistic_capture_rate_note: >-
+      $60/quarter on direct Hilton-portfolio purchases — quarterly cadence
+      means sporadic travelers capture only the quarters they actually stay.
 
 signup_bonus:
   value:
-    points: 130000           # drafted from memory — NEEDS human verification
+    points: 130000           # "130,000 Hilton Honors Bonus Points after you spend $8,000 ... first 6 months. Offer ends 7/29/26" — amex product page, verified 2026-07-17
   spend_requirement_usd: 8000
   window_months: 6
-  notes: Offer figure NEEDS human verification; once-per-lifetime rule applies.
+  expires: "2026-07-29"
+  notes: >-
+    Limited-time offer (ends 2026-07-29) bundling the $0 intro annual fee for
+    the first year; re-check standard offer after expiry. Verified vs
+    americanexpress.com product page 2026-07-17; once-per-lifetime rule
+    applies.
 
 pricing:
   model: annual_fee
-  annual_fee_usd: 195        # drafted from memory — NEEDS human verification
+  annual_fee_usd: 195        # "$0 introductory annual fee for the first year, then $195" — amex product page, verified 2026-07-17
+  first_year_waived: true
   foreign_transaction_pct: 0
 
 business_approval:
@@ -50,11 +63,20 @@ payment_type: revolving
 benefit_flags: []
 
 sources:
+  - url: https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/hilton-honors/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, pricing, payment_type]
+    accessed: "2026-07-17"
+    added_by: claude-fable-5
+    note: >-
+      Official product page read in-browser 2026-07-17: 12X Hilton / 5X first
+      $100k then 3X, $0-intro/$195 fee, limited-time 130k/$8k/6mo SUB (ends
+      7/29/26), $240 Hilton credit ($60/qtr), Gold status (Diamond after $40k
+      calendar spend).
   - url: https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/
-    supports: [identity, currency, base_rate, category_rewards, signup_bonus, pricing, business_approval, employee_cards, payment_type]
+    supports: [business_approval, employee_cards]
     accessed: "2026-07-16"
     added_by: claude-fable-5
-    note: Figures drafted from memory — NEEDS human verification.
+    note: Approval tier and employee-card details inferred — NEEDS human verification.
 
 notes: >-
   22B batch 4. High multipliers on a low-cpp currency (0.4/0.6) — the blended
@@ -62,6 +84,6 @@ notes: >-
   points card.
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — rates/cap/fee/SUB/credit verified in-browser vs americanexpress.com product page 2026-07-17; approval tier still inferred, NEEDS human verification"
+  confidence: medium

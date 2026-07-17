@@ -110,6 +110,23 @@ LIVE official pages; per-file details in each card's sources + verified_by.
 - **New product spotted, queued**: US Bank Business Shield (5% Travel Center,
   insurance-focused) — add in a future batch.
 
+## Verification pass 2 (browser, 2026-07-17)
+
+- **New products spotted, queued**:
+  - Amex **Graphite Business Cash Unlimited** — $295 AF, unlimited 2% cash
+    (Reward Dollars), 5% portal flights/prepaid hotels, $1,500/$50k/6mo SUB,
+    Pay Over Time. On the americanexpress.com lineup 2026-07-17.
+  - Amazon **Prime Business Card** (successor co-brand; Mastercard,
+    Chase-serviced per cardholder reviews) — 5% Amazon/Amazon
+    Business/AWS/Whole Foods up to $150k/yr then 1%; 2% on top-3 non-Amazon
+    categories from a fixed menu (up to $150k/yr); +1% with Amazon Day
+    Delivery (6% total); 1% base; personalized offer seen: $100 statement
+    credit after $3k/3mo. Replaces the discontinued Amazon Business Prime
+    Amex.
+- **Lineup changes found**: Amex Plum Card and Amazon Business Prime Amex
+  marked `discontinued` (absent from lineups; Plum URL 500s, Amazon page now
+  markets the successor).
+
 ## Fleet cards — EXCLUDED from V1 (decision 2026-07-17)
 
 wex-fleet, fuelman-fleet, shell-fleet-plus: fleet cards rebate in cents PER
