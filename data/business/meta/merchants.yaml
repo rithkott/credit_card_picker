@@ -1,0 +1,9 @@
+# Business merchant registry (plan 22). Same contract as the consumer
+# merchants.yaml: each merchant maps to a category so merchant-keyed rewards
+# route spend out of the right bucket.
+#
+# Empty at foundations (22A): mainstream business cards bonus categories, not
+# named merchants. Populate during corpus curation (22B) if a card genuinely
+# rewards a named merchant (e.g. a co-brand's own storefront).
+
+merchants: {}

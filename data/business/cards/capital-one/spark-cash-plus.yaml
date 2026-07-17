@@ -1,0 +1,78 @@
+# Flat-2% pay-in-full business charge card with a volume fee refund: $150 fee
+# refunded at $150k+ annual spend. Seeds fee_refund_spend_usd + charge type on
+# a traditional issuer.
+id: spark-cash-plus
+name: Capital One Spark Cash Plus
+issuer: capital-one
+network: visa
+portal: capital_one_travel
+currency:
+  type: cash
+  program: cash
+base_rate: 2                 # unlimited 2% cash back on all purchases
+
+category_rewards:
+  - category: travel_hotels
+    rate: 5                  # 5% on hotels booked through Capital One Travel
+    portal_only: true
+    notes: Only when booked through Capital One Travel.
+  - category: travel_other
+    rate: 5                  # 5% on rental cars through Capital One Travel
+    portal_only: true
+    notes: Rental cars booked through Capital One Travel.
+
+merchant_rewards: []
+credits: []
+
+signup_bonus:
+  value:
+    usd: 1200                # "$1,200 once you spend $30,000 in the first 3 months" — figure NOT re-verified this session, NEEDS human verification
+  spend_requirement_usd: 30000
+  window_months: 3
+  notes: >-
+    Offer figure drafted from memory of the standard 2026 offer; NEEDS human
+    verification.
+
+pricing:
+  model: annual_fee
+  annual_fee_usd: 150
+  fee_refund_spend_usd: 150000  # annual fee refunded every year the card spends $150k+ (plan 21 research figure, NEEDS human verification)
+  foreign_transaction_pct: 0
+
+business_approval:
+  personal_guarantee: true
+  min_personal_fico_tier: excellent
+  entity_types: [sole_prop, llc, corp]
+  notes: >-
+    SSN application with personal guarantee; Capital One markets this tier to
+    businesses with large monthly spend. This card is an adds_to_524 EXCEPTION
+    (does not report to personal credit — issuer-rules: capital-one). Tier
+    estimate NEEDS human verification.
+
+employee_cards:
+  fee_usd: 0                 # free employee + virtual cards; rewards accrue to the primary account
+  controls: [spending_limits, card_freeze]
+
+payment_type: charge         # no preset spending limit; designed to be paid in full each cycle
+
+benefit_flags: []
+
+sources:
+  - url: https://www.capitalone.com/small-business/credit-cards/spark-cash-plus/
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, pricing, business_approval, employee_cards, payment_type]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: >-
+      Product page not fetched this session; figures drafted from the plan 21
+      research pass (charge model + free employee cards quoted from Capital One
+      marketing copy) and memory. NEEDS human verification.
+
+notes: >-
+  Plan 22A seed card: exercises pricing.fee_refund_spend_usd (volume-conditional
+  fee) and payment_type charge on a traditional issuer. Flat 2% makes it the
+  cap-overflow catcher in most business portfolios.
+
+verification:
+  last_verified_date: "2026-07-16"
+  verified_by: "claude-fable-5 (AI draft) — NEEDS human verification"
+  confidence: low

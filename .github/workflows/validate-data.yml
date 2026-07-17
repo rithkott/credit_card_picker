@@ -22,6 +22,9 @@ jobs:
       # API deps so tests/test_server_api.py runs instead of skipping.
       - run: pip install -r server/requirements.txt
       - run: python3 scripts/validate_cards.py
+      # Business dataset (plan 22): parallel corpus under data/business/,
+      # validated by its own forked script against the business schema.
+      - run: python3 scripts/validate_business_cards.py
       # Optimizer golden tests (tests/test_optimizer.py) load the live dataset,
       # so they re-run on any data change as well as on code changes;
       # tests/test_server_api.py pins the HTTP contract to the same engine.

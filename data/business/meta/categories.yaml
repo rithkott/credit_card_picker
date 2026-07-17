@@ -1,0 +1,46 @@
+# Canonical BUSINESS spend-category enum (plan 22).
+# Shared by business card data (category_rewards[].category, adaptive_top_n
+# eligible_categories) and the business spend-entry UI, so the two can never
+# drift. Keys are stable slugs; label is what the UI shows (GL-account framing —
+# CFOs enter annual spend per bucket).
+#
+# Differences from the consumer enum (data/meta/categories.yaml): the business
+# core is operational spend — advertising, shipping, SaaS, telecom, office
+# supplies, construction materials — and the consumer core (groceries,
+# streaming, drugstores, housing) is gone. No pseudo-categories: no business
+# card in scope rotates quarterly or offers choose-your-own categories, and no
+# category is explicit_only (every bucket is ordinary card-payable spend).
+
+categories:
+  advertising:
+    label: Advertising (digital, social, search, media)
+  shipping:
+    label: Shipping & postage
+  software_saas:
+    label: Software, SaaS & cloud services
+  telecom:
+    label: Internet, phone & wireless
+  office_supplies:
+    label: Office supplies
+  travel_flights:
+    label: Travel — flights
+  travel_hotels:
+    label: Travel — hotels
+  travel_other:
+    label: Travel — other (rail, car rental, etc.)
+  fuel_fleet:
+    label: Fuel & EV charging (vehicles / fleet)
+  dining:
+    label: Restaurants & client meals
+  transit:
+    label: Transit, rideshare & parking
+  utilities:
+    label: Utilities
+  contractors_materials:
+    label: Construction materials & hardware
+  wholesale:
+    label: Wholesale clubs & suppliers
+  insurance_professional_services:
+    label: Insurance & professional services
+  other:
+    label: Everything else

@@ -1,0 +1,152 @@
+# $895 premium business travel card: 5x portal flights/hotels, 2x on business
+# categories AND any $5k+ purchase (one $2M pool), statement-credit ecosystem,
+# $400 employee Platinums. Seeds large_purchase_rate + usage-gated credits.
+id: business-platinum
+name: The Business Platinum Card from American Express
+issuer: amex
+network: amex
+portal: amex_travel
+currency:
+  type: points
+  program: amex_mr
+base_rate: 1
+
+category_rewards:
+  - category: travel_flights
+    rate: 5                  # "5X points on flights and prepaid hotels on AmexTravel.com" (NerdWallet review, verified 2026-07-17)
+    portal_only: true
+    notes: Only on flights booked through amextravel.com.
+  - category: travel_hotels
+    rate: 5
+    portal_only: true
+    notes: Only on prepaid hotels booked through amextravel.com.
+  - category: contractors_materials
+    rate: 2                  # "2X at US construction material & hardware suppliers ... up to $2M of these purchases per calendar year" (NerdWallet review, verified 2026-07-17)
+    cap: &pool2m
+      period: annual
+      max_spend_usd: 2000000
+      fallback_rate: 1
+      shared_cap_id: bizplat_2m
+  - category: software_saas
+    rate: 2                  # US electronic goods retailers and software & cloud system providers
+    cap: *pool2m
+  - category: shipping
+    rate: 2
+    cap: *pool2m
+
+merchant_rewards: []
+
+large_purchase_rate:
+  rate: 2
+  min_transaction_usd: 5000  # "and on each eligible purchase of $5,000 or more" — same $2M pool as the category lines
+  cap:
+    period: annual
+    max_spend_usd: 2000000
+    fallback_rate: 1
+    shared_cap_id: bizplat_2m
+  note: >-
+    Any-category purchases of $5,000+ earn 2X, sharing the $2M calendar-year
+    pool with the construction/electronics-software/shipping category lines.
+    Purchases eligible for multiple bonuses receive only the highest.
+
+credits:
+  - name: Airline fee credit
+    amount_usd: 200
+    period: annual
+    usage_keys: [delta, united, american_airlines, southwest, alaska_airlines]
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Covers incidental fees (bags, seats, lounge day passes) on ONE selected
+      airline only — not airfare. Companies with regular air travel on a single
+      carrier capture most of it; others capture little.
+  - name: Wireless services credit
+    amount_usd: 120           # $10/month on US wireless (NerdWallet review, verified 2026-07-17)
+    period: annual
+    usage_keys: [wireless_provider]
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $10/month against US wireless charges paid on the card — near-automatic
+      for a business that pays its phone bill with the card, $0 otherwise.
+  - name: Dell statement credit
+    amount_usd: 150
+    period: annual
+    usage_keys: [dell]
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Only against Dell purchases; conservative $150 face recorded (the
+      additional $1,000-after-$5k Dell tranche is enterprise-sized and omitted —
+      note for 22B re-check). Worthless to companies that don't buy Dell.
+  - name: Hotel credit (Fine Hotels & Resorts / The Hotel Collection)
+    amount_usd: 600           # $300 twice annually (NerdWallet review, verified 2026-07-17)
+    period: annual
+    category: travel_hotels
+    portal_only: true
+    realistic_capture_rate_note: >-
+      Two $300 semiannual credits, only on FHR/THC prepaid bookings through Amex
+      Travel — premium-property rates often exceed direct-booking alternatives,
+      so realistic capture is well below face.
+
+signup_bonus:
+  value:
+    points: 150000           # "150k points after $20,000 in 3 months" — figure NOT re-verified this session, NEEDS human verification
+  spend_requirement_usd: 20000
+  window_months: 3
+  notes: >-
+    Offer figure drafted from memory of the standard 2026 offer; NEEDS human
+    verification. Amex once-per-lifetime bonus rule applies.
+
+pricing:
+  model: annual_fee
+  annual_fee_usd: 895        # NerdWallet review, verified 2026-07-17
+  foreign_transaction_pct: 0
+
+business_approval:
+  personal_guarantee: true
+  min_personal_fico_tier: excellent
+  entity_types: [sole_prop, llc, corp]
+  notes: >-
+    SSN application with personal guarantee; premium underwriting. Charge
+    lineage — exempt from the Amex 5-credit-card limit. Tier estimate NEEDS
+    human verification.
+
+employee_cards:
+  fee_usd: 400               # per employee Business Platinum — plan 21 research figure, NEEDS human verification
+  free_expense_card_variant: true
+  max_cards: 99
+  controls: [spending_limits, mcc_restrictions, realtime_alerts, card_freeze]
+  note: >-
+    $400 employee Platinums carry lounge access etc.; no-annual-fee Employee
+    Business Expense Cards exist alongside. V1 scores fee_usd per seat — a
+    company issuing many seats should model the free expense-card variant by
+    entering 0 seats here (tradeoff noted, plan 22).
+
+payment_type: charge
+
+benefit_flags: [lounge_access]
+
+sources:
+  - url: https://www.nerdwallet.com/reviews/credit-cards/american-express-business-platinum
+    supports: [identity, currency, base_rate, category_rewards, large_purchase_rate, credits, signup_bonus, pricing, business_approval, payment_type, benefit_flags]
+    accessed: "2026-07-17"
+    added_by: claude-fable-5
+    note: >-
+      $895 fee, 2X categories + $5k+ line with $2M cap, 5X portal earning, and
+      the airline/Dell/wireless/hotel credit stack confirmed against this
+      review 2026-07-17. SUB, employee fee, approval tier are drafts — NEEDS
+      human verification against americanexpress.com terms.
+  - url: https://www.americanexpress.com/en-us/business/blueprint/help-center/business-card/employee-cards/
+    supports: [employee_cards]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: 99-card limit; employee spend pools to the primary account (3-0 verified).
+
+notes: >-
+  Plan 22A seed card: exercises large_purchase_rate sharing a $2M pool with
+  category lines (shared_cap_id across both), portal_only rates + a portal_only
+  credit, usage-gated credits (airline anyOf, dell, wireless), and the $400
+  employee-card fee.
+
+verification:
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 (AI draft; fee/rates/credits verified vs NerdWallet) — NEEDS human verification"
+  confidence: low
