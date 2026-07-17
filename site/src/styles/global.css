@@ -1346,6 +1346,11 @@ pre.cmd { display: block; padding: 0.6em 0.9em; overflow-x: auto; }
 }
 .earn-table td.val { color: var(--ink); font-weight: 700; }
 .earn-table td .note { display: block; color: var(--faint); font-size: 10.5px; }
+/* Long notes get their own full-width row so they wrap across the whole
+   table instead of shredding inside the narrow label column. The note row
+   glues to the data row above it: divider moves to the note row. */
+.earn-table tr.has-note td { border-bottom: none; }
+.earn-table tr.note-row td { padding-top: 0; overflow-wrap: normal; }
 /* Keep the table inside the tile: the nowrap numeric columns set a hard
    min-content floor, so let the label column break words first and scroll
    as the last resort instead of painting past the card edge. */
