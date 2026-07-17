@@ -13,7 +13,7 @@ base_rate: 2                 # "Unlimited 2% cash back on every purchase" — pl
 
 category_rewards:
   - category: travel_flights
-    rate: 5                  # 5% total on travel purchased through Chase Travel — NEEDS human verification
+    rate: 5                  # "unlimited 5% cash back on travel purchased through Chase Travel" — chase.com product page, verified 2026-07-17
     portal_only: true
     notes: Only when booked through Chase Travel.
   - category: travel_hotels
@@ -28,7 +28,7 @@ category_rewards:
 merchant_rewards: []
 
 large_purchase_rate:
-  rate: 2.5                  # "Unlimited 2.5% Cash Back on large purchases" = individual purchases of $5,000+ (chase.com compare page quote, verified 3-0 in plan 21 research pass)
+  rate: 2.5                  # "2.5% cash back on every purchase of $5,000 or more" — chase.com product page, verified 2026-07-17
   min_transaction_usd: 5000
   note: 2.5% total on each purchase of $5,000 or more; 2% base applies below.
 
@@ -71,14 +71,20 @@ pooling:
 benefit_flags: []
 
 sources:
-  - url: https://creditcards.chase.com/business-credit-cards
-    supports: [identity, currency, base_rate, category_rewards, large_purchase_rate, signup_bonus, pricing, business_approval, employee_cards, payment_type]
-    accessed: "2026-07-16"
+  - url: https://creditcards.chase.com/business-credit-cards/ink/premier
+    supports: [identity, currency, base_rate, category_rewards, large_purchase_rate, signup_bonus, pricing, employee_cards, payment_type]
+    accessed: "2026-07-17"
     added_by: claude-fable-5
     note: >-
-      $195 fee and the 2.5%-on-large-purchases structure quoted from the
-      compare page (verified 3-0 in the plan 21 research pass). 5% portal rate,
-      SUB, and approval tier are drafts — NEEDS human verification.
+      Official product page read in-browser 2026-07-17: $1,000/$10k/3mo SUB,
+      $195 fee, 2.5% on $5k+ purchases, 2% base, unlimited 5% Chase Travel,
+      Pay-in-Full + Flex for Business (17.74%-28.49%). Approval tier not on
+      page — still inferred.
+  - url: https://creditcards.chase.com/business-credit-cards
+    supports: [business_approval]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: Approval tier inferred — NEEDS human verification.
   - url: https://thepointsguy.com/credit-cards/chase-ink-card-showdown/
     supports: [pooling]
     accessed: "2026-07-16"
@@ -94,5 +100,5 @@ notes: >-
 
 verification:
   last_verified_date: "2026-07-17"
-  verified_by: "claude-fable-5 — fee/large-purchase rate/SUB verified vs chase.com compare page 2026-07-17; 5% portal travel rate + approval tier still inferred"
+  verified_by: "claude-fable-5 — fee/large-purchase rate/SUB/5% portal travel verified in-browser vs chase.com product page 2026-07-17; approval tier + pooling break still inferred"
   confidence: medium

@@ -55,3 +55,5 @@ groups:
       office_supply_stores: {label: "US office supply stores"}
       squarespace: {label: "Squarespace subscription"}
       walmart_plus: {label: "Walmart+ monthly membership"}
+      google_workspace: {label: "Google Workspace subscription"}
+      ziprecruiter: {label: "ZipRecruiter (job postings / hiring)"}

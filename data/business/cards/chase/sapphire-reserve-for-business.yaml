@@ -13,7 +13,7 @@ unlocks_transfers: true
 
 category_rewards:
   - category: travel_flights
-    rate: 8                  # 8x on Chase Travel portal bookings — drafted from memory, NEEDS human verification
+    rate: 8                  # "8x points on all purchases through Chase Travel, including The Edit" — chase.com product page, verified 2026-07-17
     portal_only: true
     notes: Chase Travel portal bookings.
   - category: travel_hotels
@@ -25,23 +25,72 @@ category_rewards:
     portal_only: true
     notes: Chase Travel portal bookings.
   - category: travel_flights
-    rate: 4                  # 4x on direct flight bookings — drafted from memory, NEEDS human verification
+    rate: 4                  # "4x points on flights & hotels booked direct" — chase.com product page, verified 2026-07-17
     notes: Booked directly with airlines.
   - category: travel_hotels
     rate: 4
     notes: Booked directly with hotels.
+  - category: advertising
+    rate: 3                  # "3x points on social media & search engine advertising" — chase.com product page, verified 2026-07-17
 
 merchant_rewards: []
 
 credits:
   - name: Annual travel credit
-    amount_usd: 300
+    amount_usd: 300          # "up to $300 in statement credits each anniversary year" on travel — chase.com product page, verified 2026-07-17
     period: annual
     category: travel_other
     realistic_capture_rate_note: >-
       Applies automatically to travel purchases across categories — any business
       with travel spend captures it fully. Recorded against travel_other; it
-      offsets any travel category.
+      offsets any travel category. Qualifying purchases earn no points.
+  - name: The Edit hotel credit
+    amount_usd: 500          # "up to $500 in automatic statement credits annually for bookings made with The Edit, maximum of $250 per transaction" — chase.com product page, verified 2026-07-17
+    period: annual
+    category: travel_hotels
+    portal_only: true
+    realistic_capture_rate_note: >-
+      Only on The Edit (Chase Travel luxury collection) bookings, two-night
+      minimum, $250/transaction max — premium-property rates often exceed
+      direct alternatives, so realistic capture is below face.
+  - name: Select Chase Travel hotel credit
+    amount_usd: 250          # "up to $250 in statement credits through 12/31/26 on prepaid Chase Travel hotel bookings" with IHG/Montage/Pendry/Omni/Virgin/Minor/Pan Pacific — chase.com product page, verified 2026-07-17
+    period: annual
+    category: travel_hotels
+    portal_only: true
+    expires: "2026-12-31"
+    realistic_capture_rate_note: >-
+      Prepaid Chase Travel bookings at seven select chains only, two-night
+      minimum, expires 12/31/26 — situational capture.
+  - name: Google Workspace credit
+    amount_usd: 200          # "up to $200 in annual statement credits on purchases made directly on Google Workspace" — chase.com product page, verified 2026-07-17
+    period: annual
+    usage_keys: [google_workspace]
+    realistic_capture_rate_note: >-
+      Near-automatic for a business already paying for Google Workspace
+      direct; $0 otherwise.
+  - name: ZipRecruiter credit
+    amount_usd: 200          # "up to $400 in annual statement credits ... up to $200 January-June and up to $200 July-December" — chase.com product page, verified 2026-07-17
+    period: semiannual
+    usage_keys: [ziprecruiter]
+    realistic_capture_rate_note: >-
+      $200 per half-year against direct ZipRecruiter purchases — full capture
+      only for businesses hiring through ZipRecruiter in both halves.
+  - name: Lyft in-app credit
+    amount_usd: 10           # "up to $10 in monthly in-app credits ... through 9/30/27" — chase.com product page, verified 2026-07-17
+    period: monthly
+    category: transit
+    expires: "2027-09-30"
+    realistic_capture_rate_note: >-
+      $10/month Lyft in-app credit through 9/30/27 — captured by teams that
+      ride monthly; forfeits otherwise.
+  - name: Global Entry / TSA PreCheck / NEXUS fee credit
+    amount_usd: 120          # "one statement credit of up to $120 every four years" — chase.com product page, verified 2026-07-17
+    period: every_4_years
+    usage_keys: [global_entry_tsa]
+    realistic_capture_rate_note: >-
+      One application-fee reimbursement every 4 years; captured once per
+      renewal cycle by enrollees.
 
 signup_bonus:
   value:
@@ -68,19 +117,29 @@ employee_cards:
   fee_usd: 0                 # "Employee Cards at no additional cost" (verified 3-0)
   controls: [spending_limits]
 
-payment_type: revolving
+payment_type: charge         # "A Pay in Full credit card" — chase.com product page, verified 2026-07-17
 
 benefit_flags: [lounge_access]
 
 sources:
-  - url: https://creditcards.chase.com/business-credit-cards
-    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, pricing, business_approval, employee_cards, payment_type, benefit_flags]
-    accessed: "2026-07-16"
+  - url: https://creditcards.chase.com/business-credit-cards/sapphire/reserve
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, pricing, employee_cards, payment_type, benefit_flags]
+    accessed: "2026-07-17"
     added_by: claude-fable-5
     note: >-
-      $795 fee + free employee cards quoted from the compare page (verified 3-0
-      in the plan 21 research pass). Earn structure, travel credit, and SUB are
-      drafted from memory — NEEDS human verification.
+      Official product page read in-browser 2026-07-17: $795 fee, elevated
+      200k/$30k/6mo SUB (150k struck), 8x Chase Travel / 4x direct flights+
+      hotels / 3x social+search advertising, pay-in-full card, $300 travel
+      credit, The Edit $500, select-hotels $250 (thru 12/31/26), Google
+      Workspace $200, ZipRecruiter $400, Lyft $10/mo (thru 9/30/27), GE/TSA/
+      NEXUS $120/4yr, Sapphire Lounge + Priority Pass. DoorDash promo stack
+      and $100 giftcards.com credit not modeled (promo-conditional); IHG
+      Platinum Elite status through 12/31/27 noted unscored.
+  - url: https://creditcards.chase.com/business-credit-cards
+    supports: [business_approval]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: Approval tier inferred — NEEDS human verification.
 
 notes: >-
   22B batch 2. Premium UR gateway on the business side alongside Ink Preferred.
@@ -88,6 +147,6 @@ notes: >-
   picks the better effective line per bucket.
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft; fee/employee-cards research-verified) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — fee/rates/SUB/credit-stack/pay-in-full verified in-browser vs chase.com product page 2026-07-17; approval tier still inferred, NEEDS human verification"
+  confidence: medium

@@ -12,7 +12,7 @@ unlocks_transfers: true      # premium UR card: unlocks transfer partners for ev
 
 category_rewards:
   - category: travel_flights
-    rate: 3                  # "3X on Travel and Business categories on $150K combined spend" (chase.com compare page, verified 2026-07-16)
+    rate: 3                  # "3 points per $1 on the first $150,000 spent in combined purchases ... each account anniversary year: shipping, social media/search engine advertising, internet/cable/phone, travel" — chase.com product page, verified 2026-07-17
     cap: &pool150k
       period: annual
       max_spend_usd: 150000
@@ -67,15 +67,21 @@ payment_type: revolving
 benefit_flags: [cell_phone_protection]
 
 sources:
-  - url: https://creditcards.chase.com/business-credit-cards
-    supports: [identity, currency, base_rate, category_rewards, signup_bonus, pricing, business_approval, employee_cards, payment_type, benefit_flags]
-    accessed: "2026-07-16"
+  - url: https://creditcards.chase.com/business-credit-cards/ink/business-preferred
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, pricing, employee_cards, payment_type, benefit_flags]
+    accessed: "2026-07-17"
     added_by: claude-fable-5
     note: >-
-      Compare page quotes "3X on Travel and Business categories on $150K
-      combined spend" and the $95 fee (verified 3-0 in the plan 21 research
-      pass). SUB figure, FTF, and approval tier are drafts — NEEDS human
-      verification against the full product page.
+      Official product page read in-browser 2026-07-17: 100k/$8k/3mo SUB, $95
+      fee, 3X on $150k anniversary-year combined pool (shipping, social
+      media/search engine advertising, internet/cable/phone, travel), APR
+      17.74%-26.74%. Time-boxed 5X Lyft not modeled. Approval tier not on
+      page — still inferred.
+  - url: https://creditcards.chase.com/business-credit-cards
+    supports: [business_approval]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: Approval tier inferred — NEEDS human verification.
 
 notes: >-
   Plan 22A seed card. Single six-category $150k combined pool exercises a wide
@@ -84,5 +90,5 @@ notes: >-
 
 verification:
   last_verified_date: "2026-07-17"
-  verified_by: "claude-fable-5 — caps/fee/SUB verified vs chase.com compare page 2026-07-17; approval tier still inferred"
+  verified_by: "claude-fable-5 — caps/fee/SUB verified in-browser vs chase.com product page 2026-07-17; approval tier still inferred"
   confidence: medium

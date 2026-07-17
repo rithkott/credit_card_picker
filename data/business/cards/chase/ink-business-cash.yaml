@@ -13,7 +13,7 @@ base_rate: 1
 
 category_rewards:
   - category: office_supplies
-    rate: 5                  # "5% Cash Back on Business Essentials on $25K max combined spend" (chase.com compare page, verified 2026-07-16)
+    rate: 5                  # "5% cash back on the first $25,000 spent in combined purchases at office supply stores and on internet, cable and phone services each account anniversary year" — chase.com product page, verified 2026-07-17 (caps run on the account anniversary year, modeled as annual)
     cap:
       period: annual
       max_spend_usd: 25000
@@ -27,7 +27,7 @@ category_rewards:
       fallback_rate: 1
       shared_cap_id: essentials_25k
   - category: fuel_fleet
-    rate: 2                  # "2% cash back at gas stations and restaurants on the first $25,000 combined" (separate pool)
+    rate: 2                  # "2% cash back on the first $25,000 spent in combined purchases at gas stations and restaurants each account anniversary year" — chase.com product page, verified 2026-07-17 (separate pool)
     cap:
       period: annual
       max_spend_usd: 25000
@@ -79,15 +79,17 @@ payment_type: revolving
 benefit_flags: []
 
 sources:
-  - url: https://creditcards.chase.com/business-credit-cards
-    supports: [identity, currency, base_rate, category_rewards, signup_bonus, pricing, business_approval, employee_cards, payment_type]
-    accessed: "2026-07-16"
+  - url: https://creditcards.chase.com/business-credit-cards/ink/cash
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, pricing, employee_cards, payment_type]
+    accessed: "2026-07-17"
     added_by: claude-fable-5
     note: >-
-      Compare page quotes "5% Cash Back on Business Essentials on $25K max
-      combined spend" and free employee cards (cap structure verified 3-0 in the
-      plan 21 research pass). SUB amount, FTF, and approval tier are drafts —
-      NEEDS human verification against the full product page.
+      Official product page read in-browser 2026-07-17: both $25k
+      anniversary-year pools, 1% base, elevated $1,000/$8k/4mo SUB ($750
+      struck through), $0 fee, 0% intro APR 12mo then 16.74%-24.74%.
+      Time-boxed extras (5% Lyft through 9/30/27, 3-month Instacart+ with
+      $20/mo credit, ends 12/31/27) not modeled. FTF and approval tier not on
+      page — still inferred.
 
 notes: >-
   Plan 22A seed card. Two independent $25k combined pools (business essentials;

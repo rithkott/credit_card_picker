@@ -7,7 +7,7 @@ network: visa
 currency:
   type: points               # UR-denominated cash back; transferable only via a gateway
   program: chase_ur
-base_rate: 1.5               # "Unlimited 1.5% cash back" (chase.com compare page quote, plan 21 research pass 2026-07-16)
+base_rate: 1.5               # "Unlimited 1.5% cash back on every purchase" — chase.com product page, verified 2026-07-17
 
 category_rewards: []
 merchant_rewards: []
@@ -44,14 +44,19 @@ payment_type: revolving
 benefit_flags: []
 
 sources:
-  - url: https://creditcards.chase.com/business-credit-cards
-    supports: [identity, currency, base_rate, signup_bonus, pricing, business_approval, employee_cards, payment_type]
-    accessed: "2026-07-16"
+  - url: https://creditcards.chase.com/business-credit-cards/ink/unlimited
+    supports: [identity, currency, base_rate, signup_bonus, pricing, employee_cards, payment_type]
+    accessed: "2026-07-17"
     added_by: claude-fable-5
     note: >-
-      Rate, fee, and free employee cards quoted from the compare page in the
-      plan 21 research pass (Ink lineup claim verified 3-0). SUB, FTF, and
-      approval tier are drafts — NEEDS human verification.
+      Official product page read in-browser 2026-07-17: unlimited 1.5%, $0
+      fee, elevated $1,000/$8k/4mo SUB ($750 struck), 0% intro APR 12mo then
+      16.74%-24.74%. FTF and approval tier not on page — still inferred.
+  - url: https://creditcards.chase.com/business-credit-cards
+    supports: [business_approval]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: Approval tier inferred — NEEDS human verification.
 
 notes: >-
   22B batch 1 (protocol: docs/ai-conversion-protocol-business.md). Cash-back-
@@ -60,5 +65,5 @@ notes: >-
 
 verification:
   last_verified_date: "2026-07-17"
-  verified_by: "claude-fable-5 — rate/fee/SUB/employee-cards verified vs chase.com compare page 2026-07-17; FTF + approval tier still inferred"
+  verified_by: "claude-fable-5 — rate/fee/SUB/employee-cards verified in-browser vs chase.com product page 2026-07-17; FTF + approval tier still inferred"
   confidence: medium
