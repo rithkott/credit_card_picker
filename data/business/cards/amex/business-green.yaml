@@ -12,27 +12,30 @@ base_rate: 1
 
 category_rewards:
   - category: travel_flights
-    rate: 2                  # 2x on amextravel.com bookings — drafted from memory, NEEDS human verification
+    rate: 2                  # "2X points on flights & prepaid hotels booked on AmexTravel.com or the Amex Travel App" — amex product page, verified 2026-07-17
     portal_only: true
     notes: amextravel.com bookings.
   - category: travel_hotels
     rate: 2
     portal_only: true
-    notes: amextravel.com bookings.
+    notes: Prepaid hotels via amextravel.com.
 
 merchant_rewards: []
 credits: []
 
 signup_bonus:
   value:
-    points: 15000            # drafted from memory — NEEDS human verification
+    points: 25000            # "Special Welcome Offer: previously 15,000, now 25,000 MR points after $3,000 in first 3 months" — amex product page, verified 2026-07-17
   spend_requirement_usd: 3000
   window_months: 3
-  notes: Offer figure NEEDS human verification; once-per-lifetime rule applies.
+  notes: >-
+    Elevated "special welcome offer" (standard is 15,000) — no end date shown
+    on page; re-check at next verification pass. Once-per-lifetime rule
+    applies. Verified vs americanexpress.com 2026-07-17.
 
 pricing:
   model: annual_fee
-  annual_fee_usd: 95         # drafted from memory — NEEDS human verification
+  annual_fee_usd: 95         # "Annual Fee: $95" — amex product page, verified 2026-07-17
   foreign_transaction_pct: 2.7
 
 business_approval:
@@ -51,15 +54,18 @@ payment_type: charge
 benefit_flags: []
 
 sources:
-  - url: https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/
-    supports: [identity, currency, base_rate, category_rewards, signup_bonus, pricing, business_approval, employee_cards, payment_type]
-    accessed: "2026-07-16"
+  - url: https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/american-express-business-green-card-amex/
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, pricing, payment_type]
+    accessed: "2026-07-17"
     added_by: claude-fable-5
-    note: Figures drafted from memory — NEEDS human verification.
+    note: >-
+      Official product page read in-browser 2026-07-17: $95 fee, 2X portal
+      flights + prepaid hotels, 1X other, special 25k/$3k/3mo SUB (standard
+      15k). FTF and approval tier not stated on page — still inferred.
 
 notes: 22B batch 4. Rarely optimal on earn — kept for corpus completeness (exhaustive scope).
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — fee/rates/SUB verified in-browser vs americanexpress.com product page 2026-07-17; FTF + approval tier still inferred, NEEDS human verification"
+  confidence: medium

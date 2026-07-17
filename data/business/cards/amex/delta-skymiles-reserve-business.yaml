@@ -11,37 +11,67 @@ base_rate: 1
 
 category_rewards:
   - category: travel_flights
-    rate: 3                  # 3x on Delta purchases — Delta only, mapping caveat; NEEDS human verification
+    rate: 3                  # "3X miles per every eligible dollar spent on purchases made directly with Delta" — amex product page, verified 2026-07-17
     notes: Delta purchases specifically — other airfare earns base.
+  - category: transit
+    rate: 1.5                # "1.5X miles on eligible transit, U.S. shipping & U.S. office supply store purchases" — amex product page, verified 2026-07-17
+  - category: shipping
+    rate: 1.5
+  - category: office_supplies
+    rate: 1.5
 
 merchant_rewards: []
 
-large_purchase_rate:
-  rate: 1.5
-  min_transaction_usd: 5000
-  note: 1.5x on eligible purchases of $5,000+ — drafted from memory, NEEDS human verification.
-
 credits:
-  - name: Companion certificate (incl. first class, annual)
+  - name: Companion certificate (First/Comfort/Main, annual)
     kind: in_kind
     amount_usd: 400          # curator estimate — first-class-eligible companion fare value band
     period: annual
     usage_keys: [delta]
     realistic_capture_rate_note: >-
-      Annual companion certificate valid up to first class — Delta-loyal
-      companies pairing premium-cabin flights capture the most; estimate is a
-      mid-band domestic first-class fare.
+      "Companion Certificate on a Delta First, Delta Comfort, or Delta Main
+      domestic, Caribbean, or Central American round-trip flight each year
+      after renewal" (amex product page, verified 2026-07-17; $22-$250
+      taxes/fees, Basic excluded). Delta-loyal companies pairing premium-cabin
+      flights capture the most; estimate is a mid-band domestic first-class
+      fare.
+  - name: Resy credit
+    amount_usd: 20           # "up to $240 back annually ... up to $20 each month" at US Resy restaurants — amex product page, verified 2026-07-17
+    period: monthly
+    category: dining
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $20/month at qualifying U.S. Resy restaurants — near-full capture for
+      businesses with regular client dining in Resy metros, monthly forfeit
+      otherwise.
+  - name: Rideshare credit
+    amount_usd: 10           # "up to $10 back in statement credits each month on U.S. rideshare purchases with select providers" — amex product page, verified 2026-07-17
+    period: monthly
+    category: transit
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $10/month on U.S. rideshare with select providers — captured by teams
+      that ride monthly; forfeits otherwise.
+  - name: Delta Stays credit
+    amount_usd: 250          # "up to $250 Delta Stays credit ... for eligible prepaid Delta Stays bookings on delta.com" — amex product page, verified 2026-07-17
+    period: annual
+    usage_keys: [delta]
+    portal_only: false
+    realistic_capture_rate_note: >-
+      Annual credit only against prepaid Delta Stays (delta.com hotel portal)
+      bookings — requires routing hotel spend through Delta's portal; casual
+      users capture little.
 
 signup_bonus:
   value:
-    points: 100000           # drafted from memory — NEEDS human verification
+    points: 80000            # "80,000 bonus miles after you spend $12,000 ... first 6 months" — amex product page, verified 2026-07-17
   spend_requirement_usd: 12000
   window_months: 6
-  notes: Offer figure NEEDS human verification; once-per-lifetime rule applies.
+  notes: Verified vs americanexpress.com product page 2026-07-17; once-per-lifetime rule applies.
 
 pricing:
   model: annual_fee
-  annual_fee_usd: 650        # drafted from memory — NEEDS human verification
+  annual_fee_usd: 650        # "Annual Fee: $650" — amex product page, verified 2026-07-17
   foreign_transaction_pct: 0
 
 business_approval:
@@ -60,15 +90,29 @@ payment_type: revolving
 benefit_flags: [lounge_access, free_checked_bag]
 
 sources:
+  - url: https://www.americanexpress.com/en-us/business/credit-cards/delta-skymiles-reserve/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, pricing, payment_type, benefit_flags]
+    accessed: "2026-07-17"
+    added_by: claude-fable-5
+    note: >-
+      Official product page read in-browser 2026-07-17: $650 fee, 80k/$12k/6mo
+      SUB, 3X Delta + 1.5X transit/US shipping/US office supply (prior draft's
+      1.5x-on-$5k+ line was wrong — removed), companion cert
+      (First/Comfort/Main, after renewal), $240 Resy, $120 rideshare, $250
+      Delta Stays. Sky Club 15 visits/Medallion year (unlimited after $75k
+      calendar spend) + Centurion access when flying Delta. Approval tier and
+      employee-card details still inferred.
   - url: https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/
-    supports: [identity, currency, base_rate, category_rewards, large_purchase_rate, credits, signup_bonus, pricing, business_approval, employee_cards, payment_type, benefit_flags]
+    supports: [business_approval, employee_cards]
     accessed: "2026-07-16"
     added_by: claude-fable-5
-    note: Figures drafted from memory — NEEDS human verification.
+    note: Approval tier and employee-card details inferred — NEEDS human verification.
 
-notes: 22B batch 4. Sky Club access is a benefit flag (unscored); companion cert in_kind estimate flagged for review.
+notes: >-
+  22B batch 4. Sky Club access is a benefit flag (unscored); companion cert
+  in_kind estimate flagged for review.
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — fee/rates/SUB/credits/companion-cert verified in-browser vs americanexpress.com product page 2026-07-17; approval tier + in_kind companion estimate NEEDS human verification"
+  confidence: medium

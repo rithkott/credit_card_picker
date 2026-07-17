@@ -10,17 +10,37 @@ base_rate: 1
 
 category_rewards:
   - category: travel_flights
-    rate: 3                  # 3x on Delta purchases — Delta only, mapping caveat; NEEDS human verification
+    rate: 3                  # "3X miles ... on purchases made directly with Delta and hotels" — amex product page, verified 2026-07-17
     notes: Delta purchases specifically — other airfare earns base.
+  - category: travel_hotels
+    rate: 3                  # direct hotel purchases (not portal-gated) — amex product page, verified 2026-07-17
+    notes: Purchases made directly with hotels.
+  - category: transit
+    rate: 1.5                # "1.5X on eligible transit, U.S. shipping, or single purchases of $5K or more, up to $100K of combined eligible purchases per year" — amex product page, verified 2026-07-17
+    cap: &plat100k
+      period: annual
+      max_spend_usd: 100000
+      fallback_rate: 1
+      shared_cap_id: deltaplat_100k
   - category: shipping
-    rate: 1.5                # 1.5x on US shipping + purchases of $5k+ (see large_purchase) — drafted from memory, NEEDS human verification
+    rate: 1.5
+    cap: *plat100k
 
 merchant_rewards: []
 
 large_purchase_rate:
   rate: 1.5
   min_transaction_usd: 5000
-  note: 1.5x on eligible purchases of $5,000 or more — drafted from memory, NEEDS human verification.
+  cap:
+    period: annual
+    max_spend_usd: 100000
+    fallback_rate: 1
+    shared_cap_id: deltaplat_100k
+  note: >-
+    Single eligible purchases of $5,000+ earn 1.5X, sharing the $100K
+    combined annual pool with the transit and shipping lines (amex product
+    page, verified 2026-07-17). Higher accelerators win when a purchase
+    qualifies for both.
 
 credits:
   - name: Companion certificate (domestic main cabin, annual)
@@ -29,20 +49,45 @@ credits:
     period: annual
     usage_keys: [delta]
     realistic_capture_rate_note: >-
-      Annual companion certificate (taxes/fees apply) — worth face only to
-      Delta-loyal companies whose staff actually pair flights. Estimate
-      reasoning: typical domestic round-trip fare band.
+      "Companion Certificate on a Delta Main domestic, Caribbean, or Central
+      American round-trip flight each year after renewal" (amex product page,
+      verified 2026-07-17; $22-$250 taxes/fees, Basic excluded). Worth face
+      only to Delta-loyal companies whose staff actually pair flights.
+  - name: Resy credit
+    amount_usd: 10           # "up to $120 in statement credits annually after making eligible Resy purchases" — amex product page, verified 2026-07-17; monthly cadence mirrors the consumer Delta Platinum ($10/mo)
+    period: monthly
+    category: dining
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Up to $120/yr at qualifying U.S. Resy restaurants (modeled $10/month per
+      issuer pattern) — captured by teams dining in Resy metros, forfeits
+      otherwise.
+  - name: Delta Stays credit
+    amount_usd: 200          # "$200 Delta Stays statement credit ... eligible prepaid Delta Stays bookings on delta.com" — amex product page, verified 2026-07-17
+    period: annual
+    usage_keys: [delta]
+    realistic_capture_rate_note: >-
+      Annual credit only against prepaid Delta Stays (delta.com hotel portal)
+      bookings — requires routing hotel spend through Delta's portal.
+  - name: Rideshare credit
+    amount_usd: 10           # "up to $10 back in statement credits each month on U.S. rideshare purchases with select providers" — amex product page, verified 2026-07-17
+    period: monthly
+    category: transit
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $10/month on U.S. rideshare with select providers — captured by teams
+      that ride monthly; forfeits otherwise.
 
 signup_bonus:
   value:
-    points: 85000            # drafted from memory — NEEDS human verification
-  spend_requirement_usd: 8000
+    points: 70000            # "70,000 bonus miles after you spend $6,000 ... first 6 months" — amex product page, verified 2026-07-17
+  spend_requirement_usd: 6000
   window_months: 6
-  notes: Offer figure NEEDS human verification; once-per-lifetime rule applies.
+  notes: Verified vs americanexpress.com product page 2026-07-17; once-per-lifetime rule applies.
 
 pricing:
   model: annual_fee
-  annual_fee_usd: 350        # drafted from memory — NEEDS human verification
+  annual_fee_usd: 350        # "Annual Fee: $350" — amex product page, verified 2026-07-17
   foreign_transaction_pct: 0
 
 business_approval:
@@ -61,15 +106,24 @@ payment_type: revolving
 benefit_flags: [free_checked_bag]
 
 sources:
+  - url: https://www.americanexpress.com/en-us/business/credit-cards/delta-skymiles-platinum/
+    supports: [identity, currency, base_rate, category_rewards, large_purchase_rate, credits, signup_bonus, pricing, payment_type, benefit_flags]
+    accessed: "2026-07-17"
+    added_by: claude-fable-5
+    note: >-
+      Official product page read in-browser 2026-07-17: $350 fee, 70k/$6k/6mo
+      SUB, 3X Delta + direct hotels, 1.5X transit/US shipping/$5k+ purchases
+      sharing a $100K combined annual pool, main-cabin companion cert after
+      renewal, $120 Resy, $200 Delta Stays, $120 rideshare.
   - url: https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/
-    supports: [identity, currency, base_rate, category_rewards, large_purchase_rate, credits, signup_bonus, pricing, business_approval, employee_cards, payment_type, benefit_flags]
+    supports: [business_approval, employee_cards]
     accessed: "2026-07-16"
     added_by: claude-fable-5
-    note: Figures drafted from memory — NEEDS human verification.
+    note: Approval tier and employee-card details inferred — NEEDS human verification.
 
 notes: 22B batch 4. Companion cert (in_kind) carries much of the card's value — first human-review target.
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — fee/rates/SUB/credits/companion-cert verified in-browser vs americanexpress.com product page 2026-07-17; approval tier + in_kind companion estimate NEEDS human verification"
+  confidence: medium

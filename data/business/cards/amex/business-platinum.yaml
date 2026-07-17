@@ -68,14 +68,67 @@ credits:
       $10/month against US wireless charges paid on the card — near-automatic
       for a business that pays its phone bill with the card, $0 otherwise.
   - name: Dell statement credit
-    amount_usd: 150
+    amount_usd: 150           # "up to $150 on U.S. purchases directly with Dell Technologies" — amex product page, verified 2026-07-17
     period: annual
     usage_keys: [dell]
     requires_enrollment: true
     realistic_capture_rate_note: >-
-      Only against Dell purchases; conservative $150 face recorded (the
-      additional $1,000-after-$5k Dell tranche is enterprise-sized and omitted —
-      note for 22B re-check). Worthless to companies that don't buy Dell.
+      Only against Dell purchases; conservative $150 face recorded — the page
+      confirms an additional $1,000 statement credit after $5,000+ of Dell
+      purchases per calendar year, which is enterprise-sized and deliberately
+      omitted. Worthless to companies that don't buy Dell.
+  - name: ChatGPT Business credit
+    amount_usd: 300           # "up to $300 in statement credits per calendar year on U.S. purchases of ChatGPT Business" — amex product page, verified 2026-07-17
+    period: annual
+    usage_keys: [chatgpt]
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Only against U.S. ChatGPT Business (team workspace) purchases, which
+      auto-renew; near-full capture for a business already paying for ChatGPT
+      Business, $0 otherwise.
+  - name: Adobe credit
+    amount_usd: 250           # "$250 statement credit per calendar year after you spend $600 or more ... directly with Adobe" — amex product page, verified 2026-07-17
+    period: annual
+    usage_keys: [adobe]
+    unlock_spend_usd: 600
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Single $250 credit gated on $600+ of direct Adobe purchases in the
+      calendar year — captured by businesses on Creative Cloud team plans,
+      $0 otherwise.
+  - name: Indeed credit
+    amount_usd: 90            # "up to $90 in statement credits quarterly for purchases with Indeed" — amex product page, verified 2026-07-17
+    period: quarterly
+    usage_keys: [indeed]
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $90/quarter against Indeed hiring spend — full capture only for
+      businesses recruiting continuously through Indeed year-round.
+  - name: CLEAR+ credit
+    amount_usd: 219           # "up to $219 per calendar year for an auto-renewing CLEAR+ Membership" — amex product page, verified 2026-07-17
+    period: annual
+    usage_keys: [clear]
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Covers one auto-renewing CLEAR+ membership (excl. taxes/fees); full
+      value only to CLEAR users.
+  - name: Hilton for Business credit
+    amount_usd: 50            # "statement credits of up to $50 quarterly on eligible purchases made directly with Hilton" — amex product page, verified 2026-07-17
+    period: quarterly
+    usage_keys: [hilton]
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $50/quarter on direct Hilton purchases, requires Hilton for Business
+      enrollment; quarterly cadence means sporadic travelers capture only the
+      quarters they stay.
+  - name: Global Entry or TSA PreCheck fee credit
+    amount_usd: 120           # "$120 statement credit for a Global Entry application fee ... every 4 years" — amex product page, verified 2026-07-17
+    period: every_4_years
+    usage_keys: [global_entry_tsa]
+    realistic_capture_rate_note: >-
+      One credit every 4 years, up to $120 (Global Entry) or $85 (TSA
+      PreCheck); modeled at the $120 ceiling, captured once per renewal cycle
+      by enrollees.
   - name: Hotel credit (Fine Hotels & Resorts / The Hotel Collection)
     amount_usd: 600           # $300 twice annually (NerdWallet review, verified 2026-07-17)
     period: annual
@@ -88,12 +141,15 @@ credits:
 
 signup_bonus:
   value:
-    points: 150000           # "150k points after $20,000 in 3 months" — figure NOT re-verified this session, NEEDS human verification
+    points: 300000           # "AS HIGH AS 300,000 Membership Rewards Points after you spend $20,000 ... first 3 months" — amex product page, verified 2026-07-17
   spend_requirement_usd: 20000
   window_months: 3
   notes: >-
-    Offer figure drafted from memory of the standard 2026 offer; NEEDS human
-    verification. Amex once-per-lifetime bonus rule applies.
+    "Apply and find out" variable offer — 300,000 is the advertised ceiling
+    ("welcome offers vary and you may not be eligible"); exact amount disclosed
+    at application and may be lower. Recorded at the ceiling per corpus
+    convention (consumer Amex cards do the same). Amex once-per-lifetime bonus
+    rule applies. Verified vs americanexpress.com 2026-07-17.
 
 pricing:
   model: annual_fee
@@ -125,15 +181,28 @@ payment_type: charge
 benefit_flags: [lounge_access]
 
 sources:
-  - url: https://www.nerdwallet.com/reviews/credit-cards/american-express-business-platinum
-    supports: [identity, currency, base_rate, category_rewards, large_purchase_rate, credits, signup_bonus, pricing, business_approval, payment_type, benefit_flags]
+  - url: https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/american-express-business-platinum-credit-card-amex/
+    supports: [identity, currency, base_rate, category_rewards, large_purchase_rate, credits, signup_bonus, pricing, payment_type, benefit_flags]
     accessed: "2026-07-17"
     added_by: claude-fable-5
     note: >-
-      $895 fee, 2X categories + $5k+ line with $2M cap, 5X portal earning, and
-      the airline/Dell/wireless/hotel credit stack confirmed against this
-      review 2026-07-17. SUB, employee fee, approval tier are drafts — NEEDS
-      human verification against americanexpress.com terms.
+      Official product page read in-browser 2026-07-17: $895 fee, variable SUB
+      as-high-as 300k/$20k/3mo, 5X portal flights+prepaid hotels, 2X key
+      business categories or $5k+ purchases with $2M calendar-year cap, and the
+      full credit stack (hotel $300x2, airline $200, Dell $150+$1k tranche,
+      ChatGPT $300, Adobe $250, Indeed $90/qtr, CLEAR+ $219, Hilton $50/qtr,
+      wireless $10/mo, Global Entry/TSA). $250k-spend unlocks (One AP $2,400,
+      Amex Travel flight $1,200) omitted as enterprise-sized. Page does not
+      enumerate the 2X category list — construction/electronics-software/
+      shipping lines retained from prior research.
+  - url: https://www.nerdwallet.com/reviews/credit-cards/american-express-business-platinum
+    supports: [identity, currency, base_rate, category_rewards, large_purchase_rate, pricing, business_approval, payment_type, benefit_flags]
+    accessed: "2026-07-17"
+    added_by: claude-fable-5
+    note: >-
+      Prior verification pass; 2X category enumeration and approval-tier
+      estimate come from this review. Employee fee, approval tier still NEEDS
+      human verification.
   - url: https://www.americanexpress.com/en-us/business/blueprint/help-center/business-card/employee-cards/
     supports: [employee_cards]
     accessed: "2026-07-16"
@@ -148,5 +217,5 @@ notes: >-
 
 verification:
   last_verified_date: "2026-07-17"
-  verified_by: "claude-fable-5 (AI draft; fee/rates/credits verified vs NerdWallet) — NEEDS human verification"
-  confidence: low
+  verified_by: "claude-fable-5 — fee/rates/SUB/credit-stack verified in-browser vs americanexpress.com product page 2026-07-17; employee-card fee, approval tier, 2X category enumeration still NEEDS human verification"
+  confidence: medium
