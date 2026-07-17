@@ -1,0 +1,75 @@
+# Costco co-brand business card (Citi): 4% gas/EV (capped), 3% dining+travel,
+# 2% Costco, 1% base. Costco membership prerequisite (unscored, noted).
+id: costco-anywhere-business
+name: Costco Anywhere Visa Business Card by Citi
+issuer: citi
+network: visa
+currency:
+  type: cash                 # annual reward certificate redeemable at Costco ≈ cash — noted
+  program: cash
+base_rate: 1
+
+category_rewards:
+  - category: fuel_fleet
+    rate: 4                  # 4% on gas/EV worldwide, first $7,000/yr then 1% — drafted from memory, NEEDS human verification
+    cap:
+      period: annual
+      max_spend_usd: 7000
+      fallback_rate: 1
+  - category: dining
+    rate: 3
+  - category: travel_flights
+    rate: 3
+  - category: travel_hotels
+    rate: 3
+  - category: travel_other
+    rate: 3
+
+merchant_rewards:
+  - merchant: costco
+    rate: 2                  # 2% at Costco and costco.com
+    notes: Requires an active Costco membership (prerequisite unscored — the business schema has no required_membership block; see card notes).
+
+credits: []
+
+signup_bonus: null           # typically no public SUB — NEEDS human verification
+
+pricing:
+  model: annual_fee
+  annual_fee_usd: 0          # no card fee with a paid Costco membership (membership itself unscored, noted)
+  foreign_transaction_pct: 0
+
+business_approval:
+  personal_guarantee: true
+  min_personal_fico_tier: excellent
+  entity_types: [sole_prop, llc, corp]
+  notes: >-
+    Citi underwrites this tier at excellent credit — inferred, NEEDS human
+    verification. Citi business velocity: 1 business card per 95 days
+    (issuer-rules: citi).
+
+employee_cards:
+  fee_usd: 0
+  controls: [spending_limits]
+
+payment_type: revolving
+
+benefit_flags: []
+
+sources:
+  - url: https://www.citi.com/credit-cards/citi-costco-anywhere-visa-business-credit-card
+    supports: [identity, currency, base_rate, category_rewards, merchant_rewards, signup_bonus, pricing, business_approval, employee_cards, payment_type]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: Figures drafted from memory — NEEDS human verification.
+
+notes: >-
+  22B batch 5. Rewards pay as an ANNUAL certificate redeemable at Costco
+  (cash-out at the warehouse) — modeled as cash with this liquidity caveat.
+  Costco membership prerequisite unscored; rewards certificate + membership
+  interplay flagged for the human pass.
+
+verification:
+  last_verified_date: "2026-07-16"
+  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
+  confidence: low

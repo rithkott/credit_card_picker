@@ -10,3 +10,6 @@ merchants:
   amazon_business:
     label: Amazon Business / AWS
     category: wholesale   # supplier-style spend; imperfect fit noted where used
+  costco:
+    label: Costco (warehouse + gas)
+    category: wholesale

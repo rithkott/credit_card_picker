@@ -1,0 +1,70 @@
+# $0-fee BofA flat 1.5x travel-points business card (points erase travel
+# purchases at 1cpp).
+id: business-advantage-travel-rewards
+name: Bank of America Business Advantage Travel Rewards
+issuer: bank-of-america
+network: mastercard          # inference — NEEDS human verification
+currency:
+  type: points
+  program: bofa_travel_rewards
+base_rate: 1.5               # 1.5x points on all purchases — drafted from memory, NEEDS human verification
+
+category_rewards:
+  - category: travel_flights
+    rate: 3                  # 3x on travel booked through the BofA Travel Center — drafted from memory, NEEDS human verification
+    portal_only: true
+    notes: BofA Travel Center bookings.
+  - category: travel_hotels
+    rate: 3
+    portal_only: true
+    notes: BofA Travel Center bookings.
+  - category: travel_other
+    rate: 3
+    portal_only: true
+    notes: BofA Travel Center bookings.
+portal: bofa_travel_center
+
+merchant_rewards: []
+credits: []
+
+signup_bonus:
+  value:
+    points: 30000            # drafted from memory — NEEDS human verification
+  spend_requirement_usd: 3000
+  window_months: 3
+  notes: Offer figure NEEDS human verification.
+
+pricing:
+  model: annual_fee
+  annual_fee_usd: 0
+  foreign_transaction_pct: 0
+
+business_approval:
+  personal_guarantee: true
+  min_personal_fico_tier: good
+  entity_types: [sole_prop, llc, corp]
+  notes: >-
+    Tier inferred — NEEDS human verification. Preferred Rewards for Business
+    boost recorded, unscored.
+
+employee_cards:
+  fee_usd: 0
+  controls: [spending_limits]
+
+payment_type: revolving
+
+benefit_flags: []
+
+sources:
+  - url: https://www.bankofamerica.com/smallbusiness/credit-cards/
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, pricing, business_approval, employee_cards, payment_type]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: Figures drafted from memory — NEEDS human verification.
+
+notes: 22B batch 5. Fixed-value travel-eraser points (0.6 floor / 1.0 optimistic).
+
+verification:
+  last_verified_date: "2026-07-16"
+  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
+  confidence: low

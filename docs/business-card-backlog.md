@@ -68,19 +68,23 @@ file converted) → `verified` (human-checked against issuer terms).
 | marriott-bonvoy-business | amex | drafted |
 | amazon-business-prime | amex | drafted |
 
-## 22B queue — Bank of America
+## Drafted (22B batch 5 — BofA + Citi)
 
-business-advantage-customized-cash, business-advantage-unlimited-cash,
-business-advantage-travel-rewards, alaska-airlines-business
+| id | issuer | status |
+|---|---|---|
+| business-advantage-customized-cash | bank-of-america | drafted |
+| business-advantage-unlimited-cash | bank-of-america | drafted |
+| business-advantage-travel-rewards | bank-of-america | drafted |
+| alaska-airlines-business | bank-of-america | drafted |
+| costco-anywhere-business | citi | drafted |
+| aadvantage-business | citi | drafted |
 
-## 22B queue — Citi
+## Fleet cards — EXCLUDED from V1 (decision 2026-07-17)
 
-costco-anywhere-business, aadvantage-business (Citi exited some business
-products — confirm active lineup during curation)
-
-## 22B queue — Fleet (vertical tier, decide inclusion at 22B start)
-
-wex-fleet, fuelman-fleet, shell-fleet-plus
+wex-fleet, fuelman-fleet, shell-fleet-plus: fleet cards rebate in cents PER
+GALLON (volume-based), not percent-per-dollar — the earn-rate schema cannot
+model them deterministically without a gallons input. Documented as out of
+scope; revisit if a per-unit-rebate mechanic is ever added.
 
 ## Notes
 

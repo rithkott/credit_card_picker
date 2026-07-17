@@ -1,0 +1,69 @@
+# American Airlines co-brand business card (Citi): 2x AA + business
+# categories, AA-locked currency.
+id: aadvantage-business
+name: CitiBusiness / AAdvantage Platinum Select Mastercard
+issuer: citi
+network: mastercard
+currency:
+  type: points
+  program: aa_advantage
+base_rate: 1
+
+category_rewards:
+  - category: travel_flights
+    rate: 2                  # 2x on American Airlines purchases — AA only, mapping caveat; NEEDS human verification
+    notes: American Airlines purchases specifically — other airfare earns base.
+  - category: fuel_fleet
+    rate: 2                  # 2x gas stations — drafted from memory, NEEDS human verification
+  - category: telecom
+    rate: 2                  # 2x telecommunications/cable/satellite — drafted from memory
+  - category: shipping
+    rate: 2                  # 2x at car rental agencies too — travel_other omitted pending verification
+
+merchant_rewards: []
+
+credits: []
+
+signup_bonus:
+  value:
+    points: 65000            # drafted from memory — NEEDS human verification
+  spend_requirement_usd: 4000
+  window_months: 4
+  notes: Offer figure NEEDS human verification.
+
+pricing:
+  model: annual_fee
+  annual_fee_usd: 99
+  first_year_waived: true    # NEEDS human verification
+  foreign_transaction_pct: 0
+
+business_approval:
+  personal_guarantee: true
+  min_personal_fico_tier: very_good
+  entity_types: [sole_prop, llc, corp]
+  notes: >-
+    Tier inferred — NEEDS human verification. Citi business velocity: 1
+    business card per 95 days. CitiBusiness cards do not report to personal
+    credit (no 5/24 addition).
+
+employee_cards:
+  fee_usd: 0
+  controls: [spending_limits]
+
+payment_type: revolving
+
+benefit_flags: [free_checked_bag]
+
+sources:
+  - url: https://www.citi.com/credit-cards/citibusiness-aadvantage-platinum-select-credit-card
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, pricing, business_approval, employee_cards, payment_type, benefit_flags]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: Figures drafted from memory — NEEDS human verification.
+
+notes: 22B batch 5. AA-locked currency (0.8/1.5cpp).
+
+verification:
+  last_verified_date: "2026-07-16"
+  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
+  confidence: low

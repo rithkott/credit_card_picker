@@ -93,6 +93,24 @@ programs:
     floor_cpp: 0.6
     optimistic_cpp: 0.9
 
+  atmos_rewards:
+    label: Atmos Rewards (Alaska / Hawaiian)
+    redeems_for: [flights]
+    loyalty_keys: [alaska_airlines]
+    floor_cpp: 1.0
+    optimistic_cpp: 1.6
+  aa_advantage:
+    label: American Airlines AAdvantage
+    redeems_for: [flights]
+    loyalty_keys: [american_airlines]
+    floor_cpp: 0.8
+    optimistic_cpp: 1.5
+  bofa_travel_rewards:
+    label: Bank of America Travel Rewards points
+    redeems_for: [cashback, flights, hotels]
+    floor_cpp: 0.6
+    optimistic_cpp: 1.0
+
   # ---- Fintech corporate currencies (22B) -------------------------------------
   brex_points:
     label: Brex Rewards points
