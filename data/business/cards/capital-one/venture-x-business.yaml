@@ -1,0 +1,92 @@
+# $395 premium business travel card: 2x everything, 10x/5x portal, $300
+# travel credit + 10k anniversary miles. Does NOT add to 5/24 (exception).
+id: venture-x-business
+name: Capital One Venture X Business
+issuer: capital-one
+network: visa
+portal: capital_one_travel
+currency:
+  type: points
+  program: capital_one_miles
+base_rate: 2                 # unlimited 2x miles on everything — drafted from memory, NEEDS human verification
+
+category_rewards:
+  - category: travel_hotels
+    rate: 10                 # 10x hotels + rental cars via Capital One Travel
+    portal_only: true
+    notes: Capital One Travel bookings.
+  - category: travel_other
+    rate: 10
+    portal_only: true
+    notes: Rental cars via Capital One Travel.
+  - category: travel_flights
+    rate: 5                  # 5x flights via Capital One Travel
+    portal_only: true
+    notes: Capital One Travel bookings.
+
+merchant_rewards: []
+
+credits:
+  - name: Capital One Travel credit
+    amount_usd: 300
+    period: annual
+    category: travel_other
+    portal_only: true
+    realistic_capture_rate_note: >-
+      $300/yr usable only on Capital One Travel bookings — captured by any
+      business with travel spend willing to book through the portal.
+  - name: Anniversary miles
+    amount_points: 10000
+    period: annual
+    automatic: true
+    realistic_capture_rate_note: Posts automatically each anniversary.
+
+signup_bonus:
+  value:
+    points: 150000           # drafted from memory — NEEDS human verification
+  spend_requirement_usd: 30000
+  window_months: 3
+  notes: Offer figure NEEDS human verification.
+
+pricing:
+  model: annual_fee
+  annual_fee_usd: 395
+  foreign_transaction_pct: 0
+
+business_approval:
+  personal_guarantee: true
+  min_personal_fico_tier: excellent
+  entity_types: [sole_prop, llc, corp]
+  notes: >-
+    Does NOT report to personal credit — 5/24 exception (issuer-rules:
+    capital-one adds_to_524_exceptions). Charge-style pay-in-full product per
+    Capital One's premium business positioning. Tier inferred — NEEDS human
+    verification.
+
+employee_cards:
+  fee_usd: 0                 # free employee + virtual cards, rewards pool to the company (plan 21 research quote)
+  controls: [spending_limits, card_freeze]
+
+payment_type: charge         # no preset spending limit, pay in full — NEEDS human verification (may offer flex)
+
+benefit_flags: [lounge_access]
+
+sources:
+  - url: https://www.capitalone.com/small-business/credit-cards/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, pricing, business_approval, employee_cards, payment_type, benefit_flags]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: >-
+      Free employee cards + no-preset-limit positioning quoted in the plan 21
+      research pass; rates, credits, SUB drafted from memory — NEEDS human
+      verification.
+
+notes: >-
+  22B batch 3. Resolves the issuer-rules adds_to_524_exceptions placeholder
+  warning. Portal-heavy earn + $300 portal credit exercise portal stacking on
+  the business side.
+
+verification:
+  last_verified_date: "2026-07-16"
+  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
+  confidence: low
