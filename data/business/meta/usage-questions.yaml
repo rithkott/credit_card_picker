@@ -49,7 +49,7 @@ groups:
       adobe: {label: "Adobe (Creative Cloud / Acrobat, bought direct)"}
       indeed: {label: "Indeed (job postings / hiring)"}
       clear: {label: "CLEAR+ airport security membership"}
-      global_entry_tsa: {label: "Global Entry / TSA PreCheck"}
+      global_entry_tsa: {label: "Global Entry / TSA PreCheck", single_fee: true}  # one external fee — a portfolio claims the reimbursement once (optimize_business.py single-fee de-dup)
       fedex: {label: "FedEx shipping"}
       grubhub: {label: "Grubhub (business meals / office food)"}
       office_supply_stores: {label: "US office supply stores"}
