@@ -1,0 +1,74 @@
+# Premium Delta co-brand business card: 3x Delta, Sky Club access, first-class
+# companion certificate.
+id: delta-skymiles-reserve-business
+name: Delta SkyMiles Reserve Business American Express Card
+issuer: amex
+network: amex
+currency:
+  type: points
+  program: delta_skymiles
+base_rate: 1
+
+category_rewards:
+  - category: travel_flights
+    rate: 3                  # 3x on Delta purchases — Delta only, mapping caveat; NEEDS human verification
+    notes: Delta purchases specifically — other airfare earns base.
+
+merchant_rewards: []
+
+large_purchase_rate:
+  rate: 1.5
+  min_transaction_usd: 5000
+  note: 1.5x on eligible purchases of $5,000+ — drafted from memory, NEEDS human verification.
+
+credits:
+  - name: Companion certificate (incl. first class, annual)
+    kind: in_kind
+    amount_usd: 400          # curator estimate — first-class-eligible companion fare value band
+    period: annual
+    usage_keys: [delta]
+    realistic_capture_rate_note: >-
+      Annual companion certificate valid up to first class — Delta-loyal
+      companies pairing premium-cabin flights capture the most; estimate is a
+      mid-band domestic first-class fare.
+
+signup_bonus:
+  value:
+    points: 100000           # drafted from memory — NEEDS human verification
+  spend_requirement_usd: 12000
+  window_months: 6
+  notes: Offer figure NEEDS human verification; once-per-lifetime rule applies.
+
+pricing:
+  model: annual_fee
+  annual_fee_usd: 650        # drafted from memory — NEEDS human verification
+  foreign_transaction_pct: 0
+
+business_approval:
+  personal_guarantee: true
+  min_personal_fico_tier: excellent
+  entity_types: [sole_prop, llc, corp]
+  notes: Revolving co-brand — counts toward the Amex 5-card limit. Tier inferred — NEEDS human verification.
+
+employee_cards:
+  fee_usd: 0
+  max_cards: 99
+  controls: [spending_limits, realtime_alerts]
+
+payment_type: revolving
+
+benefit_flags: [lounge_access, free_checked_bag]
+
+sources:
+  - url: https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/
+    supports: [identity, currency, base_rate, category_rewards, large_purchase_rate, credits, signup_bonus, pricing, business_approval, employee_cards, payment_type, benefit_flags]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: Figures drafted from memory — NEEDS human verification.
+
+notes: 22B batch 4. Sky Club access is a benefit flag (unscored); companion cert in_kind estimate flagged for review.
+
+verification:
+  last_verified_date: "2026-07-16"
+  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
+  confidence: low

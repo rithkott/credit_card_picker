@@ -6,4 +6,7 @@
 # named merchants. Populate during corpus curation (22B) if a card genuinely
 # rewards a named merchant (e.g. a co-brand's own storefront).
 
-merchants: {}
+merchants:
+  amazon_business:
+    label: Amazon Business / AWS
+    category: wholesale   # supplier-style spend; imperfect fit noted where used

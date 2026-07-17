@@ -55,12 +55,18 @@ file converted) → `verified` (human-checked against issuer terms).
 | business-altitude-power | us-bank | drafted |
 | business-leverage | us-bank | drafted |
 
-## 22B queue — Amex
+## Drafted (22B batch 4 — Amex remainder)
 
-business-green, plum-card, delta-skymiles-gold-business,
-delta-skymiles-platinum-business, delta-skymiles-reserve-business,
-hilton-honors-business, marriott-bonvoy-business,
-amazon-business-prime (co-brand TBD by issuer dir)
+| id | issuer | status |
+|---|---|---|
+| business-green | amex | drafted |
+| plum-card | amex | drafted |
+| delta-skymiles-gold-business | amex | drafted |
+| delta-skymiles-platinum-business | amex | drafted |
+| delta-skymiles-reserve-business | amex | drafted |
+| hilton-honors-business | amex | drafted |
+| marriott-bonvoy-business | amex | drafted |
+| amazon-business-prime | amex | drafted |
 
 ## 22B queue — Bank of America
 
