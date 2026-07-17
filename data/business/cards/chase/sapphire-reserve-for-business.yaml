@@ -45,10 +45,11 @@ credits:
 
 signup_bonus:
   value:
-    points: 120000           # drafted from memory — NEEDS human verification
-  spend_requirement_usd: 12000
-  window_months: 3
-  notes: Offer figure NEEDS human verification.
+    points: 200000           # "150,000 (struck) → 200,000 bonus points after $30,000 in first 6 months" — chase.com compare page, verified 2026-07-17
+  spend_requirement_usd: 30000
+  window_months: 6
+  limited_time: true
+  notes: Elevated offer verified against chase.com 2026-07-17 (standard 150k shown struck).
 
 pricing:
   model: annual_fee

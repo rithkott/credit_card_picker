@@ -4,17 +4,26 @@ id: business-leverage
 name: U.S. Bank Business Leverage Visa Signature
 issuer: us-bank
 network: visa
+portal: usbank_travel_center
 currency:
   type: cash                 # Leverage earns points at fixed ~1cpp — modeled as cash-equivalent, NEEDS human verification
   program: cash
 base_rate: 1
 
-category_rewards: []
+category_rewards:
+  - category: travel_hotels
+    rate: 5                  # "5X points on prepaid hotels and car rentals booked directly in the Travel Center" — usbank.com, verified 2026-07-17
+    portal_only: true
+    notes: U.S. Bank Travel Center prepaid bookings.
+  - category: travel_other
+    rate: 5
+    portal_only: true
+    notes: U.S. Bank Travel Center prepaid car rentals.
 merchant_rewards: []
 
 adaptive_top_n:
   n: 2
-  rate: 2                    # 2x on your top two categories each month (automatic) — drafted from memory, NEEDS human verification
+  rate: 2                    # "2X points in the top two categories where you spend the most, automatically" — usbank.com, verified 2026-07-17
   eligible_categories:       # US Bank tracks ~48 merchant groups; mapped to the business enum, menu NEEDS human verification
     - fuel_fleet
     - dining
@@ -37,10 +46,10 @@ credits: []
 
 signup_bonus:
   value:
-    usd: 750                 # drafted from memory — NEEDS human verification
-  spend_requirement_usd: 7500
+    usd: 600                 # "Earn 60,000 bonus points" (1cpp) after "$6,000 on the Account Owner's card in the first 120 days" — usbank.com, verified 2026-07-17
+  spend_requirement_usd: 6000
   window_months: 4
-  notes: Offer figure NEEDS human verification.
+  notes: 60,000 points at 1cpp; employee spend excluded (owner's card only).
 
 pricing:
   model: annual_fee
@@ -64,7 +73,7 @@ benefit_flags: []
 
 sources:
   - url: https://www.usbank.com/business-banking/business-credit-cards.html
-    supports: [identity, currency, base_rate, adaptive_top_n, signup_bonus, pricing, business_approval, employee_cards, payment_type]
+    supports: [identity, currency, base_rate, category_rewards, adaptive_top_n, signup_bonus, pricing, business_approval, employee_cards, payment_type]
     accessed: "2026-07-16"
     added_by: claude-fable-5
     note: Figures drafted from memory — NEEDS human verification.

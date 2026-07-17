@@ -2,11 +2,11 @@
 id: business-advantage-unlimited-cash
 name: Bank of America Business Advantage Unlimited Cash Rewards
 issuer: bank-of-america
-network: mastercard          # inference — NEEDS human verification
+network: mastercard          # bankofamerica.com, verified 2026-07-17
 currency:
   type: cash
   program: cash
-base_rate: 1.5               # unlimited 1.5% cash back — drafted from memory, NEEDS human verification
+base_rate: 1.5               # "Unlimited 1.5% cash back on all purchases" — bankofamerica.com, verified 2026-07-17
 
 category_rewards: []
 merchant_rewards: []
@@ -14,10 +14,10 @@ credits: []
 
 signup_bonus:
   value:
-    usd: 300                 # drafted from memory — NEEDS human verification
+    usd: 500                 # "$500 cash rewards after $3,000 in purchases within 90 days" — bankofamerica.com, verified 2026-07-17
   spend_requirement_usd: 3000
   window_months: 3
-  notes: Offer figure NEEDS human verification.
+  notes: Verified against bankofamerica.com 2026-07-17.
 
 pricing:
   model: annual_fee
@@ -51,6 +51,6 @@ sources:
 notes: 22B batch 5.
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — rate/fee/SUB/network verified vs bankofamerica.com 2026-07-17; tier still inferred"
+  confidence: medium

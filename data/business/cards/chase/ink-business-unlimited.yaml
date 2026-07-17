@@ -15,10 +15,11 @@ credits: []
 
 signup_bonus:
   value:
-    usd: 750                 # "$750 after $6,000 in 3 months" — drafted from memory of the standard offer, NEEDS human verification
-  spend_requirement_usd: 6000
-  window_months: 3
-  notes: Offer figure NEEDS human verification against the current product page.
+    usd: 1000                # "$750 (struck) → $1,000 after $8,000 in first 4 months" — chase.com compare page, verified 2026-07-17
+  spend_requirement_usd: 8000
+  window_months: 4
+  limited_time: true
+  notes: Elevated offer verified against chase.com 2026-07-17 (standard $750 shown struck).
 
 pricing:
   model: annual_fee
@@ -58,6 +59,6 @@ notes: >-
   personal Sapphire (profile personal.premium_cards_held).
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from plan 21 research quotes) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — rate/fee/SUB/employee-cards verified vs chase.com compare page 2026-07-17; FTF + approval tier still inferred"
+  confidence: medium

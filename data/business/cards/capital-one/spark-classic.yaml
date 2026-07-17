@@ -4,12 +4,21 @@ id: spark-classic
 name: Capital One Spark Classic for Business
 issuer: capital-one
 network: visa
+portal: capital_one_travel
 currency:
   type: cash
   program: cash
-base_rate: 1.5               # 1.5% cash back — drafted from memory (recently raised from 1%), NEEDS human verification
+base_rate: 1                 # "Spark 1% Classic" — capitalone.com, verified 2026-07-17 (the rumored 1.5% raise did NOT happen)
 
-category_rewards: []
+category_rewards:
+  - category: travel_hotels
+    rate: 5                  # 5% on hotels via Capital One Business Travel — capitalone.com, verified 2026-07-17
+    portal_only: true
+    notes: Capital One Business Travel bookings.
+  - category: travel_other
+    rate: 5
+    portal_only: true
+    notes: Rental cars via Capital One Business Travel.
 merchant_rewards: []
 credits: []
 signup_bonus: null
@@ -38,7 +47,7 @@ benefit_flags: []
 
 sources:
   - url: https://www.capitalone.com/small-business/credit-cards/
-    supports: [identity, currency, base_rate, signup_bonus, pricing, business_approval, employee_cards, payment_type]
+    supports: [identity, currency, base_rate, category_rewards, signup_bonus, pricing, business_approval, employee_cards, payment_type]
     accessed: "2026-07-16"
     added_by: claude-fable-5
     note: Figures drafted from memory — NEEDS human verification.
@@ -50,6 +59,6 @@ notes: >-
   in the same change).
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — rate/fee/portal verified vs capitalone.com 2026-07-17; approval tier still inferred"
+  confidence: medium

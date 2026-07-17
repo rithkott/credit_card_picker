@@ -39,12 +39,10 @@ credits: []
 
 signup_bonus:
   value:
-    points: 90000            # "90k points after $8,000 in 3 months" — figure NOT re-verified this session, NEEDS human verification
+    points: 100000           # "100,000 bonus points after $8,000 in first 3 months" — chase.com compare page, verified 2026-07-17
   spend_requirement_usd: 8000
   window_months: 3
-  notes: >-
-    Offer figure drafted from memory of the standard 2026 offer; exact current
-    amount/requirement NEEDS human verification.
+  notes: Verified against chase.com 2026-07-17.
 
 pricing:
   model: annual_fee
@@ -85,6 +83,6 @@ notes: >-
   that upgrades Ink Cash/Unlimited points to transfer-partner value.
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft; cap structure research-verified) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — caps/fee/SUB verified vs chase.com compare page 2026-07-17; approval tier still inferred"
+  confidence: medium

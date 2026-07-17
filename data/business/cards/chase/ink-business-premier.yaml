@@ -36,10 +36,10 @@ credits: []
 
 signup_bonus:
   value:
-    usd: 1000                # "$1,000 after $10,000 in 3 months" — drafted from memory, NEEDS human verification
+    usd: 1000                # "$1,000 bonus cash back after $10,000 in first 3 months" — chase.com compare page, verified 2026-07-17
   spend_requirement_usd: 10000
   window_months: 3
-  notes: Offer figure NEEDS human verification against the current product page.
+  notes: Verified against chase.com 2026-07-17.
 
 pricing:
   model: annual_fee
@@ -93,6 +93,6 @@ notes: >-
   note, unscored.
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from plan 21 research quotes) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — fee/large-purchase rate/SUB verified vs chase.com compare page 2026-07-17; 5% portal travel rate + approval tier still inferred"
+  confidence: medium

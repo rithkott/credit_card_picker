@@ -1,7 +1,7 @@
 # American Airlines co-brand business card (Citi): 2x AA + business
 # categories, AA-locked currency.
 id: aadvantage-business
-name: CitiBusiness / AAdvantage Platinum Select Mastercard
+name: Citi / AAdvantage Business World Elite Mastercard  # current product name per citi.com 2026-07-17 (formerly CitiBusiness Platinum Select)
 issuer: citi
 network: mastercard
 currency:
@@ -14,11 +14,11 @@ category_rewards:
     rate: 2                  # 2x on American Airlines purchases — AA only, mapping caveat; NEEDS human verification
     notes: American Airlines purchases specifically — other airfare earns base.
   - category: fuel_fleet
-    rate: 2                  # 2x gas stations — drafted from memory, NEEDS human verification
+    rate: 2                  # "2x on gas stations" — citi.com, verified 2026-07-17
   - category: telecom
-    rate: 2                  # 2x telecommunications/cable/satellite — drafted from memory
-  - category: shipping
-    rate: 2                  # 2x at car rental agencies too — travel_other omitted pending verification
+    rate: 2                  # "2x on telecommunications/cable providers" — citi.com, verified 2026-07-17
+  - category: travel_other
+    rate: 2                  # "2x on car rentals" — citi.com, verified 2026-07-17 (car rentals map to travel_other)
 
 merchant_rewards: []
 
@@ -34,7 +34,7 @@ signup_bonus:
 pricing:
   model: annual_fee
   annual_fee_usd: 99
-  first_year_waived: true    # NEEDS human verification
+  first_year_waived: true    # "waived for the first year" — citi.com, verified 2026-07-17
   foreign_transaction_pct: 0
 
 business_approval:

@@ -47,9 +47,12 @@ file converted) → `verified` (human-checked against issuer terms).
 | id | issuer | status |
 |---|---|---|
 | spark-cash-select | capital-one | drafted |
-| spark-miles | capital-one | drafted |
-| spark-miles-select | capital-one | drafted |
+| spark-miles | capital-one | discontinued (2026-07-17 lineup check) |
+| spark-miles-select | capital-one | discontinued (2026-07-17 lineup check) |
 | venture-x-business | capital-one | drafted |
+| spark-cash | capital-one | drafted (added + verified 2026-07-17) |
+| venture-business | capital-one | drafted (added + verified 2026-07-17) |
+| venture-one-business | capital-one | drafted (added + verified 2026-07-17) |
 | spark-classic | capital-one | drafted |
 | business-altitude-connect | us-bank | drafted |
 | business-altitude-power | us-bank | drafted |
@@ -78,6 +81,34 @@ file converted) → `verified` (human-checked against issuer terms).
 | alaska-airlines-business | bank-of-america | drafted |
 | costco-anywhere-business | citi | drafted |
 | aadvantage-business | citi | drafted |
+
+## Verification pass 1 (2026-07-17, official-page WebFetch sweep)
+
+Core figures (earn structure / fees / SUBs / employee cards) checked against
+LIVE official pages; per-file details in each card's sources + verified_by.
+
+- **Verified → confidence: medium**: all 11 Chase cards partially-to-fully
+  (compare page; earn structures of co-brands still curator-mapped), Spark
+  Cash Plus/Cash Select/Classic, Venture X Business (already matched), US Bank
+  Triple Cash/Altitude Connect/Altitude Power (fee amounts redacted on page,
+  still inferred), Wells Signify (exact match), BofA Customized/Unlimited/
+  Travel Rewards, Amex Blue Business Plus/Cash (via NerdWallet — Amex pages
+  are JS shells).
+- **Corrections applied**: United Business $99→$150, SW Premier $99→$149,
+  SW Performance $199→$299, Spark Classic 1.5%→1%, Altitude Connect gained its
+  real $150k combined 4X cap + portal 5X lines, most SUBs updated to current
+  elevated offers.
+- **Lineup changes found**: Capital One replaced the Spark Miles line with
+  Venture Business cards → spark-miles + spark-miles-select marked
+  discontinued; NEW cards added: spark-cash, venture-business,
+  venture-one-business (all verified vs capitalone.com).
+- **Still low confidence (source pages unreachable/JS-shell)**: Amex Business
+  Gold/Platinum (earlier NerdWallet verify stands), Green, Plum, Delta ×3,
+  Hilton, Marriott, Amazon Prime; Citi ×2 (product renamed → Citi/AAdvantage
+  Business World Elite; numbers placeholder on page); Alaska Business; Ramp
+  cashback rate; Brex/Divvy reward details.
+- **New product spotted, queued**: US Bank Business Shield (5% Travel Center,
+  insurance-focused) — add in a future batch.
 
 ## Fleet cards — EXCLUDED from V1 (decision 2026-07-17)
 

@@ -4,6 +4,7 @@ id: business-altitude-connect
 name: U.S. Bank Business Altitude Connect
 issuer: us-bank
 network: visa
+portal: usbank_travel_center
 currency:
   type: cash                 # Altitude points redeem 1cpp fixed — modeled as cash-equivalent, NEEDS human verification
   program: cash
@@ -11,30 +12,44 @@ base_rate: 1
 
 category_rewards:
   - category: travel_flights
-    rate: 4                  # 4x on travel — drafted from memory, NEEDS human verification
+    rate: 4                  # "4X points on travel, including airfare, hotels, gas and EV charging stations, up to $150,000 in combined annual spend" — usbank.com, verified 2026-07-17
+    cap: &connect150k
+      period: annual
+      max_spend_usd: 150000
+      fallback_rate: 1
+      shared_cap_id: connect_150k
   - category: travel_hotels
     rate: 4
+    cap: *connect150k
   - category: travel_other
     rate: 4
+    cap: *connect150k
   - category: fuel_fleet
-    rate: 4                  # 4x gas/EV (transactions of $200 or less — issuer ceiling noted)
-    notes: Issuer limits elevated gas/EV earn to transactions of $200 or less — NEEDS human verification.
+    rate: 4
+    cap: *connect150k
+  - category: travel_hotels
+    rate: 5                  # "5X points on prepaid hotel and car rentals booked directly in the Travel Center" — usbank.com, verified 2026-07-17
+    portal_only: true
+    notes: U.S. Bank Travel Center prepaid bookings.
+  - category: travel_other
+    rate: 5
+    portal_only: true
+    notes: U.S. Bank Travel Center prepaid car rentals.
   - category: dining
-    rate: 2
-  - category: office_supplies
-    rate: 2
+    rate: 2                  # "2X on dining, takeout, restaurant delivery and cell phone services" — usbank.com, verified 2026-07-17
   - category: telecom
     rate: 2
+    notes: Cell phone services (usbank.com wording); landline/internet may earn base.
 
 merchant_rewards: []
 credits: []
 
 signup_bonus:
   value:
-    usd: 600                 # drafted from memory — NEEDS human verification
+    usd: 750                 # "75,000 bonus points" (1cpp cash-equivalent) after "$6,000 on the Account Owner's card in the first 180 days" — usbank.com, verified 2026-07-17
   spend_requirement_usd: 6000
   window_months: 6
-  notes: Offer figure NEEDS human verification.
+  notes: 75,000 points recorded at 1cpp on this cash-modeled card; employee spend excluded (owner's card only).
 
 pricing:
   model: annual_fee
@@ -68,6 +83,6 @@ notes: >-
   human check; if a real transfer/portal upside exists, add a program entry.
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — earn structure ($150k combined cap, portal 5X, 2X dining/cell), SUB, employee-fee $0 verified vs usbank.com 2026-07-17; fee amount redacted on page, still inferred"
+  confidence: medium
