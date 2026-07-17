@@ -8,7 +8,7 @@ portal: capital_one_travel
 currency:
   type: points
   program: capital_one_miles
-base_rate: 2                 # unlimited 2x miles on everything — drafted from memory, NEEDS human verification
+base_rate: 2                 # "unlimited 2X miles on every purchase, everywhere, no limits or category restrictions" — capitalone.com product page, verified 2026-07-17
 
 category_rewards:
   - category: travel_hotels
@@ -20,9 +20,9 @@ category_rewards:
     portal_only: true
     notes: Rental cars via Capital One Travel.
   - category: travel_flights
-    rate: 5                  # 5x flights via Capital One Travel
+    rate: 5                  # "10X miles on hotels and rental cars, and 5X miles on flights and vacation rentals" through Capital One Business Travel — capitalone.com product page, verified 2026-07-17
     portal_only: true
-    notes: Capital One Travel bookings.
+    notes: Capital One Travel bookings (flights and vacation rentals).
 
 merchant_rewards: []
 
@@ -36,21 +36,28 @@ credits:
       $300/yr usable only on Capital One Travel bookings — captured by any
       business with travel spend willing to book through the portal.
   - name: Anniversary miles
-    amount_points: 10000
+    amount_points: 10000     # "10,000 bonus miles every year, starting on your first anniversary" — capitalone.com product page, verified 2026-07-17
     period: annual
     automatic: true
-    realistic_capture_rate_note: Posts automatically each anniversary.
+    realistic_capture_rate_note: Posts automatically each anniversary (starting year 2).
+  - name: Global Entry or TSA PreCheck credit
+    amount_usd: 120          # "up to a $120 statement credit on Global Entry or TSA PreCheck" — capitalone.com product page, verified 2026-07-17
+    period: every_4_years
+    usage_keys: [global_entry_tsa]
+    realistic_capture_rate_note: >-
+      Application-fee reimbursement, captured once per enrollment cycle
+      (modeled every 4 years per program renewal cadence).
 
 signup_bonus:
   value:
-    points: 150000           # drafted from memory — NEEDS human verification
+    points: 150000           # "150,000 bonus miles when you spend $30,000 in the first 3 months" — capitalone.com product page, verified 2026-07-17
   spend_requirement_usd: 30000
   window_months: 3
-  notes: Offer figure NEEDS human verification.
+  notes: Verified vs capitalone.com product page 2026-07-17.
 
 pricing:
   model: annual_fee
-  annual_fee_usd: 395
+  annual_fee_usd: 395        # "$395 annual fee" — capitalone.com product page, verified 2026-07-17
   foreign_transaction_pct: 0
 
 business_approval:
@@ -67,19 +74,26 @@ employee_cards:
   fee_usd: 0                 # free employee + virtual cards, rewards pool to the company (plan 21 research quote)
   controls: [spending_limits, card_freeze]
 
-payment_type: charge         # no preset spending limit, pay in full — NEEDS human verification (may offer flex)
+payment_type: charge         # "designed to be paid in full ... option to carry over a portion of your balance with interest" — capitalone.com product page, verified 2026-07-17; no preset spend limit
 
 benefit_flags: [lounge_access]
 
 sources:
-  - url: https://www.capitalone.com/small-business/credit-cards/
-    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, pricing, business_approval, employee_cards, payment_type, benefit_flags]
-    accessed: "2026-07-16"
+  - url: https://www.capitalone.com/small-business/credit-cards/venture-x-business/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, pricing, employee_cards, payment_type, benefit_flags]
+    accessed: "2026-07-17"
     added_by: claude-fable-5
     note: >-
-      Free employee cards + no-preset-limit positioning quoted in the plan 21
-      research pass; rates, credits, SUB drafted from memory — NEEDS human
-      verification.
+      Official product page read in-browser 2026-07-17: 2x base, 10x portal
+      hotels+rental cars / 5x portal flights+vacation rentals, 150k/$30k/3mo
+      SUB, $300 portal travel credit, 10k anniversary miles, GE/TSA $120,
+      lounge network, pay-in-full with carry-over option, free employee +
+      virtual cards, $395 fee.
+  - url: https://www.capitalone.com/small-business/credit-cards/
+    supports: [business_approval]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: Approval tier and 5/24-exception reporting behavior — NEEDS human verification.
 
 notes: >-
   22B batch 3. Resolves the issuer-rules adds_to_524_exceptions placeholder
@@ -87,6 +101,6 @@ notes: >-
   the business side.
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — rates/SUB/credits/fee/payment-terms verified in-browser vs capitalone.com product page 2026-07-17; approval tier still inferred"
+  confidence: medium

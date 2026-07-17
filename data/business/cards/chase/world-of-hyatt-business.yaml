@@ -11,41 +11,46 @@ base_rate: 1
 
 category_rewards:
   - category: travel_hotels
-    rate: 4                  # 4x on Hyatt purchases — Hyatt only, mapping caveat
+    rate: 4                  # "4 Bonus Points per $1 spent on qualifying purchases at Hyatt Hotels" (up to 9 total with the ~5 World of Hyatt member base points) — chase.com product page, verified 2026-07-17
     notes: >-
       Issuer awards 4x at HYATT hotels specifically — other hotel spend earns
-      base (or the adaptive line if hotels rank top-3... Hyatt spend is
-      excluded from the adaptive menu here). NEEDS human verification.
+      base. The extra ~5x from World of Hyatt membership itself is program
+      earn, not card earn — excluded.
 
 merchant_rewards: []
 
 adaptive_top_n:
   n: 3
-  rate: 2                    # "2 Bonus Points total per $1 spent in your top three spend categories each quarter" — chase.com compare page, verified 2026-07-17
-  eligible_categories:
+  rate: 2                    # "2 Bonus Points total per $1 spent in your top three spend categories each quarter" — chase.com product page, verified 2026-07-17
+  eligible_categories:       # page menu: dining, shipping, airline tickets direct, local transit & commuting, social/search advertising, car rental agencies, gas stations, internet/cable/phone
     - dining
     - shipping
-    - telecom
-    - fuel_fleet
+    - travel_flights
+    - transit
     - advertising
+    - fuel_fleet
+    - telecom
   cap:
     period: annual
-    max_spend_usd: 50000     # placeholder ceiling — Chase documents the top-3 mechanic without a published cap; NEEDS human verification (adjust or restructure when terms are checked)
+    max_spend_usd: 1000000   # sentinel — page documents NO combined cap; schema requires a cap object, so an effectively-uncapped ceiling is recorded
     fallback_rate: 1
   note: >-
-    Issuer: 2x in your top three eligible spend categories each quarter.
-    Eligible-category menu and any cap NEED human verification against Chase
-    terms — the $50k cap here is a conservative placeholder, flagged for the
-    human pass.
+    2x in the top three eligible spend categories each quarter (modeled
+    deterministically as the profile's top-3). Page states NO combined cap —
+    the $1M cap is a schema-required sentinel, not an issuer term.
+    Car-rental-agency menu item has no matching business category
+    (travel_other is broader — omitted); 2x on gym/fitness memberships also
+    unmapped, omitted.
 
 credits:
   - name: Hyatt statement credits
-    amount_usd: 100          # up to $100/yr ($50 x2) at Hyatt properties — drafted from memory, NEEDS human verification
-    period: annual
+    amount_usd: 50           # up to $100/yr ($50 semiannually) at Hyatt properties — NOT visible on the product page main body (lives in the Business benefits overlay), NEEDS human verification
+    period: semiannual
     usage_keys: [hyatt]
     realistic_capture_rate_note: >-
       $50 twice a year against Hyatt property spend — captured only by
-      companies actually staying at Hyatt.
+      companies actually staying at Hyatt. Figure not re-confirmed on the
+      2026-07-17 page read (overlay content); flagged for human pass.
 
 signup_bonus:
   value:
@@ -56,8 +61,8 @@ signup_bonus:
 
 pricing:
   model: annual_fee
-  annual_fee_usd: 199
-  foreign_transaction_pct: 0
+  annual_fee_usd: 199        # "$199" — chase.com product page, verified 2026-07-17
+  foreign_transaction_pct: 0  # "No foreign transaction fees" — chase.com product page, verified 2026-07-17
 
 business_approval:
   personal_guarantee: true
@@ -74,14 +79,21 @@ payment_type: revolving
 benefit_flags: []
 
 sources:
-  - url: https://creditcards.chase.com/business-credit-cards
-    supports: [identity, currency, base_rate, category_rewards, adaptive_top_n, credits, signup_bonus, pricing, business_approval, employee_cards, payment_type]
-    accessed: "2026-07-16"
+  - url: https://creditcards.chase.com/business-credit-cards/world-of-hyatt/hyatt-business-card
+    supports: [identity, currency, base_rate, category_rewards, adaptive_top_n, signup_bonus, pricing, employee_cards, payment_type]
+    accessed: "2026-07-17"
     added_by: claude-fable-5
     note: >-
-      Card listed on the compare page (lineup claim verified 3-0); earn
-      structure incl. the top-3 adaptive mechanic drafted from memory — NEEDS
-      human verification, especially the adaptive cap placeholder.
+      Official product page read in-browser 2026-07-17: 70k/$7k/3mo SUB, $199
+      fee, 4x Hyatt, top-3 quarterly 2x with the 8-item menu (no published
+      combined cap — placeholder cap removed), no FTF. Hyatt statement-credit
+      benefit lives behind the Business-benefits overlay — amount NOT
+      re-confirmed, still NEEDS human verification.
+  - url: https://creditcards.chase.com/business-credit-cards
+    supports: [credits, business_approval]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: Hyatt credit figure and approval tier — NEEDS human verification.
 
 notes: >-
   22B batch 2. Hyatt-locked currency (strong 1.2-2.0cpp when loyal). Second
@@ -89,6 +101,6 @@ notes: >-
   Gold's per-cycle selection (deterministic top-3 by profile spend).
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — fee/rates/SUB/adaptive-menu verified in-browser vs chase.com product page 2026-07-17; Hyatt credit amount + approval tier still NEEDS human verification"
+  confidence: medium

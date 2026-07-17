@@ -7,20 +7,20 @@ network: amex
 currency:
   type: points
   program: marriott_bonvoy
-base_rate: 2                 # 2x on all other purchases — drafted from memory, NEEDS human verification
+base_rate: 2                 # "2X Marriott Bonvoy points on other purchases" — amex product page, verified 2026-07-17
 
 category_rewards:
   - category: travel_hotels
-    rate: 6                  # 6x at Marriott Bonvoy properties — Marriott only, mapping caveat; NEEDS human verification
+    rate: 6                  # "6X ... at hotels participating in Marriott Bonvoy" — amex product page, verified 2026-07-17
     notes: Marriott Bonvoy properties specifically — other hotel spend earns base.
   - category: dining
-    rate: 4                  # 4x US restaurants — drafted from memory, NEEDS human verification
+    rate: 4                  # "4X at restaurants worldwide, at U.S. gas stations, on wireless telephone services purchased directly from U.S. service providers and on U.S. purchases for shipping" — amex product page, verified 2026-07-17
   - category: fuel_fleet
-    rate: 4                  # 4x US gas stations
+    rate: 4
   - category: telecom
-    rate: 4                  # 4x US wireless
+    rate: 4
   - category: shipping
-    rate: 4                  # 4x US shipping
+    rate: 4
 
 merchant_rewards: []
 
@@ -31,19 +31,34 @@ credits:
     period: annual
     usage_keys: [marriott]
     realistic_capture_rate_note: >-
-      Free night capped at 35,000 points — worth face only to companies
-      staying at Marriott; estimate reasoning in the amount comment.
+      "1 Free Night Award every year after your Card renewal month ...
+      redemption level at or under 35,000 points" (amex product page, verified
+      2026-07-17; resort fees may apply). Worth face only to companies staying
+      at Marriott; estimate reasoning in the amount comment.
+  - name: Second free night after $60k calendar spend (up to 35k points)
+    kind: in_kind
+    amount_usd: 200          # "earn an additional Free Night Award after you spend $60K in purchases ... in a calendar year" — amex product page, verified 2026-07-17
+    period: annual
+    usage_keys: [marriott]
+    unlock_spend_usd: 60000
+    realistic_capture_rate_note: >-
+      Same 35k-point cap as the anniversary night but gated on $60K annual
+      card spend — only companies routing serious volume here capture it.
 
 signup_bonus:
   value:
-    points: 125000           # drafted from memory — NEEDS human verification
-  spend_requirement_usd: 8000
+    points: 125000           # 75,000 after $6,000 + extra 50,000 after additional $3,000, both within first 6 months — amex product page, verified 2026-07-17
+  spend_requirement_usd: 9000
   window_months: 6
-  notes: Offer figure NEEDS human verification; once-per-lifetime rule applies.
+  notes: >-
+    Two-tranche offer: 75k/$6k plus 50k after an additional $3k, all within
+    the first 6 months — recorded as the combined 125k/$9k. Verified vs
+    americanexpress.com product page 2026-07-17; once-per-lifetime rule
+    applies.
 
 pricing:
   model: annual_fee
-  annual_fee_usd: 125        # drafted from memory — NEEDS human verification
+  annual_fee_usd: 125        # "Annual Fee: $125" — amex product page, verified 2026-07-17
   foreign_transaction_pct: 0
 
 business_approval:
@@ -62,15 +77,25 @@ payment_type: revolving
 benefit_flags: []
 
 sources:
+  - url: https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/amex-marriott-bonvoy-business-credit-card/
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, pricing, payment_type]
+    accessed: "2026-07-17"
+    added_by: claude-fable-5
+    note: >-
+      Official product page read in-browser 2026-07-17: $125 fee, two-tranche
+      75k+50k SUB, 6X Marriott / 4X restaurants worldwide + US gas + US
+      wireless + US shipping / 2X base, anniversary free night (35k cap) +
+      second night after $60K calendar spend, Gold Elite status, 15 elite
+      night credits, 7% room-rate discount.
   - url: https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/
-    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, pricing, business_approval, employee_cards, payment_type]
+    supports: [business_approval, employee_cards]
     accessed: "2026-07-16"
     added_by: claude-fable-5
-    note: Figures drafted from memory — NEEDS human verification.
+    note: Approval tier and employee-card details inferred — NEEDS human verification.
 
 notes: 22B batch 4. Marriott-locked currency; free-night in_kind estimate flagged for review.
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — fee/rates/SUB/free-nights verified in-browser vs americanexpress.com product page 2026-07-17; approval tier + in_kind night estimates NEEDS human verification"
+  confidence: medium

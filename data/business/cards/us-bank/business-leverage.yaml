@@ -23,8 +23,8 @@ merchant_rewards: []
 
 adaptive_top_n:
   n: 2
-  rate: 2                    # "2X points in the top two categories where you spend the most, automatically" — usbank.com, verified 2026-07-17
-  eligible_categories:       # US Bank tracks ~48 merchant groups; mapped to the business enum, menu NEEDS human verification
+  rate: 2                    # "2X points in the top two categories where you spend the most each month automatically" — usbank.com product page, verified 2026-07-17
+  eligible_categories:       # US Bank tracks 48 merchant groups; mapped to the business enum, menu mapping NEEDS human verification
     - fuel_fleet
     - dining
     - office_supplies
@@ -35,27 +35,28 @@ adaptive_top_n:
     - contractors_materials
   cap:
     period: annual
-    max_spend_usd: 100000    # placeholder ceiling — issuer cap not confirmed; NEEDS human verification (adjust when terms checked)
+    max_spend_usd: 1000000   # sentinel — page states "No limits on the total rewards your business can earn"; schema requires a cap object
     fallback_rate: 1
   note: >-
-    Issuer automatically applies 2x to the top two spend categories each
-    month across its merchant-group list; menu mapping and cap are curator
-    placeholders flagged for the human pass.
+    Issuer automatically applies 2x to the top two of its 48 spend categories
+    each month; page confirms NO rewards limit (the $1M cap is a
+    schema-required sentinel). Enum mapping of the 48-group menu still a
+    curator judgment.
 
 credits: []
 
 signup_bonus:
   value:
-    usd: 600                 # "Earn 60,000 bonus points" (1cpp) after "$6,000 on the Account Owner's card in the first 120 days" — usbank.com, verified 2026-07-17
+    usd: 600                 # "Earn up to $600 in rewards when you spend $6,000 ... on the Account Owner's card within the first 120 days" — usbank.com product page, verified 2026-07-17
   spend_requirement_usd: 6000
   window_months: 4
-  notes: 60,000 points at 1cpp; employee spend excluded (owner's card only).
+  notes: Employee spend excluded (owner's card only). Verified vs usbank.com product page 2026-07-17.
 
 pricing:
   model: annual_fee
-  annual_fee_usd: 95
-  first_year_waived: true    # NEEDS human verification
-  foreign_transaction_pct: 3
+  annual_fee_usd: 95         # "$0 intro annual fee for the first year and $95 thereafter" — usbank.com product page, verified 2026-07-17
+  first_year_waived: true
+  foreign_transaction_pct: 0  # "no foreign transaction fees on international inventory, supply or travel expenses" — usbank.com product page, verified 2026-07-17
 
 business_approval:
   personal_guarantee: true
@@ -72,17 +73,27 @@ payment_type: revolving
 benefit_flags: []
 
 sources:
+  - url: https://www.usbank.com/business-banking/business-credit-cards/business-leverage-rewards-credit-card.html
+    supports: [identity, currency, base_rate, category_rewards, adaptive_top_n, signup_bonus, pricing, employee_cards, payment_type]
+    accessed: "2026-07-17"
+    added_by: claude-fable-5
+    note: >-
+      Official product page read in-browser 2026-07-17: 2X top-2 monthly
+      (48-category menu, no rewards limit), 5X Travel Center prepaid
+      hotels+car rentals, 1X base, $600/$6k/120d SUB (owner's card only),
+      $0-intro/$95 fee, free employee cards, no FTF. Approval tier and
+      points-vs-cash currency modeling still inferred.
   - url: https://www.usbank.com/business-banking/business-credit-cards.html
-    supports: [identity, currency, base_rate, category_rewards, adaptive_top_n, signup_bonus, pricing, business_approval, employee_cards, payment_type]
+    supports: [business_approval]
     accessed: "2026-07-16"
     added_by: claude-fable-5
-    note: Figures drafted from memory — NEEDS human verification.
+    note: Approval tier inferred — NEEDS human verification.
 
 notes: >-
   22B batch 3. Third adaptive_top_n card (monthly selection, modeled
-  deterministically like the others). Cap placeholder flagged.
+  deterministically like the others). No-rewards-limit sentinel cap.
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — rates/adaptive/SUB/fee/FTF verified in-browser vs usbank.com product page 2026-07-17; 48-group enum mapping + approval tier still NEEDS human verification"
+  confidence: medium

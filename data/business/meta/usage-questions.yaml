@@ -45,3 +45,16 @@ groups:
     items:
       dell: {label: "Dell (hardware / peripherals)"}
       wireless_provider: {label: "US wireless service (any provider, paid by the business)"}
+      chatgpt: {label: "ChatGPT Business subscription"}
+      adobe: {label: "Adobe (Creative Cloud / Acrobat, bought direct)"}
+      indeed: {label: "Indeed (job postings / hiring)"}
+      clear: {label: "CLEAR+ airport security membership"}
+      global_entry_tsa: {label: "Global Entry / TSA PreCheck"}
+      fedex: {label: "FedEx shipping"}
+      grubhub: {label: "Grubhub (business meals / office food)"}
+      office_supply_stores: {label: "US office supply stores"}
+      squarespace: {label: "Squarespace subscription"}
+      walmart_plus: {label: "Walmart+ monthly membership"}
+      google_workspace: {label: "Google Workspace subscription"}
+      ziprecruiter: {label: "ZipRecruiter (job postings / hiring)"}
+      instacart: {label: "Instacart (office groceries / supplies)"}

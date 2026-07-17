@@ -9,7 +9,16 @@ currency:
   program: amex_mr
 base_rate: 1
 
-category_rewards: []         # all elevated earning is the adaptive top-2 block
+portal: amex_travel
+
+category_rewards:            # portal 3X lines; all other elevated earning is the adaptive top-2 block
+  - category: travel_flights
+    rate: 3                  # "3X points on flights & pre-paid hotels booked on AmexTravel.com" — amex product page, verified 2026-07-17
+    portal_only: true
+  - category: travel_hotels
+    rate: 3
+    portal_only: true
+    notes: Prepaid hotels booked through amextravel.com only.
 merchant_rewards: []
 
 adaptive_top_n:
@@ -31,16 +40,52 @@ adaptive_top_n:
     optimizer models it deterministically as the profile's two highest-spend
     eligible categories.
 
-credits: []                  # the flexible business credit (FedEx/Grubhub/office supply) was not re-verified this session — add during 22B with a source
+credits:
+  - name: Flexible business credit
+    amount_usd: 20            # "up to $240 back annually ... eligible U.S. purchases at FedEx (through 10/01/2026), Grubhub, and Office Supply Stores" ($20/mo per hub page) — amex product page, verified 2026-07-17
+    period: monthly
+    usage_keys: [fedex, grubhub, office_supply_stores]
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      $20/month against FedEx (only through 10/01/2026), Grubhub, or US office
+      supply store purchases — near-full capture for businesses with recurring
+      shipping/food/supply spend, monthly forfeit otherwise.
+  - name: ChatGPT Business credit
+    amount_usd: 300           # "up to $300 back in statement credits per calendar year on U.S. purchases of ChatGPT Business subscriptions" — amex product page, verified 2026-07-17
+    period: annual
+    usage_keys: [chatgpt]
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Only against U.S. ChatGPT Business (team workspace) subscriptions, which
+      auto-renew; near-full capture for a business already paying for ChatGPT
+      Business, $0 otherwise.
+  - name: Squarespace credit
+    amount_usd: 150           # "up to $150 back each calendar year on U.S. purchases with Squarespace" — amex product page, verified 2026-07-17
+    period: annual
+    usage_keys: [squarespace]
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Only against Squarespace subscriptions (auto-renewing); full value to
+      businesses hosting their site there, $0 otherwise.
+  - name: Walmart+ membership credit
+    amount_usd: 12.95         # "up to $12.95 plus applicable taxes (excluding Plus Ups) back each month" — amex product page, verified 2026-07-17
+    period: monthly
+    usage_keys: [walmart_plus]
+    realistic_capture_rate_note: >-
+      Covers one monthly Walmart+ membership paid on the card; monthly-plan
+      subscribers capture in full, everyone else $0.
 
 signup_bonus:
   value:
-    points: 100000           # "100k points after $15,000 in 3 months" — figure NOT re-verified this session, NEEDS human verification
+    points: 200000           # "AS HIGH AS 200,000 Membership Rewards Points after you spend $15,000 ... first 3 months" — amex product page, verified 2026-07-17
   spend_requirement_usd: 15000
   window_months: 3
   notes: >-
-    Offer figure drafted from memory of the standard 2026 offer; NEEDS human
-    verification. Amex once-per-lifetime bonus rule applies (issuer-rules: amex).
+    "Apply and find out" variable offer — 200,000 is the advertised ceiling
+    ("welcome offers vary and you may not be eligible"); exact amount disclosed
+    at application and may be lower. Recorded at the ceiling per corpus
+    convention. Amex once-per-lifetime bonus rule applies (issuer-rules: amex).
+    Verified vs americanexpress.com 2026-07-17.
 
 pricing:
   model: annual_fee
@@ -70,15 +115,25 @@ payment_type: charge         # charge lineage: pay in full (Pay Over Time option
 benefit_flags: []
 
 sources:
-  - url: https://www.nerdwallet.com/reviews/credit-cards/american-express-business-gold
-    supports: [identity, currency, base_rate, adaptive_top_n, signup_bonus, pricing, business_approval, payment_type]
+  - url: https://www.americanexpress.com/us/credit-cards/business/business-credit-cards/american-express-business-gold-card-amex/
+    supports: [identity, currency, base_rate, category_rewards, adaptive_top_n, credits, signup_bonus, pricing, payment_type]
     accessed: "2026-07-17"
     added_by: claude-fable-5
     note: >-
-      $375 fee, 4X top-two structure, six eligible categories, and the $150k
-      calendar-year cap confirmed against this review 2026-07-17. SUB figure,
-      employee-card fee, and approval tier are drafts — NEEDS human
-      verification against americanexpress.com terms.
+      Official product page read in-browser 2026-07-17: $375 fee, variable SUB
+      as-high-as 200k/$15k/3mo, 4X top-2 with $150k calendar-year cap, 3X
+      portal flights + prepaid hotels, and the credit stack ($240 flexible
+      FedEx/Grubhub/office-supply, $300 ChatGPT, $150 Squarespace, $155
+      Walmart+). Page does not enumerate the six 4X-eligible categories
+      inline — the enumeration is retained from prior research.
+  - url: https://www.nerdwallet.com/reviews/credit-cards/american-express-business-gold
+    supports: [identity, currency, base_rate, adaptive_top_n, pricing, business_approval, payment_type]
+    accessed: "2026-07-17"
+    added_by: claude-fable-5
+    note: >-
+      Prior verification pass; six-category 4X enumeration and approval-tier
+      estimate come from this review. Employee-card fee and approval tier
+      still NEEDS human verification.
   - url: https://www.americanexpress.com/en-us/business/blueprint/help-center/business-card/employee-cards/
     supports: [employee_cards]
     accessed: "2026-07-16"
@@ -95,5 +150,5 @@ notes: >-
 
 verification:
   last_verified_date: "2026-07-17"
-  verified_by: "claude-fable-5 (AI draft; fee/4X/cap verified vs NerdWallet) — NEEDS human verification"
-  confidence: low
+  verified_by: "claude-fable-5 — fee/4X-cap/SUB/portal-3X/credit-stack verified in-browser vs americanexpress.com product page 2026-07-17; employee-card fee, approval tier, 4X category enumeration still NEEDS human verification"
+  confidence: medium

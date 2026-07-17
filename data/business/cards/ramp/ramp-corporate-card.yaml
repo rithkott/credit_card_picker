@@ -8,7 +8,7 @@ network: visa
 currency:
   type: cash
   program: cash
-base_rate: 1.5               # flat cashback on all purchases — headline rate, NEEDS human verification (Ramp varies rates by agreement)
+base_rate: 1.5               # flat cashback on all purchases — NOT published on ramp.com (browser check 2026-07-17: page says only "earn cashback on every swipe"; rate varies by customer agreement). 1.5% is the widely-reported default — NEEDS human verification.
 
 category_rewards: []
 merchant_rewards: []
@@ -48,8 +48,17 @@ virtual_cards: true
 benefit_flags: []
 
 sources:
+  - url: https://ramp.com/corporate-cards
+    supports: [identity, currency, base_rate, employee_cards, payment_type, business_approval]
+    accessed: "2026-07-17"
+    added_by: claude-fable-5
+    note: >-
+      Official product page read in-browser 2026-07-17: no personal credit
+      check / no personal guarantee confirmed, virtual cards with pre-swipe
+      category controls confirmed, cashback confirmed but NO flat rate
+      published (varies by agreement — base_rate stays a reported default).
   - url: https://ramp.com/pricing
-    supports: [identity, currency, base_rate, pricing]
+    supports: [identity, currency, pricing]
     accessed: "2026-07-17"
     added_by: claude-fable-5
     note: "$0 free tier and $15/user/mo Plus tier verified against the live pricing page."
@@ -71,5 +80,5 @@ notes: >-
 
 verification:
   last_verified_date: "2026-07-17"
-  verified_by: "claude-fable-5 (AI draft; pricing tiers verified vs ramp.com) — NEEDS human verification"
+  verified_by: "claude-fable-5 — no-PG/controls/pricing verified in-browser vs ramp.com 2026-07-17; cashback RATE not published by Ramp (agreement-specific), $25k balance threshold unconfirmed — NEEDS human verification"
   confidence: low

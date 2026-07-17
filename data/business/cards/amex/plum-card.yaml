@@ -4,6 +4,7 @@ id: plum-card
 name: The Plum Card from American Express
 issuer: amex
 network: amex
+availability: discontinued   # not in the 11-card americanexpress.com business lineup and the product URL returns a 500 — closed to new applicants (browser check 2026-07-17)
 currency:
   type: cash
   program: cash
@@ -52,9 +53,12 @@ sources:
 notes: >-
   22B batch 4. Seeds float_days. The discount-vs-float either/or cannot be
   jointly modeled — discount path chosen as the reward model, float disclosed;
-  human pass should confirm current terms.
+  human pass should confirm current terms. Marked discontinued 2026-07-17:
+  absent from the americanexpress.com business-card lineup and the product
+  page 500s — existing holders keep the card, but it is closed to new
+  applicants, so terms cannot be verified against an official page.
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — discontinued status verified in-browser 2026-07-17 (no official page); terms remain memory-drafted, NEEDS human verification"
   confidence: low

@@ -11,13 +11,14 @@ base_rate: 1
 
 category_rewards:
   - category: travel_flights
-    rate: 2                  # 2x on United purchases — category is wider than the issuer's "United purchases"; imperfect mapping noted per protocol
+    rate: 8                  # "NEW! 8x total miles on eligible United flights — 6x miles on the Primary Cardmember's fare ... plus 2x miles on entire United purchase" — chase.com product page, verified 2026-07-17
     notes: >-
-      Issuer awards 2x on UNITED purchases specifically, not all flights —
-      non-United airfare earns base. Mapping approximation, NEEDS human
-      verification.
+      8x total applies to the PRIMARY cardmember's United fare (6x + 2x);
+      other United purchases (incl. employee fares) earn 2x, Basic Economy
+      earns less, non-United airfare earns base. Modeled at the headline 8x —
+      companies whose flight spend is mostly employee cards should discount.
   - category: fuel_fleet
-    rate: 2                  # gas stations — drafted from memory, NEEDS human verification
+    rate: 2                  # "2x miles at gas stations / dining incl. eligible delivery / office supply stores / local transit incl. rideshare" — chase.com product page, verified 2026-07-17
   - category: dining
     rate: 2
   - category: office_supplies
@@ -30,26 +31,61 @@ merchant_rewards: []
 credits:
   - name: United Club one-time passes
     kind: in_kind
-    amount_usd: 100          # two passes/yr, ~$50 face each — curator estimate
+    amount_usd: 100          # "2 United Club one-time passes per year. Over a $100 value" — chase.com product page, verified 2026-07-17
     period: annual
     usage_keys: [united]
     realistic_capture_rate_note: >-
-      Two United Club day passes per anniversary; worth face only to companies
-      whose staff fly United. Estimate reasoning: ~$50/pass market price.
+      Two United Club day passes per year; worth face only to companies whose
+      staff fly United.
+  - name: United travel credit
+    amount_usd: 125          # "$125 United travel credit — receive after making 5 United flight purchases of $100 or more each calendar year" — chase.com product page, verified 2026-07-17
+    period: annual
+    usage_keys: [united]
+    realistic_capture_rate_note: >-
+      Gated on 5 separate United flight purchases of $100+ in the calendar
+      year — only regular United flyers unlock it.
+  - name: United Hotels credit
+    amount_usd: 100          # "up to $100 in credits annually ... on prepaid hotel stays purchased directly through United Hotels" — chase.com product page, verified 2026-07-17
+    period: annual
+    usage_keys: [united]
+    realistic_capture_rate_note: >-
+      Requires routing prepaid hotel bookings through United Hotels —
+      situational capture.
+  - name: Rideshare credit
+    amount_usd: 100          # "up to $100 in credits each calendar year ... on rideshare purchases" (enrollment) — chase.com product page, verified 2026-07-17
+    period: annual
+    category: transit
+    requires_enrollment: true
+    realistic_capture_rate_note: >-
+      Annual rideshare credit after enrollment — near-full capture for teams
+      using rideshare regularly.
+  - name: Avis/Budget United car rental credit
+    amount_usd: 50           # "up to $50 in United travel credits annually ... book Avis or Budget directly through cars.united.com" — chase.com product page, verified 2026-07-17
+    period: annual
+    usage_keys: [united]
+    realistic_capture_rate_note: >-
+      Requires booking Avis/Budget through cars.united.com — situational.
+  - name: Instacart credit
+    amount_usd: 120          # "up to $120 in Instacart credits each calendar year" — chase.com product page, verified 2026-07-17
+    period: annual
+    usage_keys: [instacart]
+    realistic_capture_rate_note: >-
+      Only against direct Instacart purchases; near-full capture for offices
+      ordering via Instacart, $0 otherwise.
 
 signup_bonus:
   value:
-    points: 110000           # "up to 110,000 bonus miles + 2,000 PQP after qualifying activities" — chase.com compare page 2026-07-17; TIERED/conditional structure not modeled
+    points: 110000           # "100,000 bonus miles + 2,000 PQP after $5,000 in first 3 months; plus 10,000 bonus miles after you add an employee card in the first 3 months" — chase.com product page, verified 2026-07-17
   spend_requirement_usd: 5000
   window_months: 3
   notes: >-
-    chase.com shows "up to 110,000 miles + 2,000 PQP after qualifying
-    activities" (2026-07-17) — the qualifying-activity structure and spend
-    requirement NEED human verification; recorded at the headline maximum.
+    Structure verified 2026-07-17: 100k miles + 2,000 PQP after $5k/3mo, plus
+    10k miles for adding an employee card in the first 3 months (recorded at
+    the combined 110k; PQP unscored).
 
 pricing:
   model: annual_fee
-  annual_fee_usd: 150        # chase.com compare page, verified 2026-07-17
+  annual_fee_usd: 150        # "$150 Annual Fee" — chase.com product page, verified 2026-07-17
   foreign_transaction_pct: 0
 
 business_approval:
@@ -67,13 +103,22 @@ payment_type: revolving
 benefit_flags: [free_checked_bag]
 
 sources:
-  - url: https://creditcards.chase.com/business-credit-cards
-    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, pricing, business_approval, employee_cards, payment_type, benefit_flags]
-    accessed: "2026-07-16"
+  - url: https://creditcards.chase.com/business-credit-cards/united/united-business-card
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, pricing, employee_cards, payment_type, benefit_flags]
+    accessed: "2026-07-17"
     added_by: claude-fable-5
     note: >-
-      Card listed on the compare page (lineup claim verified 3-0); all figures
-      drafted from memory — NEEDS human verification against the product page.
+      Official product page read in-browser 2026-07-17: $150 fee, 100k+10k SUB
+      structure, NEW 8x United flights (6x primary fare + 2x), 2x gas/dining/
+      office supply/local transit, 2 Club passes, $125 travel credit (5-flight
+      gate), $100 United Hotels, $100 rideshare, $50 Avis/Budget, $120
+      Instacart. $100 JSX + $25 FareLock credits and the 5,000-mile
+      better-together personal-card bonus not modeled (niche/cross-card).
+  - url: https://creditcards.chase.com/business-credit-cards
+    supports: [business_approval]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: Approval tier inferred — NEEDS human verification.
 
 notes: >-
   22B batch 2. United-locked currency (redeems_for flights only + loyalty_keys
@@ -81,6 +126,6 @@ notes: >-
   United.
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — fee/rates/SUB/credits verified in-browser vs chase.com product page 2026-07-17; 8x-vs-2x employee-fare split is a modeling judgment, approval tier still inferred"
+  confidence: medium

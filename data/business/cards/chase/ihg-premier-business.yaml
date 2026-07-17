@@ -11,40 +11,49 @@ base_rate: 3                 # 3x on everything else — drafted from memory, NE
 
 category_rewards:
   - category: travel_hotels
-    rate: 10                 # CARD-attributable earn at IHG properties; IHG markets "up to 26x" bundling member + status earn — only the card portion is recorded per the bundled-earn protocol rule. NEEDS human verification of the exact split.
+    rate: 10                 # "Up to 26X total ... That's 10X points with this card, plus up to 10X from IHG for membership, plus up to 6X with Platinum Elite" — chase.com product page, verified 2026-07-17; only the card-attributable 10X recorded per the bundled-earn rule
     notes: >-
-      IHG properties only — other hotel spend earns base. Marketing "up to 26x"
-      includes loyalty-program earn; 10x is the card-attributable estimate,
-      NEEDS human verification.
+      IHG properties only — other hotel spend earns the 5x travel line or
+      base. Card-vs-program split confirmed on page.
+  - category: travel_flights
+    rate: 5                  # "5X points on travel, dining, select business purchases, and at gas stations" — chase.com product page, verified 2026-07-17
+  - category: travel_other
+    rate: 5
   - category: fuel_fleet
-    rate: 5                  # 5x gas — drafted from memory, NEEDS human verification
+    rate: 5
   - category: dining
     rate: 5
   - category: office_supplies
     rate: 5
+    notes: >-
+      "Select business purchases" — exact merchant list lives in terms;
+      office-supply mapping NEEDS human verification.
 
 merchant_rewards: []
 
 credits:
   - name: Anniversary free night (up to 40k points)
     kind: in_kind
-    amount_usd: 150          # curator estimate: a 40k-point IHG night ≈ $150-200 at 0.4-0.5cpp; conservative end recorded
+    amount_usd: 150          # "earned each account anniversary year with a current point redemption cap of 40,000 points" — chase.com product page, verified 2026-07-17; ≈$150-200 at 0.4-0.5cpp, conservative end
     period: annual
     usage_keys: [ihg]
     realistic_capture_rate_note: >-
-      Free night capped at 40,000 points/night — usable only by companies
-      staying at IHG; estimate reasoning in the amount comment.
+      Free night capped at 40,000 points/night (points can top up above the
+      cap) — usable only by companies staying at IHG.
 
 signup_bonus:
   value:
-    points: 140000           # "140,000 Bonus Points after $4,000 in first 3 months" — chase.com compare page, verified 2026-07-17
+    points: 150000           # "140,000 bonus points after $4,000 in first 3 months; plus 10,000 bonus points after you add an employee card in the first 3 months" — chase.com product page, verified 2026-07-17
   spend_requirement_usd: 4000
   window_months: 3
-  notes: Verified against chase.com 2026-07-17. Fee ($99) also confirmed.
+  notes: >-
+    140k after $4k/3mo plus 10k for adding an employee card in the first 3
+    months — recorded at the combined 150k. Verified vs chase.com product
+    page 2026-07-17.
 
 pricing:
   model: annual_fee
-  annual_fee_usd: 99
+  annual_fee_usd: 99         # "$99" — chase.com product page, verified 2026-07-17
   foreign_transaction_pct: 0
 
 business_approval:
@@ -62,14 +71,22 @@ payment_type: revolving
 benefit_flags: []
 
 sources:
-  - url: https://creditcards.chase.com/business-credit-cards
-    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, pricing, business_approval, employee_cards, payment_type]
-    accessed: "2026-07-16"
+  - url: https://creditcards.chase.com/business-credit-cards/IHG/business-premier
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, pricing, employee_cards, payment_type]
+    accessed: "2026-07-17"
     added_by: claude-fable-5
     note: >-
-      Card listed on the compare page (lineup claim verified 3-0); figures
-      drafted from memory — NEEDS human verification, especially the
-      card-vs-member earn split at IHG.
+      Official product page read in-browser 2026-07-17: $99 fee, 140k+10k SUB
+      structure, 10X card-attributable at IHG (26X bundled = 10X card + 10X
+      member + 6X Platinum Elite), 5X travel/dining/select business/gas, 3X
+      base, anniversary night (40k cap, top-up allowed), redeem-3-get-4th
+      free. Platinum Elite status noted unscored. "Select business purchases"
+      merchant list + approval tier still NEED human verification.
+  - url: https://creditcards.chase.com/business-credit-cards
+    supports: [business_approval]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: Approval tier inferred — NEEDS human verification.
 
 notes: >-
   22B batch 2. IHG-locked currency (low cpp: 0.4 floor / 0.7 optimistic) — the
@@ -77,6 +94,6 @@ notes: >-
   carries much of the card's worth.
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — fee/rates/SUB/anniversary-night verified in-browser vs chase.com product page 2026-07-17; select-business mapping + approval tier still NEEDS human verification"
+  confidence: medium

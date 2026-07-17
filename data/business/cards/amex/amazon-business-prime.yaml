@@ -4,6 +4,7 @@ id: amazon-business-prime
 name: Amazon Business Prime American Express Card
 issuer: amex
 network: amex
+availability: discontinued   # replaced by the new "Prime Business Card" (Mastercard, Chase-serviced) — amazon.com co-brand page checked in-browser 2026-07-17; Amex version absent from both amazon.com and americanexpress.com lineups
 currency:
   type: cash                 # rewards post as Amazon rewards balance ≈ cash — NEEDS human verification
   program: cash
@@ -80,6 +81,6 @@ notes: >-
   ported over.
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — discontinued status verified in-browser 2026-07-17 (amazon.com now markets the successor 'Prime Business Card', Mastercard, Chase-serviced; Amex version gone from both lineups); legacy terms remain memory-drafted, NEEDS human verification"
   confidence: low

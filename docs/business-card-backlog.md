@@ -110,6 +110,41 @@ LIVE official pages; per-file details in each card's sources + verified_by.
 - **New product spotted, queued**: US Bank Business Shield (5% Travel Center,
   insurance-focused) — add in a future batch.
 
+## Verification pass 2 (browser, 2026-07-17)
+
+- **New products spotted, queued**:
+  - Amex **Graphite Business Cash Unlimited** — $295 AF, unlimited 2% cash
+    (Reward Dollars), 5% portal flights/prepaid hotels, $1,500/$50k/6mo SUB,
+    Pay Over Time. On the americanexpress.com lineup 2026-07-17.
+  - Amazon **Prime Business Card** (successor co-brand; Mastercard,
+    Chase-serviced per cardholder reviews) — 5% Amazon/Amazon
+    Business/AWS/Whole Foods up to $150k/yr then 1%; 2% on top-3 non-Amazon
+    categories from a fixed menu (up to $150k/yr); +1% with Amazon Day
+    Delivery (6% total); 1% base; personalized offer seen: $100 statement
+    credit after $3k/3mo. Replaces the discontinued Amazon Business Prime
+    Amex.
+- **Lineup changes found**: Amex Plum Card and Amazon Business Prime Amex
+  marked `discontinued` (absent from lineups; Plum URL 500s, Amazon page now
+  markets the successor). BofA Alaska Business rebranded **Atmos Rewards
+  Visa Signature Business** (Alaska/Hawaiian merger program).
+- **Major corrections applied (in-browser official pages)**: Amex Business
+  Platinum SUB 150k→as-high-as-300k + 6 new credits (ChatGPT/Adobe/Indeed/
+  CLEAR+/Hilton/GE-TSA); Business Gold SUB→as-high-as-200k + 3X portal lines
+  + 4 credits; Delta trio SUBs/earn structures corrected (Reserve 1.5x
+  categories replaced the wrong $5k+ line; Platinum gained 3x direct hotels
+  + $100k shared pool; Gold gained 2x advertising); Marriott SUB restructured
+  75k+50k two-tranche + $60k second free night; Hilton credits added
+  ($60/qtr); Sapphire Reserve for Business: pay-in-full (was revolving), 3x
+  advertising line, 7 new credits; United duo: NEW 8x United-flight
+  structure, partner-credit stacks added ($600+/$925+); SW Performance earn
+  menu corrected (hotels/gas/dining, telecom removed); SW Premier gained
+  2x gas+dining $8k pool; Hyatt adaptive menu = 8 items, no cap (sentinel);
+  IHG SUB 140k+10k, 5x travel lines added; Venture X Business + Venture
+  Business credits confirmed/added; US Bank Leverage no-cap + FTF 0;
+  Citi AAdvantage 65k SUB confirmed; Costco 5%/4% gas split; Divvy weekly
+  tier table page-confirmed; Ramp publishes NO flat rate (1.5% stays a
+  reported default, confidence low).
+
 ## Fleet cards — EXCLUDED from V1 (decision 2026-07-17)
 
 wex-fleet, fuelman-fleet, shell-fleet-plus: fleet cards rebate in cents PER
