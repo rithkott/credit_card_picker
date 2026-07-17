@@ -1,0 +1,87 @@
+# $0-fee UNCAPPED 3% category card: gas/EV (≤$200 transactions), office
+# supplies, cell service, restaurants — no caps, no activation. Plus a $100
+# annual software credit. Employee spend excluded from the SUB requirement.
+id: triple-cash-rewards-business
+name: U.S. Bank Business Triple Cash Rewards
+issuer: us-bank
+network: visa
+currency:
+  type: cash
+  program: cash
+base_rate: 1
+
+category_rewards:
+  - category: fuel_fleet
+    rate: 3                  # "3% at gas and EV charging stations (transactions of $200 or less)" — plan 21 research verbatim quote
+    notes: >-
+      Issuer limits the gas/EV rate to individual transactions of $200 or less
+      (excludes discount stores/supercenters and wholesale clubs) — the
+      transaction ceiling is a note, not modeled (fleet fills rarely exceed it).
+  - category: office_supplies
+    rate: 3                  # no spending caps, no activation — plan 21 research quote
+  - category: telecom
+    rate: 3                  # cell phone service providers
+    notes: Cell phone service providers specifically; landline/internet may earn base — NEEDS human verification.
+  - category: dining
+    rate: 3
+
+merchant_rewards: []
+
+credits:
+  - name: Annual software services credit
+    amount_usd: 100          # $100 statement credit for recurring software subscription expenses — drafted from memory, NEEDS human verification
+    period: annual
+    category: software_saas
+    realistic_capture_rate_note: >-
+      Requires recurring software subscriptions charged to the card; most
+      businesses with any SaaS spend capture it fully.
+
+signup_bonus:
+  value:
+    usd: 500                 # drafted from memory of the standard offer — NEEDS human verification
+  spend_requirement_usd: 4500
+  window_months: 5
+  notes: >-
+    Offer figure NEEDS human verification. Employee-card spend does NOT count
+    toward the bonus requirement (employee_cards.spend_counts_toward_bonus).
+
+pricing:
+  model: annual_fee
+  annual_fee_usd: 0
+  foreign_transaction_pct: 3  # inference, NEEDS human verification
+
+business_approval:
+  personal_guarantee: true
+  min_personal_fico_tier: good
+  entity_types: [sole_prop, llc, corp]
+  notes: Tier estimate inferred — NEEDS human verification.
+
+employee_cards:
+  fee_usd: 0
+  spend_counts_toward_bonus: false  # "Activity on employee cards does not count toward bonus spending requirement" — plan 21 research verbatim quote
+  controls: [spending_limits]
+
+payment_type: revolving
+
+benefit_flags: []
+
+sources:
+  - url: https://www.nerdwallet.com/business/credit-cards/best
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, pricing, business_approval, employee_cards, payment_type]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: >-
+      3% category set (verbatim incl. the $200 gas-transaction ceiling and
+      "no spending caps... don't require activation") and the employee-card
+      SUB exclusion quoted in the plan 21 research pass. Software credit
+      amount, SUB, FTF, tier are drafts — NEEDS human verification.
+
+notes: >-
+  22B batch 1. The uncapped-3% counterexample to the cap-ladder pattern —
+  strong overflow card for gas/office/telecom/dining-heavy businesses. Seeds
+  spend_counts_toward_bonus: false.
+
+verification:
+  last_verified_date: "2026-07-16"
+  verified_by: "claude-fable-5 (AI draft from plan 21 research quotes) — NEEDS human verification"
+  confidence: low

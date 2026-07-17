@@ -17,18 +17,31 @@ file converted) → `verified` (human-checked against issuer terms).
 | spark-cash-plus | capital-one | seeded |
 | ramp-corporate-card | ramp | seeded |
 
+## Drafted (22B batch 1)
+
+| id | issuer | status |
+|---|---|---|
+| ink-business-unlimited | chase | drafted |
+| ink-business-premier | chase | drafted |
+| blue-business-plus | amex | drafted |
+| blue-business-cash | amex | drafted |
+| triple-cash-rewards-business | us-bank | drafted |
+| signify-business-cash | wells-fargo | drafted |
+| brex-card | brex | drafted |
+| bill-divvy-card | bill | drafted |
+
 ## 22B queue — Chase
 
-ink-business-unlimited, ink-business-premier, sapphire-reserve-for-business,
-united-business, united-club-business, southwest-performance-business,
-southwest-premier-business, world-of-hyatt-business, ihg-premier-business
+sapphire-reserve-for-business, united-business, united-club-business,
+southwest-performance-business, southwest-premier-business,
+world-of-hyatt-business, ihg-premier-business
 
 ## 22B queue — Amex
 
-blue-business-plus, blue-business-cash, business-green, plum-card,
-delta-skymiles-gold-business, delta-skymiles-platinum-business,
-delta-skymiles-reserve-business, hilton-honors-business,
-marriott-bonvoy-business, amazon-business-prime (co-brand TBD by issuer dir)
+business-green, plum-card, delta-skymiles-gold-business,
+delta-skymiles-platinum-business, delta-skymiles-reserve-business,
+hilton-honors-business, marriott-bonvoy-business,
+amazon-business-prime (co-brand TBD by issuer dir)
 
 ## 22B queue — Capital One
 
@@ -37,8 +50,7 @@ spark-classic
 
 ## 22B queue — US Bank
 
-triple-cash-rewards-business, business-altitude-connect,
-business-altitude-power, business-leverage
+business-altitude-connect, business-altitude-power, business-leverage
 
 ## 22B queue — Bank of America
 
@@ -49,14 +61,6 @@ business-advantage-travel-rewards, alaska-airlines-business
 
 costco-anywhere-business, aadvantage-business (Citi exited some business
 products — confirm active lineup during curation)
-
-## 22B queue — Wells Fargo
-
-signify-business-cash
-
-## 22B queue — Fintech corporate charge
-
-brex-card (brex), bill-divvy-card (bill)
 
 ## 22B queue — Fleet (vertical tier, decide inclusion at 22B start)
 

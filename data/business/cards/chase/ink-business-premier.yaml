@@ -1,0 +1,98 @@
+# $195 large-purchase card: 2.5% on $5k+ purchases, 2% on everything else,
+# 5% on Chase Travel — but its rewards CANNOT pool with other Chase cards or
+# transfer to partners (the pooling-break seed of the Ink line).
+id: ink-business-premier
+name: Chase Ink Business Premier
+issuer: chase
+network: visa
+portal: chase_travel
+currency:
+  type: points               # UR-denominated but non-transferable, non-combinable (see pooling)
+  program: chase_ur
+base_rate: 2                 # "Unlimited 2% cash back on every purchase" — plan 21 research quote
+
+category_rewards:
+  - category: travel_flights
+    rate: 5                  # 5% total on travel purchased through Chase Travel — NEEDS human verification
+    portal_only: true
+    notes: Only when booked through Chase Travel.
+  - category: travel_hotels
+    rate: 5
+    portal_only: true
+    notes: Only when booked through Chase Travel.
+  - category: travel_other
+    rate: 5
+    portal_only: true
+    notes: Chase Travel portal bookings.
+
+merchant_rewards: []
+
+large_purchase_rate:
+  rate: 2.5                  # "Unlimited 2.5% Cash Back on large purchases" = individual purchases of $5,000+ (chase.com compare page quote, verified 3-0 in plan 21 research pass)
+  min_transaction_usd: 5000
+  note: 2.5% total on each purchase of $5,000 or more; 2% base applies below.
+
+credits: []
+
+signup_bonus:
+  value:
+    usd: 1000                # "$1,000 after $10,000 in 3 months" — drafted from memory, NEEDS human verification
+  spend_requirement_usd: 10000
+  window_months: 3
+  notes: Offer figure NEEDS human verification against the current product page.
+
+pricing:
+  model: annual_fee
+  annual_fee_usd: 195        # chase.com compare page quote (plan 21 research pass, lineup claim verified 3-0)
+  foreign_transaction_pct: 0
+
+business_approval:
+  personal_guarantee: true
+  min_personal_fico_tier: excellent
+  entity_types: [sole_prop, llc, corp]
+  notes: >-
+    SSN application with personal guarantee; positioned at high-volume
+    businesses. Chase 5/24 applies to the application. Tier estimate inferred —
+    NEEDS human verification.
+
+employee_cards:
+  fee_usd: 0
+  controls: [spending_limits]
+
+payment_type: charge         # designed to be paid in full; "Flex for Business" (17.74-28.49% variable APR) finances eligible purchases — bolt-on, noted per business addendum
+
+pooling:
+  program_combinable: false
+  note: >-
+    Premier rewards cannot be combined with other Chase cards or transferred to
+    travel partners (plan 21 research quote) — points are cash-value only, so
+    no gateway upside ever applies to this card.
+
+benefit_flags: []
+
+sources:
+  - url: https://creditcards.chase.com/business-credit-cards
+    supports: [identity, currency, base_rate, category_rewards, large_purchase_rate, signup_bonus, pricing, business_approval, employee_cards, payment_type]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: >-
+      $195 fee and the 2.5%-on-large-purchases structure quoted from the
+      compare page (verified 3-0 in the plan 21 research pass). 5% portal rate,
+      SUB, and approval tier are drafts — NEEDS human verification.
+  - url: https://thepointsguy.com/credit-cards/chase-ink-card-showdown/
+    supports: [pooling]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: >-
+      "Cannot combine rewards with other cards or transfer them" quoted in the
+      plan 21 research pass — NEEDS human verification against Chase terms.
+
+notes: >-
+  22B batch 1. Exercises large_purchase_rate WITHOUT a cap (unlike Amex's $2M
+  pool) and the pooling break. Flex for Business APR recorded in payment_type
+  note, unscored.
+
+verification:
+  last_verified_date: "2026-07-16"
+  verified_by: "claude-fable-5 (AI draft from plan 21 research quotes) — NEEDS human verification"
+  confidence: low

@@ -339,6 +339,13 @@ def main() -> int:
                 if date.fromisoformat(credit["expires"]) < date.today():
                     warnings.append(f"{rel}: credits[{i}] '{credit['name']}' EXPIRED {credit['expires']} — re-check")
 
+        brc = card.get("base_rate_cap")
+        if brc and brc["fallback_rate"] >= card["base_rate"]:
+            errors.append(
+                f"{rel}: base_rate_cap.fallback_rate {brc['fallback_rate']} must be "
+                f"below base_rate {card['base_rate']} — base_rate is the elevated "
+                f"pre-cap rate on flat-rate-capped cards")
+
         lpr = card.get("large_purchase_rate")
         if lpr and lpr["rate"] <= card["base_rate"]:
             errors.append(

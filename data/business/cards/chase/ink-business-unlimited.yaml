@@ -1,0 +1,63 @@
+# $0-fee flat 1.5% UR workhorse — the cap-overflow catcher of the Ink line;
+# pairs with a UR gateway to upgrade to transfer-partner value.
+id: ink-business-unlimited
+name: Chase Ink Business Unlimited
+issuer: chase
+network: visa
+currency:
+  type: points               # UR-denominated cash back; transferable only via a gateway
+  program: chase_ur
+base_rate: 1.5               # "Unlimited 1.5% cash back" (chase.com compare page quote, plan 21 research pass 2026-07-16)
+
+category_rewards: []
+merchant_rewards: []
+credits: []
+
+signup_bonus:
+  value:
+    usd: 750                 # "$750 after $6,000 in 3 months" — drafted from memory of the standard offer, NEEDS human verification
+  spend_requirement_usd: 6000
+  window_months: 3
+  notes: Offer figure NEEDS human verification against the current product page.
+
+pricing:
+  model: annual_fee
+  annual_fee_usd: 0          # chase.com compare page (plan 21 research pass)
+  foreign_transaction_pct: 3 # standard on no-fee Inks — inference, NEEDS human verification
+
+business_approval:
+  personal_guarantee: true
+  min_personal_fico_tier: good
+  entity_types: [sole_prop, llc, corp]
+  notes: >-
+    SSN application with personal guarantee; sole props eligible. Chase 5/24
+    applies to the application; the card does not add to the count once opened.
+    Tier estimate inferred — NEEDS human verification.
+
+employee_cards:
+  fee_usd: 0                 # "Employee cards at no additional cost. Set individual spending limits" (quoted in plan 21 research pass)
+  controls: [spending_limits]
+
+payment_type: revolving
+
+benefit_flags: []
+
+sources:
+  - url: https://creditcards.chase.com/business-credit-cards
+    supports: [identity, currency, base_rate, signup_bonus, pricing, business_approval, employee_cards, payment_type]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: >-
+      Rate, fee, and free employee cards quoted from the compare page in the
+      plan 21 research pass (Ink lineup claim verified 3-0). SUB, FTF, and
+      approval tier are drafts — NEEDS human verification.
+
+notes: >-
+  22B batch 1 (protocol: docs/ai-conversion-protocol-business.md). Cash-back-
+  tier UR: 1cpp until pooled with Ink Business Preferred (portfolio) or a
+  personal Sapphire (profile personal.premium_cards_held).
+
+verification:
+  last_verified_date: "2026-07-16"
+  verified_by: "claude-fable-5 (AI draft from plan 21 research quotes) — NEEDS human verification"
+  confidence: low

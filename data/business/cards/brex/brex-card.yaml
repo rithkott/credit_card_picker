@@ -1,0 +1,78 @@
+# Fintech corporate charge card for funded/scaled companies: EIN-anchored,
+# no personal guarantee, revenue/cash/funding underwriting. Conditional
+# multipliers (up to 8x on daily-pay + exclusivity) recorded as notes only.
+id: brex-card
+name: Brex Card
+issuer: brex
+network: mastercard
+currency:
+  type: points
+  program: brex_points
+base_rate: 1                 # 1x base; elevated multipliers (up to 7-8x rideshare, 4x travel, 3x restaurants, 2x software) require daily-payment settlement and Brex-exclusivity — conditional structure not schema-modeled, recorded here and in notes. NEEDS human verification.
+
+category_rewards: []
+merchant_rewards: []
+credits: []
+signup_bonus: null           # signup offers vary by agreement/partner referral — none modeled
+
+pricing:
+  model: per_seat
+  free_tier: true            # Brex Essentials: $0/user/month (brex.com/pricing, verified 2026-07-17)
+  per_seat_monthly_usd: 12   # Brex Premium: $12/user/month (brex.com/pricing, verified 2026-07-17)
+  platform_fee_note: >-
+    Card issuance and core spend management are on the free Essentials tier —
+    the optimizer scores $0. Premium ($12/user/mo) and custom Enterprise buy
+    software depth, not card economics.
+  foreign_transaction_pct: 0
+
+business_approval:
+  personal_guarantee: false
+  entity_types: [llc, corp]
+  requires_ein: true         # "All Brex applicants are required to have a US EIN, valid US incorporation, US operations, and a US physical address" — brex.com support, quoted in plan 21 research pass
+  min_cash_balance_usd: 50000    # funded-startup path: ~$50k cash reserves — plan 21 research figure, NEEDS human verification
+  min_annual_revenue_usd: 500000 # alternative path: >$500k annual revenue — brex.com support, quoted in plan 21 research pass
+  funding_qualifies: true    # equity investment (received or planned) qualifies
+  notes: >-
+    No personal guarantee or personal credit check; limits set by revenue-based
+    underwriting from company financials. Either path qualifies (cash OR
+    revenue OR funding). No PO-box/mailbox business addresses. Thresholds NEED
+    human verification against current brex.com support docs.
+
+employee_cards:
+  fee_usd: 0                 # unlimited free physical + virtual cards
+  controls: [spending_limits, mcc_restrictions, realtime_alerts, preswipe_policy, card_freeze]
+  note: Real-time controls apply before transactions complete.
+
+payment_type: charge         # paid in full monthly (or daily on the daily-settlement account)
+
+integrations: [quickbooks, netsuite, xero]
+virtual_cards: true
+
+benefit_flags: []
+
+sources:
+  - url: https://www.brex.com/pricing
+    supports: [identity, pricing]
+    accessed: "2026-07-17"
+    added_by: claude-fable-5
+    note: "$0 Essentials and $12/user/mo Premium verified against the live pricing page."
+  - url: https://www.brex.com/support/brex-account-requirements
+    supports: [currency, base_rate, business_approval, employee_cards, payment_type, integrations]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: >-
+      EIN/US-incorporation requirements and underwriting paths quoted in the
+      plan 21 research pass. Reward multiplier structure and thresholds NEED
+      human verification.
+
+notes: >-
+  22B batch 1. Brex's elevated multipliers are conditional on daily-payment
+  settlement AND Brex exclusivity — per the business addendum, conditional
+  rates are NOT transcribed as headline rates; the card is modeled at its
+  unconditional 1x base with the structure documented here. Revisit if a
+  conditional-rate block is added to the schema.
+
+verification:
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 (AI draft; pricing verified vs brex.com) — NEEDS human verification"
+  confidence: low

@@ -41,6 +41,17 @@
       "minimum": 0,
       "description": "Catch-all earn rate applied to spend not matched by any category/merchant reward or adaptive_top_n line"
     },
+    "base_rate_cap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["period", "max_spend_usd", "fallback_rate"],
+      "description": "Cap on the BASE rate itself, for flat-rate-capped business cards (Amex Blue Business Plus/Cash: 2x/2% on the first $50,000 of ALL purchases each calendar year, then 1x/1%). base_rate is the elevated headline rate; above max_spend_usd the card earns fallback_rate. Never model this as identical category lines across the whole enum",
+      "properties": {
+        "period": { "enum": ["annual"] },
+        "max_spend_usd": { "type": "number", "exclusiveMinimum": 0 },
+        "fallback_rate": { "type": "number", "minimum": 0 }
+      }
+    },
     "portal": {
       "type": "string",
       "minLength": 1,

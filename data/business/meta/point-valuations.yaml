@@ -45,3 +45,15 @@ programs:
     redeems_for: [cashback, flights, hotels]
     floor_cpp: 0.5          # cash-out 0.5; 1.0 as travel eraser — same as consumer table
     optimistic_cpp: 1.7     # transfer partners — same as consumer table
+
+  # ---- Fintech corporate currencies (22B) -------------------------------------
+  brex_points:
+    label: Brex Rewards points
+    redeems_for: [cashback]
+    floor_cpp: 1.0          # cash redemption at ~1cpp; billboard/travel paths exist but
+    optimistic_cpp: 1.0     # are not clearly above cash — valued flat, NEEDS human verification
+  divvy_points:
+    label: BILL Divvy Rewards points
+    redeems_for: [cashback]
+    floor_cpp: 1.0          # statement-credit/cash redemption ~1cpp — NEEDS human verification
+    optimistic_cpp: 1.0
