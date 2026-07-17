@@ -11,35 +11,47 @@ base_rate: 1
 
 category_rewards:
   - category: travel_flights
-    rate: 4                  # 4x on Southwest purchases — Southwest only, mapping caveat
+    rate: 4                  # "4 points per $1 spent on Southwest Airline purchases" — chase.com product page, verified 2026-07-17
     notes: >-
       Issuer awards 4x on SOUTHWEST purchases specifically — other airfare
-      earns base. NEEDS human verification.
-  - category: telecom
-    rate: 2                  # 2x on internet/cable/phone and select streaming — drafted from memory, NEEDS human verification
+      earns base.
+  - category: travel_hotels
+    rate: 2                  # "2 points per $1 spent on hotel accommodations booked directly with the hotel" — chase.com product page, verified 2026-07-17
+    notes: Booked directly with hotels.
+  - category: fuel_fleet
+    rate: 2                  # "2 points per $1 spent on gas station and restaurant purchases" — chase.com product page, verified 2026-07-17
+  - category: dining
+    rate: 2
   - category: transit
-    rate: 2                  # 2x rideshare — drafted from memory, NEEDS human verification
+    rate: 2                  # "2 points per $1 spent on local transit and commuting, including rideshare services" — chase.com product page, verified 2026-07-17
 
 merchant_rewards: []
 
 credits:
   - name: Anniversary points
-    amount_points: 9000      # 9,000 anniversary points — drafted from memory, NEEDS human verification
+    amount_points: 9000      # "9,000 bonus points each year after your Cardmember anniversary" — chase.com product page, verified 2026-07-17
     period: annual
     automatic: true
     realistic_capture_rate_note: Posts automatically each cardmember anniversary.
+  - name: Global Entry / TSA PreCheck / NEXUS fee credit
+    amount_usd: 120          # "one statement credit of up to $120 every four years" — chase.com product page, verified 2026-07-17
+    period: every_4_years
+    usage_keys: [global_entry_tsa]
+    realistic_capture_rate_note: >-
+      One application-fee reimbursement every 4 years; captured once per
+      renewal cycle by enrollees.
 
 signup_bonus:
   value:
-    points: 80000            # "80,000 points after $5,000 in first 3 months" — chase.com compare page, verified 2026-07-17
+    points: 80000            # "80,000 points after you spend $5,000 ... first 3 months" — chase.com product page, verified 2026-07-17
   spend_requirement_usd: 5000
   window_months: 3
-  notes: Verified against chase.com 2026-07-17.
+  notes: Verified against chase.com product page 2026-07-17.
 
 pricing:
   model: annual_fee
-  annual_fee_usd: 299        # chase.com compare page, verified 2026-07-17
-  foreign_transaction_pct: 0
+  annual_fee_usd: 299        # "$299 applied to first billing statement" — chase.com product page, verified 2026-07-17
+  foreign_transaction_pct: 0  # "No foreign transaction fees" — chase.com product page, verified 2026-07-17
 
 business_approval:
   personal_guarantee: true
@@ -53,20 +65,29 @@ employee_cards:
 
 payment_type: revolving
 
-benefit_flags: [upgraded_boardings, inflight_wifi_credits]
+benefit_flags: [upgraded_boardings, free_checked_bag]
 
 sources:
-  - url: https://creditcards.chase.com/business-credit-cards
-    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, pricing, business_approval, employee_cards, payment_type, benefit_flags]
-    accessed: "2026-07-16"
+  - url: https://creditcards.chase.com/business-credit-cards/southwest/performance-business
+    supports: [identity, currency, base_rate, category_rewards, credits, signup_bonus, pricing, employee_cards, payment_type, benefit_flags]
+    accessed: "2026-07-17"
     added_by: claude-fable-5
     note: >-
-      Card listed on the compare page (lineup claim verified 3-0); figures
-      drafted from memory — NEEDS human verification.
+      Official product page read in-browser 2026-07-17: 80k/$5k/3mo SUB, $299
+      fee, 4x Southwest / 2x direct hotels / 2x gas+restaurants / 2x local
+      transit+rideshare, 9k anniversary points, GE/TSA/NEXUS $120/4yr, no FTF,
+      free first checked bag + Group 5 boarding + preferred/extra-legroom
+      seats, 25% back inflight, 2,500 TQP per $5k, 10k Companion Pass boost.
+      Old inflight-wifi-credit flag removed — not on current page.
+  - url: https://creditcards.chase.com/business-credit-cards
+    supports: [business_approval]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: Approval tier inferred — NEEDS human verification.
 
 notes: 22B batch 2. Southwest-locked currency.
 
 verification:
-  last_verified_date: "2026-07-16"
-  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
-  confidence: low
+  last_verified_date: "2026-07-17"
+  verified_by: "claude-fable-5 — fee/rates/SUB/anniversary/credits verified in-browser vs chase.com product page 2026-07-17; approval tier still inferred"
+  confidence: medium

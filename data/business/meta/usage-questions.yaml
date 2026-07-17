@@ -57,3 +57,4 @@ groups:
       walmart_plus: {label: "Walmart+ monthly membership"}
       google_workspace: {label: "Google Workspace subscription"}
       ziprecruiter: {label: "ZipRecruiter (job postings / hiring)"}
+      instacart: {label: "Instacart (office groceries / supplies)"}
