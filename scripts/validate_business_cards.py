@@ -367,6 +367,10 @@ def main() -> int:
             cap = lpr["cap"]
             cap_groups.setdefault(cap["shared_cap_id"], []).append(
                 ("large_purchase_rate", cap))
+        if atn and atn.get("cap", {}).get("shared_cap_id"):
+            cap = atn["cap"]
+            cap_groups.setdefault(cap["shared_cap_id"], []).append(
+                ("adaptive_top_n", cap))
         for gid, members in sorted(cap_groups.items()):
             if len(members) < 2:
                 errors.append(f"{rel}: {members[0][0]}: shared_cap_id '{gid}' has only one member")
