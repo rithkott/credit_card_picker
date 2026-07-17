@@ -1,0 +1,88 @@
+# Fintech corporate charge card with tiered category multipliers (7x/5x/2x at
+# the weekly-payment setting) and a low cash-balance bar — one of the few
+# corporate cards open to sole proprietors.
+id: bill-divvy-card
+name: BILL Divvy Corporate Card
+issuer: bill
+network: visa                # inference — NEEDS human verification
+currency:
+  type: points
+  program: divvy_points
+base_rate: 1.5               # 1.5x on all other purchases AT THE WEEKLY payment setting — plan 21 research quote; lower on semimonthly/monthly settlement (see notes). NEEDS human verification.
+
+category_rewards:
+  - category: dining
+    rate: 7                  # "Up to 7x points on restaurants" at weekly payment — plan 21 research verbatim quote
+    notes: Rate applies at the weekly-payment setting; semimonthly/monthly settings earn less — NEEDS human verification of the full tier table.
+  - category: travel_hotels
+    rate: 5                  # 5x hotels at weekly payment
+    notes: Weekly-payment setting; lower tiers on slower settlement.
+  - category: software_saas
+    rate: 2                  # 2x recurring software at weekly payment
+    notes: Recurring software subscriptions; weekly-payment setting.
+
+merchant_rewards: []
+credits: []
+signup_bonus: null
+
+pricing:
+  model: per_seat
+  free_tier: true            # Divvy card + spend management is free; paid BILL tiers add AP/AR software
+  platform_fee_note: >-
+    Card program is free (no annual or per-card fees — plan 21 research
+    quote); paid BILL Spend & Expense tiers buy accounting software breadth,
+    not card economics.
+  foreign_transaction_pct: 0  # inference — NEEDS human verification
+
+business_approval:
+  personal_guarantee: false
+  entity_types: [sole_prop, llc, corp]  # "one of few corporate cards available to sole proprietors" — plan 21 research quote
+  requires_ein: true
+  min_cash_balance_usd: 20000  # "cash balance greater than $20,000 in an active account" + good-to-very-good credit — plan 21 research quote (Nav)
+  notes: >-
+    Nav reports a personal credit-score check ALONGSIDE business underwriting
+    ("good to very good credit score") despite no personal guarantee — the
+    fico-tier field is PG-only by schema, so that nuance lives here. NEEDS
+    human verification against bill.com terms.
+
+employee_cards:
+  fee_usd: 0
+  controls: [spending_limits, mcc_restrictions, realtime_alerts, preswipe_policy, card_freeze]
+  note: Budgets enforced at authorization (Divvy budget model).
+
+payment_type: charge         # balance settles on the chosen cycle (weekly/semimonthly/monthly); multiplier tier depends on it
+
+integrations: [quickbooks, netsuite, xero]
+virtual_cards: true
+
+benefit_flags: []
+
+sources:
+  - url: https://www.bill.com/blog/employee-credit-cards
+    supports: [identity, currency, base_rate, category_rewards, pricing, employee_cards, payment_type, integrations]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: >-
+      Tier structure (7x/5x/2x/1.5x, no annual or per-employee-card fees)
+      quoted in the plan 21 research pass — payment-frequency conditionality
+      and integration list NEED human verification.
+  - url: https://www.nav.com/business-credit-card/best/ein/
+    supports: [business_approval]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: >-
+      $20k cash-balance requirement and sole-prop availability quoted in the
+      plan 21 research pass — NEEDS human verification.
+
+notes: >-
+  22B batch 1. DELIBERATE protocol tension recorded: the 7x/5x/2x/1.5x rates
+  are conditional on WEEKLY settlement — the business addendum says record the
+  headline tier with the condition stated, since Divvy's own marketing leads
+  with it and the weekly setting is the default recommendation. A stricter
+  pass (or a conditional-rate schema block) should revisit; human verifier
+  must confirm the semimonthly/monthly tier table.
+
+verification:
+  last_verified_date: "2026-07-16"
+  verified_by: "claude-fable-5 (AI draft from plan 21 research quotes) — NEEDS human verification"
+  confidence: low

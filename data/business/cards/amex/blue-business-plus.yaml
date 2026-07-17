@@ -1,0 +1,68 @@
+# $0-fee flat-capped MR earner: 2x on ALL purchases up to $50k/yr, then 1x.
+# The base_rate_cap seed on a points currency.
+id: blue-business-plus
+name: American Express Blue Business Plus
+issuer: amex
+network: amex
+currency:
+  type: points
+  program: amex_mr
+base_rate: 2                 # 2X Membership Rewards on all purchases up to the cap
+base_rate_cap:
+  period: annual
+  max_spend_usd: 50000       # "first $50,000 in eligible spending each calendar year" — plan 21 research quote (Amex $50k cap claim), NEEDS human verification for this specific card vs Blue Business Cash
+  fallback_rate: 1
+
+category_rewards: []
+merchant_rewards: []
+credits: []
+
+signup_bonus:
+  value:
+    points: 15000            # drafted from memory of the standard offer — NEEDS human verification
+  spend_requirement_usd: 3000
+  window_months: 3
+  notes: Offer figure NEEDS human verification; Amex once-per-lifetime rule applies.
+
+pricing:
+  model: annual_fee
+  annual_fee_usd: 0
+  foreign_transaction_pct: 2.7  # standard Amex no-fee-card FTF — inference, NEEDS human verification
+
+business_approval:
+  personal_guarantee: true
+  min_personal_fico_tier: good
+  entity_types: [sole_prop, llc, corp]
+  notes: >-
+    SSN application with personal guarantee. This is a REVOLVING Amex credit
+    card — it counts toward the Amex 5-credit-card limit (issuer-rules: amex).
+    Tier estimate inferred — NEEDS human verification.
+
+employee_cards:
+  fee_usd: 0
+  max_cards: 99
+  controls: [spending_limits, realtime_alerts, card_freeze]
+
+payment_type: revolving
+
+benefit_flags: []
+
+sources:
+  - url: https://www.nerdwallet.com/business/credit-cards/best
+    supports: [identity, currency, base_rate, pricing, business_approval, employee_cards, payment_type, signup_bonus]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: >-
+      2x-to-$50k flat structure quoted in the plan 21 research pass (the $50k
+      cap quote names Blue Business Cash; Plus mirrors it on the points side —
+      inference). All figures NEED human verification against Amex terms.
+
+notes: >-
+  22B batch 1. Exercises base_rate_cap on a points card. The cheapest MR
+  entry point: pairs with Business Gold/Platinum for transfer value (MR pools
+  natively — no gateway flag needed on amex_mr).
+
+verification:
+  last_verified_date: "2026-07-16"
+  verified_by: "claude-fable-5 (AI draft from plan 21 research quotes) — NEEDS human verification"
+  confidence: low
