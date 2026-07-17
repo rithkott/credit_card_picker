@@ -39,14 +39,19 @@ payment_type: revolving
 benefit_flags: []
 
 sources:
-  - url: https://www.nerdwallet.com/business/credit-cards/best
-    supports: [identity, currency, base_rate, signup_bonus, pricing, business_approval, employee_cards, payment_type]
-    accessed: "2026-07-16"
+  - url: https://creditcards.wellsfargo.com/cards/business-credit-cards/signify-business-cash-credit-card/
+    supports: [identity, currency, base_rate, signup_bonus, pricing, employee_cards, payment_type]
+    accessed: "2026-07-17"
     added_by: claude-fable-5
     note: >-
-      Flat-rate structure and free employee cards from the plan 21 research
-      pass; the 2% rate, network, SUB, and FTF are drafts — NEEDS human
-      verification against wellsfargo.com.
+      Official product page read in-browser 2026-07-17: unlimited 2% no caps,
+      $0 fee, $500/$5k/3mo SUB, 0% intro APR 12 months. FTF not stated on
+      page — no-FTF claim still marked for human verification.
+  - url: https://www.nerdwallet.com/business/credit-cards/best
+    supports: [business_approval]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: Approval tier inferred — NEEDS human verification.
 
 notes: >-
   22B batch 1. Uncapped flat 2% cash — direct Spark Cash Plus competitor
@@ -55,5 +60,5 @@ notes: >-
 
 verification:
   last_verified_date: "2026-07-17"
-  verified_by: "claude-fable-5 — rate/fee/SUB/network/employee-cards verified vs wellsfargo.com product page 2026-07-17; FTF + approval tier still inferred"
+  verified_by: "claude-fable-5 — rate/fee/SUB/network/employee-cards verified in-browser vs wellsfargo.com product page 2026-07-17; FTF + approval tier still inferred"
   confidence: medium

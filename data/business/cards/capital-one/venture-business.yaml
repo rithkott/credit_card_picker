@@ -21,7 +21,22 @@ category_rewards:
     notes: Rental cars via Capital One Business Travel.
 
 merchant_rewards: []
-credits: []
+credits:
+  - name: Capital One Travel credit
+    amount_usd: 50           # "Annual $50 travel credit for bookings through Capital One Business Travel" — capitalone.com compare page, verified 2026-07-17
+    period: annual
+    category: travel_other
+    portal_only: true
+    realistic_capture_rate_note: >-
+      $50/yr only on Capital One Business Travel bookings — captured by any
+      business with travel spend willing to book through the portal.
+  - name: Advertising/software statement credit
+    amount_usd: 50           # "up to a $50 annual statement credit for purchases at qualifying advertising or software merchants" — capitalone.com compare page, verified 2026-07-17
+    period: annual
+    category: advertising
+    realistic_capture_rate_note: >-
+      Up to $50/yr against qualifying advertising or software merchant
+      purchases — near-automatic for businesses with ad/SaaS spend.
 
 signup_bonus:
   value:
