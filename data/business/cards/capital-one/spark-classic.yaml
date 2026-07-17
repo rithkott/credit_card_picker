@@ -1,0 +1,55 @@
+# Fair-credit business builder card: 1.5% cash (previously 1%), modest line —
+# the accessible-tier entry of the business corpus.
+id: spark-classic
+name: Capital One Spark Classic for Business
+issuer: capital-one
+network: visa
+currency:
+  type: cash
+  program: cash
+base_rate: 1.5               # 1.5% cash back — drafted from memory (recently raised from 1%), NEEDS human verification
+
+category_rewards: []
+merchant_rewards: []
+credits: []
+signup_bonus: null
+
+pricing:
+  model: annual_fee
+  annual_fee_usd: 0
+  foreign_transaction_pct: 0
+
+business_approval:
+  personal_guarantee: true
+  min_personal_fico_tier: good  # fair-to-good underwriting — the accessible tier; schema floor is 'good', true bar may be fair (noted)
+  entity_types: [sole_prop, llc, corp]
+  notes: >-
+    Capital One markets this at fair/average credit — likely approves below
+    the 'good' tier recorded here (schema's lowest business tier). Reports to
+    personal credit — ADDS to 5/24. NEEDS human verification.
+
+employee_cards:
+  fee_usd: 0
+  controls: [spending_limits, card_freeze]
+
+payment_type: revolving
+
+benefit_flags: []
+
+sources:
+  - url: https://www.capitalone.com/small-business/credit-cards/
+    supports: [identity, currency, base_rate, signup_bonus, pricing, business_approval, employee_cards, payment_type]
+    accessed: "2026-07-16"
+    added_by: claude-fable-5
+    note: Figures drafted from memory — NEEDS human verification.
+
+notes: >-
+  22B batch 3. Exposes a schema question for the human pass: business fico
+  floor enum starts at 'good' — if fair-credit business cards matter to the
+  product, extend min_personal_fico_tier with 'fair' (validator + optimizer
+  in the same change).
+
+verification:
+  last_verified_date: "2026-07-16"
+  verified_by: "claude-fable-5 (AI draft from memory) — NEEDS human verification"
+  confidence: low

@@ -42,21 +42,25 @@ file converted) → `verified` (human-checked against issuer terms).
 | world-of-hyatt-business | chase | drafted |
 | ihg-premier-business | chase | drafted |
 
+## Drafted (22B batch 3 — Capital One + US Bank)
+
+| id | issuer | status |
+|---|---|---|
+| spark-cash-select | capital-one | drafted |
+| spark-miles | capital-one | drafted |
+| spark-miles-select | capital-one | drafted |
+| venture-x-business | capital-one | drafted |
+| spark-classic | capital-one | drafted |
+| business-altitude-connect | us-bank | drafted |
+| business-altitude-power | us-bank | drafted |
+| business-leverage | us-bank | drafted |
+
 ## 22B queue — Amex
 
 business-green, plum-card, delta-skymiles-gold-business,
 delta-skymiles-platinum-business, delta-skymiles-reserve-business,
 hilton-honors-business, marriott-bonvoy-business,
 amazon-business-prime (co-brand TBD by issuer dir)
-
-## 22B queue — Capital One
-
-spark-cash-select, spark-miles, spark-miles-select, venture-x-business,
-spark-classic
-
-## 22B queue — US Bank
-
-business-altitude-connect, business-altitude-power, business-leverage
 
 ## 22B queue — Bank of America
 
