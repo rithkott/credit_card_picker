@@ -9,7 +9,7 @@ vi.mock('../../api', async (importOriginal) => {
   return { ...mod, parseStatement: vi.fn() }
 })
 
-import { parseStatement } from '../../api'
+import { ApiError, parseStatement } from '../../api'
 import { createParseSession, parseFiles, MAX_FILES } from './index'
 import type { WireParsedFile } from './types'
 
@@ -106,6 +106,23 @@ describe('parseFiles', () => {
     expect(progress).toEqual([
       [0, 2, 'a.csv'], [1, 2, 'b.csv'], [2, 2, undefined],
     ])
+  })
+
+  it('treats a 429 as transient: waits Retry-After, retries once, succeeds', async () => {
+    // Retry-After of 0 keeps the test instant while still driving the
+    // wait-then-retry code path (fake timers deadlock against the real
+    // async SHA-256 dedupe hashing, so the wait itself stays real).
+    parseStatementMock
+      .mockRejectedValueOnce(new ApiError(
+        429, 'Too many requests — wait a moment and try again.',
+        'rate_limited', 0))
+      .mockImplementation(async (name) => wireFile(name))
+
+    const batch = await parseFiles([input('limited.csv')])
+
+    expect(batch.files.map((f) => f.summary.name)).toEqual(['limited.csv'])
+    expect(batch.errors).toEqual([])
+    expect(parseStatementMock).toHaveBeenCalledTimes(2)
   })
 
   it('turns a failed upload into a per-file error without killing the batch', async () => {

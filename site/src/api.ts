@@ -17,10 +17,13 @@ export const API_URL: string =
 export class ApiError extends Error {
   status: number
   code?: string
-  constructor(status: number, detail: string, code?: string) {
+  /** Seconds from the Retry-After header on a 429, when the server sent it. */
+  retryAfter?: number
+  constructor(status: number, detail: string, code?: string, retryAfter?: number) {
     super(detail)
     this.status = status
     this.code = code
+    this.retryAfter = retryAfter
   }
 }
 
@@ -36,7 +39,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     } catch {
       /* non-JSON error body: keep the status text */
     }
-    throw new ApiError(resp.status, detail, code)
+    const retryRaw = resp.headers.get('Retry-After')
+    const retryAfter = retryRaw && /^\d+$/.test(retryRaw) ? Number(retryRaw) : undefined
+    throw new ApiError(resp.status, detail, code, retryAfter)
   }
   return (await resp.json()) as T
 }

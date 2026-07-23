@@ -72,14 +72,19 @@ export function fromWire(wire: WireParsedFile): ParsedFile {
   }
 }
 
-/** Upload one file, retrying ONCE on transient failures (network error or
- * 5xx). 4xx responses are real per-file answers and never retried. */
+/** Upload one file, retrying ONCE on transient failures (network error, 5xx,
+ * or a 429 rate limit — waiting out its Retry-After first, capped at 10 s).
+ * Other 4xx responses are real per-file answers and never retried. */
 async function uploadOnce(name: string, bytes: Uint8Array): Promise<WireParsedFile> {
   try {
     return await parseStatement(name, bytes)
   } catch (e) {
-    const transient = !(e instanceof ApiError) || e.status >= 500
+    const transient = !(e instanceof ApiError) || e.status >= 500 || e.status === 429
     if (!transient) throw e
+    if (e instanceof ApiError && e.status === 429) {
+      const waitSecs = Math.min(e.retryAfter ?? 2, 10)
+      await new Promise((resolve) => setTimeout(resolve, waitSecs * 1000))
+    }
     return await parseStatement(name, bytes)
   }
 }

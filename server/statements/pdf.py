@@ -31,7 +31,11 @@ from .csv_parse import parse_amount_to_cents, parse_date_to_iso
 from .kind import classify_kind, refine_refund
 from .types import ParsedFile, ScannedPdfError, StatementParseError, Summary, Txn
 
-MAX_PDF_PAGES = 200
+# Checked before any per-page extraction: pdfplumber word extraction is
+# CPU-bound (~0.2–0.5 s/page), and the Vercel function budget is 60 s — the
+# page cap is the deterministic stand-in for a parse timeout. Real statements
+# are well under 30 pages.
+MAX_PDF_PAGES = 100
 
 # ── Pure text-layer reconstruction (unit-tested without pdfplumber) ──────────
 
@@ -403,7 +407,10 @@ def parse_pdf(data: bytes, file: str) -> ParsedFile:
             f"your issuer instead.")
     with pdf:
         if len(pdf.pages) > MAX_PDF_PAGES:
-            raise StatementParseError(f"{file}: more than {MAX_PDF_PAGES} pages.")
+            raise StatementParseError(
+                f"{file}: more than {MAX_PDF_PAGES} pages — download the CSV "
+                f"export from your issuer instead.",
+                code="too_many_pages")
         words: List[Word] = []
         for page in pdf.pages:
             try:
