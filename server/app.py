@@ -30,6 +30,13 @@ computation engine; this file only maps HTTP to its functions:
                         failures are per-file {"detail", "code"} errors the
                         UI renders (422, or 413 for oversize files).
 
+Hardening (applies identically local and hosted — deployment never forks
+behavior): per-IP token-bucket rate limiting (server/ratelimit.py; 429
+{"detail", "code": "rate_limited"} + Retry-After), a 256 KB Content-Length
+cap on the JSON POST routes (413 {"detail", "code": "too_large"}), security
+headers on every response, Cache-Control on the immutable GETs, and a
+generic global 500 handler that never echoes request content.
+
 The dataset is loaded once at startup — restart (or run uvicorn --reload)
 after editing card YAML. Every optimize call writes a gitignored debug dump to
 server/debug-runs/<timestamp>.yaml with the exact request and the full result
@@ -58,6 +65,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "server"))  # so `import statements` works everywhere
 import optimize as opt  # noqa: E402
 
+import ratelimit  # noqa: E402  (server/ratelimit.py, backend hardening)
 import statements as stmts  # noqa: E402  (server/statements/, plan 12)
 from statements.detect_usage import Matcher, detect_usage  # noqa: E402  (plan 14)
 
@@ -92,6 +100,103 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="credit_card_picker API", lifespan=lifespan)
+
+# --- Hardening (backend-hardening): rate limit, body cap, headers ---------
+# One combined middleware instead of three stacked BaseHTTPMiddlewares.
+# ORDERING MATTERS: Starlette treats the LAST add_middleware call as the
+# outermost layer, so the CORS registration below must stay after this
+# decorator — that keeps CORS outermost and puts CORS headers on 429/413
+# early returns, which dev mode (localhost:5173 -> :8000) needs to read them.
+
+LIMITER = ratelimit.TokenBucketLimiter()
+
+# JSON POST bodies are small profiles (<5 KB real-world); 256 KB is 50x
+# headroom. Enforced via Content-Length only — every browser fetch with a
+# string body sends it, and Vercel's 4.5 MB platform cap is the backstop for
+# length-less/chunked bodies. /api/statements/parse is exempt: it has its own
+# 4 MB cap (server/statements/) that already maps to 413.
+MAX_JSON_BYTES = 256 * 1024
+JSON_CAPPED_PATHS = {"/api/optimize", "/api/evaluate", "/api/suggest-addition"}
+
+# The registry-backed GETs are immutable for a deployment; deploys happen per
+# merge, so 5 minutes bounds staleness. Health is a liveness probe: no-store.
+CACHE_CONTROL = {
+    "/api/health": "no-store",
+    "/api/cards": "public, max-age=300",
+    "/api/assumptions": "public, max-age=300",
+    "/api/config": "public, max-age=300",
+}
+
+# Applied identically local and hosted (CLAUDE.md: deployment must never fork
+# API behavior). HSTS is harmless over plain-http localhost — browsers ignore
+# it on non-https origins. Static assets get the same set via vercel.json.
+SECURITY_HEADERS = {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "no-referrer",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
+    "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
+}
+
+
+def _client_ip(request) -> str:
+    # x-real-ip is set by Vercel's edge and not client-spoofable through it;
+    # never trust raw x-forwarded-for (client-appendable). Locally this falls
+    # back to the socket peer ("127.0.0.1" / "testclient").
+    return (request.headers.get("x-real-ip")
+            or (request.client.host if request.client else "unknown"))
+
+
+@app.middleware("http")
+async def hardening(request, call_next):
+    # Read the module global at call time (not a closure) so tests can swap
+    # LIMITER for a fake-clock instance.
+    route_class = ratelimit.classify(request.method, request.url.path)
+    if route_class and LIMITER.enabled:
+        retry = LIMITER.check(_client_ip(request), route_class)
+        if retry is not None:
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "Too many requests — wait a moment and try again.",
+                         "code": "rate_limited"},
+                headers={"Retry-After": str(retry), **SECURITY_HEADERS})
+
+    if request.method == "POST" and request.url.path in JSON_CAPPED_PATHS:
+        try:
+            length = int(request.headers.get("content-length") or 0)
+        except ValueError:
+            length = 0
+        if length > MAX_JSON_BYTES:
+            return JSONResponse(
+                status_code=413,
+                content={"detail": "Request body larger than 256 KB.",
+                         "code": "too_large"},
+                headers=SECURITY_HEADERS)
+
+    response = await call_next(request)
+    for key, value in SECURITY_HEADERS.items():
+        response.headers.setdefault(key, value)
+    if request.method == "GET" and response.status_code == 200:
+        cache = CACHE_CONTROL.get(request.url.path)
+        if cache:
+            response.headers.setdefault("Cache-Control", cache)
+    return response
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception(request, exc):
+    # Generic 500: never echo str(exc) or a traceback — either could embed
+    # request content (spend data, statement text). Type + path is enough to
+    # reproduce locally. Headers set here too: this handler runs outside the
+    # hardening middleware's normal path.
+    sys.stderr.write(f"unhandled {type(exc).__name__} on {request.url.path}\n")
+    return JSONResponse(status_code=500,
+                        content={"detail": "Internal server error."},
+                        headers=SECURITY_HEADERS)
+
+
+# Registered last on purpose — see the ordering note above the hardening
+# middleware.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,

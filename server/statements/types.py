@@ -22,7 +22,7 @@ TXN_KINDS = ("purchase", "refund", "payment", "fee", "interest", "transfer")
 class StatementParseError(Exception):
     """User-renderable parse failure. `code` keys the API error taxonomy:
     scanned_pdf | unrecognized_format | no_transactions | too_many_txns |
-    too_large (mapped to HTTP 413, the rest to 422)."""
+    too_many_pages | too_large (mapped to HTTP 413, the rest to 422)."""
 
     def __init__(self, message: str, code: str = "no_transactions"):
         super().__init__(message)

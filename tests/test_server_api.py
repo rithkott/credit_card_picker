@@ -49,6 +49,9 @@ class TestServerAPI(unittest.TestCase):
         cls._tmp = tempfile.TemporaryDirectory()
         server_app.DEBUG_DIR = Path(cls._tmp.name)
         cls.server_app = server_app
+        # This suite fires dozens of compute POSTs in seconds — far past the
+        # rate budget. The limiter is off here; TestHardening covers it.
+        server_app.LIMITER.enabled = False
         cls.client = TestClient(server_app.app)
         cls.client.__enter__()  # run lifespan (loads the dataset once)
         cls.dataset = server_app.STATE["dataset"]
@@ -57,6 +60,7 @@ class TestServerAPI(unittest.TestCase):
     def tearDownClass(cls):
         cls.client.__exit__(None, None, None)
         cls._tmp.cleanup()
+        cls.server_app.LIMITER.enabled = True
         opt.CARDS_DIR, opt.META_DIR = cls._saved_paths
 
     # -- health / config ----------------------------------------------------
@@ -462,6 +466,135 @@ class TestServerAPI(unittest.TestCase):
             del os.environ["VERCEL"]
         self.assertEqual(r.status_code, 200)
         self.assertEqual(set(Path(self._tmp.name).iterdir()), before)
+
+
+@unittest.skipUnless(HAS_FASTAPI, "fastapi/httpx not installed (pip install -r server/requirements.txt)")
+class TestHardening(unittest.TestCase):
+    """Backend hardening: security headers, cache headers, JSON body cap,
+    rate limiting, and the generic global 500 handler."""
+
+    @classmethod
+    def setUpClass(cls):
+        from fastapi.testclient import TestClient
+        sys.path.insert(0, str(ROOT / "server"))
+        import app as server_app
+        cls._saved_paths = (opt.CARDS_DIR, opt.META_DIR)
+        opt.CARDS_DIR = ROOT / "data" / "cards"
+        opt.META_DIR = ROOT / "data" / "meta"
+        cls._tmp = tempfile.TemporaryDirectory()
+        server_app.DEBUG_DIR = Path(cls._tmp.name)
+        cls.server_app = server_app
+        server_app.LIMITER.enabled = False  # per-test setups enable a fake
+        cls.client = TestClient(server_app.app)
+        cls.client.__enter__()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.client.__exit__(None, None, None)
+        cls._tmp.cleanup()
+        cls.server_app.LIMITER.enabled = True
+        opt.CARDS_DIR, opt.META_DIR = cls._saved_paths
+
+    OPTIMIZE_BODY = {"spend": {"other": 1000},
+                     "user": {"credit_tier": "good", "max_cards": 1},
+                     "as_of": AS_OF}
+
+    # -- security + cache headers ------------------------------------------
+
+    def test_security_headers_on_get_and_post(self):
+        for r in (self.client.get("/api/health"),
+                  self.client.post("/api/optimize", json=self.OPTIMIZE_BODY)):
+            self.assertEqual(r.headers["X-Content-Type-Options"], "nosniff")
+            self.assertEqual(r.headers["X-Frame-Options"], "DENY")
+            self.assertEqual(r.headers["Referrer-Policy"], "no-referrer")
+            self.assertIn("camera=()", r.headers["Permissions-Policy"])
+            self.assertIn("max-age=63072000",
+                          r.headers["Strict-Transport-Security"])
+
+    def test_cache_control(self):
+        self.assertEqual(self.client.get("/api/health").headers["Cache-Control"],
+                         "no-store")
+        for path in ("/api/cards", "/api/config", "/api/assumptions"):
+            self.assertEqual(self.client.get(path).headers["Cache-Control"],
+                             "public, max-age=300", path)
+
+    # -- JSON body cap ------------------------------------------------------
+
+    def test_oversized_json_body_413(self):
+        body = dict(self.OPTIMIZE_BODY)
+        body["padding"] = "x" * (300 * 1024)
+        r = self.client.post("/api/optimize", json=body)
+        self.assertEqual(r.status_code, 413)
+        self.assertEqual(r.json(),
+                         {"detail": "Request body larger than 256 KB.",
+                          "code": "too_large"})
+
+    def test_under_cap_json_body_still_served(self):
+        r = self.client.post("/api/optimize", json=self.OPTIMIZE_BODY)
+        self.assertEqual(r.status_code, 200)
+
+    # -- rate limiting ------------------------------------------------------
+
+    def test_rate_limit_429_and_recovery(self):
+        import ratelimit
+        clock = {"now": 0.0}
+        fake = ratelimit.TokenBucketLimiter(
+            budgets={"compute": ratelimit.Budget(2, 0.25),
+                     "read": ratelimit.Budget(60, 1.0),
+                     "upload": ratelimit.Budget(40, 1.0)},
+            clock=lambda: clock["now"])
+        saved = self.server_app.LIMITER
+        self.server_app.LIMITER = fake
+        try:
+            for _ in range(2):
+                r = self.client.post("/api/optimize", json=self.OPTIMIZE_BODY)
+                self.assertEqual(r.status_code, 200)
+            r = self.client.post("/api/optimize", json=self.OPTIMIZE_BODY)
+            self.assertEqual(r.status_code, 429)
+            self.assertEqual(r.json(),
+                             {"detail": "Too many requests — wait a moment "
+                                        "and try again.",
+                              "code": "rate_limited"})
+            self.assertGreater(int(r.headers["Retry-After"]), 0)
+            clock["now"] += 4.0  # one token refills at 0.25/s
+            r = self.client.post("/api/optimize", json=self.OPTIMIZE_BODY)
+            self.assertEqual(r.status_code, 200)
+        finally:
+            self.server_app.LIMITER = saved
+
+    def test_rate_limit_never_throttles_unclassified_routes(self):
+        import ratelimit
+        self.assertIsNone(ratelimit.classify("OPTIONS", "/api/optimize"))
+        self.assertIsNone(ratelimit.classify("GET", "/how-it-works"))
+
+    # -- global 500 handler -------------------------------------------------
+
+    def test_unhandled_exception_returns_generic_500(self):
+        from fastapi.testclient import TestClient
+
+        def boom(*a, **kw):
+            raise RuntimeError("secret-marker")
+
+        saved = self.server_app.opt.run
+        self.server_app.opt.run = boom
+        try:
+            with TestClient(self.server_app.app,
+                            raise_server_exceptions=False) as client:
+                r = client.post("/api/optimize", json=self.OPTIMIZE_BODY)
+        finally:
+            self.server_app.opt.run = saved
+        self.assertEqual(r.status_code, 500)
+        self.assertEqual(r.json(), {"detail": "Internal server error."})
+        self.assertNotIn("secret-marker", r.text)
+        self.assertEqual(r.headers["X-Content-Type-Options"], "nosniff")
+
+    # -- statement parse guard ---------------------------------------------
+
+    def test_pdf_page_cap_pinned(self):
+        import statements as stmts_pkg
+        from statements import pdf as stmts_pdf
+        self.assertEqual(stmts_pdf.MAX_PDF_PAGES, 100)
+        self.assertIsNotNone(stmts_pkg)  # import sanity
 
 
 if __name__ == "__main__":
